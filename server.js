@@ -1,8 +1,10 @@
 const https = require('https');
 const http = require('http');
-const url = require('url');
 
 const PORT = process.env.PORT || 3000;
+const MAILCHIMP_KEY = process.env.MAILCHIMP_API_KEY;
+const MAILCHIMP_LIST_ID = process.env.MAILCHIMP_LIST_ID;
+const MAILCHIMP_SERVER = process.env.MAILCHIMP_SERVER_PREFIX || 'us6';
 
 function cors(res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -38,16 +40,48 @@ function buildChartText(ds,ts,tz,lat,lon,name){
   return`${name}'s Chart (Whole Sign Houses):\n${lines.join('\n')}`;
 }
 
-function fetchJSON(reqUrl, headers={}) {
-  return new Promise((resolve, reject) => {
-    const u = new URL(reqUrl);
-    const lib = u.protocol === 'https:' ? https : http;
-    lib.get({hostname:u.hostname,path:u.pathname+u.search,headers:{'Accept':'application/json',...headers}}, res => {
-      let d=''; res.on('data',c=>d+=c); res.on('end',()=>{try{resolve(JSON.parse(d))}catch(e){reject(e)}});
-    }).on('error',reject);
+// ── MAILCHIMP ──────────────────────────────────────────────────
+function addToMailchimp(email, firstName) {
+  return new Promise((resolve) => {
+    // Split name into first/last if possible
+    const parts = firstName.trim().split(' ');
+    const fname = parts[0] || firstName;
+    const lname = parts.slice(1).join(' ') || '';
+
+    const body = JSON.stringify({
+      email_address: email,
+      status: 'subscribed',
+      merge_fields: { FNAME: fname, LNAME: lname }
+    });
+
+    const auth = Buffer.from(`anystring:${MAILCHIMP_KEY}`).toString('base64');
+    const req = https.request({
+      hostname: `${MAILCHIMP_SERVER}.api.mailchimp.com`,
+      path: `/3.0/lists/${MAILCHIMP_LIST_ID}/members`,
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${auth}`,
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(body)
+      }
+    }, res => {
+      let d = '';
+      res.on('data', c => d += c);
+      res.on('end', () => {
+        try {
+          const r = JSON.parse(d);
+          // 200 = new subscriber, 400 with title "Member Exists" = already subscribed, both are fine
+          resolve({ ok: true });
+        } catch(e) { resolve({ ok: true }); }
+      });
+    });
+    req.on('error', () => resolve({ ok: true })); // never fail the reading over email
+    req.write(body);
+    req.end();
   });
 }
 
+// ── ANTHROPIC ──────────────────────────────────────────────────
 function callAnthropic(system, userMsg) {
   const body = JSON.stringify({
     model: 'claude-sonnet-4-20250514',
@@ -80,6 +114,15 @@ function callAnthropic(system, userMsg) {
   });
 }
 
+function fetchJSON(url, headers={}) {
+  return new Promise((resolve, reject) => {
+    const u = new URL(url);
+    https.get({hostname:u.hostname,path:u.pathname+u.search,headers:{'Accept':'application/json',...headers}}, res => {
+      let d=''; res.on('data',c=>d+=c); res.on('end',()=>{try{resolve(JSON.parse(d))}catch(e){reject(e)}});
+    }).on('error',reject);
+  });
+}
+
 const SYS = `You are delivering a natal chart reading through the Performance Trap Framework — a system mapping how we learn that love must be earned and what we build as a result.
 
 FRAMEWORK:
@@ -87,27 +130,30 @@ ORIGINAL SIGNAL — Moon sign = what the nervous system reached for before adapt
 HOW IT FORMED — 4th house = early home atmosphere. Saturn-Moon hard = override is detectable. Saturn-Moon soft = override feels like emotional intelligence, nearly invisible. Pluto-Moon = survival intensity. Neptune-Moon = blurred boundaries.
 THE SACRED WOUND — Chiron sign + house = where wound lives AND where gift came from. Same place. The wound becomes the medicine.
 THE INNER CRITIC — Saturn sign: Cancer="don't be a burden", Capricorn="prove worth through achievement", Aquarius="be rational not emotional", Scorpio="I can see through you". House = where it stands guard most powerfully.
-THE PERFORMING SELF — ASC = face built to manage the room. Sun sign + house = what is fundamentally offered to earn connection. Sun-Saturn hard = constant self-audit. Sun-Neptune close = performance feels like calling — most invisible form.
+THE PERFORMING SELF — ASC = face built to manage the room. Sun sign + house = what is fundamentally offered to earn connection. Sun-Saturn hard = constant self-audit. Sun-Neptune close = performance feels like calling.
 THE THIRD OPTION — North Node sign + house = what was always possible and kept being bypassed. Not a destination — a quality available right now.
 
 This chart uses WHOLE SIGN HOUSES. The ASC sign is House 1. Each subsequent sign is the next house.
 
-RULES: Plain language only — no jargon without immediate translation. Story before mechanism. Surface objections proactively. Specific and warm like a wise caring friend. Always name what the pattern costs. About 800 words total.
+Plain language only. Story before mechanism. Surface objections. Warm and specific. Name what the pattern costs. About 800 words total.
 
-RESPOND WITH ONLY VALID JSON, nothing before or after:
-{"headline":"One sentence capturing the central ache and gift of this specific chart","sections":[{"title":"What was there before the trap","content":"2-3 paragraphs about the Moon — the original signal before any adaptation"},{"title":"The environment that made it necessary","content":"2-3 paragraphs about the 4th house and Saturn — how the wound formed"},{"title":"Where the wound lives","content":"2-3 paragraphs about Chiron — the sacred wound and the gift inside it"},{"title":"The face that was built","content":"2-3 paragraphs about ASC and Sun — the performing self"},{"title":"How it all wires together","content":"2-3 paragraphs showing the circuit — how the pieces reinforce each other"},{"title":"What the chart is pointing toward","content":"2-3 paragraphs about North Node — the third option"}],"closing":"One warm, concrete, specific image of the third option as one real moment in this person's actual life"}`;
+RESPOND WITH ONLY VALID JSON:
+{"headline":"One sentence capturing the central ache and gift of this specific chart","sections":[{"title":"What was there before the trap","content":"2-3 paragraphs about the Moon"},{"title":"The environment that made it necessary","content":"2-3 paragraphs about the 4th house and Saturn"},{"title":"Where the wound lives","content":"2-3 paragraphs about Chiron"},{"title":"The face that was built","content":"2-3 paragraphs about ASC and Sun"},{"title":"How it all wires together","content":"2-3 paragraphs showing the circuit"},{"title":"What the chart is pointing toward","content":"2-3 paragraphs about North Node"}],"closing":"One warm specific image of the third option as one real moment in this person's actual life"}`;
 
 const server = http.createServer(async (req, res) => {
   cors(res);
-
   if (req.method === 'OPTIONS') { res.writeHead(200); res.end(); return; }
+
+  if (req.method === 'GET' && req.url === '/health') {
+    res.writeHead(200); res.end(JSON.stringify({ ok: true })); return;
+  }
 
   if (req.method === 'POST' && req.url === '/reading') {
     let body = '';
     req.on('data', c => body += c);
     req.on('end', async () => {
       try {
-        const { city, name, date, time, tz } = JSON.parse(body);
+        const { city, name, email, date, time, tz } = JSON.parse(body);
 
         // Geocode
         const geoData = await fetchJSON(
@@ -119,9 +165,12 @@ const server = http.createServer(async (req, res) => {
         }
         const lat = parseFloat(geoData[0].lat), lon = parseFloat(geoData[0].lon);
 
-        // Build chart + call Claude — no timeout pressure
+        // Add to Mailchimp and generate reading in parallel
         const ct = buildChartText(date, time, parseFloat(tz), lat, lon, name);
-        const reading = await callAnthropic(SYS, `Read this chart for ${name}:\n\n${ct}`);
+        const [reading] = await Promise.all([
+          callAnthropic(SYS, `Read this chart for ${name}:\n\n${ct}`),
+          addToMailchimp(email, name)
+        ]);
 
         res.writeHead(200); res.end(JSON.stringify({ lat, lon, reading }));
       } catch(e) {
@@ -131,11 +180,7 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  if (req.method === 'GET' && req.url === '/health') {
-    res.writeHead(200); res.end(JSON.stringify({ ok: true })); return;
-  }
-
   res.writeHead(404); res.end(JSON.stringify({ error: 'Not found' }));
 });
 
-server.listen(PORT, () => console.log(`Performance Trap server running on port ${PORT}`));
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
