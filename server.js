@@ -70,9 +70,12 @@ function addToMailchimp(email, firstName) {
       res.on('end', () => {
         try {
           const r = JSON.parse(d);
-          // 200 = new subscriber, 400 with title "Member Exists" = already subscribed, both are fine
+          console.log('Mailchimp status:', res.statusCode, 'response:', JSON.stringify(r).substring(0,300));
           resolve({ ok: true });
-        } catch(e) { resolve({ ok: true }); }
+        } catch(e) { 
+          console.log('Mailchimp raw response:', d.substring(0,200));
+          resolve({ ok: true }); 
+        }
       });
     });
     req.on('error', () => resolve({ ok: true })); // never fail the reading over email
