@@ -231,9 +231,10 @@ function calcAsc(jdVal, lat, lon) {
   const LMST = md(gmst + lon);
   const RAMC = LMST * D2R;
   const latR = lat * D2R;
-  const y = -Math.cos(RAMC);
-  const x = Math.sin(eps) * Math.tan(latR) + Math.cos(eps) * Math.sin(RAMC);
-  return md(Math.atan2(y, x) * R2D);
+  const cosRAMC = Math.cos(RAMC), sinRAMC = Math.sin(RAMC);
+  const cosEps = Math.cos(eps), sinEps = Math.sin(eps);
+  const tanLat = Math.tan(latR);
+  return md(Math.atan2(cosRAMC, -(sinRAMC * cosEps + tanLat * sinEps)) * R2D);
 }
 
 function buildChart(ds, ts, tz, lat, lon) {
