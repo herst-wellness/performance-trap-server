@@ -168,7 +168,7 @@ function chironLon(T) {
     if (Math.abs(dE) < 1e-10) break;
   }
   const v = 2 * Math.atan2(Math.sqrt(1 + e) * Math.sin(E / 2), Math.sqrt(1 - e) * Math.cos(E / 2)) * R2D;
-  const w_peri = 339.41; // argument of perihelion + long of node
+  const w_peri = 185.11; // calibrated perihelion longitude (ecliptic)
   const hLon = md(v + w_peri);
   // Convert heliocentric to geocentric (approximate - Chiron is far enough that error is small)
   const earthLon = planetHelio('earth', T);
@@ -237,6 +237,17 @@ function calcAsc(jdVal, lat, lon) {
   return md(Math.atan2(cosRAMC, -(sinRAMC * cosEps + tanLat * sinEps)) * R2D);
 }
 
+function calcMC(jdVal, lon) {
+  const T = (jdVal - 2451545) / 36525;
+  const eps = (23.4392911 - 0.013004167 * T) * D2R;
+  const J0 = Math.floor(jdVal - 0.5) + 0.5;
+  const T0 = (J0 - 2451545) / 36525;
+  const gmst = md(100.4606184 + 36000.7700536 * T0 + 360.98564724 * (jdVal - J0));
+  const LMST = md(gmst + lon);
+  const RAMC = LMST * D2R;
+  return md(Math.atan2(Math.tan(RAMC), Math.cos(eps)) * R2D);
+}
+
 function buildChart(ds, ts, tz, lat, lon) {
   const [y, m, d] = ds.split('-').map(Number);
   const [h, mn] = ts.split(':').map(Number);
@@ -247,7 +258,7 @@ function buildChart(ds, ts, tz, lat, lon) {
   const T = (jdVal - 2451545) / 36525;
   const asc = calcAsc(jdVal, lat, lon);
   const ascIdx = Math.floor(asc / 30);
-  const mc = md(asc + 270);
+  const mc = calcMC(jdVal, lon);
   const planets = calcAllPlanets(T);
 
   const NAMES = {
