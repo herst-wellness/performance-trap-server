@@ -400,9 +400,14 @@ function formatTransitsForPrompt(transitData, natalChart) {
     lines.push(`${name}: ${data.sign} ${data.deg}° — currently in natal House ${data.house}`);
   }
   lines.push('');
-  lines.push('INSTRUCTION: Write one unified synthesis paragraph of 5-7 sentences. You MUST name each planet and its current house (e.g., "Saturn in your 11th house", "Pluto in your 9th"). After naming them, synthesize what this collective weather means for this specific person's performance trap and relational evolution. Do not go planet by planet — find the thread that connects all four. Use the framework language. Direct voice. No hedging.');
-  return lines.join('\n');
-}
+  lines.push('FOR THE transits.synthesis FIELD YOU MUST:
+1. Start by naming each planet and its exact house: "Saturn is in your Xth house. Pluto in your Xth. Neptune in your Xth. Uranus in your Xth."
+2. Then write 4-6 sentences synthesizing what this collective weather means for THIS person's specific trap
+3. Find the thread connecting all four — what are they collectively asking this person to do differently?
+4. Specific to their natal chart — their trap, their wound, their relational pattern
+5. Framework language. Direct voice. Short sentences. No generic astrology-speak.
+DO NOT invent house positions. Use ONLY the house numbers listed above.');
+  return lines.join('\n');}
 
 
 const SYS = `You are writing a natal chart reading through the Performance Trap Framework — Chad Herst's original system for understanding how a person learned that connection has to be earned, and the relational shape they built to manage that.
@@ -499,7 +504,7 @@ const server = http.createServer(async (req, res) => {
         console.log('Chart for', name, ':\n' + text);
         console.log('Transits:\n' + transitText);
         const [reading] = await Promise.all([
-          callAnthropic(SYS, `Read this chart for ${name}:\n\n${text}\n\nTRANSIT CONTEXT:\n${transitText}`),
+          callAnthropic(SYS, `Read this chart for ${name}:\n\n${text}\n\n===REQUIRED: CURRENT PLANETARY WEATHER===\nYou MUST use the following data for the transits.synthesis field. Name each planet and its house explicitly.\n${transitText}`),
           addToMailchimp(email, name)
         ]);
         res.writeHead(200); res.end(JSON.stringify({ lat, lon, reading, chart }));
