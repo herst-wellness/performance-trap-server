@@ -478,22 +478,24 @@ function calcTransits(natalChart) {
 }
 
 function formatTransitsForPrompt(transits) {
-  const lines = [`Today's date: ${transits.today}`, ''];
+  const lines = [`TODAY: ${transits.today}`, ''];
 
   if (transits.active.length > 0) {
-    lines.push('CURRENTLY ACTIVE TRANSITS (within 5° orb now):');
+    lines.push('ACTIVE TRANSITS NOW (use these exact strings and dates in the JSON output):');
     for (const t of transits.active) {
-      const exact = t.exact === 'ongoing' ? 'exact now/recently' : `exact ${t.exact}`;
-      const end = t.end === 'ongoing' ? 'ongoing' : `ends approx ${t.end}`;
-      lines.push(`• ${t.transiting} (${t.transitingMeaning}) ${t.aspect} natal ${t.natal} (${t.natalSign} ${t.natalDeg}°) — ${exact}, ${end}`);
+      const exactStr = t.exact === 'ongoing' ? 'exact recently' : `exact ${t.exact}`;
+      const endStr = t.end === 'ongoing' ? 'still active' : `ends approx ${t.end}`;
+      const label = `${t.transiting} ${t.aspect} natal ${t.natal} (${t.natalSign} ${t.natalDeg}°)`;
+      lines.push(`TRANSIT: "${label}" | DATES: "${exactStr}, ${endStr}" | MEANING: ${t.transitingMeaning}`);
     }
     lines.push('');
   }
 
   if (transits.upcoming.length > 0) {
-    lines.push('NEXT MAJOR TRANSITS APPROACHING:');
+    lines.push('UPCOMING TRANSITS (use these exact strings and dates in the JSON output):');
     for (const t of transits.upcoming) {
-      lines.push(`• ${t.transiting} ${t.aspect} natal ${t.natal} — begins ${t.start}, exact ${t.exact}`);
+      const label = `${t.transiting} ${t.aspect} natal ${t.natal} (${t.natalSign} ${t.natalDeg}°)`;
+      lines.push(`TRANSIT: "${label}" | DATES: "begins ${t.start}, exact ${t.exact}"`);
     }
   }
 
@@ -549,7 +551,7 @@ READING RULES:
 - About 900 words total. Warm, specific, earned — like a wise friend who has studied this deeply.
 
 RESPOND WITH ONLY VALID JSON, nothing before or after:
-{"headline":"One sentence capturing the specific architecture of this person's performance trap — what they learned to do, and what it cost","transits":{"overview":"2-3 sentences: where is the override under pressure RIGHT NOW, how is the trap being asked to evolve — use the transit data provided, name specific planets and natal points, speak in the framework language","active":[{"transit":"e.g. Saturn square natal Saturn","dates":"use exact dates from the transit data provided","interpretation":"2-3 sentences on what this specific pressure means for this person's override structure and their evolution from trap toward wound"}],"upcoming":[{"transit":"e.g. Saturn conjunction natal Chiron","dates":"start date from transit data","interpretation":"1-2 sentences on what's approaching"}]},"sections":[{"title":"What was there before the trap","sections":[{"title":"What was there before the trap","content":"2-3 paragraphs on the Moon — the original signal, its specific quality, where it was most active, what it reached for before any adaptation"},{"title":"How the override got installed","content":"2-3 paragraphs on Saturn — the enforcer's specific demand, what voice got internalized, what it told the body to mute and why"},{"title":"The double bind","content":"1-2 paragraphs on Mercury — the two channels this person learned to run simultaneously, what got spoken and what stayed hidden"},{"title":"The performing self","content":"2-3 paragraphs on the ASC and Sun — the face built to manage the room, what was offered to earn connection, what that performance genuinely costs"},{"title":"Where the wound lives","content":"2-3 paragraphs on Chiron — the somatic shape of the wound, the specific ache, and the gift that came through the same place"},{"title":"The third option","content":"2-3 paragraphs on Venus, the 5th house, and the 7th house — what genuine connection looks like for this chart when the override is quiet, what the body actually reaches for"}],"closing":"One concrete specific image of the third option as one real moment in this person's body — not a principle, not an insight, one moment"}`;
+{"headline":"One sentence capturing the specific architecture of this person's performance trap — what they learned to do, and what it cost","transits":{"overview":"2-3 sentences on where the override is under pressure right now and how the trap is being asked to evolve — name the specific transits, use the framework language","active":[{"transit":"EXACT STRING from transit data e.g. Saturn square natal Saturn","dates":"COPY the exact dates from the transit data e.g. exact 2026-03-12, ends 2026-04-23","interpretation":"2-3 sentences on what this pressure means for this person specifically"}],"upcoming":[{"transit":"EXACT STRING e.g. Saturn conjunction natal Chiron","dates":"COPY exact dates e.g. begins 2026-05-11, exact 2026-07-28","interpretation":"1-2 sentences on what is approaching"}]},"sections":[{"title":"What was there before the trap","sections":[{"title":"What was there before the trap","content":"2-3 paragraphs on the Moon — the original signal, its specific quality, where it was most active, what it reached for before any adaptation"},{"title":"How the override got installed","content":"2-3 paragraphs on Saturn — the enforcer's specific demand, what voice got internalized, what it told the body to mute and why"},{"title":"The double bind","content":"1-2 paragraphs on Mercury — the two channels this person learned to run simultaneously, what got spoken and what stayed hidden"},{"title":"The performing self","content":"2-3 paragraphs on the ASC and Sun — the face built to manage the room, what was offered to earn connection, what that performance genuinely costs"},{"title":"Where the wound lives","content":"2-3 paragraphs on Chiron — the somatic shape of the wound, the specific ache, and the gift that came through the same place"},{"title":"The third option","content":"2-3 paragraphs on Venus, the 5th house, and the 7th house — what genuine connection looks like for this chart when the override is quiet, what the body actually reaches for"}],"closing":"One concrete specific image of the third option as one real moment in this person's body — not a principle, not an insight, one moment"}`;
 
 const server = http.createServer(async (req, res) => {
   cors(res);
