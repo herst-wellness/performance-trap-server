@@ -470,8 +470,19 @@ function calcTransits(natalChart) {
   // Sort upcoming by start date, take next 3
   upcomingTransits.sort((a, b) => new Date(a.start) - new Date(b.start));
 
+  // Prioritize framework-relevant transits
+  const frameworkPriority = ['Moon','Saturn','Mercury','ASC','Sun','Chiron','North Node'];
+  function priorityScore(t) {
+    const nIdx = frameworkPriority.indexOf(t.natal);
+    const pScore = {pluto:10,neptune:9,uranus:8,saturn:7,node:5}[t.transiting.toLowerCase().replace(' node','').replace('north ','')] || 3;
+    const nScore = nIdx >= 0 ? (frameworkPriority.length - nIdx) : 0;
+    return pScore + nScore;
+  }
+  activeTransits.sort((a,b) => priorityScore(b) - priorityScore(a));
+  upcomingTransits.sort((a,b) => new Date(a.start) - new Date(b.start));
+
   return {
-    active: activeTransits,
+    active: activeTransits.slice(0, 5),
     upcoming: upcomingTransits.slice(0, 3),
     today: now.toISOString().split('T')[0],
   };
@@ -481,12 +492,12 @@ function formatTransitsForPrompt(transits) {
   const lines = [`TODAY: ${transits.today}`, ''];
 
   if (transits.active.length > 0) {
-    lines.push('ACTIVE TRANSITS NOW (use these exact strings and dates in the JSON output):');
+    lines.push(`ACTIVE TRANSITS NOW — ${transits.active.length} active (copy these exact strings and dates into JSON):`);
     for (const t of transits.active) {
-      const exactStr = t.exact === 'ongoing' ? 'exact recently' : `exact ${t.exact}`;
-      const endStr = t.end === 'ongoing' ? 'still active' : `ends approx ${t.end}`;
+      const exactStr = t.exact === 'ongoing' ? 'exact recently/ongoing' : `exact ${t.exact}`;
+      const endStr = t.end === 'ongoing' ? 'still building' : `ends approx ${t.end}`;
       const label = `${t.transiting} ${t.aspect} natal ${t.natal} (${t.natalSign} ${t.natalDeg}°)`;
-      lines.push(`TRANSIT: "${label}" | DATES: "${exactStr}, ${endStr}" | MEANING: ${t.transitingMeaning}`);
+      lines.push(`TRANSIT: "${label}" | DATES: "began ${t.start}, ${exactStr}, ${endStr}" | PLANET MEANING: ${t.transitingMeaning}`);
     }
     lines.push('');
   }
