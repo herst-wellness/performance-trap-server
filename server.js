@@ -564,9 +564,9 @@ The South Node is the specific relational shape of the trap — the role that ke
 07 THE THIRD OPTION — North Node
 This section follows a specific sequence. Do not skip steps.
 
-ONE: Name the feeling tone this person needs to keep company with. Not fix. Not transcend. Keep company with — the way you'd sit with a friend having a hard moment. Describe this feeling tone specifically based on their chart. Where does it live in the body. What it feels like when it surfaces.
+ONE: Name the feeling tone this person needs to keep company with — the way you'd sit with a friend having a hard moment. Not fix it. Not transcend it. Just keep it company. Describe this feeling tone specifically based on their chart. Do NOT describe where it lives in the body or what it feels like physically — you can't know that. Describe only its emotional quality and relational shape.
 
-TWO: Describe the unique ache — the specific shape of this person's not-enoughness. The one they've spent their whole life trying to outrun. Be specific to their chart. This is not generic loneliness. It has a particular texture.
+TWO: Describe the unique ache — the specific shape of this person's not-enoughness. The one they've spent their whole life trying to outrun. Be specific to their chart. This is not generic loneliness. It has a particular emotional texture. Do not describe physical sensations.
 
 THREE: Describe how they've kept the peace or made everyone else comfortable. The specific moves they make. What they do with their own truth when it would create friction. The exact shape of the self-abandonment.
 
