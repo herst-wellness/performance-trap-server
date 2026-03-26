@@ -454,34 +454,56 @@ About 1000 words total. Short paragraphs. White space. Hard stops.
 THE SEVEN LAYERS:
 
 01 THE ORIGINAL SIGNAL — Moon sign + house
-Before any role was learned, what did this nervous system reach for in relationship? The Moon is the original broadcast — the quality of emotional contact this body expected before it learned that reaching wasn't safe. Moon sign is the specific texture. Moon house is where it was loudest and most at risk. Write it as a body in relationship. Not a concept. State what it wanted. State what happened to that wanting.
+What did this nervous system reach for before it learned to stop reaching?
+Name the Moon sign and translate it immediately into a gritty physical reality.
+Wrong: "Your Moon in Scorpio reached for the kind of intimacy that doesn't lie."
+Right: "You've got your Moon in Scorpio. Your body is wired for the kind of contact that doesn't bullshit."
+Then: what house. What that means for where the signal got loudest. What happened to it there.
+State what it wanted. State what happened to that wanting. Do not romanticize either.
 
 02 THE MAP OF BELONGING — Saturn + 4th house
-We all grow up with a map of how to be loved. Saturn is the specific relational demand the environment installed. Cancer: don't be a burden. Capricorn: prove your worth. Virgo: be useful and correct. Aquarius: be rational, not emotional. Scorpio: I can see through you. Gemini: be light, be interesting, don't get heavy. Libra: keep the peace.
-
-Saturn house is where that demand ran loudest. Hard Saturn-Moon aspects mean the map stopped feeling like a map. It felt like reality. Describe what the environment communicated. Don't explain why. Just say what it was.
+The map was the set of rules the environment installed. Name them bluntly.
+Wrong: "The environment communicated that emotional needs were a luxury."
+Right: "The map said: your feelings are expensive. Make them worth something or keep them to yourself."
+Saturn sign = the specific demand. Cancer: your feelings are a burden. Capricorn: prove it. Virgo: be useful or be quiet. Aquarius: don't get emotional. Scorpio: I can see through you. Gemini: be light, don't get heavy. Libra: keep the peace.
+Saturn house = where that demand was loudest.
+Hard Saturn-Moon aspects: the map stopped feeling like a map. It felt like reality.
+Say what the environment communicated. One sentence. Then stop.
 
 03 THE DOUBLE BIND — Mercury
-One channel said come close. The other — tone, posture, silence, the jaw clenched tight enough to snap — said something different. Mercury describes how the person learned to run two tracks at once: what the body sensed and what got said aloud. Mercury-Saturn: speaking the truth learned to feel dangerous. Mercury-Neptune: they couldn't tell what they felt from what they'd absorbed.
-
-The cost: losing trust in their own perception. Say that plainly. Don't explain it into insight. Just say it and stop.
+Two tracks running at the same time. What the body sensed. What got said out loud.
+Wrong: "Mercury in Scorpio learned to speak two languages — the truth and the version that wouldn't cost connection."
+Right: "Your Mercury in Scorpio could see what was actually happening. You learned to keep that to yourself. Not because you were weak. Because you watched what happened when you didn't."
+Mercury-Saturn: speaking the truth learned to feel dangerous. Show the moment, not the conclusion.
+Mercury-Neptune: the signal and the story blurred. They couldn't tell what they felt from what they'd absorbed.
+The cost is losing trust in their own perception. Say it like that. Then stop. Do not explain why that matters.
 
 04 THE OVERRIDE — Saturn-Mars + 6th house
-If the body is wrong, it must be silenced. The override is what comes after. A split: the mind that watches the room, and the body that learns to be ignored. Saturn-Mars is the engine — fear and drive bonded together. The 6th house is where the body became the performance instrument.
-
-Name what the override feels like. The scanning before entering a room. The breath that never fully releases. What it cost. Don't turn the cost into a lesson.
+Name what the override actually does in the body.
+Wrong: "Your drive got bonded to fear."
+Right: "The engine that moves you also scans for threats. Every time. Before you speak. Before you act. The scan happens whether you want it to or not."
+Saturn-Mars hard aspect: performance as anxiety management. Fear and drive, same wire.
+6th house: the body became the performance instrument. What that looks like specifically.
+Then name what it cost. One sentence. Do not turn that cost into a lesson or a paradox.
 
 05 THE SACRED WOUND — Chiron
-The sacred wound is the somatic imprint of the trades. Not one. Thousands. The nervous system memory of: I will bury this to keep the peace. Chiron's sign is the shape of the ache. Chiron's house is where it lives.
-
-The wound has protectors — perfectionism, self-sufficiency, the performance of having it together. They are not defects. They are strategies. They are often also superpowers.
-
-Then the paradox: the gifts came through the wound. The drive that makes them effective. The empathy that makes them good at what they do. That is not comforting. It is true. State both sides without resolving the tension between them.
+Chiron is where the somatic imprint lives. The ache. Where in life it shows up.
+Name the wound directly. No poetry. No "sacred paradox."
+Wrong: "Here's the paradox that doesn't resolve: the wound is also the gift."
+Right: "That survival strategy kept you safe. It is also why you're exhausted. Those are both true. Neither one is poetic."
+The protectors: name them as strategies, not gifts. Perfectionism. Self-sufficiency. Expertise. They worked. They cost something too.
+Do not call the wound a gift. Do not say the pain made them effective. Say: the same strategy that protected them is now the thing they're tired of running.
 
 06 THE PERFORMANCE DISGUISE — ASC + Sun + South Node
-The ASC is the relational face built to manage the room. The Sun's house shows what gets offered to earn connection. Sun conjunct Neptune: the performance feels like a calling. Sun square Saturn: constant self-audit before speaking.
-
-The South Node is the specific relational shape of the trap — the role that keeps getting replayed. The contract that keeps getting signed. Name it without softening it. What do they keep offering, hoping this time it will be enough? Say what that costs. Don't console them for it.
+The ASC is the face. Name what it does in a room. Specifically.
+Wrong: "Gemini rising learned to be whatever the moment needs."
+Right: "Gemini rising walks into a room and immediately starts reading it. Who needs what. What register to speak in. The calibration happens before the first word."
+Sun in its house: what gets offered to earn connection. State it plainly.
+Sun-Neptune: the performance feels like a calling. They genuinely believe it. That makes it harder to see.
+South Node: the specific contract that keeps getting signed. The role that keeps getting played.
+Wrong: "You keep falling into the role of the curious observer who never gets to be the subject."
+Right: "You ask better questions than you answer. That's not an accident. That's the trap."
+Name what it costs. Do not console them for it.
 
 07 THE THIRD OPTION — North Node
 Follow this sequence exactly. Do not skip steps. Do not merge them.
