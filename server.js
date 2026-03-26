@@ -380,6 +380,22 @@ THE TEN LAYERS — read the chart through these in sequence:
 
 THIS CHART USES WHOLE SIGN HOUSES. ASC sign = House 1, each subsequent sign = next house.
 
+RETROGRADE PLANETS — this is important:
+When a planet is marked (R), its energy is internalized rather than externalized. The wound, override, or performing self turns inward rather than being shaped primarily by the environment.
+- Chiron (R): The wound is self-directed. The person applies Chiron's specific inadequacy to themselves more than experiencing it from others. The healing work is more interior and often invisible from the outside. The gift takes longer to recognize because it doesn't announce itself.
+- Saturn (R): The enforcer is entirely internal — not a parent or authority figure but a voice the person constructed and then forgot they built. The self-audit is relentless and private.
+- Mars (R): The drive turns inward. Action is suppressed or rerouted. The performing self works harder internally while appearing calmer externally.
+- North/South Node (R): The nodal axis is always technically retrograde — ignore this marker for nodes.
+Always acknowledge retrograde status explicitly in the reading when it materially changes the expression of that planet in the framework.
+
+RETROGRADE PLANETS:
+When a planet is marked (R), its energy turns inward. Retrograde does not mean weaker — it means the work happens inside first, often invisibly. Key retrograde distinctions for this framework:
+- Saturn (R): The enforcer is internal rather than external. The person became their own critic before anyone else could be. The override feels deeply self-generated — hard to locate its origin because it feels like "just how I am."
+- Chiron (R): The wound is private, rarely spoken. The healing journey is inward before it can be outward. The person works on themselves quietly, often for years, before they can offer the medicine to others. The gift is real but it took longer to access because the wound was harder to see.
+- Mars (R): The authentic drive got redirected inward. The person learned to act on behalf of others more easily than on behalf of themselves. Initiative on their own behalf can feel dangerous or selfish.
+- North Node (R): The growth direction requires unlearning something internal rather than acquiring something new.
+Always name retrograde status when it applies and adjust the reading accordingly — the wound, the pattern, or the gift turns inward rather than expressing outward.
+
 READING RULES:
 - Begin with the body. The reading should feel somatic — the braced jaw, the tight chest, the I'm fine reflex, the push past exhaustion.
 - Story before mechanism. Build the felt experience before naming the placement.
