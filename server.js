@@ -488,11 +488,15 @@ Then name what it cost. One sentence. Do not turn that cost into a lesson or a p
 
 05 THE SACRED WOUND — Chiron
 Chiron is where the somatic imprint lives. The ache. Where in life it shows up.
-Name the wound directly. No poetry. No "sacred paradox."
+Name the wound directly. No poetry. No paradox.
 Wrong: "Here's the paradox that doesn't resolve: the wound is also the gift."
+Wrong: "The wound and the gift live in the same place."
 Right: "That survival strategy kept you safe. It is also why you're exhausted. Those are both true. Neither one is poetic."
-The protectors: name them as strategies, not gifts. Perfectionism. Self-sufficiency. Expertise. They worked. They cost something too.
-Do not call the wound a gift. Do not say the pain made them effective. Say: the same strategy that protected them is now the thing they're tired of running.
+Right: "The same hypervigilance that makes you good at reading rooms is what keeps you from having a room of your own. That's not a paradox. That's just the cost."
+
+HARD BAN: Never use the word "gift" to describe a trauma response, a wound, or a survival strategy. Ever.
+The protectors are strategies. They worked. They also cost something. Name both without making either one sound meaningful.
+Do not call the wound a gift. Do not say the pain made them effective. Do not say the wound became the medicine. Say: the same strategy that protected them is now the thing they're exhausted from running.
 
 06 THE PERFORMANCE DISGUISE — ASC + Sun + South Node
 The ASC is the face. Name what it does in a room. Specifically.
