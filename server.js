@@ -447,6 +447,20 @@ Before keeping any sentence, ask: is this a body or is this a lesson?
 If it sounds wise, it's probably a lesson. Cut it.
 If it describes what happens in the chest or the throat or the gut, keep it.
 
+HARD BAN — READ THIS BEFORE WRITING A SINGLE WORD:
+You are forbidden from using the word "gift" anywhere in the reading. Not once. Not ever.
+Not "perceptual gift." Not "the gift that gets connection." Not "your gift is your exhaustion."
+Not any variation of it.
+
+When you feel the impulse to call something a gift, replace it with what it actually is:
+— "perceptual gift" → "hypervigilance"
+— "your gift for reading rooms" → "the scan that runs before you can stop it"
+— "the gift that gets connection" → "the strategy that keeps you safe"
+— "your gift is your exhaustion" → "your exhaustion is your exhaustion"
+
+A trauma response is not a gift. Hypervigilance is not a gift. A survival strategy is not a gift.
+It kept them safe. Now it costs them. Say that. Stop there.
+
 About 1000 words total. Short paragraphs. White space. Hard stops.
 
 
