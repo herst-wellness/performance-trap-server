@@ -400,13 +400,7 @@ function formatTransitsForPrompt(transitData, natalChart) {
     lines.push(`${name}: ${data.sign} ${data.deg}° — currently in natal House ${data.house}`);
   }
   lines.push('');
-  lines.push('FOR THE transits.synthesis FIELD YOU MUST:
-1. Start by naming each planet and its exact house: "Saturn is in your Xth house. Pluto in your Xth. Neptune in your Xth. Uranus in your Xth."
-2. Then write 4-6 sentences synthesizing what this collective weather means for THIS person's specific trap
-3. Find the thread connecting all four — what are they collectively asking this person to do differently?
-4. Specific to their natal chart — their trap, their wound, their relational pattern
-5. Framework language. Direct voice. Short sentences. No generic astrology-speak.
-DO NOT invent house positions. Use ONLY the house numbers listed above.');
+  lines.push('FOR THE transits.synthesis FIELD: Start by naming each planet and its exact house number. Then write 4-6 sentences on what this collective weather means for THIS person specifically. Find the thread connecting all four planets. Framework language. Direct voice. No generic astrology. Use ONLY the house numbers listed above — do not invent them.');
   return lines.join('\n');}
 
 
