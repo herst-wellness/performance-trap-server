@@ -357,161 +357,53 @@ function fetchJSON(url, headers = {}) {
   });
 }
 
-// ── TRANSIT CALCULATOR ─────────────────────────────────────────
-const TRANSIT_PLANETS = {
-  saturn:  { label: 'Saturn', meaning: 'structure and reality-testing' },
-  pluto:   { label: 'Pluto',  meaning: 'core evolutionary pressure' },
-  uranus:  { label: 'Uranus', meaning: 'disruption and awakening' },
-  neptune: { label: 'Neptune',meaning: 'dissolution and reconfiguration' },
-  node:    { label: 'North Node', meaning: 'direction of growth' },
-};
+// ── TRANSIT WEATHER ───────────────────────────────────────────
+// Calculate which whole sign house each slow planet currently occupies
 
-const NATAL_POINTS = ['sun','moon','mercury','saturn','chiron','asc','node'];
-const ASPECTS_TO_CHECK = [
-  {name:'conjunction',angle:0},
-  {name:'opposition',angle:180},
-  {name:'square',angle:90},
-  {name:'trine',angle:120},
-];
-const TRANSIT_ORB = 5;
-
-function jdToDateStr(j) {
-  const d = new Date((j - 2440587.5) * 86400000);
-  return d.toISOString().split('T')[0];
-}
-
-function aspectDiff(tLon, nLon, aspAngle) {
-  let d = md(tLon - nLon);
-  if (d > 180) d = 360 - d;
-  return Math.abs(d - aspAngle);
-}
-
-function findTransitPasses(planet, natalLon, aspAngle, orb, startJD, endJD) {
-  const step = 3;
-  const passes = [];
-  let inOrb = false, passStart = null, bestJD = null, bestDiff = 999;
-
-  for (let j = startJD; j <= endJD; j += step) {
-    const T = (j - 2451545) / 36525;
-    const tLon = calcGeoLon(planet, T);
-    const diff = aspectDiff(tLon, natalLon, aspAngle);
-
-    if (diff <= orb) {
-      if (!inOrb) { inOrb = true; passStart = j; bestDiff = diff; bestJD = j; }
-      if (diff < bestDiff) { bestDiff = diff; bestJD = j; }
-    } else if (inOrb) {
-      // Refine exact date
-      let lo = bestJD - step * 2, hi = bestJD + step * 2;
-      for (let i = 0; i < 25; i++) {
-        const mid = (lo + hi) / 2;
-        const dMid = aspectDiff(calcGeoLon(planet, (mid - 2451545) / 36525), natalLon, aspAngle);
-        const dLo = aspectDiff(calcGeoLon(planet, (lo - 2451545) / 36525), natalLon, aspAngle);
-        if (dMid < dLo) lo = mid; else hi = mid;
-      }
-      passes.push({ start: jdToDateStr(passStart), exact: jdToDateStr((lo + hi) / 2), end: jdToDateStr(j) });
-      inOrb = false; passStart = null; bestDiff = 999; bestJD = null;
-    }
-  }
-  if (inOrb && passStart) {
-    passes.push({ start: jdToDateStr(passStart), exact: 'ongoing', end: 'ongoing' });
-  }
-  return passes;
-}
-
-function calcTransits(natalChart) {
+function calcTransitWeather(natalChart) {
   const now = new Date();
   const todayJD = jd(now.getUTCFullYear(), now.getUTCMonth() + 1, now.getUTCDate(), 0);
-  const startJD = todayJD - 180; // 6 months ago
-  const endJD = todayJD + 365 * 3; // 3 years ahead
+  const T = (todayJD - 2451545) / 36525;
+  const today = now.toISOString().split('T')[0];
 
-  // Build natal longitude map
-  const natalLons = {};
-  for (const key of NATAL_POINTS) {
-    const display = { sun:'Sun', moon:'Moon', mercury:'Mercury', saturn:'Saturn', chiron:'Chiron', asc:'ASC', node:'North Node' }[key];
-    if (natalChart[display]) natalLons[key] = { lon: natalChart[display].lon, label: display, sign: natalChart[display].sign, deg: natalChart[display].deg };
-  }
+  // Get ASC sign index from natal chart
+  const ascLon = natalChart['ASC'] ? natalChart['ASC'].lon : 0;
+  const ascSignIdx = Math.floor(ascLon / 30);
 
-  const activeTransits = [];
-  const upcomingTransits = [];
-
-  for (const [tPlanet, tInfo] of Object.entries(TRANSIT_PLANETS)) {
-    for (const [nKey, nInfo] of Object.entries(natalLons)) {
-      for (const asp of ASPECTS_TO_CHECK) {
-        const passes = findTransitPasses(tPlanet, nInfo.lon, asp.angle, TRANSIT_ORB, startJD, endJD);
-        if (!passes.length) continue;
-
-        for (const pass of passes) {
-          const transit = {
-            transiting: tInfo.label,
-            transitingMeaning: tInfo.meaning,
-            aspect: asp.name,
-            natal: nInfo.label,
-            natalSign: nInfo.sign,
-            natalDeg: nInfo.deg,
-            start: pass.start,
-            exact: pass.exact,
-            end: pass.end,
-          };
-
-          const passEndDate = pass.end === 'ongoing' ? new Date(9999,0,1) : new Date(pass.end);
-          const passStartDate = new Date(pass.start);
-          const today = new Date();
-
-          if (passStartDate <= today && passEndDate >= today) {
-            activeTransits.push(transit);
-          } else if (passStartDate > today) {
-            upcomingTransits.push(transit);
-          }
-        }
-      }
-    }
-  }
-
-  // Sort upcoming by start date, take next 3
-  upcomingTransits.sort((a, b) => new Date(a.start) - new Date(b.start));
-
-  // Prioritize framework-relevant transits
-  const frameworkPriority = ['Moon','Saturn','Mercury','ASC','Sun','Chiron','North Node'];
-  function priorityScore(t) {
-    const nIdx = frameworkPriority.indexOf(t.natal);
-    const pScore = {pluto:10,neptune:9,uranus:8,saturn:7,node:5}[t.transiting.toLowerCase().replace(' node','').replace('north ','')] || 3;
-    const nScore = nIdx >= 0 ? (frameworkPriority.length - nIdx) : 0;
-    return pScore + nScore;
-  }
-  activeTransits.sort((a,b) => priorityScore(b) - priorityScore(a));
-  upcomingTransits.sort((a,b) => new Date(a.start) - new Date(b.start));
-
-  return {
-    active: activeTransits.slice(0, 5),
-    upcoming: upcomingTransits.slice(0, 3),
-    today: now.toISOString().split('T')[0],
+  // Current positions of the four outer planets
+  const planets = {
+    Saturn:  calcGeoLon('saturn',  T),
+    Pluto:   calcGeoLon('pluto',   T),
+    Neptune: calcGeoLon('neptune', T),
+    Uranus:  calcGeoLon('uranus',  T),
   };
+
+  const SGN_NAMES = ['Aries','Taurus','Gemini','Cancer','Leo','Virgo','Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'];
+
+  const weather = {};
+  for (const [name, lon] of Object.entries(planets)) {
+    const signIdx = Math.floor(md(lon) / 30);
+    const sign = SGN_NAMES[signIdx];
+    const deg = Math.floor(md(lon) % 30);
+    const house = ((signIdx - ascSignIdx + 12) % 12) + 1;
+    weather[name] = { sign, deg, house, lon };
+  }
+
+  return { weather, today, ascSignIdx };
 }
 
-function formatTransitsForPrompt(transits) {
-  const lines = [`TODAY: ${transits.today}`, ''];
-
-  if (transits.active.length > 0) {
-    lines.push(`ACTIVE TRANSITS NOW — ${transits.active.length} active (copy these exact strings and dates into JSON):`);
-    for (const t of transits.active) {
-      const exactStr = t.exact === 'ongoing' ? 'exact recently/ongoing' : `exact ${t.exact}`;
-      const endStr = t.end === 'ongoing' ? 'still building' : `ends approx ${t.end}`;
-      const label = `${t.transiting} ${t.aspect} natal ${t.natal} (${t.natalSign} ${t.natalDeg}°)`;
-      lines.push(`TRANSIT: "${label}" | DATES: "began ${t.start}, ${exactStr}, ${endStr}" | PLANET MEANING: ${t.transitingMeaning}`);
-    }
-    lines.push('');
+function formatTransitsForPrompt(transitData, natalChart) {
+  const { weather, today } = transitData;
+  const lines = [`TODAY: ${today}`, ''];
+  lines.push('CURRENT OUTER PLANET POSITIONS (whole sign houses for this natal chart):');
+  for (const [name, data] of Object.entries(weather)) {
+    lines.push(`${name}: ${data.sign} ${data.deg}° — currently in natal House ${data.house}`);
   }
-
-  if (transits.upcoming.length > 0) {
-    lines.push('UPCOMING TRANSITS (use these exact strings and dates in the JSON output):');
-    for (const t of transits.upcoming) {
-      const label = `${t.transiting} ${t.aspect} natal ${t.natal} (${t.natalSign} ${t.natalDeg}°)`;
-      lines.push(`TRANSIT: "${label}" | DATES: "begins ${t.start}, exact ${t.exact}"`);
-    }
-  }
-
+  lines.push('');
+  lines.push('Write one unified synthesis paragraph about what these four planets occupying these specific houses means for THIS person's performance trap and evolution. Focus on the collective weather, not each planet individually. Use the framework language. Same direct voice.');
   return lines.join('\n');
 }
+
 
 const SYS = `You are writing a natal chart reading through the Performance Trap Framework — Chad Herst's original system for understanding how a person learned that connection has to be earned, and the relational shape they built to manage that.
 
@@ -581,7 +473,7 @@ SEVEN: One concrete step that honors their reality instead of erasing it. Based 
 THIS CHART USES WHOLE SIGN HOUSES. ASC sign = House 1. Each subsequent sign = next house.
 
 RESPOND WITH ONLY VALID JSON, nothing before or after:
-{"headline":"One sentence. The central relational thing — what they learned to do to belong, and what it cost. Specific. No hedging.","sections":[{"title":"The Original Signal","content":"2-3 paragraphs. Moon. The body in relationship before adaptation. Physical first."},{"title":"The Map of Belonging","content":"2-3 paragraphs. Saturn and 4th house. The specific conditions that shaped the contract."},{"title":"The Double Bind","content":"2 paragraphs. Mercury. The two channels. How trust in their own perception got trained away."},{"title":"The Override","content":"2 paragraphs. Saturn-Mars and 6th house. How the body got silenced. Somatic and specific."},{"title":"The Sacred Wound","content":"3 paragraphs. Chiron. The ache. The protectors. The paradox."},{"title":"The Performance Disguise","content":"2-3 paragraphs. ASC, Sun, and South Node. The face. The offer. The pattern that keeps replaying."},{"title":"The Third Option","content":"Follow the seven-step sequence exactly. This is the longest section — about 250 words. Specific to their North Node."}],"closing":"One moment. In the body. In relationship. The third option happening — not an insight, a scene. Concrete enough to feel.","transits":{"overview":"2-3 sentences. Where the relational trap is under pressure right now. Name the specific transits. Same voice — direct, physical, no hedging.","active":[{"transit":"COPY EXACTLY from transit data e.g. Saturn square natal Saturn (Cancer 3°)","dates":"COPY EXACTLY from transit data e.g. began 2026-01-26, exact 2026-03-12, ends approx 2026-04-23","interpretation":"2-3 sentences. What this pressure means for this person's specific relational pattern. Physical. Direct."}],"upcoming":[{"transit":"COPY EXACTLY from transit data","dates":"COPY EXACTLY from transit data e.g. begins 2026-05-11, exact 2026-07-28","interpretation":"1-2 sentences. What's approaching. Why it matters for this chart."}]}}`;
+{"headline":"One sentence. The central relational thing — what they learned to do to belong, and what it cost. Specific. No hedging.","sections":[{"title":"The Original Signal","content":"2-3 paragraphs. Moon. The body in relationship before adaptation. Physical first."},{"title":"The Map of Belonging","content":"2-3 paragraphs. Saturn and 4th house. The specific conditions that shaped the contract."},{"title":"The Double Bind","content":"2 paragraphs. Mercury. The two channels. How trust in their own perception got trained away."},{"title":"The Override","content":"2 paragraphs. Saturn-Mars and 6th house. How the body got silenced. Somatic and specific."},{"title":"The Sacred Wound","content":"3 paragraphs. Chiron. The ache. The protectors. The paradox."},{"title":"The Performance Disguise","content":"2-3 paragraphs. ASC, Sun, and South Node. The face. The offer. The pattern that keeps replaying."},{"title":"The Third Option","content":"Follow the seven-step sequence exactly. This is the longest section — about 250 words. Specific to their North Node."}],"closing":"One moment. In the body. In relationship. The third option happening — not an insight, a scene. Concrete enough to feel.","transits":{"synthesis":"One unified paragraph — 4 to 6 sentences. Synthesize what Saturn, Pluto, Neptune, and Uranus currently occupying these specific whole sign houses means for THIS person's performance trap and evolution. Do not go planet by planet. Find the thread that connects all four. Use the framework language. Direct voice. No hedging. What is the collective pressure asking this person to do differently in relationship?"}}`;
 
 const server = http.createServer(async (req, res) => {
   cors(res);
@@ -602,8 +494,8 @@ const server = http.createServer(async (req, res) => {
         const lat = parseFloat(geoData[0].lat), lon = parseFloat(geoData[0].lon);
         const chart = buildChart(date, time, parseFloat(tz), lat, lon);
         const text = chartToText(chart, name);
-        const transits = calcTransits(chart);
-        const transitText = formatTransitsForPrompt(transits);
+        const transitData = calcTransitWeather(chart);
+        const transitText = formatTransitsForPrompt(transitData, chart);
         console.log('Chart for', name, ':\n' + text);
         console.log('Transits:\n' + transitText);
         const [reading] = await Promise.all([
