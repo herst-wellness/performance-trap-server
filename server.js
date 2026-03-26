@@ -357,6 +357,149 @@ function fetchJSON(url, headers = {}) {
   });
 }
 
+// ── TRANSIT CALCULATOR ─────────────────────────────────────────
+const TRANSIT_PLANETS = {
+  saturn:  { label: 'Saturn', meaning: 'structure and reality-testing' },
+  pluto:   { label: 'Pluto',  meaning: 'core evolutionary pressure' },
+  uranus:  { label: 'Uranus', meaning: 'disruption and awakening' },
+  neptune: { label: 'Neptune',meaning: 'dissolution and reconfiguration' },
+  node:    { label: 'North Node', meaning: 'direction of growth' },
+};
+
+const NATAL_POINTS = ['sun','moon','mercury','saturn','chiron','asc','node'];
+const ASPECTS_TO_CHECK = [
+  {name:'conjunction',angle:0},
+  {name:'opposition',angle:180},
+  {name:'square',angle:90},
+  {name:'trine',angle:120},
+];
+const TRANSIT_ORB = 5;
+
+function jdToDateStr(j) {
+  const d = new Date((j - 2440587.5) * 86400000);
+  return d.toISOString().split('T')[0];
+}
+
+function aspectDiff(tLon, nLon, aspAngle) {
+  let d = md(tLon - nLon);
+  if (d > 180) d = 360 - d;
+  return Math.abs(d - aspAngle);
+}
+
+function findTransitPasses(planet, natalLon, aspAngle, orb, startJD, endJD) {
+  const step = 3;
+  const passes = [];
+  let inOrb = false, passStart = null, bestJD = null, bestDiff = 999;
+
+  for (let j = startJD; j <= endJD; j += step) {
+    const T = (j - 2451545) / 36525;
+    const tLon = calcGeoLon(planet, T);
+    const diff = aspectDiff(tLon, natalLon, aspAngle);
+
+    if (diff <= orb) {
+      if (!inOrb) { inOrb = true; passStart = j; bestDiff = diff; bestJD = j; }
+      if (diff < bestDiff) { bestDiff = diff; bestJD = j; }
+    } else if (inOrb) {
+      // Refine exact date
+      let lo = bestJD - step * 2, hi = bestJD + step * 2;
+      for (let i = 0; i < 25; i++) {
+        const mid = (lo + hi) / 2;
+        const dMid = aspectDiff(calcGeoLon(planet, (mid - 2451545) / 36525), natalLon, aspAngle);
+        const dLo = aspectDiff(calcGeoLon(planet, (lo - 2451545) / 36525), natalLon, aspAngle);
+        if (dMid < dLo) lo = mid; else hi = mid;
+      }
+      passes.push({ start: jdToDateStr(passStart), exact: jdToDateStr((lo + hi) / 2), end: jdToDateStr(j) });
+      inOrb = false; passStart = null; bestDiff = 999; bestJD = null;
+    }
+  }
+  if (inOrb && passStart) {
+    passes.push({ start: jdToDateStr(passStart), exact: 'ongoing', end: 'ongoing' });
+  }
+  return passes;
+}
+
+function calcTransits(natalChart) {
+  const now = new Date();
+  const todayJD = jd(now.getUTCFullYear(), now.getUTCMonth() + 1, now.getUTCDate(), 0);
+  const startJD = todayJD - 180; // 6 months ago
+  const endJD = todayJD + 365 * 3; // 3 years ahead
+
+  // Build natal longitude map
+  const natalLons = {};
+  for (const key of NATAL_POINTS) {
+    const display = { sun:'Sun', moon:'Moon', mercury:'Mercury', saturn:'Saturn', chiron:'Chiron', asc:'ASC', node:'North Node' }[key];
+    if (natalChart[display]) natalLons[key] = { lon: natalChart[display].lon, label: display, sign: natalChart[display].sign, deg: natalChart[display].deg };
+  }
+
+  const activeTransits = [];
+  const upcomingTransits = [];
+
+  for (const [tPlanet, tInfo] of Object.entries(TRANSIT_PLANETS)) {
+    for (const [nKey, nInfo] of Object.entries(natalLons)) {
+      for (const asp of ASPECTS_TO_CHECK) {
+        const passes = findTransitPasses(tPlanet, nInfo.lon, asp.angle, TRANSIT_ORB, startJD, endJD);
+        if (!passes.length) continue;
+
+        for (const pass of passes) {
+          const transit = {
+            transiting: tInfo.label,
+            transitingMeaning: tInfo.meaning,
+            aspect: asp.name,
+            natal: nInfo.label,
+            natalSign: nInfo.sign,
+            natalDeg: nInfo.deg,
+            start: pass.start,
+            exact: pass.exact,
+            end: pass.end,
+          };
+
+          const passEndDate = pass.end === 'ongoing' ? new Date(9999,0,1) : new Date(pass.end);
+          const passStartDate = new Date(pass.start);
+          const today = new Date();
+
+          if (passStartDate <= today && passEndDate >= today) {
+            activeTransits.push(transit);
+          } else if (passStartDate > today) {
+            upcomingTransits.push(transit);
+          }
+        }
+      }
+    }
+  }
+
+  // Sort upcoming by start date, take next 3
+  upcomingTransits.sort((a, b) => new Date(a.start) - new Date(b.start));
+
+  return {
+    active: activeTransits,
+    upcoming: upcomingTransits.slice(0, 3),
+    today: now.toISOString().split('T')[0],
+  };
+}
+
+function formatTransitsForPrompt(transits) {
+  const lines = [`Today's date: ${transits.today}`, ''];
+
+  if (transits.active.length > 0) {
+    lines.push('CURRENTLY ACTIVE TRANSITS (within 5° orb now):');
+    for (const t of transits.active) {
+      const exact = t.exact === 'ongoing' ? 'exact now/recently' : `exact ${t.exact}`;
+      const end = t.end === 'ongoing' ? 'ongoing' : `ends approx ${t.end}`;
+      lines.push(`• ${t.transiting} (${t.transitingMeaning}) ${t.aspect} natal ${t.natal} (${t.natalSign} ${t.natalDeg}°) — ${exact}, ${end}`);
+    }
+    lines.push('');
+  }
+
+  if (transits.upcoming.length > 0) {
+    lines.push('NEXT MAJOR TRANSITS APPROACHING:');
+    for (const t of transits.upcoming) {
+      lines.push(`• ${t.transiting} ${t.aspect} natal ${t.natal} — begins ${t.start}, exact ${t.exact}`);
+    }
+  }
+
+  return lines.join('\n');
+}
+
 const SYS = `You are delivering a natal chart reading through the Performance Trap Framework — Chad Herst's original system for reading how a person learned that love had to be earned, and what architecture they built to manage that.
 
 THE FRAMEWORK LOGIC:
@@ -406,7 +549,7 @@ READING RULES:
 - About 900 words total. Warm, specific, earned — like a wise friend who has studied this deeply.
 
 RESPOND WITH ONLY VALID JSON, nothing before or after:
-{"headline":"One sentence capturing the specific architecture of this person's performance trap — what they learned to do, and what it cost","sections":[{"title":"What was there before the trap","content":"2-3 paragraphs on the Moon — the original signal, its specific quality, where it was most active, what it reached for before any adaptation"},{"title":"How the override got installed","content":"2-3 paragraphs on Saturn — the enforcer's specific demand, what voice got internalized, what it told the body to mute and why"},{"title":"The double bind","content":"1-2 paragraphs on Mercury — the two channels this person learned to run simultaneously, what got spoken and what stayed hidden"},{"title":"The performing self","content":"2-3 paragraphs on the ASC and Sun — the face built to manage the room, what was offered to earn connection, what that performance genuinely costs"},{"title":"Where the wound lives","content":"2-3 paragraphs on Chiron — the somatic shape of the wound, the specific ache, and the gift that came through the same place"},{"title":"The third option","content":"2-3 paragraphs on Venus, the 5th house, and the 7th house — what genuine connection looks like for this chart when the override is quiet, what the body actually reaches for"}],"closing":"One concrete specific image of the third option as one real moment in this person's body — not a principle, not an insight, one moment"}`;
+{"headline":"One sentence capturing the specific architecture of this person's performance trap — what they learned to do, and what it cost","transits":{"overview":"2-3 sentences on what the current transit weather means for this person's evolution from trap to wound — not prediction, but where the override is under pressure right now and how the trap is being asked to evolve","active":[{"planet":"transiting planet name","aspect":"the aspect","natal":"natal point being hit","interpretation":"2-3 sentences: what this specific transit is pressing on in this person's override structure, how it's asking the trap to evolve, what dates matter and why — written in the framework's language"}],"upcoming":[{"planet":"next transiting planet","natal":"natal point","date":"when it begins","interpretation":"1-2 sentences on what's approaching and why it matters for this chart"}]},"sections":[{"title":"What was there before the trap","sections":[{"title":"What was there before the trap","content":"2-3 paragraphs on the Moon — the original signal, its specific quality, where it was most active, what it reached for before any adaptation"},{"title":"How the override got installed","content":"2-3 paragraphs on Saturn — the enforcer's specific demand, what voice got internalized, what it told the body to mute and why"},{"title":"The double bind","content":"1-2 paragraphs on Mercury — the two channels this person learned to run simultaneously, what got spoken and what stayed hidden"},{"title":"The performing self","content":"2-3 paragraphs on the ASC and Sun — the face built to manage the room, what was offered to earn connection, what that performance genuinely costs"},{"title":"Where the wound lives","content":"2-3 paragraphs on Chiron — the somatic shape of the wound, the specific ache, and the gift that came through the same place"},{"title":"The third option","content":"2-3 paragraphs on Venus, the 5th house, and the 7th house — what genuine connection looks like for this chart when the override is quiet, what the body actually reaches for"}],"closing":"One concrete specific image of the third option as one real moment in this person's body — not a principle, not an insight, one moment"}`;
 
 const server = http.createServer(async (req, res) => {
   cors(res);
@@ -427,9 +570,12 @@ const server = http.createServer(async (req, res) => {
         const lat = parseFloat(geoData[0].lat), lon = parseFloat(geoData[0].lon);
         const chart = buildChart(date, time, parseFloat(tz), lat, lon);
         const text = chartToText(chart, name);
+        const transits = calcTransits(chart);
+        const transitText = formatTransitsForPrompt(transits);
         console.log('Chart for', name, ':\n' + text);
+        console.log('Transits:\n' + transitText);
         const [reading] = await Promise.all([
-          callAnthropic(SYS, `Read this chart for ${name}:\n\n${text}`),
+          callAnthropic(SYS, `Read this chart for ${name}:\n\n${text}\n\nTRANSIT CONTEXT:\n${transitText}`),
           addToMailchimp(email, name)
         ]);
         res.writeHead(200); res.end(JSON.stringify({ lat, lon, reading, chart }));
