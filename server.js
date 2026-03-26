@@ -591,9 +591,9 @@ const server = http.createServer(async (req, res) => {
 
         const ttsBody = JSON.stringify({
           model: 'tts-1',
-          voice: 'alloy',
+          voice: 'echo',
           input: text.substring(0, 4096),
-          speed: 0.92
+          speed: 1.25
         });
 
         const ttsReq = https.request({
