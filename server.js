@@ -325,7 +325,7 @@ function addToMailchimp(email, firstName) {
 }
 
 // ── ANTHROPIC ──────────────────────────────────────────────────
-function callAnthropic(system, userMsg) {
+function callAnthropicOnce(system, userMsg) {
   const body = JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 4096, system, messages: [{ role: 'user', content: userMsg }] });
   return new Promise((resolve, reject) => {
     const req = https.request({
@@ -336,7 +336,12 @@ function callAnthropic(system, userMsg) {
       res.on('end', () => {
         try {
           const a = JSON.parse(d);
-          if (a.error) throw new Error(a.error.message);
+          if (a.error) {
+            const err = new Error(a.error.message);
+            err.status = res.statusCode;
+            err.type = a.error.type;
+            throw err;
+          }
           const raw = a.content?.[0]?.text || '';
           let reading; try { reading = JSON.parse(raw); } catch { reading = JSON.parse(raw.replace(/```json|```/g, '').trim()); }
           resolve(reading);
@@ -345,6 +350,23 @@ function callAnthropic(system, userMsg) {
     });
     req.on('error', reject); req.write(body); req.end();
   });
+}
+
+async function callAnthropic(system, userMsg, retries = 3) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      return await callAnthropicOnce(system, userMsg);
+    } catch(e) {
+      const isOverloaded = e.message && (e.message.includes('Overloaded') || e.message.includes('overloaded') || e.message.includes('529') || e.status === 529 || e.status === 503);
+      if (isOverloaded && attempt < retries) {
+        const wait = attempt * 8000; // 8s, 16s between retries
+        console.log(`Anthropic overloaded, retry ${attempt}/${retries} in ${wait/1000}s...`);
+        await new Promise(r => setTimeout(r, wait));
+        continue;
+      }
+      throw e;
+    }
+  }
 }
 
 function fetchJSON(url, headers = {}) {
