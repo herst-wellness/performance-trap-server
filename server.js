@@ -565,7 +565,26 @@ SEVEN: One concrete step that honors their reality instead of erasing it. Specif
 THIS CHART USES WHOLE SIGN HOUSES. ASC sign = House 1.
 
 RESPOND WITH ONLY VALID JSON, nothing before or after:
-{"headline":"One sentence. The central relational thing — what they learned to do to belong, and what it cost. No hedging. No comfort.","sections":[{"title":"The Original Signal","content":"2-3 paragraphs. Moon. The body in relationship before adaptation. State what it wanted. State what happened to that wanting."},{"title":"The Map of Belonging","content":"2-3 paragraphs. Saturn and 4th house. The specific conditions. What the environment communicated. Say it plainly."},{"title":"The Double Bind","content":"2 paragraphs. Mercury. The two channels. How trust in their own perception got trained away. State the cost and stop."},{"title":"The Override","content":"2 paragraphs. Saturn-Mars and 6th house. How the body got silenced. What it cost. Do not turn the cost into a lesson."},{"title":"The Sacred Wound","content":"3 paragraphs. Chiron. The ache. The protectors. The paradox — gifts and wound as the same place. Hold both without resolving the tension."},{"title":"The Performance Disguise","content":"2-3 paragraphs. ASC, Sun, South Node. The face. The offer. The pattern. Name what it costs without consoling them for it."},{"title":"The Way Out","content":"Follow the seven-step sequence exactly. About 250 words. Specific to their North Node. Do not wrap it up. Do not make it inspiring."}],"closing":"One moment. In relationship. The third option happening. Concrete. Do not make it redemptive. Just make it real.","transits":{"synthesis":"Open by naming each planet and its exact house number: Saturn in your Xth house, Pluto in your Xth, Neptune in your Xth, Uranus in your Xth. Then 4-5 sentences on what this collective weather means for this specific person's trap and evolution. Find the thread connecting all four. Use the framework language. Short sentences. Do not make it hopeful. Make it honest."}}`;
+{"headline":"One sentence. The central relational thing — what they learned to do to belong, and what it cost. No hedging. No comfort.",
+"performance_archetype":{
+  "name":"The [Archetype Name] — 2-3 words. The specific role this person plays to earn connection, derived from their ASC, Sun, and South Node. Be specific to this chart. Examples: The Translator, The Steady One, The Fixer, The Keeper, The Caretaker, The Peacemaker, The Sage, The Bridge, The Architect.",
+  "description":"2-3 sentences in Chad Herst voice. What this archetype does in relationship. How it earns connection. What it costs. Direct. No comfort. Example: You turned your depth into something others could use. The room became safer because you knew how to make the hard thing digestible. That skill is real. It is also the thing that has been eating you."
+},
+"sections":[
+  {"title":"The Original Signal","content":"2-3 paragraphs. Moon. The body in relationship before adaptation. State what it wanted. State what happened to that wanting."},
+  {"title":"The Map of Belonging","content":"2-3 paragraphs. Saturn and 4th house. The specific conditions. What the environment communicated. Say it plainly."},
+  {"title":"The Double Bind","content":"2 paragraphs. Mercury. The two channels. How trust in their own perception got trained away. State the cost and stop."},
+  {"title":"The Override","content":"2 paragraphs. Saturn-Mars and 6th house. How the body got silenced. What it cost. Do not turn the cost into a lesson."},
+  {"title":"The Sacred Wound","content":"3 paragraphs. Chiron. The ache. The protectors. The paradox — gifts and wound as the same place. Hold both without resolving the tension."},
+  {"title":"The Performance Disguise","content":"2-3 paragraphs. ASC, Sun, South Node. The face. The offer. The pattern. Name what it costs without consoling them for it."},
+  {"title":"The Way Out","content":"Follow the seven-step sequence exactly. About 250 words. Specific to their North Node. Do not wrap it up. Do not make it inspiring."}
+],
+"closing":"One moment. In relationship. The third option happening. Concrete. Do not make it redemptive. Just make it real.",
+"medicine_archetype":{
+  "name":"The [Archetype Name] — 2-3 words. The quality that becomes available when the trap loosens. Derived from their North Node sign and house. Examples: The Truth-Teller, The Disruptor, The Pilgrim, The Witness, The Return, The Unfolding, The Alive One, The One Who Stays. Be specific to this North Node.",
+  "description":"2-3 sentences in Chad Herst voice. What this archetype makes possible. What becomes available when the person stops signing the old contract. Not a destination — a quality available right now. Specific to this chart."
+},
+"transits":{"synthesis":"Open by naming each planet and its exact house number: Saturn in your Xth house, Pluto in your Xth, Neptune in your Xth, Uranus in your Xth. Then 4-5 sentences on what this collective weather means for this specific person trap and evolution. Find the thread connecting all four. Framework language. Short sentences. Honest not hopeful."}}`;
 
 const server = http.createServer(async (req, res) => {
   cors(res);
