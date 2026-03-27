@@ -733,6 +733,7 @@ ${JSON.stringify(reading, null, 2)}`;
           messages: [{ role: 'user', content: userMsg }]
         });
 
+        console.log('Expand: calling Haiku for', name);
         const apiReq = https.request({
           hostname: 'api.anthropic.com',
           path: '/v1/messages',
@@ -748,20 +749,28 @@ ${JSON.stringify(reading, null, 2)}`;
           apiRes.on('data', c => d += c);
           apiRes.on('end', () => {
             try {
+              console.log('Expand: Haiku response status', apiRes.statusCode, 'length', d.length);
               const a = JSON.parse(d);
-              if (a.error) throw new Error(a.error.message);
+              if (a.error) throw new Error('Haiku error: ' + a.error.type + ' - ' + a.error.message);
               const raw = a.content?.[0]?.text || '';
+              console.log('Expand: raw length', raw.length, 'preview:', raw.substring(0, 100));
               let expanded;
               try { expanded = JSON.parse(raw); }
               catch { expanded = JSON.parse(raw.replace(/```json|```/g, '').trim()); }
               res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
               res.end(JSON.stringify({ expanded }));
+              console.log('Expand: success for', name);
             } catch(e) {
+              console.error('Expand error:', e.message);
+              console.error('Raw response:', d.substring(0, 300));
               res.writeHead(500); res.end(JSON.stringify({ error: e.message }));
             }
           });
         });
-        apiReq.on('error', e => { res.writeHead(500); res.end(JSON.stringify({ error: e.message })); });
+        apiReq.on('error', e => {
+          console.error('Expand request error:', e.message);
+          res.writeHead(500); res.end(JSON.stringify({ error: e.message }));
+        });
         apiReq.write(reqBody);
         apiReq.end();
       } catch(e) {
