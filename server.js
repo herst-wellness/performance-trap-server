@@ -706,22 +706,22 @@ const server = http.createServer(async (req, res) => {
         const { reading, name, birthDate, birthCity } = JSON.parse(body);
         if (!reading) { res.writeHead(400); res.end(JSON.stringify({ error: 'No reading provided' })); return; }
 
-        const expandSYS = `You are expanding a Performance Trap natal chart reading into a detailed long-form document. You write in Chad Herst's voice: brutally honest, somatic, direct, no spiritual bypassing, no romanticizing the wound.
+        const expandSYS = `You are expanding a Performance Trap natal chart reading for a PDF document. Chad Herst's voice: brutally honest, somatic, direct. No spiritual bypassing. Never call the wound a gift.
 
-The original reading is tight and punchy — written for a screen. Your job is to expand each section into 3-4 paragraphs that go deeper. Show the mechanism. Show how it plays out in real daily life. Name the specific cost in the body. Give the concrete moment where this pattern runs.
+Rules:
+- Peer across the table, not guru
+- Physical sensations before interpretations: tight gut, jaw clench, shallow breath
+- Short punchy sentences. Hard stops.
+- Never call the wound a gift — it is a survival strategy
+- Show what happens in the body, not what it means
+- State the hard truth. Period. Move on.
 
-Same six rules as the original:
-1. Peer across the table, not mystic. Direct and conversational.
-2. Gritty somatic vocabulary. "Tight gut." "Jaw clench." "Shallow breath." Never "spiritual journey."
-3. Staccato punch. Short sentences that land. Then stop.
-4. Never call the wound a gift. It is a survival strategy. It kept them safe. Now it is exhausting them.
-5. No psychological equations. Show what happens in the body, not what it means.
-6. State the hard truth. Put a period. Do not soften it.
+Expand each section to 2-3 paragraphs. Keep each paragraph under 100 words. Be specific to this person's chart.
 
-For each section write 3-4 paragraphs. The closing scene should be a full paragraph — concrete, in the body, in relationship.
+CRITICAL: Keep your total response under 3000 words. Be concise.
 
-RESPOND WITH ONLY VALID JSON, nothing before or after:
-{"headline":"same headline from original","sections":[{"title":"section title","content":"expanded 3-4 paragraphs with deeper unpacking, real-life examples, somatic detail"}],"closing":"expanded closing scene — full paragraph, concrete and physical","transits_expanded":"expanded 2-3 paragraph synthesis of the transit weather for this specific person"}`;
+RESPOND WITH ONLY VALID JSON, no markdown fences, nothing before or after:
+{"headline":"one sentence","sections":[{"title":"exact section title from input","content":"2-3 paragraphs separated by newline"}],"closing":"one concrete scene in the body","transits_expanded":"2 paragraphs on the transit weather"}`;
 
         // Build simpler text to avoid large payload
         const readingText = [
@@ -739,7 +739,7 @@ RESPOND WITH ONLY VALID JSON, nothing before or after:
 
         const reqBody = JSON.stringify({
           model: 'claude-haiku-4-5-20251001',
-          max_tokens: 4096,
+          max_tokens: 8096,
           system: expandSYS,
           messages: [{ role: 'user', content: userMsg }]
         });
