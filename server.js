@@ -696,6 +696,81 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // ── PDF EXPANSION ────────────────────────────────────────────
+  if (req.method === 'POST' && req.url === '/expand') {
+    let body = '';
+    req.on('data', c => body += c);
+    req.on('end', async () => {
+      try {
+        const { reading, name, birthDate, birthCity } = JSON.parse(body);
+        if (!reading) { res.writeHead(400); res.end(JSON.stringify({ error: 'No reading provided' })); return; }
+
+        const expandSYS = `You are expanding a Performance Trap natal chart reading into a detailed long-form document. You write in Chad Herst's voice: brutally honest, somatic, direct, no spiritual bypassing, no romanticizing the wound.
+
+The original reading is tight and punchy — written for a screen. Your job is to expand each section into 3-4 paragraphs that go deeper. Show the mechanism. Show how it plays out in real daily life. Name the specific cost in the body. Give the concrete moment where this pattern runs.
+
+Same six rules as the original:
+1. Peer across the table, not mystic. Direct and conversational.
+2. Gritty somatic vocabulary. "Tight gut." "Jaw clench." "Shallow breath." Never "spiritual journey."
+3. Staccato punch. Short sentences that land. Then stop.
+4. Never call the wound a gift. It is a survival strategy. It kept them safe. Now it is exhausting them.
+5. No psychological equations. Show what happens in the body, not what it means.
+6. State the hard truth. Put a period. Do not soften it.
+
+For each section write 3-4 paragraphs. The closing scene should be a full paragraph — concrete, in the body, in relationship.
+
+RESPOND WITH ONLY VALID JSON, nothing before or after:
+{"headline":"same headline from original","sections":[{"title":"section title","content":"expanded 3-4 paragraphs with deeper unpacking, real-life examples, somatic detail"}],"closing":"expanded closing scene — full paragraph, concrete and physical","transits_expanded":"expanded 2-3 paragraph synthesis of the transit weather for this specific person"}`;
+
+        const userMsg = `Expand this reading for ${name} (born ${birthDate}, ${birthCity}) into a detailed long-form PDF document:
+
+${JSON.stringify(reading, null, 2)}`;
+
+        const reqBody = JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 4096,
+          system: expandSYS,
+          messages: [{ role: 'user', content: userMsg }]
+        });
+
+        const apiReq = https.request({
+          hostname: 'api.anthropic.com',
+          path: '/v1/messages',
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(reqBody),
+            'x-api-key': process.env.ANTHROPIC_API_KEY,
+            'anthropic-version': '2023-06-01'
+          }
+        }, apiRes => {
+          let d = '';
+          apiRes.on('data', c => d += c);
+          apiRes.on('end', () => {
+            try {
+              const a = JSON.parse(d);
+              if (a.error) throw new Error(a.error.message);
+              const raw = a.content?.[0]?.text || '';
+              let expanded;
+              try { expanded = JSON.parse(raw); }
+              catch { expanded = JSON.parse(raw.replace(/```json|```/g, '').trim()); }
+              res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+              res.end(JSON.stringify({ expanded }));
+            } catch(e) {
+              res.writeHead(500); res.end(JSON.stringify({ error: e.message }));
+            }
+          });
+        });
+        apiReq.on('error', e => { res.writeHead(500); res.end(JSON.stringify({ error: e.message })); });
+        apiReq.write(reqBody);
+        apiReq.end();
+      } catch(e) {
+        res.writeHead(500); res.end(JSON.stringify({ error: e.message }));
+      }
+    });
+    return;
+  }
+
   res.writeHead(404); res.end(JSON.stringify({ error: 'Not found' }));
 });
 
