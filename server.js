@@ -651,6 +651,51 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // ── FEEDBACK ─────────────────────────────────────────────────
+  if (req.method === 'POST' && req.url === '/feedback') {
+    let body = '';
+    req.on('data', c => body += c);
+    req.on('end', () => {
+      try {
+        const feedback = JSON.parse(body);
+        const entry = {
+          timestamp: new Date().toISOString(),
+          name: feedback.name || 'unknown',
+          birthDate: feedback.birthDate || '',
+          birthTime: feedback.birthTime || '',
+          birthCity: feedback.birthCity || '',
+          sections: feedback.sections || [],
+          overallNotes: feedback.overallNotes || ''
+        };
+        // Append to feedback log file
+        const fs = require('fs');
+        const logPath = '/tmp/feedback.jsonl';
+        fs.appendFileSync(logPath, JSON.stringify(entry) + '\n');
+        console.log('Feedback saved:', entry.name, entry.timestamp);
+        res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+        res.end(JSON.stringify({ ok: true }));
+      } catch(e) {
+        res.writeHead(500); res.end(JSON.stringify({ error: e.message }));
+      }
+    });
+    return;
+  }
+
+  // ── FEEDBACK LOG VIEWER ───────────────────────────────────────
+  if (req.method === 'GET' && req.url === '/feedback-log') {
+    try {
+      const fs = require('fs');
+      const logPath = '/tmp/feedback.jsonl';
+      const data = fs.existsSync(logPath) ? fs.readFileSync(logPath, 'utf8') : '';
+      const entries = data.trim().split('\n').filter(Boolean).map(l => JSON.parse(l));
+      res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+      res.end(JSON.stringify(entries, null, 2));
+    } catch(e) {
+      res.writeHead(500); res.end(JSON.stringify({ error: e.message }));
+    }
+    return;
+  }
+
   res.writeHead(404); res.end(JSON.stringify({ error: 'Not found' }));
 });
 
