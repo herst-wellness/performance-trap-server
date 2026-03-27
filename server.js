@@ -698,6 +698,7 @@ const server = http.createServer(async (req, res) => {
 
   // ── PDF EXPANSION ────────────────────────────────────────────
   if (req.method === 'POST' && req.url === '/expand') {
+    console.log('Expand endpoint hit');
     let body = '';
     req.on('data', c => body += c);
     req.on('end', async () => {
@@ -722,9 +723,19 @@ For each section write 3-4 paragraphs. The closing scene should be a full paragr
 RESPOND WITH ONLY VALID JSON, nothing before or after:
 {"headline":"same headline from original","sections":[{"title":"section title","content":"expanded 3-4 paragraphs with deeper unpacking, real-life examples, somatic detail"}],"closing":"expanded closing scene — full paragraph, concrete and physical","transits_expanded":"expanded 2-3 paragraph synthesis of the transit weather for this specific person"}`;
 
-        const userMsg = `Expand this reading for ${name} (born ${birthDate}, ${birthCity}) into a detailed long-form PDF document:
-
-${JSON.stringify(reading, null, 2)}`;
+        // Build simpler text to avoid large payload
+        const readingText = [
+          'Person: ' + name + ', born ' + birthDate + ', ' + birthCity,
+          '',
+          'Headline: ' + (reading.headline || ''),
+          '',
+        ].concat((reading.sections || []).map(s => s.title.toUpperCase() + '\n' + (s.content || ''))).concat([
+          '',
+          'Closing: ' + (reading.closing || ''),
+          '',
+          'Transits: ' + ((reading.transits && reading.transits.synthesis) || '')
+        ]).join('\n');
+        const userMsg = 'Expand this reading into a detailed long-form PDF. Same voice rules apply — direct, somatic, no spiritual bypassing, no romanticizing the wound:\n\n' + readingText;
 
         const reqBody = JSON.stringify({
           model: 'claude-haiku-4-5-20251001',
