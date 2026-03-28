@@ -414,6 +414,26 @@ function calcTransitWeather(natalChart) {
   return { weather, today, ascSignIdx };
 }
 
+function calcAspects(weather) {
+  const planets = Object.entries(weather);
+  const aspects = [];
+  const orb = 8;
+  for (let i = 0; i < planets.length; i++) {
+    for (let j = i + 1; j < planets.length; j++) {
+      const [n1, d1] = planets[i];
+      const [n2, d2] = planets[j];
+      let diff = Math.abs(d1.lon - d2.lon);
+      if (diff > 180) diff = 360 - diff;
+      if (Math.abs(diff - 0) <= orb)   aspects.push({ planets: [n1, n2], type: 'conjunction', diff });
+      if (Math.abs(diff - 60) <= orb)  aspects.push({ planets: [n1, n2], type: 'sextile', diff });
+      if (Math.abs(diff - 90) <= orb)  aspects.push({ planets: [n1, n2], type: 'square', diff });
+      if (Math.abs(diff - 120) <= orb) aspects.push({ planets: [n1, n2], type: 'trine', diff });
+      if (Math.abs(diff - 180) <= orb) aspects.push({ planets: [n1, n2], type: 'opposition', diff });
+    }
+  }
+  return aspects;
+}
+
 function formatTransitsForPrompt(transitData, natalChart) {
   const { weather, today } = transitData;
   const lines = [`TODAY: ${today}`, ''];
@@ -422,7 +442,23 @@ function formatTransitsForPrompt(transitData, natalChart) {
     lines.push(`${name}: ${data.sign} ${data.deg}° — currently in natal House ${data.house}`);
   }
   lines.push('');
-  lines.push('FOR THE transits.synthesis FIELD: Start by naming each planet and its exact house number. Then write 4-6 sentences on what this collective weather means for THIS person specifically. Find the thread connecting all four planets. Framework language. Direct voice. No generic astrology. Use ONLY the house numbers listed above — do not invent them.');
+  const aspects = calcAspects(weather);
+  if (aspects.length > 0) {
+    lines.push('');
+    lines.push('CURRENT ASPECTS BETWEEN OUTER PLANETS:');
+    const aspectDescriptions = {
+      'conjunction': 'merged — amplifying each other',
+      'sextile': 'flowing — supporting each other',
+      'square': 'in friction — creating pressure and tension',
+      'trine': 'harmonious — easing movement',
+      'opposition': 'in opposition — pulling in different directions'
+    };
+    aspects.forEach(a => {
+      lines.push(`${a.planets[0]} and ${a.planets[1]}: ${a.type} (${aspectDescriptions[a.type]})`);
+    });
+  }
+  lines.push('');
+  lines.push(`FOR THE transits.synthesis FIELD: Write ONE paragraph of 4-6 sentences in Chad Herst's voice. DO NOT name any planets, signs, or houses. DO NOT use any astrological terminology whatsoever. Translate everything into plain human experience. Describe: (1) what this person is up against right now in their life — the specific pressure or friction they are likely feeling, (2) how that pressure relates directly to the performance trap this reading just named, and (3) what their growing edge is in this moment — not as inspiration, but as honest description of what is being asked of them. Ground it in the body and in relationship. Short sentences. No comfort. No astrology.`);
   return lines.join('\n');}
 
 
@@ -586,7 +622,7 @@ RESPOND WITH ONLY VALID JSON, nothing before or after:
   {"name":"The [Archetype Name] — 2-3 words. Second possibility. Same North Node sign + house but a genuinely different angle on the medicine.","description":"2-3 sentences in Chad Herst voice. A distinct quality from option 1."},
   {"name":"The [Archetype Name] — 2-3 words. Third possibility. A third genuinely distinct expression of what this North Node makes possible.","description":"2-3 sentences in Chad Herst voice. A distinct quality from options 1 and 2."}
 ],
-"transits":{"synthesis":"Open by naming each planet and its exact house number: Saturn in your Xth house, Pluto in your Xth, Neptune in your Xth, Uranus in your Xth. Then 4-5 sentences on what this collective weather means for this specific person trap and evolution. Find the thread connecting all four. Framework language. Short sentences. Honest not hopeful."}}`;
+"transits":{"synthesis":"ONE paragraph, 4-6 sentences. NO planet names. NO sign names. NO house numbers. NO astrology terminology. Plain human language only. What is this person up against right now. How it connects to their specific trap. What their growing edge is. Chad Herst voice. Body and relationship. Short sentences. Honest not hopeful."}}`;
 
 const server = http.createServer(async (req, res) => {
   cors(res);
