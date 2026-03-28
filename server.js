@@ -566,10 +566,11 @@ THIS CHART USES WHOLE SIGN HOUSES. ASC sign = House 1.
 
 RESPOND WITH ONLY VALID JSON, nothing before or after:
 {"headline":"One sentence. The central relational thing — what they learned to do to belong, and what it cost. No hedging. No comfort.",
-"performance_archetype":{
-  "name":"The [Archetype Name] — 2-3 words. The specific role this person plays to earn connection, derived from their ASC, Sun, and South Node. Be specific to this chart. Examples: The Translator, The Steady One, The Fixer, The Keeper, The Caretaker, The Peacemaker, The Sage, The Bridge, The Architect.",
-  "description":"2-3 sentences in Chad Herst voice. What this archetype does in relationship. How it earns connection. What it costs. Direct. No comfort. Example: You turned your depth into something others could use. The room became safer because you knew how to make the hard thing digestible. That skill is real. It is also the thing that has been eating you."
-},
+"performance_archetypes":[
+  {"name":"The [Archetype Name] — 2-3 words. First possibility. Derived from ASC sign + South Node house. Be specific to this chart.","description":"2-3 sentences in Chad Herst voice. What this archetype does in relationship. How it earns connection. What it costs. Direct. No comfort."},
+  {"name":"The [Archetype Name] — 2-3 words. Second possibility. Same ASC sign + South Node house but a genuinely different angle — not a synonym of the first.","description":"2-3 sentences in Chad Herst voice. A distinct relational pattern from option 1."},
+  {"name":"The [Archetype Name] — 2-3 words. Third possibility. A third genuinely distinct angle on how this chart earns connection.","description":"2-3 sentences in Chad Herst voice. A distinct relational pattern from options 1 and 2."}
+],
 "sections":[
   {"title":"The Original Signal","content":"2-3 paragraphs. Moon. The body in relationship before adaptation. State what it wanted. State what happened to that wanting."},
   {"title":"The Map of Belonging","content":"2-3 paragraphs. Saturn and 4th house. The specific conditions. What the environment communicated. Say it plainly."},
@@ -580,10 +581,11 @@ RESPOND WITH ONLY VALID JSON, nothing before or after:
   {"title":"The Way Out","content":"Follow the seven-step sequence exactly. About 250 words. You MUST name the North Node sign and house explicitly in step SIX — the third option utterance — e.g. 'North Node in Sagittarius in the 7th house is pointing toward...' or 'Your North Node in [sign] in the [Xth] house...'. The specific archetype of the way out comes from this placement. Do not wrap it up. Do not make it inspiring."}
 ],
 "closing":"One moment. In relationship. The third option happening. Concrete. Do not make it redemptive. Just make it real.",
-"medicine_archetype":{
-  "name":"The [Archetype Name] — 2-3 words. The quality that becomes available when the trap loosens. Derived from their North Node sign and house. Examples: The Truth-Teller, The Disruptor, The Pilgrim, The Witness, The Return, The Unfolding, The Alive One, The One Who Stays. Be specific to this North Node.",
-  "description":"2-3 sentences in Chad Herst voice. What this archetype makes possible. What becomes available when the person stops signing the old contract. Not a destination — a quality available right now. Specific to this chart."
-},
+"medicine_archetypes":[
+  {"name":"The [Archetype Name] — 2-3 words. First possibility. Derived from North Node sign + North Node house. Specific to this placement.","description":"2-3 sentences in Chad Herst voice. What becomes available when the trap loosens. Not a destination — a quality available right now."},
+  {"name":"The [Archetype Name] — 2-3 words. Second possibility. Same North Node sign + house but a genuinely different angle on the medicine.","description":"2-3 sentences in Chad Herst voice. A distinct quality from option 1."},
+  {"name":"The [Archetype Name] — 2-3 words. Third possibility. A third genuinely distinct expression of what this North Node makes possible.","description":"2-3 sentences in Chad Herst voice. A distinct quality from options 1 and 2."}
+],
 "transits":{"synthesis":"Open by naming each planet and its exact house number: Saturn in your Xth house, Pluto in your Xth, Neptune in your Xth, Uranus in your Xth. Then 4-5 sentences on what this collective weather means for this specific person trap and evolution. Find the thread connecting all four. Framework language. Short sentences. Honest not hopeful."}}`;
 
 const server = http.createServer(async (req, res) => {
