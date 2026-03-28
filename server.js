@@ -577,7 +577,7 @@ RESPOND WITH ONLY VALID JSON, nothing before or after:
   {"title":"The Override","content":"2 paragraphs. Saturn-Mars and 6th house. How the body got silenced. What it cost. Do not turn the cost into a lesson."},
   {"title":"The Sacred Wound","content":"3 paragraphs. Chiron. The ache. The protectors. The paradox — gifts and wound as the same place. Hold both without resolving the tension."},
   {"title":"The Performance Disguise","content":"2-3 paragraphs. ASC, Sun, South Node. The face. The offer. The pattern. Name what it costs without consoling them for it."},
-  {"title":"The Way Out","content":"Follow the seven-step sequence exactly. About 250 words. Specific to their North Node. Do not wrap it up. Do not make it inspiring."}
+  {"title":"The Way Out","content":"Follow the seven-step sequence exactly. About 250 words. You MUST name the North Node sign and house explicitly in step SIX — the third option utterance — e.g. 'North Node in Sagittarius in the 7th house is pointing toward...' or 'Your North Node in [sign] in the [Xth] house...'. The specific archetype of the way out comes from this placement. Do not wrap it up. Do not make it inspiring."}
 ],
 "closing":"One moment. In relationship. The third option happening. Concrete. Do not make it redemptive. Just make it real.",
 "medicine_archetype":{
