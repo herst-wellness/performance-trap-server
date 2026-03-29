@@ -624,6 +624,178 @@ RESPOND WITH ONLY VALID JSON, nothing before or after:
 ],
 "transits":{"synthesis":"ONE paragraph, 4-6 sentences. NO planet names. NO sign names. NO house numbers. NO astrology terminology. Plain human language only. What is this person up against right now. How it connects to their specific trap. What their growing edge is. Chad Herst voice. Body and relationship. Short sentences. Honest not hopeful."}}`;
 
+
+// ── RESEND EMAIL SEQUENCE ─────────────────────────────────────
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const FROM_EMAIL = 'Chad Herst <chad@herstwellness.com>';
+
+function sendResendEmail(to, subject, html) {
+  return new Promise((resolve, reject) => {
+    const body = JSON.stringify({
+      from: FROM_EMAIL,
+      to: [to],
+      subject: subject,
+      html: html
+    });
+    const req = https.request({
+      hostname: 'api.resend.com',
+      path: '/emails',
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + RESEND_API_KEY,
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(body)
+      }
+    }, res => {
+      let d = '';
+      res.on('data', c => d += c);
+      res.on('end', () => {
+        console.log('Resend response:', res.statusCode, d.substring(0, 100));
+        resolve({ ok: res.statusCode < 300 });
+      });
+    });
+    req.on('error', e => { console.error('Resend error:', e.message); reject(e); });
+    req.write(body);
+    req.end();
+  });
+}
+
+function textToHtml(text) {
+  return '<div style="font-family:Georgia,serif;font-size:16px;line-height:1.8;color:#352515;max-width:600px;margin:0 auto;padding:40px 24px">' +
+    text.split('\n\n').map(p => '<p style="margin:0 0 20px">' + p.replace(/\n/g, '<br>') + '</p>').join('') +
+    '<hr style="border:none;border-top:1px solid #e0d5c5;margin:32px 0"><p style="font-size:13px;color:#8B6B1E">Herst Wellness · 765 Market St, San Francisco CA 94103 · <a href="https://map.herstwellness.com" style="color:#8B6B1E">map.herstwellness.com</a></p></div>';
+}
+
+const EMAIL1 = {
+  subject: 'What your reading is actually telling you',
+  text: `You just completed a reading that mapped something you've been living inside your whole life.
+
+The reading shows you a pattern. It's not new. You've been running it for decades. But seeing it named, seeing the layers stacked on top of each other — that hits different.
+
+I know because I've lived it. When my brother took his life at twenty, I was sent back to school with no space to grieve — just go, be fine, don't make it harder on your parents. So I learned the role. I became the good kid. And I've been running that role ever since.
+
+Here's what your reading is actually saying:
+
+At some point early on, you learned that just being yourself wasn't enough to stay connected. So you built a face for the room. You learned the role that would keep you safe, keep you loved, keep you belonging.
+
+That role works. It's gotten you far. But it costs something. Every time you showed up as that version of yourself instead of the real one, something inside got left behind. Overridden. Pushed down.
+
+The reading names that role — your Performance Archetype. It's not a flaw. It's brilliant adaptation. Your nervous system learned how to survive in an environment where connection had to be earned.
+
+But here's what the reading can't tell you: what happens when you finally stop performing.
+
+That's the real work. That's where things change.
+
+For now, sit with this one question:
+
+What would it feel like to just show up as you are, without needing to prove anything first?
+
+Don't answer it. Just let it live in your body for a few days.
+
+—Chad`
+};
+
+const EMAIL2 = {
+  subject: "The thing your reading couldn't say",
+  text: `I want to tell you something that most people skip over.
+
+Insight feels good. You see the pattern, you name it, you understand how you got here. For a moment, it feels like you've solved something. But then you go back to your life, and the pattern is still running.
+
+You still hold your breath before you speak.
+
+You still check the room before you let yourself need.
+
+You still swallow what's true to keep the peace.
+
+The reading showed you the trap. But understanding the trap doesn't spring it.
+
+There's something deeper underneath the performance. I call it the Sacred Wound.
+
+It's not one moment. It's thousands of moments — every time you felt something true and set it aside to stay connected. Every time you chose the relationship over your own truth. That accumulation lives in your body. As tightness. As ache. As something unfinished.
+
+The wound is sacred not because the pain is good. It's sacred because it's precise. It shows you exactly where you've been leaving yourself. And if you stay with it — not fix it, not transcend it, just stay — it becomes a doorway back to yourself.
+
+I spent years trying to meditate it away, stretch past it, yoga it into submission. Then I finally sat still long enough to feel the knot in my gut — that tight, deep thing that had been sitting there for decades — and something in me shifted. Not because it went away. Because I finally stopped running from it.
+
+But here's what stops most people: the moment you touch that wound, your nervous system panics.
+
+Because you've learned something old and deep: needing is dangerous. Showing what hurts makes you too much. So the moment the ache rises, you do what you've always done — you push it down, medicate it, achieve past it, anything but feel it.
+
+That's where the protectors come in.
+
+They're the parts of you that learned to manage, to perform, to stay busy, to stay fine. They're not the enemy. They're the reason you survived. But they're also the reason you're still running the same pattern.
+
+The work isn't about destroying the protectors. It's about finally meeting them. Sitting with them instead of being run by them. When you can do that, something underneath begins to surface.
+
+Contact.
+
+Not the performance of connection. The real thing. You with you. Finally staying long enough to hear what's been trying to reach you all along.
+
+—Chad`
+};
+
+const EMAIL3 = {
+  subject: 'If you want to take this further',
+  text: `You've had a few days to sit with what your reading showed you.
+
+You know the pattern. You've named it. You can probably feel where it lives in your body — the places you override, the moments you perform, the ways you learned not to need.
+
+But knowing isn't the same as changing.
+
+That's what I want to be clear about.
+
+A reading is a map. It shows you the architecture of how you learned to survive. But a map isn't the territory. And understanding the map doesn't rewire your nervous system.
+
+What does rewire it is contact.
+
+Someone staying with you long enough that you finally feel met. Not fixed. Not analyzed. Just met.
+
+That's what a conversation can do.
+
+In thirty minutes, we're not solving anything. We're not rewriting your whole story. We're doing something simpler and much harder: we're starting to rebuild trust between you and yourself.
+
+I'll listen for what's underneath the words you say. Not to diagnose you or add another layer of understanding. But to help you feel what's actually moving through your body when you touch what matters.
+
+And in that contact, something shifts. Not because I have answers. But because for once, you're not doing it alone.
+
+That's the work I do. That's what changes things.
+
+If you want to take this further:
+
+https://chadherst.as.me/30-minute-consult-chad-herst
+
+It's not a sales call. It's not a pitch. It's just the beginning of learning what it feels like to stop abandoning yourself.
+
+—Chad`
+};
+
+async function sendNurtureSequence(email) {
+  try {
+    // Email 1 — immediately
+    await sendResendEmail(email, EMAIL1.subject, textToHtml(EMAIL1.text));
+    console.log('Nurture Email 1 sent to', email);
+
+    // Email 2 — 2 days later
+    setTimeout(async () => {
+      try {
+        await sendResendEmail(email, EMAIL2.subject, textToHtml(EMAIL2.text));
+        console.log('Nurture Email 2 sent to', email);
+      } catch(e) { console.error('Email 2 error:', e.message); }
+    }, 2 * 24 * 60 * 60 * 1000);
+
+    // Email 3 — 5 days after Email 1
+    setTimeout(async () => {
+      try {
+        await sendResendEmail(email, EMAIL3.subject, textToHtml(EMAIL3.text));
+        console.log('Nurture Email 3 sent to', email);
+      } catch(e) { console.error('Email 3 error:', e.message); }
+    }, 5 * 24 * 60 * 60 * 1000);
+
+  } catch(e) {
+    console.error('Nurture sequence error:', e.message);
+  }
+}
+
 const server = http.createServer(async (req, res) => {
   cors(res);
   if (req.method === 'OPTIONS') { res.writeHead(200); res.end(); return; }
@@ -750,6 +922,25 @@ const server = http.createServer(async (req, res) => {
     } catch(e) {
       res.writeHead(500); res.end(JSON.stringify({ error: e.message }));
     }
+    return;
+  }
+
+  // ── OPT-IN SEQUENCE ──────────────────────────────────────────
+  if (req.method === 'POST' && req.url === '/optin') {
+    let body = '';
+    req.on('data', c => body += c);
+    req.on('end', async () => {
+      try {
+        const { email } = JSON.parse(body);
+        if (!email) { res.writeHead(400); res.end(JSON.stringify({ error: 'No email' })); return; }
+        console.log('Opt-in received for:', email);
+        sendNurtureSequence(email); // fire and forget
+        res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+        res.end(JSON.stringify({ ok: true }));
+      } catch(e) {
+        res.writeHead(500); res.end(JSON.stringify({ error: e.message }));
+      }
+    });
     return;
   }
 
