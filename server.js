@@ -1,15 +1,54 @@
 const https = require('https');
 const http = require('http');
+const fs = require('fs');
+const path = require('path');
 
 const PORT = process.env.PORT || 3000;
 const MAILCHIMP_KEY = process.env.MAILCHIMP_API_KEY;
 const MAILCHIMP_LIST_ID = process.env.MAILCHIMP_LIST_ID;
 const MAILCHIMP_SERVER = process.env.MAILCHIMP_SERVER_PREFIX || 'us6';
 
+// ── LOGO URL (served as static file from /public) ─────────────
+const BASE_URL = 'https://performance-trap-server.onrender.com';
+const LOGO_URL = BASE_URL + '/Herst-Wellness-Logo-cropped.jpg';
+
 function cors(res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   res.setHeader('Content-Type', 'application/json');
+}
+
+// ── STATIC FILE SERVING ────────────────────────────────────────
+const MIME_TYPES = {
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.svg': 'image/svg+xml',
+  '.ico': 'image/x-icon',
+  '.css': 'text/css',
+  '.js':  'text/javascript',
+};
+
+function serveStatic(req, res) {
+  const publicDir = path.join(__dirname, 'public');
+  const filePath = path.join(publicDir, req.url);
+  // Security: ensure we don't serve files outside public/
+  if (!filePath.startsWith(publicDir)) { return false; }
+  try {
+    if (!fs.existsSync(filePath) || fs.statSync(filePath).isDirectory()) { return false; }
+  } catch { return false; }
+  const ext = path.extname(filePath).toLowerCase();
+  const mime = MIME_TYPES[ext] || 'application/octet-stream';
+  const data = fs.readFileSync(filePath);
+  res.writeHead(200, {
+    'Content-Type': mime,
+    'Content-Length': data.length,
+    'Cache-Control': 'public, max-age=86400',
+    'Access-Control-Allow-Origin': '*',
+  });
+  res.end(data);
+  return true;
 }
 
 // ── VSOP87 TRUNCATED EPHEMERIS ─────────────────────────────────
@@ -61,8 +100,6 @@ function moonLon(T) {
 // Planetary heliocentric longitudes using full Keplerian + perturbations
 // Using improved orbital elements valid 1800-2050 from Meeus Table 33.a
 function planetHelio(planet, T) {
-  // L = mean longitude, a = semi-major axis, e = eccentricity
-  // i = inclination, omega = long. of ascending node, w = long. of perihelion
   const el = {
     mercury: { L: [252.250906, 149474.0722491, 0.0003035, 0.000000018],
                e: [0.20563175, 0.000020406, -0.0000000284, -0.00000000017],
@@ -144,18 +181,8 @@ function nnLon(T) {
 }
 
 // Chiron: use proper orbital elements
-// Chiron discovered 1977, orbital period 50.7 years
-// Perihelion ~1996, perihelion lon ~339°, a=13.633 AU, e=0.3787
 function chironLon(T) {
-  // Mean longitude at J2000: 95.5 degrees (Chiron was at ~4° Taurus in 2000)
-  // Mean motion: 360/50.7 years = 7.1°/year = 0.194°/day
   const jd_val = T * 36525 + 2451545;
-  // Chiron ephemeris: at J1990.0 (JD 2447892.5), Chiron was at Gemini 4° = 64°
-  // At J2000.0, Chiron was at Sagittarius 12° = 252°... 
-  // Actually Chiron's position varies dramatically due to high eccentricity
-  // Let's use proper orbital elements:
-  // a=13.633, e=0.3787, i=6.93°, omega=339.41°, Omega=209.37°
-  // T_perihelion = 1996 Feb 14 = JD 2450128
   const a = 13.633, e = 0.3787;
   const n = 360 / (50.7 * 365.25); // mean motion deg/day
   const t_peri = 2450128; // JD of perihelion
@@ -170,7 +197,6 @@ function chironLon(T) {
   const v = 2 * Math.atan2(Math.sqrt(1 + e) * Math.sin(E / 2), Math.sqrt(1 - e) * Math.cos(E / 2)) * R2D;
   const w_peri = 185.11; // calibrated perihelion longitude (ecliptic)
   const hLon = md(v + w_peri);
-  // Convert heliocentric to geocentric (approximate - Chiron is far enough that error is small)
   const earthLon = planetHelio('earth', T);
   const earthR = helioRadius('earth', T);
   const chironR = a * (1 - e * Math.cos(E));
@@ -180,7 +206,6 @@ function chironLon(T) {
 // Retrograde check (based on speed - approximate)
 function isRetrograde(planet, T, dt = 0.5) {
   if (planet === 'sun' || planet === 'moon') return false;
-  // Compare position at T-dt and T+dt
   const before = calcGeoLon(planet, T - dt/36525);
   const after = calcGeoLon(planet, T + dt/36525);
   let diff = after - before;
@@ -201,7 +226,6 @@ function calcGeoLon(planet, T) {
   return helioToGeo(hLon, pR, earthLon, earthR);
 }
 
-// Add perturbations for Jupiter and Saturn (improve accuracy significantly)
 function calcAllPlanets(T) {
   const planets = ['sun','moon','mercury','venus','mars','jupiter','saturn','uranus','neptune','pluto','node','chiron'];
   const result = {};
@@ -359,7 +383,7 @@ async function callAnthropic(system, userMsg, retries = 3) {
     } catch(e) {
       const isOverloaded = e.message && (e.message.includes('Overloaded') || e.message.includes('overloaded') || e.message.includes('529') || e.status === 529 || e.status === 503);
       if (isOverloaded && attempt < retries) {
-        const wait = attempt * 8000; // 8s, 16s between retries
+        const wait = attempt * 8000;
         console.log(`Anthropic overloaded, retry ${attempt}/${retries} in ${wait/1000}s...`);
         await new Promise(r => setTimeout(r, wait));
         continue;
@@ -380,19 +404,15 @@ function fetchJSON(url, headers = {}) {
 }
 
 // ── TRANSIT WEATHER ───────────────────────────────────────────
-// Calculate which whole sign house each slow planet currently occupies
-
 function calcTransitWeather(natalChart) {
   const now = new Date();
   const todayJD = jd(now.getUTCFullYear(), now.getUTCMonth() + 1, now.getUTCDate(), 0);
   const T = (todayJD - 2451545) / 36525;
   const today = now.toISOString().split('T')[0];
 
-  // Get ASC sign index from natal chart
   const ascLon = natalChart['ASC'] ? natalChart['ASC'].lon : 0;
   const ascSignIdx = Math.floor(ascLon / 30);
 
-  // Current positions of the four outer planets
   const planets = {
     Saturn:  calcGeoLon('saturn',  T),
     Pluto:   calcGeoLon('pluto',   T),
@@ -459,7 +479,8 @@ function formatTransitsForPrompt(transitData, natalChart) {
   }
   lines.push('');
   lines.push(`FOR THE transits.synthesis FIELD: Write ONE paragraph of 4-6 sentences in Chad Herst's voice. DO NOT name any planets, signs, or houses. DO NOT use any astrological terminology whatsoever. Translate everything into plain human experience. Describe: (1) what this person is up against right now in their life — the specific pressure or friction they are likely feeling, (2) how that pressure relates directly to the performance trap this reading just named, and (3) what their growing edge is in this moment — not as inspiration, but as honest description of what is being asked of them. Ground it in the body and in relationship. Short sentences. No comfort. No astrology.`);
-  return lines.join('\n');}
+  return lines.join('\n');
+}
 
 
 const SYS = `You are writing a natal chart reading through the Performance Trap Framework. Chad Herst's system. His voice. Not a summary of it. Not a translation of it. The thing itself.
@@ -627,63 +648,72 @@ RESPOND WITH ONLY VALID JSON, nothing before or after:
 
 // ── STYLED EMAIL TEMPLATE ────────────────────────────────────────
 function textToHtml(text) {
-  const logoBase64 = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAGQBLADASIAAhEBAxEB/8QAGwABAAIDAQEAAAAAAAAAAAAAAAUGBAcIAgP/xABLEAEAAQMDAwEFBAQHCw0AAAAAAQIDBAUGEQcSITEIExRBURUiYXUyNoGzFhcjRnGSwiU3UlZicnSCk6GyGDhDVHORlaWxtNHS0//EABgBAQEBAQEAAAAAAAAAAAAAAAABAwIE/8QAKBEBAAIBAgQGAgMAAAAAAAAAAAERAiExA0Gx8AQScZHB4TKBM2Hx/9oADAMBAAIRAxEAPwDrAB5WwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA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
-    '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';
-  
-  const styles = `
-    <style>
-      body { margin: 0; padding: 0; background: #F4EDE4; }
-      .email-container { max-width: 600px; margin: 0 auto; padding: 40px 24px; background: #F4EDE4; font-family: 'Cormorant Garamond', Georgia, serif; }
-      .header { text-align: center; border-bottom: 1px solid #8B6B1E; padding-bottom: 32px; margin-bottom: 40px; }
-      .logo-img { max-width: 300px; height: auto; margin: 0 auto; display: block; }
-      p { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 17px; line-height: 1.9; color: #352515; margin: 0 0 20px 0; }
-      a { color: #8B6B1E; text-decoration: none; }
-      a:hover { opacity: 0.8; }
-      .cta-button { display: inline-block; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 14px; letter-spacing: 0.15em; text-transform: uppercase; padding: 12px 32px; border: 1px solid #8B6B1E; color: #8B6B1E; text-decoration: none; margin: 8px 0; transition: all 0.25s ease; }
-      .cta-button:hover { background-color: #8B6B1E; color: white; }
-      .footer { text-align: center; border-top: 1px solid #E8DED3; margin-top: 40px; padding-top: 24px; }
-      .footer-logo { max-width: 100px; height: auto; margin: 0 auto 16px; display: block; }
-      .footer-text { font-size: 12px; color: #4F4130; margin: 0 0 8px 0; line-height: 1.6; font-family: 'Cormorant Garamond', Georgia, serif; }
-      .footer-text a { color: #8B6B1E; }
-    </style>
-  `;
-  
-  const header = `
-    <div class="header">
-      <img src="${logoBase64}" alt="Herst Wellness" class="logo-img">
-    </div>
-  `;
-  
-  const body = text.split('\n\n').map(p => {
+  const bodyHtml = text.split('\n\n').map(p => {
     // Check if this paragraph contains the booking URL and replace with styled button
     if (p.includes('https://chadherst.as.me/30-minute-consult-chad-herst')) {
-      return '<p style="text-align: center;"><a href="https://chadherst.as.me/30-minute-consult-chad-herst" class="cta-button">Book a 30-minute conversation</a></p>';
+      return `<tr><td align="center" style="padding:24px 0;">
+        <a href="https://chadherst.as.me/30-minute-consult-chad-herst" style="display:inline-block; font-family:'Cormorant Garamond',Georgia,serif; font-size:14px; letter-spacing:0.15em; text-transform:uppercase; padding:14px 36px; border:1px solid #8B6B1E; color:#8B6B1E; text-decoration:none;">Book a 30-minute conversation</a>
+      </td></tr>`;
     }
-    return '<p>' + p.replace(/\n/g, '<br>') + '</p>';
-  }).join('');
-  
-  const footer = `
-    <div class="footer">
-      <img src="${logoBase64}" alt="Herst Wellness" class="footer-logo">
-      <p class="footer-text">765 Market St, San Francisco, CA 94103<br>(415) 686-4411 · <a href="mailto:chad@herstwellness.com">chad@herstwellness.com</a></p>
-      <p class="footer-text"><a href="https://map.herstwellness.com">map.herstwellness.com</a></p>
-    </div>
-  `;
-  
+    return `<tr><td style="padding:0 0 20px 0; font-family:'Cormorant Garamond',Georgia,serif; font-size:17px; line-height:1.9; color:#352515;">` +
+      p.replace(/\n/g, '<br>') + `</td></tr>`;
+  }).join('\n');
+
   return `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
-  ${styles}
+  <!--[if mso]>
+  <style>* { font-family: Georgia, serif !important; }</style>
+  <![endif]-->
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap');
+  </style>
 </head>
-<body>
-  <div class="email-container">
-    ${header}
-    ${body}
-    ${footer}
-  </div>
+<body style="margin:0; padding:0; background-color:#F4EDE4;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#F4EDE4;">
+    <tr>
+      <td align="center" style="padding:40px 20px;">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px; width:100%;">
+
+          <!-- HEADER / LOGO -->
+          <tr>
+            <td align="center" style="padding:0 0 32px 0; border-bottom:1px solid #8B6B1E;">
+              <img src="${LOGO_URL}" alt="Herst Wellness" width="600" style="display:block; margin:0 auto; width:100%; max-width:600px; height:auto;" />
+            </td>
+          </tr>
+
+          <!-- SPACER -->
+          <tr><td style="padding:20px 0 0 0;">&nbsp;</td></tr>
+
+          <!-- BODY CONTENT -->
+          <tr>
+            <td>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                ${bodyHtml}
+              </table>
+            </td>
+          </tr>
+
+          <!-- FOOTER -->
+          <tr>
+            <td align="center" style="padding:40px 0 20px 0; border-top:1px solid #E8DED3;">
+              <img src="${LOGO_URL}" alt="Herst Wellness" width="200" style="display:block; margin:0 auto 16px auto; max-width:200px; height:auto;" />
+              <p style="font-family:'Cormorant Garamond',Georgia,serif; font-size:12px; color:#4F4130; margin:0 0 8px 0; line-height:1.6;">
+                765 Market St, San Francisco, CA 94103<br>
+                (415) 686-4411 &middot; <a href="mailto:chad@herstwellness.com" style="color:#8B6B1E; text-decoration:none;">chad@herstwellness.com</a>
+              </p>
+              <p style="font-family:'Cormorant Garamond',Georgia,serif; font-size:12px; color:#4F4130; margin:0;">
+                <a href="https://map.herstwellness.com" style="color:#8B6B1E; text-decoration:none;">map.herstwellness.com</a>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
 </body>
 </html>`;
 }
@@ -854,6 +884,9 @@ async function sendNurtureSequence(email) {
 }
 
 const server = http.createServer(async (req, res) => {
+  // ── STATIC FILES (logo, etc.) ────────────────────────────────
+  if (req.method === 'GET' && serveStatic(req, res)) { return; }
+
   cors(res);
   if (req.method === 'OPTIONS') { res.writeHead(200); res.end(); return; }
 
@@ -953,8 +986,6 @@ const server = http.createServer(async (req, res) => {
           sections: feedback.sections || [],
           overallNotes: feedback.overallNotes || ''
         };
-        // Append to feedback log file
-        const fs = require('fs');
         const logPath = '/tmp/feedback.jsonl';
         fs.appendFileSync(logPath, JSON.stringify(entry) + '\n');
         console.log('Feedback saved:', entry.name, entry.timestamp);
@@ -970,7 +1001,6 @@ const server = http.createServer(async (req, res) => {
   // ── FEEDBACK LOG VIEWER ───────────────────────────────────────
   if (req.method === 'GET' && req.url === '/feedback-log') {
     try {
-      const fs = require('fs');
       const logPath = '/tmp/feedback.jsonl';
       const data = fs.existsSync(logPath) ? fs.readFileSync(logPath, 'utf8') : '';
       const entries = data.trim().split('\n').filter(Boolean).map(l => JSON.parse(l));
@@ -1028,7 +1058,6 @@ CRITICAL: Keep your total response under 3000 words. Be concise.
 RESPOND WITH ONLY VALID JSON, no markdown fences, nothing before or after:
 {"headline":"one sentence","sections":[{"title":"exact section title from input","content":"2-3 paragraphs separated by newline"}],"closing":"one concrete scene in the body","transits_expanded":"2 paragraphs on the transit weather"}`;
 
-        // Build simpler text to avoid large payload
         const readingText = [
           'Person: ' + name + ', born ' + birthDate + ', ' + birthCity,
           '',
