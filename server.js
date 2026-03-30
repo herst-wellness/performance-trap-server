@@ -625,6 +625,62 @@ RESPOND WITH ONLY VALID JSON, nothing before or after:
 "transits":{"synthesis":"ONE paragraph, 4-6 sentences. NO planet names. NO sign names. NO house numbers. NO astrology terminology. Plain human language only. What is this person up against right now. How it connects to their specific trap. What their growing edge is. Chad Herst voice. Body and relationship. Short sentences. Honest not hopeful."}}`;
 
 
+// ── STYLED EMAIL TEMPLATE ────────────────────────────────────────
+function textToHtml(text) {
+  const styles = `
+    <style>
+      body { margin: 0; padding: 0; background: #F4EDE4; }
+      .email-container { max-width: 600px; margin: 0 auto; padding: 40px 24px; background: #F4EDE4; font-family: 'Cormorant Garamond', Georgia, serif; }
+      .header { text-align: center; border-bottom: 1px solid #8B6B1E; padding-bottom: 24px; margin-bottom: 32px; }
+      .logo { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 700; color: #1C1209; letter-spacing: -0.5px; margin: 0; }
+      p { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 17px; line-height: 1.9; color: #352515; margin: 0 0 20px 0; }
+      a { color: #8B6B1E; text-decoration: none; }
+      a:hover { opacity: 0.8; }
+      .cta-button { display: inline-block; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 14px; letter-spacing: 0.15em; text-transform: uppercase; padding: 12px 32px; border: 1px solid #8B6B1E; color: #8B6B1E; text-decoration: none; margin: 8px 0; transition: all 0.25s ease; }
+      .cta-button:hover { background-color: #8B6B1E; color: white; }
+      .footer { text-align: center; border-top: 1px solid #E8DED3; margin-top: 40px; padding-top: 24px; }
+      .footer-text { font-size: 13px; color: #4F4130; margin: 0; line-height: 1.6; }
+    </style>
+  `;
+  
+  const header = `
+    <div class="header">
+      <h1 class="logo">Herst Wellness</h1>
+    </div>
+  `;
+  
+  const body = text.split('\n\n').map(p => {
+    // Check if this paragraph contains the booking URL and replace with styled button
+    if (p.includes('https://chadherst.as.me/30-minute-consult-chad-herst')) {
+      return '<p><a href="https://chadherst.as.me/30-minute-consult-chad-herst" class="cta-button">Book a 30-minute conversation</a></p>';
+    }
+    return '<p>' + p.replace(/\n/g, '<br>') + '</p>';
+  }).join('');
+  
+  const footer = `
+    <div class="footer">
+      <p class="footer-text">Herst Wellness · 765 Market St, San Francisco CA 94103<br><a href="https://map.herstwellness.com">map.herstwellness.com</a></p>
+    </div>
+  `;
+  
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+  ${styles}
+</head>
+<body>
+  <div class="email-container">
+    ${header}
+    ${body}
+    ${footer}
+  </div>
+</body>
+</html>`;
+}
+
 // ── RESEND EMAIL SEQUENCE ─────────────────────────────────────
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const FROM_EMAIL = 'Chad Herst <chad@herstwellness.com>';
@@ -658,12 +714,6 @@ function sendResendEmail(to, subject, html) {
     req.write(body);
     req.end();
   });
-}
-
-function textToHtml(text) {
-  return '<div style="font-family:Georgia,serif;font-size:16px;line-height:1.8;color:#352515;max-width:600px;margin:0 auto;padding:40px 24px">' +
-    text.split('\n\n').map(p => '<p style="margin:0 0 20px">' + p.replace(/\n/g, '<br>') + '</p>').join('') +
-    '<hr style="border:none;border-top:1px solid #e0d5c5;margin:32px 0"><p style="font-size:13px;color:#8B6B1E">Herst Wellness · 765 Market St, San Francisco CA 94103 · <a href="https://map.herstwellness.com" style="color:#8B6B1E">map.herstwellness.com</a></p></div>';
 }
 
 const EMAIL1 = {
