@@ -350,7 +350,7 @@ function addToMailchimp(email, firstName) {
 
 // ── ANTHROPIC ──────────────────────────────────────────────────
 function callAnthropicOnce(system, userMsg) {
-  const body = JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 4096, system, messages: [{ role: 'user', content: userMsg }] });
+  const body = JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 8192, system, messages: [{ role: 'user', content: userMsg }] });
   return new Promise((resolve, reject) => {
     const req = https.request({
       hostname: 'api.anthropic.com', path: '/v1/messages', method: 'POST',
@@ -367,7 +367,22 @@ function callAnthropicOnce(system, userMsg) {
             throw err;
           }
           const raw = a.content?.[0]?.text || '';
-          let reading; try { reading = JSON.parse(raw); } catch { reading = JSON.parse(raw.replace(/```json|```/g, '').trim()); }
+          let reading;
+          try {
+            // Try direct parse first
+            reading = JSON.parse(raw);
+          } catch {
+            // Strip markdown fences, trailing text, etc.
+            let cleaned = raw.replace(/```json|```/g, '').trim();
+            // Find the outermost JSON object
+            const firstBrace = cleaned.indexOf('{');
+            const lastBrace = cleaned.lastIndexOf('}');
+            if (firstBrace !== -1 && lastBrace !== -1) {
+              cleaned = cleaned.substring(firstBrace, lastBrace + 1);
+            }
+            reading = JSON.parse(cleaned);
+          }
+          console.log('Reading parsed successfully, trap_name:', reading.trap_name || reading.headline || 'unknown');
           resolve(reading);
         } catch(e) { reject(e); }
       });
