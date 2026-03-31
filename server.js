@@ -350,7 +350,7 @@ function addToMailchimp(email, firstName) {
 
 // ── ANTHROPIC ──────────────────────────────────────────────────
 function callAnthropicOnce(system, userMsg) {
-  const body = JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 16384, system, messages: [{ role: 'user', content: userMsg }] });
+  const body = JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 10000, system, messages: [{ role: 'user', content: userMsg }] });
   return new Promise((resolve, reject) => {
     const req = https.request({
       hostname: 'api.anthropic.com', path: '/v1/messages', method: 'POST',
