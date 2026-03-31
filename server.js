@@ -350,7 +350,7 @@ function addToMailchimp(email, firstName) {
 
 // ── ANTHROPIC ──────────────────────────────────────────────────
 function callAnthropicOnce(system, userMsg) {
-  const body = JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 8192, system, messages: [{ role: 'user', content: userMsg }] });
+  const body = JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 16384, system, messages: [{ role: 'user', content: userMsg }] });
   return new Promise((resolve, reject) => {
     const req = https.request({
       hostname: 'api.anthropic.com', path: '/v1/messages', method: 'POST',
@@ -584,6 +584,8 @@ A trauma response is not a gift. Hypervigilance is not a gift. A survival strate
 It kept them safe. Now it costs them. Say that. Stop there.
 
 About 1200 words total. Short paragraphs. White space. Hard stops.
+
+CRITICAL — BUDGET YOUR WORDS: Each section in the trap (Essence through Override) should be 80-120 words MAX. The sacred wound gets 120-150 words. Each way_home section gets 80-120 words. The closing gets 40-60 words. You MUST include ALL fields in the JSON: trap_name, trap_description, sections (5), sacred_wound, way_home (3 items with utterance on the last), closing, and transits. If you run out of space, shorten the earlier sections. The way_home and closing are NOT optional.
 
 THIS CHART USES WHOLE SIGN HOUSES. ASC sign = House 1.
 
