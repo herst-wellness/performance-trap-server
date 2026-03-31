@@ -506,144 +506,142 @@ Build context in short sentences. Then drop a hammer in three to five words. Sto
 RULE 4 — NO ROMANTICIZING THE WOUND:
 Never call their trauma a gift. Never call their survival strategy a beautiful paradox.
 It is a survival strategy. It kept them safe. Now it is exhausting them. That is all.
-Wrong: "The wound is also the gift. Your ability to hold space for rage..."
-Right: "That survival strategy kept you alive. It is also why you're exhausted. Those are both true. Neither one is poetic."
 Delete any sentence that makes the pain sound meaningful or purposeful. State it and stop.
 
-RULE 4 — NO PSYCHOLOGICAL EQUATIONS:
-"You fight for everyone else's right to be angry while your own stays buried" is a clean psychological equation. It packages raw material into a lesson.
-Instead: describe what actually happens in the moment.
+RULE 5 — NO PSYCHOLOGICAL EQUATIONS:
+Describe what actually happens in the moment, not clean psychological formulations.
 Wrong: "You turn your rage into wisdom."
 Right: "Someone else gets to lose their shit in the room. You take notes. You write the workshop about it later."
 
-RULE 5 — STATE THE TRUTH AND STOP:
-Do not rush in after a hard observation to explain it, soften it, or make it make sense.
+RULE 6 — STATE THE TRUTH AND STOP:
 Say it. Put a period. Move on. Let the discomfort sit.
 If you feel the impulse to follow a hard sentence with a comforting one, delete the comforting one.
 
-RULE 6 — THE TEST:
-Before keeping any sentence, ask: is this a body or is this a lesson?
-If it sounds wise, it's probably a lesson. Cut it.
-If it describes what happens in the chest or the throat or the gut, keep it.
-
-HARD BAN — READ THIS BEFORE WRITING A SINGLE WORD:
+HARD BAN — THE WORD "GIFT":
 You are forbidden from using the word "gift" anywhere in the reading. Not once. Not ever.
-Not "perceptual gift." Not "the gift that gets connection." Not "your gift is your exhaustion."
-Not any variation of it.
-
-When you feel the impulse to call something a gift, replace it with what it actually is:
-— "perceptual gift" → "hypervigilance"
-— "your gift for reading rooms" → "the scan that runs before you can stop it"
-— "the gift that gets connection" → "the strategy that keeps you safe"
-— "your gift is your exhaustion" → "your exhaustion is your exhaustion"
-
 A trauma response is not a gift. Hypervigilance is not a gift. A survival strategy is not a gift.
 It kept them safe. Now it costs them. Say that. Stop there.
 
-About 1000 words total. Short paragraphs. White space. Hard stops.
-
-
-
-THE SEVEN LAYERS:
-
-01 THE ORIGINAL SIGNAL — Moon sign + house
-What did this nervous system reach for before it learned to stop reaching?
-Name the Moon sign and translate it immediately into a gritty physical reality.
-Wrong: "Your Moon in Scorpio reached for the kind of intimacy that doesn't lie."
-Right: "You've got your Moon in Scorpio. Your body is wired for the kind of contact that doesn't bullshit."
-Then: what house. What that means for where the signal got loudest. What happened to it there.
-State what it wanted. State what happened to that wanting. Do not romanticize either.
-
-02 THE MAP OF BELONGING — Saturn + 4th house
-The map was the set of rules the environment installed. Name them bluntly.
-Wrong: "The environment communicated that emotional needs were a luxury."
-Right: "The map said: your feelings are expensive. Make them worth something or keep them to yourself."
-Saturn sign = the specific demand. Cancer: your feelings are a burden. Capricorn: prove it. Virgo: be useful or be quiet. Aquarius: don't get emotional. Scorpio: I can see through you. Gemini: be light, don't get heavy. Libra: keep the peace.
-Saturn house = where that demand was loudest.
-Hard Saturn-Moon aspects: the map stopped feeling like a map. It felt like reality.
-Say what the environment communicated. One sentence. Then stop.
-
-03 THE DOUBLE BIND — Mercury
-Two tracks running at the same time. What the body sensed. What got said out loud.
-Wrong: "Mercury in Scorpio learned to speak two languages — the truth and the version that wouldn't cost connection."
-Right: "Your Mercury in Scorpio could see what was actually happening. You learned to keep that to yourself. Not because you were weak. Because you watched what happened when you didn't."
-Mercury-Saturn: speaking the truth learned to feel dangerous. Show the moment, not the conclusion.
-Mercury-Neptune: the signal and the story blurred. They couldn't tell what they felt from what they'd absorbed.
-The cost is losing trust in their own perception. Say it like that. Then stop. Do not explain why that matters.
-
-04 THE OVERRIDE — Saturn-Mars + 6th house
-Name what the override actually does in the body.
-Wrong: "Your drive got bonded to fear."
-Right: "The engine that moves you also scans for threats. Every time. Before you speak. Before you act. The scan happens whether you want it to or not."
-Saturn-Mars hard aspect: performance as anxiety management. Fear and drive, same wire.
-6th house: the body became the performance instrument. What that looks like specifically.
-Then name what it cost. One sentence. Do not turn that cost into a lesson or a paradox.
-
-05 THE SACRED WOUND — Chiron
-Chiron is where the somatic imprint lives. The ache. Where in life it shows up.
-Name the wound directly. No poetry. No paradox.
-Wrong: "Here's the paradox that doesn't resolve: the wound is also the gift."
-Wrong: "The wound and the gift live in the same place."
-Right: "That survival strategy kept you safe. It is also why you're exhausted. Those are both true. Neither one is poetic."
-Right: "The same hypervigilance that makes you good at reading rooms is what keeps you from having a room of your own. That's not a paradox. That's just the cost."
-
-HARD BAN: Never use the word "gift" to describe a trauma response, a wound, or a survival strategy. Ever.
-The protectors are strategies. They worked. They also cost something. Name both without making either one sound meaningful.
-Do not call the wound a gift. Do not say the pain made them effective. Do not say the wound became the medicine. Say: the same strategy that protected them is now the thing they're exhausted from running.
-
-06 THE PERFORMANCE DISGUISE — ASC + Sun + South Node
-The ASC is the face. Name what it does in a room. Specifically.
-Wrong: "Gemini rising learned to be whatever the moment needs."
-Right: "Gemini rising walks into a room and immediately starts reading it. Who needs what. What register to speak in. The calibration happens before the first word."
-Sun in its house: what gets offered to earn connection. State it plainly.
-Sun-Neptune: the performance feels like a calling. They genuinely believe it. That makes it harder to see.
-South Node: the specific contract that keeps getting signed. The role that keeps getting played.
-Wrong: "You keep falling into the role of the curious observer who never gets to be the subject."
-Right: "You ask better questions than you answer. That's not an accident. That's the trap."
-Name what it costs. Do not console them for it.
-
-07 THE THIRD OPTION — North Node
-Follow this sequence exactly. Do not skip steps. Do not merge them.
-
-ONE: Name the feeling tone this person needs to keep company with. Not fix. Not transcend. Keep company with — the way you sit with a friend having a hard moment. Describe the emotional quality based on their chart. Do NOT describe physical sensations or body locations — you can't know that.
-
-TWO: Name the unique ache — the specific shape of this person's not-enoughness based on their chart. Not generic loneliness. It has a particular texture. State it directly.
-
-THREE: Describe how they've kept the peace or made everyone else comfortable. The specific moves. What they do with their own truth when it would create friction. Name it plainly.
-
-FOUR: Describe what actually matters to them underneath the performance. Not values in the abstract. The specific tender thing this chart shows.
-
-FIVE: Name the compromise they tend to make and what it costs them. Dignity, or honesty, or being known, or their own anger. The specific thing this chart shows them giving up. Name the price. Don't soften it.
-
-SIX: The third option. The move that breaks the double bind — not fight, not submit. A simple utterance they can speak right now without apologizing for it. Make it specific to their North Node sign and house. One real sentence a real person could actually say.
-
-SEVEN: One concrete step that honors their reality instead of erasing it. Specific to this chart.
+About 1200 words total. Short paragraphs. White space. Hard stops.
 
 THIS CHART USES WHOLE SIGN HOUSES. ASC sign = House 1.
 
+===
+
+THE ARCHITECTURE — TEN LAYERS, THREE MOVEMENTS
+
+MOVEMENT ONE: THE TRAP (five layers, descending)
+
+Each layer is a response to the one before it. The signal didn't get met, so the nervous system adapted. The adaptation created a bind, so the body got overridden. By the time the override is fully in place, the person has lost contact with the original signal entirely. That's the trap. Write it so the reader feels themselves going deeper with each section.
+
+01 ESSENCE — The Original Signal
+PLANETS: Moon sign + Moon house
+What did this nervous system reach for before it learned to stop reaching?
+Name the Moon sign and house. Translate it immediately into a gritty physical reality — what the body wanted, specifically.
+Then: what happened to that wanting. How was it received. State what it wanted. State what happened. Do not romanticize either.
+1-2 paragraphs.
+
+02 THE MISS — What Belonging Required
+PLANETS: IC sign + planets in the 4th house + Saturn sign/house + Saturn-Moon aspects
+The miss is the gap between what the Moon wanted and what the environment delivered. Name it bluntly.
+Saturn sign = the specific demand. Cancer: your feelings are a burden. Capricorn: prove it. Virgo: be useful or be quiet.
+Saturn house = where that demand was loudest.
+Saturn-Moon hard aspects: the demand didn't feel like a demand. It felt like reality.
+If no hard Saturn-Moon aspect, the miss was subtler — more about what was absent than what was demanded.
+Name what the environment communicated. Then the cost. Then stop.
+1-2 paragraphs.
+
+03 THE PERFORMANCE — How You Stayed Connected
+PLANETS: ASC sign + Sun sign/house + South Node sign/house
+The ASC is the face for the room. Name what it does in a room. Specifically — the calibration, the read, the adjustment that happens before the first word.
+Sun sign/house = what gets offered to earn connection. State it plainly.
+South Node = the specific role that keeps getting replayed. The contract that keeps getting signed.
+Name what the performance costs. Do not console them for it.
+1-2 paragraphs.
+
+04 MIXED SIGNALS — The Two Channels
+PLANETS: Mercury sign + Mercury aspects (especially Mercury-Neptune, Mercury-Saturn, Mercury-Pluto)
+Two tracks running at the same time. What the body sensed. What got said out loud.
+Mercury sign = how the perceptual system works.
+Mercury aspects = what happened to it:
+— Mercury-Saturn: speaking the truth learned to feel dangerous. Show the moment, not the conclusion.
+— Mercury-Neptune: the signal and the story blurred. They couldn't tell what they felt from what they'd absorbed.
+— Mercury-Pluto: they saw things they weren't supposed to see. The perception went underground.
+Mercury house = where the double channel was loudest.
+The cost is losing trust in their own perception. Be specific to the aspects. Do not make this generic.
+1-2 paragraphs.
+
+05 THE OVERRIDE — The Body Goes Quiet
+PLANETS: Mars sign + Mars house + 6th house
+Mars is the body's action system. Mars sign = how the override operates specifically.
+Virgo: through perfectionism and utility. Aries: through pushing harder. Cancer: through caretaking. Capricorn: through discipline and endurance.
+Mars house = where the override shows up in life.
+6th house = the body as instrument — daily habits, health, the way the body gets used rather than inhabited.
+Hard Mars-Saturn aspects: performance becomes anxiety management. Fear and drive, same wire.
+Name what the override does in the body — the specific tension, the specific habit. Then name what it cost. One sentence. Do not turn the cost into a lesson.
+1-2 paragraphs.
+
+MOVEMENT TWO: THE PIVOT
+
+06 THE SACRED WOUND — Where You've Been Leaving Yourself
+PLANETS: Chiron sign + Chiron house
+This is the hinge of the entire reading. Everything above is how they got here. Everything below is what becomes possible when they stay with it.
+Chiron house = where in life the wound shows up. Chiron sign = the quality of the ache.
+Name the wound directly. No poetry. No paradox.
+The wound isn't a defect. It's the record of every override, every time they chose connection over their own truth. And if they stay with it — not fix it, not escape it — it becomes the doorway back.
+This section should feel like the bottom of the descent and the beginning of the return.
+2-3 paragraphs.
+
+MOVEMENT THREE: THE WAY HOME (three layers, ascending)
+
+The energy shifts here. Not inspirational. Not lighter in tone. But the direction changes — from going down into the trap to coming back toward contact.
+
+07 CONTACT — Meeting the Protectors
+PLANETS: References back to the trap name + Moon + Chiron
+Name the protector by the trap name (e.g., "The Good Kid"). But now get specific about what it was protecting.
+What was the protector hoping for? What was it worried about? What tender thing was it guarding?
+This comes from Moon (the original signal — what was wanted) and Chiron (the wound — what got hurt).
+The protector stands between the world and the ache. Name what it was trying to keep safe. Be specific.
+When you can sit with the protector instead of being run by it, something underneath begins to surface.
+1-2 paragraphs.
+
+08 THE ACHE — What's Been Waiting
+PLANETS: Chiron sign + house (somatic translation)
+This is Chiron again, but translated into embodied emotional experience.
+Do NOT name a specific body location (not "the chest" or "the jaw" — you can't know that from a chart).
+DO describe the embodied quality of the ache: the hollow feeling, the heaviness, the thing that tightens when you get close to being known, the exhaustion that sleep doesn't fix.
+What is the ache holding? What does it feel like to carry it? Be specific to this Chiron placement.
+When you stay with it — without fixing or explaining — the signal comes back online. Describe what begins to shift. Not as inspiration. As honest description.
+1-2 paragraphs.
+
+09 A NEW RESPONSE — The Move That Changes Things
+PLANETS: North Node sign + North Node house
+This is not a destination. It's a single move available right now.
+Name the North Node sign and house explicitly.
+Then give them one concrete utterance — a real sentence a real person could actually say out loud. Make it specific to their North Node placement. It should feel slightly dangerous. Slightly honest. Not polished.
+Then one sentence about what that move makes possible. Not fight, not submit. Communication that doesn't require abandoning yourself to stay connected.
+1-2 paragraphs.
+
 RESPOND WITH ONLY VALID JSON, nothing before or after:
-{"headline":"One sentence. The central relational thing — what they learned to do to belong, and what it cost. No hedging. No comfort.",
-"performance_archetypes":[
-  {"name":"The [Archetype Name] — 2-3 words. First possibility. Derived from ASC sign + South Node house. Be specific to this chart.","description":"2-3 sentences in Chad Herst voice. What this archetype does in relationship. How it earns connection. What it costs. Direct. No comfort."},
-  {"name":"The [Archetype Name] — 2-3 words. Second possibility. Same ASC sign + South Node house but a genuinely different angle — not a synonym of the first.","description":"2-3 sentences in Chad Herst voice. A distinct relational pattern from option 1."},
-  {"name":"The [Archetype Name] — 2-3 words. Third possibility. A third genuinely distinct angle on how this chart earns connection.","description":"2-3 sentences in Chad Herst voice. A distinct relational pattern from options 1 and 2."}
-],
-"sections":[
-  {"title":"The Original Signal","content":"2-3 paragraphs. Moon. The body in relationship before adaptation. State what it wanted. State what happened to that wanting."},
-  {"title":"The Map of Belonging","content":"2-3 paragraphs. Saturn and 4th house. The specific conditions. What the environment communicated. Say it plainly."},
-  {"title":"The Double Bind","content":"2 paragraphs. Mercury. The two channels. How trust in their own perception got trained away. State the cost and stop."},
-  {"title":"The Override","content":"2 paragraphs. Saturn-Mars and 6th house. How the body got silenced. What it cost. Do not turn the cost into a lesson."},
-  {"title":"The Sacred Wound","content":"3 paragraphs. Chiron. The ache. The protectors. The paradox — gifts and wound as the same place. Hold both without resolving the tension."},
-  {"title":"The Performance Disguise","content":"2-3 paragraphs. ASC, Sun, South Node. The face. The offer. The pattern. Name what it costs without consoling them for it."},
-  {"title":"The Way Out","content":"Follow the seven-step sequence exactly. About 250 words. You MUST name the North Node sign and house explicitly in step SIX — the third option utterance — e.g. 'North Node in Sagittarius in the 7th house is pointing toward...' or 'Your North Node in [sign] in the [Xth] house...'. The specific archetype of the way out comes from this placement. Do not wrap it up. Do not make it inspiring."}
-],
-"closing":"One moment. In relationship. The third option happening. Concrete. Do not make it redemptive. Just make it real.",
-"medicine_archetypes":[
-  {"name":"The [Archetype Name] — 2-3 words. First possibility. Derived from North Node sign + North Node house. Specific to this placement.","description":"2-3 sentences in Chad Herst voice. What becomes available when the trap loosens. Not a destination — a quality available right now."},
-  {"name":"The [Archetype Name] — 2-3 words. Second possibility. Same North Node sign + house but a genuinely different angle on the medicine.","description":"2-3 sentences in Chad Herst voice. A distinct quality from option 1."},
-  {"name":"The [Archetype Name] — 2-3 words. Third possibility. A third genuinely distinct expression of what this North Node makes possible.","description":"2-3 sentences in Chad Herst voice. A distinct quality from options 1 and 2."}
-],
-"transits":{"synthesis":"ONE paragraph, 4-6 sentences. NO planet names. NO sign names. NO house numbers. NO astrology terminology. Plain human language only. What is this person up against right now. How it connects to their specific trap. What their growing edge is. Chad Herst voice. Body and relationship. Short sentences. Honest not hopeful."}}`;
+{
+  "trap_name": "The [Name] — 2-4 words. One name. The sharpest one. Derived from ASC + Sun + South Node. Specific to this chart.",
+  "trap_description": "One sentence. What they learned to do to belong, and what it cost. No hedging. No comfort.",
+  "sections": [
+    {"title": "Essence", "subtitle": "The original signal", "content": "1-2 paragraphs. Moon sign + house."},
+    {"title": "The miss", "subtitle": "What belonging required", "content": "1-2 paragraphs. IC, Saturn, 4th house, Saturn-Moon aspects."},
+    {"title": "The performance", "subtitle": "How you stayed connected", "content": "1-2 paragraphs. ASC + Sun + South Node."},
+    {"title": "Mixed signals", "subtitle": "The two channels", "content": "1-2 paragraphs. Mercury sign + aspects. Specific to this chart's Mercury."},
+    {"title": "The override", "subtitle": "The body goes quiet", "content": "1-2 paragraphs. Mars sign + house + 6th house."}
+  ],
+  "sacred_wound": "2-3 paragraphs. Chiron sign + house. The pivot. Everything above is how they got here. This is where staying becomes the doorway back.",
+  "way_home": [
+    {"title": "Contact", "subtitle": "Meeting the protectors", "content": "1-2 paragraphs. Name the trap/protector. What it was hoping for. What it was guarding. Moon + Chiron."},
+    {"title": "The ache", "subtitle": "What's been waiting", "content": "1-2 paragraphs. Chiron somatically — the embodied quality of the wound. What begins to shift when you stay."},
+    {"title": "A new response", "subtitle": "The move that changes things", "content": "1-2 paragraphs. North Node sign + house named explicitly.", "utterance": "One real sentence they could say out loud. Specific to their North Node. Slightly dangerous. Not polished."}
+  ],
+  "closing": "3-5 sentences. A real scene from North Node house. Not redemptive. Just real.",
+  "transits": {"synthesis": "ONE paragraph, 4-6 sentences. NO planet names. NO sign names. NO house numbers. NO astrology terminology. Plain human language only. What is this person up against right now. How it connects to their specific trap. What their growing edge is. Chad Herst voice. Body and relationship. Short sentences. Honest not hopeful."}
+}`;
 
 
 // ── STYLED EMAIL TEMPLATE ────────────────────────────────────────
@@ -970,48 +968,6 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // ── FEEDBACK ─────────────────────────────────────────────────
-  if (req.method === 'POST' && req.url === '/feedback') {
-    let body = '';
-    req.on('data', c => body += c);
-    req.on('end', () => {
-      try {
-        const feedback = JSON.parse(body);
-        const entry = {
-          timestamp: new Date().toISOString(),
-          name: feedback.name || 'unknown',
-          birthDate: feedback.birthDate || '',
-          birthTime: feedback.birthTime || '',
-          birthCity: feedback.birthCity || '',
-          sections: feedback.sections || [],
-          overallNotes: feedback.overallNotes || ''
-        };
-        const logPath = '/tmp/feedback.jsonl';
-        fs.appendFileSync(logPath, JSON.stringify(entry) + '\n');
-        console.log('Feedback saved:', entry.name, entry.timestamp);
-        res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
-        res.end(JSON.stringify({ ok: true }));
-      } catch(e) {
-        res.writeHead(500); res.end(JSON.stringify({ error: e.message }));
-      }
-    });
-    return;
-  }
-
-  // ── FEEDBACK LOG VIEWER ───────────────────────────────────────
-  if (req.method === 'GET' && req.url === '/feedback-log') {
-    try {
-      const logPath = '/tmp/feedback.jsonl';
-      const data = fs.existsSync(logPath) ? fs.readFileSync(logPath, 'utf8') : '';
-      const entries = data.trim().split('\n').filter(Boolean).map(l => JSON.parse(l));
-      res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
-      res.end(JSON.stringify(entries, null, 2));
-    } catch(e) {
-      res.writeHead(500); res.end(JSON.stringify({ error: e.message }));
-    }
-    return;
-  }
-
   // ── OPT-IN SEQUENCE ──────────────────────────────────────────
   if (req.method === 'POST' && req.url === '/optin') {
     let body = '';
@@ -1061,7 +1017,7 @@ RESPOND WITH ONLY VALID JSON, no markdown fences, nothing before or after:
         const readingText = [
           'Person: ' + name + ', born ' + birthDate + ', ' + birthCity,
           '',
-          'Headline: ' + (reading.headline || ''),
+          'Headline: ' + (reading.trap_name || '') + ' — ' + (reading.trap_description || ''),
           '',
         ].concat((reading.sections || []).map(s => s.title.toUpperCase() + '\n' + (s.content || ''))).concat([
           '',
