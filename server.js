@@ -369,42 +369,59 @@ function callAnthropicOnce(system, userMsg) {
           const raw = a.content?.[0]?.text || '';
           console.log('Raw response length:', raw.length);
           let reading;
-          // Clean the response: strip markdown fences, extract JSON object
-          let cleaned = raw.replace(/```json|```/g, '').trim();
-          const firstBrace = cleaned.indexOf('{');
-          let depth = 0, lastBrace = -1;
-          for (let i = firstBrace; i < cleaned.length; i++) {
-            if (cleaned[i] === '{') depth++;
-            else if (cleaned[i] === '}') { depth--; if (depth === 0) { lastBrace = i; break; } }
-          }
-          if (firstBrace !== -1 && lastBrace !== -1) {
-            cleaned = cleaned.substring(firstBrace, lastBrace + 1);
-          }
-          // Fix literal newlines inside JSON string values
-          // Replace actual newlines/tabs with their escape sequences
-          cleaned = cleaned.replace(/[\r\n]+/g, '\\n').replace(/\t/g, '\\t');
-          // But that also escaped newlines between JSON keys — fix structural JSON formatting
-          // Actually, the simplest robust approach: fix all literal newlines then re-parse
-          try {
-            reading = JSON.parse(cleaned);
-          } catch(e) {
-            console.log('Parse failed after newline fix:', e.message);
-            console.log('Attempting line-by-line reconstruction...');
-            // Split into lines, rejoin — handles the case where JSON was pretty-printed
-            const lines = raw.replace(/```json|```/g, '').split('\n');
-            const joined = lines.map(l => l.trimEnd()).join(' ');
-            const fb = joined.indexOf('{');
-            let d2 = 0, lb2 = -1;
-            for (let i = fb; i < joined.length; i++) {
-              if (joined[i] === '{') d2++;
-              else if (joined[i] === '}') { d2--; if (d2 === 0) { lb2 = i; break; } }
+
+          // Robust JSON extraction: handle markdown fences, literal newlines,
+          // unescaped quotes inside string values, and other Claude quirks.
+          function robustJsonParse(text) {
+            // Strip markdown fences
+            let s = text.replace(/```json\s*/g, '').replace(/```/g, '').trim();
+
+            // Extract the outermost { ... } by brace matching
+            const start = s.indexOf('{');
+            if (start === -1) throw new Error('No JSON object found');
+            let depth = 0, end = -1;
+            let inString = false, escape = false;
+            for (let i = start; i < s.length; i++) {
+              const ch = s[i];
+              if (escape) { escape = false; continue; }
+              if (ch === '\\') { escape = true; continue; }
+              if (ch === '"' && !escape) { inString = !inString; continue; }
+              if (inString) continue;
+              if (ch === '{') depth++;
+              else if (ch === '}') { depth--; if (depth === 0) { end = i; break; } }
             }
-            if (fb !== -1 && lb2 !== -1) {
-              reading = JSON.parse(joined.substring(fb, lb2 + 1));
-            } else {
-              throw e;
+            if (end === -1) throw new Error('Unmatched braces');
+            s = s.substring(start, end + 1);
+
+            // Try parsing as-is first
+            try { return JSON.parse(s); } catch(e) { console.log('First parse attempt:', e.message); }
+
+            // Fix common issues: literal newlines and tabs inside string values
+            // Walk character by character and fix newlines/tabs only when inside strings
+            let result = '';
+            inString = false;
+            escape = false;
+            for (let i = 0; i < s.length; i++) {
+              const ch = s[i];
+              if (escape) { result += ch; escape = false; continue; }
+              if (ch === '\\') { result += ch; escape = true; continue; }
+              if (ch === '"') { inString = !inString; result += ch; continue; }
+              if (inString) {
+                if (ch === '\n') { result += '\\n'; continue; }
+                if (ch === '\r') { result += '\\r'; continue; }
+                if (ch === '\t') { result += '\\t'; continue; }
+              }
+              result += ch;
             }
+
+            try { return JSON.parse(result); } catch(e) { console.log('Second parse attempt:', e.message); }
+
+            // Last resort: collapse everything to one line, replacing newlines with spaces
+            const oneLine = s.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ');
+            return JSON.parse(oneLine);
           }
+
+          reading = robustJsonParse(raw);
           console.log('Reading parsed successfully, trap_name:', reading.trap_name || 'unknown');
           resolve(reading);
         } catch(e) { reject(e); }
