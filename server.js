@@ -367,20 +367,34 @@ function callAnthropicOnce(system, userMsg) {
             throw err;
           }
           const raw = a.content?.[0]?.text || '';
+          console.log('Raw response length:', raw.length, 'first 200 chars:', raw.substring(0, 200));
+          console.log('Last 200 chars:', raw.substring(raw.length - 200));
           let reading;
           try {
             // Try direct parse first
             reading = JSON.parse(raw);
-          } catch {
+          } catch(parseErr1) {
+            console.log('Direct parse failed:', parseErr1.message);
             // Strip markdown fences, trailing text, etc.
             let cleaned = raw.replace(/```json|```/g, '').trim();
-            // Find the outermost JSON object
+            // Find the outermost JSON object by matching braces
             const firstBrace = cleaned.indexOf('{');
-            const lastBrace = cleaned.lastIndexOf('}');
+            let depth = 0, lastBrace = -1;
+            for (let i = firstBrace; i < cleaned.length; i++) {
+              if (cleaned[i] === '{') depth++;
+              else if (cleaned[i] === '}') { depth--; if (depth === 0) { lastBrace = i; break; } }
+            }
             if (firstBrace !== -1 && lastBrace !== -1) {
               cleaned = cleaned.substring(firstBrace, lastBrace + 1);
             }
-            reading = JSON.parse(cleaned);
+            console.log('Cleaned length:', cleaned.length);
+            try {
+              reading = JSON.parse(cleaned);
+            } catch(parseErr2) {
+              console.log('Cleaned parse failed:', parseErr2.message);
+              console.log('Around error position:', cleaned.substring(Math.max(0, 4450), 4550));
+              throw parseErr2;
+            }
           }
           console.log('Reading parsed successfully, trap_name:', reading.trap_name || reading.headline || 'unknown');
           resolve(reading);
