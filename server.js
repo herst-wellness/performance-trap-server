@@ -423,6 +423,12 @@ function callAnthropicOnce(system, userMsg) {
 
           reading = robustJsonParse(raw);
           console.log('Reading parsed successfully, trap_name:', reading.trap_name || 'unknown');
+          console.log('Fields present:', Object.keys(reading).join(', '));
+          console.log('sections count:', (reading.sections||[]).length);
+          console.log('way_home count:', (reading.way_home||[]).length);
+          console.log('has sacred_wound:', !!reading.sacred_wound);
+          console.log('has closing:', !!reading.closing);
+          console.log('has transits:', !!reading.transits);
           resolve(reading);
         } catch(e) { reject(e); }
       });
