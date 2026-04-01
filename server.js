@@ -579,10 +579,12 @@ CRITICAL — BUDGET YOUR WORDS: About 1200 words total. Each section 80-120 word
 
 THIS CHART USES WHOLE SIGN HOUSES. ASC sign = House 1.
 
-KEY TERMS: Every section and every way_home item MUST include a "key_terms" field — exactly 3 short phrases (2-5 words each) that capture the essence of that section for this specific person. These are memorable handles, not formal archetypes. They should be visceral and specific to this chart. Examples:
-- Essence key_terms: "go deep", "name what's real", "get to the bone"
-- The miss key_terms: "be useful or be quiet", "earn your place", "feelings are expensive"
-- The performance key_terms: "translator", "room-reader", "the one who handles it"
+KEY TERMS: Every section and every way_home item MUST include a "key_terms" field — exactly 3 short phrases (2-5 words each). These are NOT summaries of the paragraph. They are identity fragments — the kind of thing someone would recognize about themselves at 2am. They should name what it feels like to live inside this pattern, not describe the pattern from outside.
+
+BAD key terms (too literal, too summary): "feel but don't tell", "keep it safe", "body knows all"
+GOOD key terms (visceral, identity-level): "the silent witness", "useful before honest", "the one who translates the room"
+
+Each term should open a different door. Don't repeat the same idea three ways. Make them specific to this chart — not generic enough to apply to anyone.
 
 ===
 
