@@ -401,6 +401,10 @@ function callAnthropicOnce(system, userMsg) {
             // Try parsing as-is first
             try { return JSON.parse(s); } catch(e) { console.log('First parse attempt:', e.message); }
 
+            // Fix trailing commas before ] or } (common Claude mistake)
+            s = s.replace(/,\s*]/g, ']').replace(/,\s*}/g, '}');
+            try { return JSON.parse(s); } catch(e) { console.log('After trailing comma fix:', e.message); }
+
             // Fix common issues: literal newlines and tabs inside string values
             // Walk character by character and fix newlines/tabs only when inside strings
             let result = '';
@@ -419,10 +423,13 @@ function callAnthropicOnce(system, userMsg) {
               result += ch;
             }
 
+            // Also fix trailing commas in the newline-fixed version
+            result = result.replace(/,\s*]/g, ']').replace(/,\s*}/g, '}');
             try { return JSON.parse(result); } catch(e) { console.log('Second parse attempt:', e.message); }
 
             // Last resort: collapse everything to one line, replacing newlines with spaces
-            const oneLine = s.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ');
+            let oneLine = s.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ');
+            oneLine = oneLine.replace(/,\s*]/g, ']').replace(/,\s*}/g, '}');
             return JSON.parse(oneLine);
           }
 
