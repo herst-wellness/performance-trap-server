@@ -570,20 +570,24 @@ WORD BUDGET: About 1000 words total. Each section 80-120 words. Sacred wound 120
 
 THIS CHART USES WHOLE SIGN HOUSES. ASC sign = House 1.
 
-KEY TERMS: Every section MUST include "key_terms" — exactly 3 short phrases. These are NOT summaries of the paragraph. They should sound like something a friend would say about you. Plain language, slightly casual, specific enough that not everyone would claim them. They name a pattern, a cost, or a position you live in. They sting a little because they're true.
+KEY TERMS: Every section MUST include "key_terms" — exactly 3 short phrases. These should sound like something a friend would say about you. Plain language, slightly casual, specific enough that not everyone would claim them.
 
 Rules for key terms:
 - Plain language a real person would use
 - Names something you DO or something that COSTS you
 - Specific to this chart — not generic enough for anyone
 - NOT clever or poetic
-- NOT abstract
-- NOT positive-sounding when the cost is the point
-- NOT literal body descriptions
+- NOT abstract or metaphorical
+- In the TRAP sections (Essence through Override) and Sacred Wound: key terms should name the COST, the PATTERN, or the POSITION you're stuck in. They should sting. They should NOT sound aspirational or positive.
+- In the WAY HOME sections: key terms CAN be forward-facing — what becomes possible, what you get to do now
+- NOT literal body descriptions (never "tightness in throat", "held breath in chest")
+- Use second person or imperative voice ("speak truth when it arrives") NOT third person ("speaks truth when it arrives")
+- Each term must make plain sense on its own — if someone read just the term with no context, they'd understand what it means
+- "Belongs without editing" is WRONG because it sounds like a good thing. "Belongs only if you edit yourself" is RIGHT because it names the cost.
 
 GOOD examples: "feels what nobody is saying", "too much for the room", "earned love never just got it", "the one who made it easy for everyone", "one step removed", "always the teacher never the student", "hasn't stopped scanning since childhood", "belongs everywhere is known nowhere", "done being the bridge", "permission to stop translating", "your turn to be met"
 
-BAD examples: "useful radar", "strategic patience", "fire instead of bridge", "betrayal of knowing", "held breath in chest", "the body became the tool"
+BAD examples: "useful radar", "strategic patience", "fire instead of bridge", "betrayal of knowing", "held breath in chest", "the body became the tool", "belongs without editing", "suspended action in the throat", "wanted to serve through darkness"
 
 ===
 
