@@ -566,84 +566,96 @@ VOICE RULES:
 - State the truth and stop. No comforting follow-up.
 - Never use the word "gift." Not once.
 
-WORD BUDGET: About 1000 words total. Each section 80-120 words. Sacred wound 120-150 words. Each way_home section 80-120 words. Closing 40-60 words. You MUST include ALL JSON fields. The way_home and closing are NOT optional.
+WORD BUDGET: About 1200 words total for all sections combined. You MUST include ALL JSON fields. Contact and A New Response and closing are NOT optional. If you run out of space, shorten the earlier sections.
 
 THIS CHART USES WHOLE SIGN HOUSES. ASC sign = House 1.
 
-KEY TERMS: Every section MUST include "key_terms" — exactly 3 short phrases. These should sound like something a friend would say about you. Plain language, slightly casual, specific enough that not everyone would claim them.
+KEY TERMS: Every section MUST include "key_terms" — exactly 3 short phrases (3-7 words each). These compress the section into its core emotional logic. They make the reading memorable. They give the reader a quick felt sense of the pattern.
 
 Rules for key terms:
 - Plain language a real person would use
+- Emotionally resonant and specific to this chart
 - Names something you DO or something that COSTS you
-- Specific to this chart — not generic enough for anyone
-- NOT clever or poetic
+- In the TRAP sections (Essence, The Miss, The Performance): name the cost, the pattern, the position you're stuck in. They should sting.
+- In the WAY HOME sections (Contact, A New Response): can be forward-facing — what becomes possible
+- NOT clever or poetic or decorative
 - NOT abstract or metaphorical
-- In the TRAP sections (Essence through Override) and Sacred Wound: key terms should name the COST, the PATTERN, or the POSITION you're stuck in. They should sting. They should NOT sound aspirational or positive.
-- In the WAY HOME sections: key terms CAN be forward-facing — what becomes possible, what you get to do now
-- NOT literal body descriptions (never "tightness in throat", "held breath in chest")
-- Use second person or imperative voice ("speak truth when it arrives") NOT third person ("speaks truth when it arrives")
-- Each term must make plain sense on its own — if someone read just the term with no context, they'd understand what it means
-- "Belongs without editing" is WRONG because it sounds like a good thing. "Belongs only if you edit yourself" is RIGHT because it names the cost.
+- NOT literal body descriptions (never "tightness in throat", "held breath")
+- NOT positive-sounding when the cost is the point. "Belongs only if you edit yourself" not "belongs without editing"
+- Use second person or imperative voice ("speak truth when it arrives") NOT third person ("speaks truth")
+- Each term must make plain sense on its own with no context needed
+- Should reflect the section directly above them, not generic astrology
 
 GOOD examples: "feels what nobody is saying", "too much for the room", "earned love never just got it", "the one who made it easy for everyone", "one step removed", "always the teacher never the student", "hasn't stopped scanning since childhood", "belongs everywhere is known nowhere", "done being the bridge", "permission to stop translating", "your turn to be met"
 
-BAD examples: "useful radar", "strategic patience", "fire instead of bridge", "betrayal of knowing", "held breath in chest", "the body became the tool", "belongs without editing", "suspended action in the throat", "wanted to serve through darkness"
+BAD examples: "useful radar", "strategic patience", "fire instead of bridge", "betrayal of knowing", "held breath in chest", "the body became the tool", "belongs without editing", "suspended action in the throat"
 
 ===
 
-THE ARCHITECTURE — EIGHT LAYERS, THREE MOVEMENTS
+THE ARCHITECTURE — FIVE SECTIONS, TWO MOVEMENTS
 
-MOVEMENT ONE: THE TRAP (four layers, descending)
+The reading is organized under two larger headers:
+
+HOW YOUR PERFORMANCE TRAP FORMED (3 sections)
+YOUR WAY HOME (2 sections + closing scene)
+
+The sequence must feel developmental: Essence → The Miss → The Performance → Contact → A New Response
 
 01 ESSENCE — The Original Signal
-PLANETS: Moon sign + Moon house
-What did this nervous system reach for before it learned to stop reaching? Name the Moon sign and house. What the body wanted. What happened to that wanting. 1-2 short paragraphs.
+PLANETS: Moon, Sun, Ascendant, chart ruler, Mars, Venus
+What your nervous system reached for before it learned to stop reaching. The quality of contact your body expected before anything went wrong. This is the original signal before adaptation. What kind of contact did this person originally reach for? What was intact before the miss?
+Name the placements. Translate into gritty physical reality. Should sound foundational, alive, prior to the wound.
+2-3 short paragraphs.
 
 02 THE MISS — What Belonging Required
-PLANETS: IC sign + 4th house planets + Saturn sign/house + Saturn-Moon aspects + Mercury sign + Mercury aspects
-This section combines two things: the gap between what the Moon wanted and what the environment delivered, AND the mixed signals the environment sent. The miss is both what was demanded and the double channel — one signal said come closer, another said be careful. Mercury aspects show how the perceptual system got confused (Mercury-Neptune: truth and story blurred; Mercury-Saturn: truth felt dangerous; Mercury-Pluto: saw things you weren't supposed to see).
-Name what the environment communicated. Name the two channels. Name what it cost. 2-3 short paragraphs.
+PLANETS: Moon aspects, 4th house, IC, rulers of Moon and 4th, Mercury, 3rd house, Mercury aspects, Neptune, Saturn, Uranus, Pluto
+This section MUST include BOTH:
+- Misattunement: how the original signal was not met. What was absent, conditional, withheld.
+- Mixed signals: the contradictions, the double bind. One channel said come closer, another said be careful. How the field became hard to read or trust.
+Saturn = chill, conditionality. Uranus = rupture, unpredictability. Neptune = blur, mixed signal. Pluto = intensity, hidden coercion. Mercury under pressure = contradiction, signal distortion.
+Do not split misattunement and mixed signals into separate pieces. They belong together.
+2-3 short paragraphs.
 
 03 THE PERFORMANCE — How You Stayed Connected
-PLANETS: ASC sign + Sun sign/house + South Node sign/house
-The face for the room. What gets offered to earn connection. The role that keeps getting replayed. 1-2 short paragraphs.
+PLANETS: Saturn, Sun, Ascendant, chart ruler, Mercury, Mars, Venus, 6th house, 7th house, 10th house
+This section now includes BOTH:
+- The visible adaptation: the role, the face, the skills that kept the bond intact
+- The override mechanism: scanning, self-monitoring, adjusting before feeling, the body being outranked by the room, filtering impulse through what others can tolerate
+Always include both brilliance and cost. The Performance is not fake. It is adaptive intelligence. But it is also what creates the trap.
+2-3 short paragraphs.
 
-04 THE OVERRIDE — The Body Goes Quiet
-PLANETS: Mars sign + Mars house + 6th house
-How the body became the instrument. The specific tension, the specific habit. What it cost. 1-2 short paragraphs.
+YOUR WAY HOME
 
-MOVEMENT TWO: THE PIVOT
+04 CONTACT — Meeting the Protectors and the Ache
+PLANETS: Moon, Saturn, Mercury, Venus, Mars, Neptune, Pluto, Chiron
+This section MUST include BOTH:
+- The protectors: intelligent, necessary, adaptive, not the enemy. What they do, what they guard.
+- The ache beneath them: the neglected signal, the wounded memory of essence, the place where the original truth still lives.
+Contact means being aware of both: the part that learned to manage the room AND the part underneath that still carries the neglected signal.
+The ache is the way home. This principle must appear in this section. The ache still remembers what mattered. When the person stays with it without translating, fixing, or performing, something true comes back online.
+Do NOT separate protectors and ache into different sections. They are held together here.
+2-3 short paragraphs.
 
-05 THE SACRED WOUND — Where You've Been Leaving Yourself
-PLANETS: Chiron sign + Chiron house
-The hinge. Everything above is how they got here. The wound is the doorway back. 2-3 short paragraphs.
+05 A NEW RESPONSE — The Move That Changes Things
+PLANETS: Mercury, Mars, Venus, Saturn, 7th house, ruler of 7th
+Not fight, not submit. A way of communicating that doesn't require you to leave yourself to stay connected.
+Show what truth-telling looks like now. What boundary looks like. How the recovered signal changes the relational field.
+Include one concrete utterance — a real sentence this person could say out loud. Specific to their chart. Slightly dangerous. Not polished.
+Make this section concrete. Show the relational move.
+1-2 short paragraphs.
 
-MOVEMENT THREE: THE WAY HOME (three layers, ascending)
-
-06 CONTACT — Meeting the Protectors
-PLANETS: Moon + Chiron
-Name what the protector was hoping for. What tender thing it was guarding. Be specific. 1-2 short paragraphs.
-
-07 THE ACHE — What's Been Waiting
-PLANETS: Chiron (somatic translation)
-The embodied quality of the wound. Do NOT name specific body locations. Describe the emotional-somatic quality. What shifts when you stay. 1-2 short paragraphs.
-
-08 A NEW RESPONSE — The Move That Changes Things
-PLANETS: North Node sign + North Node house
-Name explicitly. One concrete utterance they could say out loud. 1-2 short paragraphs.
+CLOSING SCENE:
+After A New Response, include a closing scene — 3-5 sentences showing a real moment where the new response is happening. Drawn from the chart. Not redemptive. Just real. The voice shakes. Nobody leaves. Something shifts.
 
 RESPOND WITH ONLY VALID JSON, nothing before or after:
 {
   "sections": [
-    {"title": "Essence", "subtitle": "The original signal", "content": "1-2 paragraphs", "key_terms": ["term 1", "term 2", "term 3"]},
+    {"title": "Essence", "subtitle": "The original signal", "content": "2-3 paragraphs", "key_terms": ["term 1", "term 2", "term 3"]},
     {"title": "The miss", "subtitle": "What belonging required", "content": "2-3 paragraphs including mixed signals", "key_terms": ["term 1", "term 2", "term 3"]},
-    {"title": "The performance", "subtitle": "How you stayed connected", "content": "1-2 paragraphs", "key_terms": ["term 1", "term 2", "term 3"]},
-    {"title": "The override", "subtitle": "The body goes quiet", "content": "1-2 paragraphs", "key_terms": ["term 1", "term 2", "term 3"]}
+    {"title": "The performance", "subtitle": "How you stayed connected", "content": "2-3 paragraphs including override", "key_terms": ["term 1", "term 2", "term 3"]}
   ],
-  "sacred_wound": {"content": "2-3 paragraphs", "key_terms": ["term 1", "term 2", "term 3"]},
   "way_home": [
-    {"title": "Contact", "subtitle": "Meeting the protectors", "content": "1-2 paragraphs", "key_terms": ["term 1", "term 2", "term 3"]},
-    {"title": "The ache", "subtitle": "What's been waiting", "content": "1-2 paragraphs", "key_terms": ["term 1", "term 2", "term 3"]},
+    {"title": "Contact", "subtitle": "Meeting the protectors and the ache", "content": "2-3 paragraphs. Protectors AND ache together. The ache is the way home.", "key_terms": ["term 1", "term 2", "term 3"]},
     {"title": "A new response", "subtitle": "The move that changes things", "content": "1-2 paragraphs", "utterance": "One sentence they could say out loud", "key_terms": ["term 1", "term 2", "term 3"]}
   ],
   "closing": "3-5 sentences. A real scene. Not redemptive. Just real."
