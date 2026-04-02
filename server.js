@@ -565,39 +565,59 @@ VOICE RULES:
 - State the truth and stop. No comforting follow-up.
 - Never use the word "gift." Not once.
 
-NARRATIVE SHAPE — THIS IS THE MOST IMPORTANT INSTRUCTION:
-This reading must feel like one continuous unfolding story, not five adjacent interpretations. Each section grows out of the one before it. The reader should feel: because this happened, this strategy formed. Because this strategy formed, this cost developed. Because that cost became painful, something began to surface. Because that surfaced, a new response is now possible.
-
-Rules for narrative flow:
-- Use connective language between and within sections: "so", "instead", "over time", "that's when", "from there", "eventually", "because of that"
-- Write more discoveries and fewer conclusions. Less "This is what happened." More "This is what you learned to do" or "That's when the room taught you to change shape."
-- When moving from The Miss to The Performance, make the bridge explicit: "So instead of being the vivid one, you became the dependable one." Not two separate observations side by side.
-- Add real-life immediacy. Not full scenes in every section, but sentences that feel embodied and happening now. Example: instead of "The protector that kept you small is still there" write "Even now, that part of you walks into a room and checks almost instantly whether your light needs dimming."
-- Vary the language. Don't repeat "too much", "hide", "shrink", "room", "real self" over and over. Keep the themes but develop them with different words so it feels like movement, not re-description.
-- Inside each section, the prose should feel like a lived sequence, not explanatory commentary. Show the pattern unfolding in time.
-
 PLAIN LANGUAGE RULE:
-The main body must be written in plain human language with MINIMAL astrology jargon. Do NOT name planet signs, houses, or aspects in the main prose unless one brief anchor is needed. The reading should be accessible to someone who does not care about astrology.
+Write the main body in plain human language. MINIMAL astrology jargon. Do NOT name planet signs, houses, or aspects in the prose unless one brief anchor is needed. Accessible to someone who does not care about astrology.
 
-PLACEMENTS: Each section must include a "placements" array — the key natal placements that shaped that section. Each has a "name" and a "meaning" (1-2 plain-English sentences). Only relevant placements. Usually 2-4 per section.
+ASTROLOGICAL SPECIFICITY RULE — READ THIS CAREFULLY:
+Less astrology jargon. MORE astrology logic.
 
-WORD BUDGET: About 1200 words total for all section content. You MUST include ALL JSON fields. Contact, A New Response, and closing are NOT optional.
+The main prose must be SHAPED BY the actual chart — not written generically and then decorated with placements in a dropdown. Every section should contain 1-3 observations that feel unmistakably specific to THIS chart's structure. A non-astrology person should feel "holy shit, that's me." An astrology person should feel "yes, that clearly came from this chart."
+
+How to do this:
+- Let the actual placements determine the human language and psychological claims. Scorpio placements should sound penetrating, private, exposing. Sagittarius should sound truth-driven, direct, meaning-oriented. Gemini rising should sound adaptive, quick, verbally agile. Saturn in Cancer should sound like emotional caution tied to worth and self-protection. Mars retrograde should sound like direct force interrupted or expressed sideways.
+- Use the TENSIONS in the chart, not just themes. Gemini rising vs Scorpio Moon. Sagittarius Sun vs Scorpio Mercury. Saturn in Cancer vs Mars in Aries. Deep perception vs translated delivery. Truth vs relational management. Direct signal vs strategic expression. These contradictions are what make the reading specific.
+- When the chart gives precision, do not blur it into vibe language.
+
+BAD (too broad, could fit anyone):
+"You came in curious and electric."
+"Wired for intensity and discovery."
+"Maps what others miss."
+
+GOOD (chart-derived, specific):
+"You came in wanting the real version, not the polite one. Quick enough to read the room, but never satisfied by what people said on the surface."
+"You learned to say the true thing in a form other people could tolerate. Not because it was false, but because raw truth cost too much."
+"The ache lives in the gap between what you actually see and what you learned to say out loud."
+
+Do NOT use placeholder intensity language unless it is immediately grounded in something specific from the chart: "curious and electric", "wired for intensity", "maps what others miss", "fierce curiosity", "survival intelligence" — these are banned unless earned by a specific chart-derived observation right next to them.
+
+The dropdown should CONFIRM what is already clearly present in the prose. It should NOT be where the reading suddenly becomes specific.
+
+NARRATIVE SHAPE:
+This reading must feel like one continuous unfolding story, not five adjacent interpretations. Each section grows out of the one before it.
+
+Rules:
+- Use connective language: "so", "instead", "over time", "that's when", "from there", "eventually"
+- Write discoveries not conclusions. "This is what you learned to do" not "This is what happened."
+- Make transitions between sections explicit and causal.
+- Add real-life immediacy — sentences that feel embodied and happening now. "Even now, that part walks into a room and checks whether your light needs dimming."
+- Vary the language. Don't stack "too much", "hide", "shrink", "room" repeatedly.
+- Inside each section, prose should feel like a lived sequence, not explanatory commentary.
+
+PLACEMENTS: Each section includes a "placements" array — 2-4 key natal placements with "name" and "meaning" (1-2 plain-English sentences each). Only relevant placements. The dropdown supports what the prose already established.
+
+WORD BUDGET: About 1200 words total. You MUST include ALL JSON fields. Contact, A New Response, and closing are NOT optional.
 
 THIS CHART USES WHOLE SIGN HOUSES. ASC sign = House 1.
 
 KEY TERMS: Every section MUST include "key_terms" — exactly 3 short phrases (3-7 words each).
 Rules:
 - Plain language, emotionally resonant, specific to this chart
-- TRAP sections: name the cost, pattern, or stuck position. They sting.
+- TRAP sections: name the cost, pattern, or stuck position
 - WAY HOME sections: can be forward-facing
-- NOT clever, poetic, abstract, or metaphorical
-- NOT literal body descriptions
+- NOT clever, poetic, abstract, metaphorical, or body-literal
 - NOT positive-sounding when the cost is the point
 - Second person or imperative voice
 - Must make sense on its own
-
-GOOD: "feels what nobody is saying", "too much for the room", "earned love never just got it", "always the teacher never the student", "belongs everywhere is known nowhere", "permission to stop translating", "your turn to be met"
-BAD: "useful radar", "fire instead of bridge", "held breath in chest", "belongs without editing"
 
 ===
 
@@ -607,51 +627,38 @@ HOW YOUR PERFORMANCE TRAP FORMED
 
 01 ESSENCE — The Original Signal
 PLANETS: Moon, Sun, Ascendant, chart ruler, Mars, Venus
-Who this person was before adaptation. What the nervous system reached for. Write it so it feels alive and prior to the wound. Plain language. 2-3 short paragraphs.
-
-TRANSITION TO THE MISS: The last sentences of Essence should set up what went wrong. The reader should feel something shift — the signal was there, and then something happened to it.
+Who this person was before adaptation. What the nervous system reached for. Write it so it feels alive and prior to the wound. Use the actual chart tensions to make this specific. 2-3 short paragraphs. End by setting up what went wrong.
 
 02 THE MISS — What Belonging Required
 PLANETS: Moon aspects, 4th house, IC, Mercury, Mercury aspects, Neptune, Saturn, Uranus, Pluto
-Must include BOTH misattunement AND mixed signals. Show how the original signal was not met AND how the environment became contradictory or hard to trust. Make the connection to Essence explicit — this is what happened to that original reaching.
-Plain language. 2-3 short paragraphs.
-
-TRANSITION TO THE PERFORMANCE: End The Miss by showing the impossible position. Then The Performance opens by showing what the person did about it. Use "so", "instead", "that's when" — make the adaptation feel like a direct consequence.
+BOTH misattunement AND mixed signals. What was absent AND what was contradictory. Connect explicitly to Essence — this is what happened to that original reaching. Use chart-specific tensions. 2-3 short paragraphs. End by showing the impossible position.
 
 03 THE PERFORMANCE — How You Stayed Connected
 PLANETS: Saturn, Sun, ASC, Mercury, Mars, Venus, 6th/7th/10th house
-Who this person became. Includes the visible role AND the override mechanism (scanning, self-monitoring, body outranked by the room). Show the brilliance and the cost. Make it feel like a direct response to The Miss.
-Plain language. 2-3 short paragraphs.
-
-TRANSITION TO CONTACT: End The Performance by naming what it costs in real-time, right now. Then Contact opens by meeting the part that carries that cost.
+Who this person became. Visible adaptation AND override mechanism. Direct consequence of The Miss. Show brilliance and cost. Use chart contradictions to make the performance specific. 2-3 short paragraphs. End by naming what it costs right now.
 
 YOUR WAY HOME
 
 04 CONTACT — Meeting the Protectors and the Ache
 PLANETS: Moon, Saturn, Mercury, Venus, Mars, Neptune, Pluto, Chiron
-Protectors AND ache held together. The protectors are not the enemy — they are the adaptation itself, still running. The ache is what they were built around. The ache is the way home. When you can stay with both without collapsing into strategy or fleeing the feeling, the original signal begins to return.
-Write it so the reader feels something surfacing — not as hope, but as honest description of what happens when you stop running.
-Plain language. 2-3 short paragraphs.
-
-TRANSITION TO A NEW RESPONSE: The ache has surfaced. Now show what becomes possible because of that.
+Protectors AND ache together. The ache is the way home. What the protectors guard, what the ache holds, what returns when you stay with both. Make it feel like something surfacing. 2-3 short paragraphs.
 
 05 A NEW RESPONSE — The Move That Changes Things
 PLANETS: Mercury, Mars, Venus, Saturn, 7th house, ruler of 7th
-Not fight, not submit. The concrete relational move that becomes available once the person is more in contact with themselves. Include one utterance — a real sentence they could say out loud. Make it feel like a direct consequence of what Contact revealed.
-Plain language. 1-2 short paragraphs.
+Not fight, not submit. The concrete relational move. One utterance they could say out loud. Direct consequence of what Contact revealed. 1-2 short paragraphs.
 
-CLOSING: 3-5 sentences. A real scene. Not redemptive. Just real. Show the new response happening in a lived moment. The voice shakes. Nobody leaves. Something shifts.
+CLOSING: 3-5 sentences. Real scene. Not redemptive. Just real.
 
 RESPOND WITH ONLY VALID JSON, nothing before or after:
 {
   "sections": [
-    {"title": "Essence", "subtitle": "The original signal", "content": "2-3 paragraphs plain language", "key_terms": ["term 1", "term 2", "term 3"], "placements": [{"name": "placement", "meaning": "1-2 sentences"}]},
-    {"title": "The miss", "subtitle": "What belonging required", "content": "2-3 paragraphs plain language", "key_terms": ["term 1", "term 2", "term 3"], "placements": [{"name": "...", "meaning": "..."}]},
-    {"title": "The performance", "subtitle": "How you stayed connected", "content": "2-3 paragraphs plain language", "key_terms": ["term 1", "term 2", "term 3"], "placements": [{"name": "...", "meaning": "..."}]}
+    {"title": "Essence", "subtitle": "The original signal", "content": "2-3 paragraphs", "key_terms": ["term 1", "term 2", "term 3"], "placements": [{"name": "placement", "meaning": "1-2 sentences"}]},
+    {"title": "The miss", "subtitle": "What belonging required", "content": "2-3 paragraphs", "key_terms": ["term 1", "term 2", "term 3"], "placements": [{"name": "...", "meaning": "..."}]},
+    {"title": "The performance", "subtitle": "How you stayed connected", "content": "2-3 paragraphs", "key_terms": ["term 1", "term 2", "term 3"], "placements": [{"name": "...", "meaning": "..."}]}
   ],
   "way_home": [
-    {"title": "Contact", "subtitle": "Meeting the protectors and the ache", "content": "2-3 paragraphs plain language", "key_terms": ["term 1", "term 2", "term 3"], "placements": [{"name": "...", "meaning": "..."}]},
-    {"title": "A new response", "subtitle": "The move that changes things", "content": "1-2 paragraphs plain language", "utterance": "One sentence", "key_terms": ["term 1", "term 2", "term 3"], "placements": [{"name": "...", "meaning": "..."}]}
+    {"title": "Contact", "subtitle": "Meeting the protectors and the ache", "content": "2-3 paragraphs", "key_terms": ["term 1", "term 2", "term 3"], "placements": [{"name": "...", "meaning": "..."}]},
+    {"title": "A new response", "subtitle": "The move that changes things", "content": "1-2 paragraphs", "utterance": "One sentence", "key_terms": ["term 1", "term 2", "term 3"], "placements": [{"name": "...", "meaning": "..."}]}
   ],
   "closing": "3-5 sentences. Real scene."
 }`;
