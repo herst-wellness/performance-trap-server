@@ -566,99 +566,71 @@ VOICE RULES:
 - State the truth and stop. No comforting follow-up.
 - Never use the word "gift." Not once.
 
-WORD BUDGET: About 1200 words total for all sections combined. You MUST include ALL JSON fields. Contact and A New Response and closing are NOT optional. If you run out of space, shorten the earlier sections.
+CRITICAL WRITING RULE — PLAIN LANGUAGE IN THE BODY:
+The main body of each section must be written in plain human language with MINIMAL astrology jargon. Do NOT name planet signs, houses, or aspects in the main prose unless absolutely necessary for one brief anchor. The reading should be accessible to someone who does not care about astrology. Keep the emotional and psychological depth — just lose the jargon.
+
+PLACEMENTS: Each section must include a "placements" array — the key natal placements that shaped that section. Each placement has a "name" (e.g. "Moon in Scorpio in the 6th house") and a "meaning" (1-2 short plain-English sentences). Only include placements relevant to that section. Usually 2-4 per section.
+
+WORD BUDGET: About 1200 words total for all section content combined. You MUST include ALL JSON fields. Contact, A New Response, and closing are NOT optional.
 
 THIS CHART USES WHOLE SIGN HOUSES. ASC sign = House 1.
 
-KEY TERMS: Every section MUST include "key_terms" — exactly 3 short phrases (3-7 words each). These compress the section into its core emotional logic. They make the reading memorable. They give the reader a quick felt sense of the pattern.
-
+KEY TERMS: Every section MUST include "key_terms" — exactly 3 short phrases (3-7 words each).
 Rules for key terms:
-- Plain language a real person would use
-- Emotionally resonant and specific to this chart
-- Names something you DO or something that COSTS you
-- In the TRAP sections (Essence, The Miss, The Performance): name the cost, the pattern, the position you're stuck in. They should sting.
-- In the WAY HOME sections (Contact, A New Response): can be forward-facing — what becomes possible
-- NOT clever or poetic or decorative
-- NOT abstract or metaphorical
-- NOT literal body descriptions (never "tightness in throat", "held breath")
-- NOT positive-sounding when the cost is the point. "Belongs only if you edit yourself" not "belongs without editing"
-- Use second person or imperative voice ("speak truth when it arrives") NOT third person ("speaks truth")
-- Each term must make plain sense on its own with no context needed
-- Should reflect the section directly above them, not generic astrology
+- Plain language, emotionally resonant, specific to this chart
+- In TRAP sections: name the cost, pattern, or position. They sting.
+- In WAY HOME sections: can be forward-facing
+- NOT clever, poetic, abstract, or metaphorical
+- NOT literal body descriptions
+- NOT positive-sounding when the cost is the point
+- Use second person or imperative voice
+- Each must make sense on its own
 
-GOOD examples: "feels what nobody is saying", "too much for the room", "earned love never just got it", "the one who made it easy for everyone", "one step removed", "always the teacher never the student", "hasn't stopped scanning since childhood", "belongs everywhere is known nowhere", "done being the bridge", "permission to stop translating", "your turn to be met"
-
-BAD examples: "useful radar", "strategic patience", "fire instead of bridge", "betrayal of knowing", "held breath in chest", "the body became the tool", "belongs without editing", "suspended action in the throat"
+GOOD: "feels what nobody is saying", "too much for the room", "earned love never just got it", "always the teacher never the student", "belongs everywhere is known nowhere", "permission to stop translating", "your turn to be met"
+BAD: "useful radar", "fire instead of bridge", "held breath in chest", "belongs without editing"
 
 ===
 
-THE ARCHITECTURE — FIVE SECTIONS, TWO MOVEMENTS
+FIVE SECTIONS, TWO MOVEMENTS
 
-The reading is organized under two larger headers:
-
-HOW YOUR PERFORMANCE TRAP FORMED (3 sections)
-YOUR WAY HOME (2 sections + closing scene)
-
-The sequence must feel developmental: Essence → The Miss → The Performance → Contact → A New Response
+HOW YOUR PERFORMANCE TRAP FORMED
 
 01 ESSENCE — The Original Signal
 PLANETS: Moon, Sun, Ascendant, chart ruler, Mars, Venus
-What your nervous system reached for before it learned to stop reaching. The quality of contact your body expected before anything went wrong. This is the original signal before adaptation. What kind of contact did this person originally reach for? What was intact before the miss?
-Name the placements. Translate into gritty physical reality. Should sound foundational, alive, prior to the wound.
-2-3 short paragraphs.
+What your nervous system reached for before adaptation. Write in plain human language. 2-3 short paragraphs.
 
 02 THE MISS — What Belonging Required
-PLANETS: Moon aspects, 4th house, IC, rulers of Moon and 4th, Mercury, 3rd house, Mercury aspects, Neptune, Saturn, Uranus, Pluto
-This section MUST include BOTH:
-- Misattunement: how the original signal was not met. What was absent, conditional, withheld.
-- Mixed signals: the contradictions, the double bind. One channel said come closer, another said be careful. How the field became hard to read or trust.
-Saturn = chill, conditionality. Uranus = rupture, unpredictability. Neptune = blur, mixed signal. Pluto = intensity, hidden coercion. Mercury under pressure = contradiction, signal distortion.
-Do not split misattunement and mixed signals into separate pieces. They belong together.
-2-3 short paragraphs.
+PLANETS: Moon aspects, 4th house, IC, Mercury, Mercury aspects, Neptune, Saturn, Uranus, Pluto
+Must include BOTH misattunement AND mixed signals. Plain language. 2-3 short paragraphs.
 
 03 THE PERFORMANCE — How You Stayed Connected
-PLANETS: Saturn, Sun, Ascendant, chart ruler, Mercury, Mars, Venus, 6th house, 7th house, 10th house
-This section now includes BOTH:
-- The visible adaptation: the role, the face, the skills that kept the bond intact
-- The override mechanism: scanning, self-monitoring, adjusting before feeling, the body being outranked by the room, filtering impulse through what others can tolerate
-Always include both brilliance and cost. The Performance is not fake. It is adaptive intelligence. But it is also what creates the trap.
-2-3 short paragraphs.
+PLANETS: Saturn, Sun, ASC, Mercury, Mars, Venus, 6th/7th/10th house
+Includes visible adaptation AND override mechanism. Plain language. 2-3 short paragraphs.
 
 YOUR WAY HOME
 
 04 CONTACT — Meeting the Protectors and the Ache
 PLANETS: Moon, Saturn, Mercury, Venus, Mars, Neptune, Pluto, Chiron
-This section MUST include BOTH:
-- The protectors: intelligent, necessary, adaptive, not the enemy. What they do, what they guard.
-- The ache beneath them: the neglected signal, the wounded memory of essence, the place where the original truth still lives.
-Contact means being aware of both: the part that learned to manage the room AND the part underneath that still carries the neglected signal.
-The ache is the way home. This principle must appear in this section. The ache still remembers what mattered. When the person stays with it without translating, fixing, or performing, something true comes back online.
-Do NOT separate protectors and ache into different sections. They are held together here.
-2-3 short paragraphs.
+Protectors AND ache together. The ache is the way home. Plain language. 2-3 short paragraphs.
 
 05 A NEW RESPONSE — The Move That Changes Things
 PLANETS: Mercury, Mars, Venus, Saturn, 7th house, ruler of 7th
-Not fight, not submit. A way of communicating that doesn't require you to leave yourself to stay connected.
-Show what truth-telling looks like now. What boundary looks like. How the recovered signal changes the relational field.
-Include one concrete utterance — a real sentence this person could say out loud. Specific to their chart. Slightly dangerous. Not polished.
-Make this section concrete. Show the relational move.
-1-2 short paragraphs.
+Not fight, not submit. Concrete relational move. Include one utterance. Plain language. 1-2 short paragraphs.
 
-CLOSING SCENE:
-After A New Response, include a closing scene — 3-5 sentences showing a real moment where the new response is happening. Drawn from the chart. Not redemptive. Just real. The voice shakes. Nobody leaves. Something shifts.
+CLOSING: 3-5 sentences. Real scene. Not redemptive.
 
 RESPOND WITH ONLY VALID JSON, nothing before or after:
 {
   "sections": [
-    {"title": "Essence", "subtitle": "The original signal", "content": "2-3 paragraphs", "key_terms": ["term 1", "term 2", "term 3"]},
-    {"title": "The miss", "subtitle": "What belonging required", "content": "2-3 paragraphs including mixed signals", "key_terms": ["term 1", "term 2", "term 3"]},
-    {"title": "The performance", "subtitle": "How you stayed connected", "content": "2-3 paragraphs including override", "key_terms": ["term 1", "term 2", "term 3"]}
+    {"title": "Essence", "subtitle": "The original signal", "content": "2-3 paragraphs plain language", "key_terms": ["term 1", "term 2", "term 3"], "placements": [{"name": "placement name", "meaning": "1-2 sentences plain English"}]},
+    {"title": "The miss", "subtitle": "What belonging required", "content": "2-3 paragraphs plain language", "key_terms": ["term 1", "term 2", "term 3"], "placements": [{"name": "...", "meaning": "..."}]},
+    {"title": "The performance", "subtitle": "How you stayed connected", "content": "2-3 paragraphs plain language", "key_terms": ["term 1", "term 2", "term 3"], "placements": [{"name": "...", "meaning": "..."}]}
   ],
   "way_home": [
-    {"title": "Contact", "subtitle": "Meeting the protectors and the ache", "content": "2-3 paragraphs. Protectors AND ache together. The ache is the way home.", "key_terms": ["term 1", "term 2", "term 3"]},
-    {"title": "A new response", "subtitle": "The move that changes things", "content": "1-2 paragraphs", "utterance": "One sentence they could say out loud", "key_terms": ["term 1", "term 2", "term 3"]}
+    {"title": "Contact", "subtitle": "Meeting the protectors and the ache", "content": "2-3 paragraphs plain language", "key_terms": ["term 1", "term 2", "term 3"], "placements": [{"name": "...", "meaning": "..."}]},
+    {"title": "A new response", "subtitle": "The move that changes things", "content": "1-2 paragraphs plain language", "utterance": "One sentence", "key_terms": ["term 1", "term 2", "term 3"], "placements": [{"name": "...", "meaning": "..."}]}
   ],
-  "closing": "3-5 sentences. A real scene. Not redemptive. Just real."
+  "closing": "3-5 sentences. Real scene."
 }`;
 
 
