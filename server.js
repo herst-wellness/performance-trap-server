@@ -494,7 +494,7 @@ function formatTransitsForPrompt(transitData) {
     lines.push('');
   }
 
-  lines.push('FOR THE transits.synthesis FIELD: Write one paragraph of 4 to 6 sentences. No astrology labels in prose. Translate this into human experience. Make it feel like the structure is being audited, loosened, glitched, or exposed.');
+  lines.push('FOR THE transits.synthesis FIELD: Write one paragraph of 3 to 5 sentences. No astrology labels in prose. Translate this into human experience. Make it feel like the structure is being audited, loosened, glitched, or exposed.');
 
   return lines.join('\n');
 }
@@ -556,7 +556,6 @@ what is starting to crack,
 what third option becomes possible.
 
 VOICE
-
 - Direct
 - Human
 - Restrained
@@ -566,19 +565,16 @@ VOICE
 - No inflated spirituality
 - Somatic when earned
 - Short to medium sentences
-- Hard truth without dramatizing
 - Never call trauma a gift
 - Never romanticize the wound
 
 THE READING MUST FEEL LIKE
-
 - one person, not a type
 - one trap, not one slogan
 - one architecture, not one theme
 - one story, not stacked summaries
 
 CRITICAL WRITING STANDARD
-
 Do not summarize too early.
 Do not give the conclusion before showing the mechanism.
 Do not make the person sound impressive before you make the trap visible.
@@ -619,7 +615,6 @@ SECTION RULES
 Subtitle: The original face
 
 This section must sound like origin.
-
 Use language like:
 - when you came into the world
 - the part of you that arrived first
@@ -639,10 +634,6 @@ PRIORITY WEIGHTING:
 - chart ruler if truly original
 - Mercury or Sun only if they clearly belong to the original face and not later adaptation
 
-IMPORTANT:
-Do not make Essence sound like the adult role.
-Do not lead with translator, teacher, framework-maker, or usefulness unless the chart truly makes that original.
-
 Essence should feel:
 - early
 - alive
@@ -650,19 +641,12 @@ Essence should feel:
 - pre-armor
 - specific
 
-2 to 3 paragraphs.
+2 short paragraphs only.
 
 2. The miss
 Subtitle: How you were missed
 
 This section must grow directly out of Essence.
-
-The Miss is NOT just:
-- your intensity was too much
-- your truth was too much
-- people couldn't handle you
-
-That is too flat.
 
 The Miss must include:
 - mismatch
@@ -675,12 +659,6 @@ The Miss must include:
 This section should often show:
 surface reality versus underground reality
 
-Examples of the kind of logic you want:
-- things should stay composed, but something heavier was moving underneath
-- feel everything, but do not add your own weight
-- be useful, but do not need
-- bring insight, but do not disturb the system
-
 PRIORITY WEIGHTING:
 - Moon aspects
 - 4th house / IC
@@ -691,10 +669,9 @@ PRIORITY WEIGHTING:
 - Venus
 - Mercury for mixed messages and double-bind logic
 
-Do not drift into the person's adaptation yet.
 Stay with what the field did to the original signal.
 
-2 to 3 paragraphs.
+2 short paragraphs only.
 
 3. The performance, the contortion
 Subtitle: What you learned to become
@@ -704,44 +681,15 @@ This section must be layered.
 Do not stop at one adaptation.
 If the chart supports multiple layers, show multiple layers.
 
-This is where the reading must move closer to blueprint depth.
-
-The question is not just:
-What role did they become?
-
-Also ask:
+Ask:
 What formed first?
 What formed on top of that?
 What became smooth enough to feel natural?
 What part of the self learned to self-arrest?
 
-Potential layers include:
-- containment
-- usefulness
-- translation
-- room-reading
-- self-monitoring
-- self-arrest
-- competence
-- explanation
-- teaching
-- meaning-making
-- emotional management
-- relational diplomacy
-- performing steadiness
-- becoming easy to receive
-
 This section should often contain:
 first contortion
 then second contortion
-
-For example:
-- depth becomes containment
-- then directness becomes self-interrogation
-
-or:
-- intensity becomes usefulness
-- then usefulness becomes identity
 
 PRIORITY WEIGHTING:
 - Mercury
@@ -752,39 +700,23 @@ PRIORITY WEIGHTING:
 - South Node if relevant
 - 6th / 7th / 10th / 11th houses as relevant
 
-CRITICAL:
-The performance must include brilliance and cost.
-And it must show how the adaptation became hard to detect.
-
-2 to 4 paragraphs.
+2 short paragraphs only.
 
 4. The mask you learned
 Subtitle: The face that made the trap invisible
 
-This section is distinct from the contortion.
-
-The contortion is how the self bent.
-The mask is the face that made the bending look like personality, brilliance, maturity, wisdom, or value.
-
-This is one of the most important sections for depth.
+This is distinct from the contortion.
 
 The mask should answer:
 Why did nobody question this defense?
 Why did it look admirable?
 Why did the outside world experience it as gift rather than distance?
 
-This section should often include:
+This section should show:
 - the elegant face
 - the useful face
 - the gifted face
 - the socially rewarded face
-- the meaning-making face
-- the competent face
-
-This is where you can show:
-not shutdown
-not obvious defense
-something much more polished and effective
 
 PRIORITY WEIGHTING:
 - Ascendant
@@ -795,46 +727,24 @@ PRIORITY WEIGHTING:
 - South Node
 - 7th / 10th / 11th house expression
 
-IMPORTANT:
-Do not just say the person was impressive.
-Show how the mask created distance while still looking warm, gifted, wise, useful, or compelling.
-
-2 to 3 paragraphs.
+2 short paragraphs only.
 
 5. Contact
 Subtitle: The way home begins here
 
-The tone turns here.
-
-Do not start with inspiration.
-Start with visibility.
-
-The best Contact sections do not merely say:
-- you are tired
-- there is an ache
-- the protectors are in the way
-
-They show the structure becoming visible as structure.
+Start with visibility, not inspiration.
 
 This section should often include:
 - the manager sounding less like identity and more like instruction
 - the narrator beginning to glitch
 - the smooth adaptation showing its seams
-- the old reflex no longer feeling seamless
 - protectors revealing themselves as protectors
 
 This section must hold BOTH:
 - protectors
 - ache
 
-The protectors are not the enemy.
-The ache is not separate from them.
-The ache is what they formed around.
-
 The ache is the way home.
-
-The best Contact sections make the reader feel:
-the original face is still in there
 
 PRIORITY WEIGHTING:
 - Moon
@@ -847,7 +757,7 @@ PRIORITY WEIGHTING:
 - Neptune
 - relevant transits if they expose the machinery
 
-2 to 3 paragraphs.
+2 short paragraphs only.
 
 6. A new response
 Subtitle: What becomes possible now
@@ -867,16 +777,7 @@ But the actual move must be routed through:
 
 This section must NOT feel like generic coaching advice.
 
-Do not default automatically to:
-- say your truth
-- name your need
-- stay with feeling
-- set a boundary
-- stop people-pleasing
-
-Unless the chart specifically supports that move.
-
-This section should usually be framed as:
+Frame it as:
 the third option
 
 Not:
@@ -886,62 +787,33 @@ save the room through performance
 But:
 less interference, more signal
 
-The new response is not:
-a better performance
-a wiser explanation
-a more evolved mask
-
-It is:
-the original signal entering relationship with less obstruction
-
 The utterance should be:
 - short
 - human
 - real
 - unbranded
-- something someone could actually say
 
-BAD
-- I speak my truth now
-- I choose authenticity
-- Here is my higher truth
-
-BETTER
-- I need to say this straight.
-- This is landing harder than I'm showing.
-- I don't want to edit this first.
-- I'm hurt, and I don't want to package it.
-- That doesn't line up for me.
-
-1 to 2 paragraphs plus utterance.
+1 short paragraph plus utterance.
 
 KEY TERMS
-
 Each section must contain exactly 3 key_terms.
-They should be:
-- natural
-- memorable
-- specific
-- clean
-- readable aloud
-- not slogans
-- not abstract branding phrases
+They should be natural, memorable, specific, and readable aloud.
+Not slogans.
 
-The best key terms feel like distilled mechanics, not catchy copy.
+PLACEMENTS
+Each section must contain 2 to 4 placements.
+Each meaning must be one short sentence.
+Plain English. Exact. No filler.
 
 CLOSING
-
-3 to 5 sentences.
+3 to 4 sentences.
 A real scene.
 The old machinery appears.
 A new possibility opens.
-No neat ending.
-No redemption arc.
-Just a concrete moment where the structure is present and a different response becomes possible.
+No neat redemption.
 
 TRANSITS
-
-1 paragraph.
+1 short paragraph.
 No astrology labels in the prose.
 It should feel like:
 the system is under audit,
@@ -949,8 +821,6 @@ the mask is glitching,
 the structure is loosening,
 the camouflage is failing,
 the original signal is closer to the surface.
-
-FINAL OUTPUT FORMAT
 
 RESPOND WITH ONLY VALID JSON:
 {
@@ -1056,182 +926,6 @@ function validateReading(reading) {
   return problems;
 }
 
-function addToMailchimp(email, firstName) {
-  return new Promise(resolve => {
-    const parts = firstName.trim().split(' ');
-    const fname = parts[0] || firstName;
-    const lname = parts.slice(1).join(' ') || '';
-    const body = JSON.stringify({
-      email_address: email,
-      status: 'subscribed',
-      merge_fields: { FNAME: fname, LNAME: lname },
-    });
-    const auth = Buffer.from(`anystring:${MAILCHIMP_KEY}`).toString('base64');
-
-    const req = https.request({
-      hostname: `${MAILCHIMP_SERVER}.api.mailchimp.com`,
-      path: `/3.0/lists/${MAILCHIMP_LIST_ID}/members`,
-      method: 'POST',
-      headers: {
-        'Authorization': `Basic ${auth}`,
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(body),
-      },
-    }, res => {
-      let d = '';
-      res.on('data', c => d += c);
-      res.on('end', () => {
-        console.log('Mailchimp status:', res.statusCode, d.substring(0, 200));
-        resolve({ ok: true });
-      });
-    });
-
-    req.on('error', e => {
-      console.log('Mailchimp error:', e.message);
-      resolve({ ok: true });
-    });
-
-    req.write(body);
-    req.end();
-  });
-}
-
-function callAnthropicOnce(system, userMsg) {
-  const body = JSON.stringify({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 10000,
-    system,
-    messages: [{ role: 'user', content: userMsg }],
-  });
-
-  return new Promise((resolve, reject) => {
-    const req = https.request({
-      hostname: 'api.anthropic.com',
-      path: '/v1/messages',
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(body),
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-      },
-    }, res => {
-      let d = '';
-      res.on('data', c => d += c);
-      res.on('end', () => {
-        try {
-          if (d.trim().startsWith('<') || res.statusCode >= 400) {
-            throw new Error('Anthropic API returned status ' + res.statusCode + ': ' + d.substring(0, 200));
-          }
-
-          const a = JSON.parse(d);
-          if (a.error) throw new Error(a.error.message);
-          const raw = a.content?.[0]?.text || '';
-
-          function robustJsonParse(text) {
-            let s = text.replace(/```json\s*/g, '').replace(/```/g, '').trim();
-            const start = s.indexOf('{');
-            if (start === -1) throw new Error('No JSON object found');
-
-            let depth = 0;
-            let end = -1;
-            let inString = false;
-            let escape = false;
-
-            for (let i = start; i < s.length; i++) {
-              const ch = s[i];
-              if (escape) {
-                escape = false;
-                continue;
-              }
-              if (ch === '\\') {
-                escape = true;
-                continue;
-              }
-              if (ch === '"') {
-                inString = !inString;
-                continue;
-              }
-              if (inString) continue;
-              if (ch === '{') depth += 1;
-              else if (ch === '}') {
-                depth -= 1;
-                if (depth === 0) {
-                  end = i;
-                  break;
-                }
-              }
-            }
-
-            if (end === -1) throw new Error('Unmatched braces');
-            s = s.substring(start, end + 1);
-
-            try {
-              return JSON.parse(s);
-            } catch {}
-
-            s = s.replace(/,\s*]/g, ']').replace(/,\s*}/g, '}');
-            try {
-              return JSON.parse(s);
-            } catch {}
-
-            const oneLine = s
-              .replace(/[\r\n]+/g, ' ')
-              .replace(/\s+/g, ' ')
-              .replace(/,\s*]/g, ']')
-              .replace(/,\s*}/g, '}');
-
-            return JSON.parse(oneLine);
-          }
-
-          resolve(robustJsonParse(raw));
-        } catch (e) {
-          reject(e);
-        }
-      });
-    });
-
-    req.setTimeout(60000, () => {
-      req.destroy(new Error('Anthropic request timeout'));
-    });
-
-    req.on('error', e => {
-      console.error('Anthropic request error:', e.message, e.code);
-      reject(e);
-    });
-
-    req.write(body);
-    req.end();
-  });
-}
-
-async function callAnthropic(system, userMsg, retries = 3) {
-  for (let attempt = 1; attempt <= retries; attempt++) {
-    try {
-      return await callAnthropicOnce(system, userMsg);
-    } catch (e) {
-      const retryable =
-        (e.message && (
-          e.message.includes('Overloaded') ||
-          e.message.includes('529') ||
-          e.message.includes('503') ||
-          e.message.includes('timeout') ||
-          e.message.includes('ECONNRESET')
-        )) ||
-        e.code === 'ECONNRESET';
-
-      if (retryable && attempt < retries) {
-        const wait = attempt * 8000;
-        console.log(`Anthropic retry ${attempt}/${retries} in ${wait / 1000}s because of:`, e.message);
-        await new Promise(r => setTimeout(r, wait));
-        continue;
-      }
-
-      throw e;
-    }
-  }
-}
-
 async function repairReadingIfNeeded(reading, chartText, transitPrompt, name) {
   const problems = validateReading(reading);
   if (!problems.length) return reading;
@@ -1243,7 +937,7 @@ Repair the draft without flattening it.
 Keep the layered architecture.
 Remove astrology labels from prose.
 Strengthen any section that feels one-note or generic.
-If the reading sounds too simple, rebuild complexity from the chart while keeping readability.`;
+Keep sections concise.`;
 
   const repairPrompt = [
     `Repair this reading for ${name}.`,
@@ -1320,31 +1014,6 @@ function textToHtml(text) {
   </table>
 </body>
 </html>`;
-}
-
-function sendResendEmail(to, subject, html) {
-  return new Promise((resolve, reject) => {
-    const body = JSON.stringify({ from: FROM_EMAIL, to: [to], subject, html });
-
-    const req = https.request({
-      hostname: 'api.resend.com',
-      path: '/emails',
-      method: 'POST',
-      headers: {
-        'Authorization': 'Bearer ' + RESEND_API_KEY,
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(body),
-      },
-    }, res => {
-      let d = '';
-      res.on('data', c => d += c);
-      res.on('end', () => resolve({ ok: res.statusCode < 300 }));
-    });
-
-    req.on('error', reject);
-    req.write(body);
-    req.end();
-  });
 }
 
 const EMAIL1 = {
@@ -1453,13 +1122,11 @@ It's not a sales call. It's not a pitch. It's just the beginning of learning wha
 async function sendNurtureSequence(email) {
   try {
     await sendResendEmail(email, EMAIL1.subject, textToHtml(EMAIL1.text));
-
     setTimeout(async () => {
       try {
         await sendResendEmail(email, EMAIL2.subject, textToHtml(EMAIL2.text));
       } catch {}
     }, 2 * 24 * 60 * 60 * 1000);
-
     setTimeout(async () => {
       try {
         await sendResendEmail(email, EMAIL3.subject, textToHtml(EMAIL3.text));
@@ -1468,6 +1135,31 @@ async function sendNurtureSequence(email) {
   } catch (e) {
     console.error('Nurture sequence error:', e.message);
   }
+}
+
+function sendResendEmail(to, subject, html) {
+  return new Promise((resolve, reject) => {
+    const body = JSON.stringify({ from: FROM_EMAIL, to: [to], subject, html });
+
+    const req = https.request({
+      hostname: 'api.resend.com',
+      path: '/emails',
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + RESEND_API_KEY,
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(body),
+      },
+    }, res => {
+      let d = '';
+      res.on('data', c => d += c);
+      res.on('end', () => resolve({ ok: res.statusCode < 300 }));
+    });
+
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
 }
 
 function fetchJSON(url, headers = {}) {
@@ -1684,7 +1376,7 @@ const server = http.createServer(async (req, res) => {
 
         const reqBody = JSON.stringify({
           model: 'claude-haiku-4-5-20251001',
-          max_tokens: 8096,
+          max_tokens: 5000,
           system: expandSYS,
           messages: [{ role: 'user', content: 'Expand this reading into a long-form PDF version.\n\n' + readingText }],
         });
@@ -1721,6 +1413,10 @@ const server = http.createServer(async (req, res) => {
               res.end(JSON.stringify({ error: e.message }));
             }
           });
+        });
+
+        apiReq.setTimeout(180000, () => {
+          apiReq.destroy(new Error('Expand request timeout'));
         });
 
         apiReq.on('error', e => {
