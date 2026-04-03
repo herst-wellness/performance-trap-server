@@ -387,6 +387,24 @@ function chartToText(chart, name) {
 
 const SYS = `You are writing a natal chart reading through the Performance Trap Framework. Chad Herst's system. His voice.
 
+IMPORTANT CORE CORRECTION
+Do NOT confuse the adult adaptation with the original essence.
+
+The reading must follow this book-based architecture:
+- Essence is the vulnerable, tender, receptive, alive part that reached first.
+- The Miss is where need, softness, dependency, feeling, or emotional reality became unsafe, shamed, blurred, or costly.
+- The Performance is the later strategy that formed so the person would not have to occupy the position of the needy, overwhelmed, dependent, exposed one.
+- Contact is awareness of both the protector and the vulnerable ache underneath it.
+- A New Response is not just clearer truth-telling. It may also be naming hurt, need, impact, uncertainty, or tenderness without replacing it with competence.
+
+This means:
+- attachment first
+- adaptation second
+
+Never let the armor become the essence.
+Never let the adult style become the child self.
+Never assume the strongest adult trait was the original signal.
+
 VOICE
 - Peer to peer. Direct. No mystic. No guru.
 - Somatic when earned. Never spiritual.
@@ -442,6 +460,9 @@ BETTER
 - the pause between knowing and speaking is where you lose yourself
 - you learned to read two things at once
 - say it before you edit it
+- you learned not to need much
+- you became the steady one
+- you made yourself useful instead of vulnerable
 
 ABSOLUTE BAN: NO ASTROLOGY LABELS IN THE MAIN PROSE
 Do NOT name:
@@ -512,14 +533,17 @@ They must be:
 - not abstract
 
 Good style:
-- sees underneath the surface
-- too much too fast
+- needed without feeling safe
+- learned not to need
+- became the steady one
 - package the cutting truth
 - pause before speaking
 - tired of translating yourself
 - say it before editing
+- let hurt be visible
+- stop replacing need with competence
 
-SECTIONS
+FIVE SECTIONS
 
 HOW YOUR PERFORMANCE TRAP FORMED
 
@@ -529,20 +553,23 @@ Subtitle: The original signal
 Definition:
 What your nervous system reached for before it learned to stop reaching. The quality of contact your body expected before anything went wrong.
 
-Function:
-This section must stay PURELY original signal.
-No adaptation here.
-No usefulness.
-No helping.
-No room management.
-No translation.
-No packaging.
+CRITICAL:
+Essence is not the polished adult edge.
+Essence is not the later coping style.
+Essence is not the strongest adaptation.
+Essence is not the mask.
 
 Essence is:
-- what this system naturally wanted
-- how it moved before distortion
-- what kind of contact it expected
-- what felt alive before the miss
+- what was most alive before defense
+- what was most tender, permeable, wanting, receptive, direct, or trusting before the miss
+- how this person naturally reached for contact before they had to manage it
+
+If the chart contains both sensitivity and later sharpness, prioritize the sensitivity here and save the sharpness for Performance unless it clearly belonged to the original child signal.
+
+Questions:
+- What did this person originally want from contact?
+- What was vulnerable, alive, or unguarded in them?
+- What did their body expect to be safe before anything got distorted?
 
 2 to 3 short paragraphs.
 End by setting up what went wrong.
@@ -553,10 +580,14 @@ Subtitle: What belonging required
 Definition:
 The gap between what you needed and what the environment could deliver. Not just the absence of attunement, but the presence of contradiction. One signal said come closer. Another said be careful. This is where misattunement and mixed messages meet.
 
-Function:
-This section must include BOTH:
-- misattunement
-- mixed messages / contradiction / confusion
+CRITICAL:
+This section is not only "people couldn't handle your truth."
+It may be:
+- need was unsafe
+- softness was shamed
+- dependence felt humiliating
+- feeling too much became costly
+- the field was contradictory, blurred, withholding, coercive, or hard to trust
 
 The Miss is:
 - what the environment did to the signal
@@ -576,20 +607,19 @@ Subtitle: How you stayed connected
 Definition:
 The face you built for managing the room. A set of skills, responses, and offerings designed to keep the bond intact. Brilliant adaptation. Also the thing that's been eating you alive.
 
-Function:
-This is where adaptation lives.
-The face.
-The role.
-The translation.
-The override.
+CRITICAL:
+This is where later adult style belongs.
+This is where the translator, teacher, achiever, stabilizer, helper, framework-maker, room-reader, useful one, steady one, or meaning-maker belongs.
 
-Show how the raw signal from Essence got converted into something relationally safer.
+The Performance is:
+- who they became so they would not have to occupy the position of the needy, overwhelmed, dependent, exposed one
+- the role that preserved belonging
+- the strategy that made them valuable, admirable, manageable, or safe
+- the override that filters direct signal through other people's comfort, needs, or capacity
 
 This section must include:
 - the visible adaptation
 - the inner mechanism that keeps it running
-- the packaging of truth into something people can tolerate
-- the split between direct signal and strategic delivery
 - the brilliance and the cost
 
 2 to 3 short paragraphs.
@@ -605,13 +635,21 @@ Awareness of both the protectors and the ache beneath them. The protectors are n
 
 The ache is the way home.
 
-Function:
-Make this immediate and embodied.
+CRITICAL:
+This is not vague healing language.
+Make it immediate and embodied.
 Show the split in real time.
 Show the pause.
 Show the calculation.
 Show the body.
-Show the cost.
+Show what becomes visible when competence loosens.
+
+Contact may involve:
+- the ache of always editing
+- the ache of never being fully received
+- the ache of not being allowed to need
+- the ache of always being the strong one
+- the ache of turning feeling into usefulness before it can be felt
 
 2 to 3 short paragraphs.
 
@@ -621,12 +659,21 @@ Subtitle: The move that changes things
 Definition:
 Not fight, not submit. A way of communicating that doesn't require you to leave yourself to stay connected.
 
-Function:
+CRITICAL:
 This is NOT always say it raw.
 This is NOT brutality.
 This is NOT accommodation.
 
 It is a cleaner response that does not require self-erasure.
+
+Depending on the chart, the new response may be:
+- clearer truth-telling
+- naming hurt
+- naming impact
+- naming need
+- admitting uncertainty
+- staying visible while affected
+- refusing to replace vulnerability with competence
 
 Show:
 - what changes in the moment of speaking
@@ -651,10 +698,13 @@ BAD:
 BETTER:
 - I need to say this straight.
 - That doesn't line up for me.
-- I'm not going to soften this first.
+- I'm more affected than I'm showing.
+- That actually hurt.
+- I don't want to pretend I'm fine.
 - Here's the part that feels true to me.
 - This is what I'm noticing.
 - I want to say this more directly.
+- I need something here.
 
 CLOSING
 3 to 5 sentences.
@@ -679,8 +729,52 @@ Rules for "meaning":
 - no technical overflow
 - no vague filler
 
-CRITICAL:
-The placements must match the prose exactly.
+CRITICAL WEIGHTING
+Essence should lean more heavily toward:
+- Moon
+- Venus
+- 4th house / IC material
+- Ascendant
+- chart ruler only if it reflects the original reaching
+
+The Miss should lean more heavily toward:
+- Moon aspects
+- 4th / IC
+- ruler of the 4th
+- Saturn
+- Neptune
+- Pluto
+- Uranus
+- Venus
+- Mercury for contradiction and mixed messages
+
+Performance should lean more heavily toward:
+- Mercury
+- Saturn
+- Mars
+- Sun
+- Ascendant
+- 6th / 7th / 10th
+
+Contact should lean especially toward:
+- Moon
+- Saturn
+- Venus
+- Chiron
+then:
+- Mercury
+- Mars
+- Pluto
+- Neptune
+
+A New Response should lean toward:
+- Mercury
+- Venus
+- Mars
+- Saturn
+- 7th house
+- ruler of the 7th
+
 Do not pick placements just because they are nearby.
 Pick the placements most directly shaping that specific section.
 
@@ -843,7 +937,9 @@ Repair only what is broken.
 
 Common failures:
 - astrology labels leaked into main prose
-- Essence drifted into adaptation
+- Essence drifted into adult adaptation
+- essence described armor instead of vulnerability
+- The Miss became only about truth-telling instead of attachment injury
 - sections sounded generic
 - placements did not match prose tightly enough
 - key_terms were weak or slogan-like
@@ -852,7 +948,10 @@ Common failures:
 
 In repair mode:
 - remove all astrology labels from the main prose
-- tighten the prose so it feels more exact and less generic
+- restore the book-based architecture
+- make Essence more vulnerable and pre-adaptive
+- make The Miss more attachment-based where appropriate
+- keep Performance as the later strategy
 - keep the reading human and specific
 - make the placements arrays more exact and better matched to the prose
 - keep the output JSON shape exactly the same`;
@@ -1215,6 +1314,237 @@ function formatTransitsForPrompt(transitData) {
   return lines.join('\n');
 }
 
+function textToHtml(text) {
+  const bodyHtml = text.split('\n\n').map(p => {
+    if (p.includes('https://chadherst.as.me/30-minute-consult-chad-herst')) {
+      return `<tr><td align="center" style="padding:24px 0;">
+        <a href="https://chadherst.as.me/30-minute-consult-chad-herst" style="display:inline-block; font-family:'Cormorant Garamond',Georgia,serif; font-size:14px; letter-spacing:0.15em; text-transform:uppercase; padding:14px 36px; border:1px solid #8B6B1E; color:#8B6B1E; text-decoration:none;">Book a 30-minute conversation</a>
+      </td></tr>`;
+    }
+    return `<tr><td style="padding:0 0 20px 0; font-family:'Cormorant Garamond',Georgia,serif; font-size:17px; line-height:1.9; color:#352515;">${p.replace(/\n/g, '<br>')}</td></tr>`;
+  }).join('\n');
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!--[if mso]>
+  <style>* { font-family: Georgia, serif !important; }</style>
+  <![endif]-->
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap');
+  </style>
+</head>
+<body style="margin:0; padding:0; background-color:#F4EDE4;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#F4EDE4;">
+    <tr>
+      <td align="center" style="padding:40px 20px;">
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px; width:100%;">
+          <tr>
+            <td align="center" style="padding:0 0 32px 0; border-bottom:1px solid #8B6B1E;">
+              <img src="${LOGO_URL}" alt="Herst Wellness" width="600" style="display:block; margin:0 auto; width:100%; max-width:600px; height:auto;" />
+            </td>
+          </tr>
+          <tr><td style="padding:20px 0 0 0;">&nbsp;</td></tr>
+          <tr>
+            <td>
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                ${bodyHtml}
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td align="center" style="padding:40px 0 20px 0; border-top:1px solid #E8DED3;">
+              <img src="${LOGO_URL}" alt="Herst Wellness" width="200" style="display:block; margin:0 auto 16px auto; max-width:200px; height:auto;" />
+              <p style="font-family:'Cormorant Garamond',Georgia,serif; font-size:12px; color:#4F4130; margin:0 0 8px 0; line-height:1.6;">
+                765 Market St, San Francisco, CA 94103<br>
+                (415) 686-4411 &middot; <a href="mailto:chad@herstwellness.com" style="color:#8B6B1E; text-decoration:none;">chad@herstwellness.com</a>
+              </p>
+              <p style="font-family:'Cormorant Garamond',Georgia,serif; font-size:12px; color:#4F4130; margin:0;">
+                <a href="https://map.herstwellness.com" style="color:#8B6B1E; text-decoration:none;">map.herstwellness.com</a>
+              </p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+// RESEND EMAIL SEQUENCE
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const FROM_EMAIL = 'Chad Herst <chad@herstwellness.com>';
+
+function sendResendEmail(to, subject, html) {
+  return new Promise((resolve, reject) => {
+    const body = JSON.stringify({
+      from: FROM_EMAIL,
+      to: [to],
+      subject,
+      html
+    });
+
+    const req = https.request({
+      hostname: 'api.resend.com',
+      path: '/emails',
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + RESEND_API_KEY,
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(body)
+      }
+    }, res => {
+      let d = '';
+      res.on('data', c => d += c);
+      res.on('end', () => {
+        console.log('Resend response:', res.statusCode, d.substring(0, 100));
+        resolve({ ok: res.statusCode < 300 });
+      });
+    });
+
+    req.on('error', e => {
+      console.error('Resend error:', e.message);
+      reject(e);
+    });
+
+    req.write(body);
+    req.end();
+  });
+}
+
+const EMAIL1 = {
+  subject: 'What your reading is actually telling you',
+  text: `You just completed a reading that mapped something you've been living inside your whole life.
+
+The reading shows you a pattern. It's not new. You've been running it for decades. But seeing it named, seeing the layers stacked on top of each other, that hits different.
+
+I know because I've lived it. When my brother took his life at twenty, I was sent back to school with no space to grieve. Just go, be fine, don't make it harder on your parents. So I learned the role. I became the good kid. And I've been running that role ever since.
+
+Here's what your reading is actually saying:
+
+At some point early on, you learned that just being yourself wasn't enough to stay connected. So you built a face for the room. You learned the role that would keep you safe, keep you loved, keep you belonging.
+
+That role works. It's gotten you far. But it costs something. Every time you showed up as that version of yourself instead of the real one, something inside got left behind. Overridden. Pushed down.
+
+The reading names that role, your Performance Archetype. It's not a flaw. It's brilliant adaptation. Your nervous system learned how to survive in an environment where connection had to be earned.
+
+But here's what the reading can't tell you: what happens when you finally stop performing.
+
+That's the real work. That's where things change.
+
+For now, sit with this one question:
+
+What would it feel like to just show up as you are, without needing to prove anything first?
+
+Don't answer it. Just let it live in your body for a few days.
+
+—Chad`
+};
+
+const EMAIL2 = {
+  subject: "The thing your reading couldn't say",
+  text: `I want to tell you something that most people skip over.
+
+Insight feels good. You see the pattern, you name it, you understand how you got here. For a moment, it feels like you've solved something. But then you go back to your life, and the pattern is still running.
+
+You still hold your breath before you speak.
+
+You still check the room before you let yourself need.
+
+You still swallow what's true to keep the peace.
+
+The reading showed you the trap. But understanding the trap doesn't spring it.
+
+There's something deeper underneath the performance. I call it the Sacred Wound.
+
+It's not one moment. It's thousands of moments, every time you felt something true and set it aside to stay connected. Every time you chose the relationship over your own truth. That accumulation lives in your body. As tightness. As ache. As something unfinished.
+
+The wound is sacred not because the pain is good. It's sacred because it's precise. It shows you exactly where you've been leaving yourself. And if you stay with it, not fix it, not transcend it, just stay, it becomes a doorway back to yourself.
+
+I spent years trying to meditate it away, stretch past it, yoga it into submission. Then I finally sat still long enough to feel the knot in my gut, that tight, deep thing that had been sitting there for decades, and something in me shifted. Not because it went away. Because I finally stopped running from it.
+
+But here's what stops most people: the moment you touch that wound, your nervous system panics.
+
+Because you've learned something old and deep: needing is dangerous. Showing what hurts makes you too much. So the moment the ache rises, you do what you've always done, you push it down, medicate it, achieve past it, anything but feel it.
+
+That's where the protectors come in.
+
+They're the parts of you that learned to manage, to perform, to stay busy, to stay fine. They're not the enemy. They're the reason you survived. But they're also the reason you're still running the same pattern.
+
+The work isn't about destroying the protectors. It's about finally meeting them. Sitting with them instead of being run by them. When you can do that, something underneath begins to surface.
+
+Contact.
+
+Not the performance of connection. The real thing. You with you. Finally staying long enough to hear what's been trying to reach you all along.
+
+—Chad`
+};
+
+const EMAIL3 = {
+  subject: 'If you want to take this further',
+  text: `You've had a few days to sit with what your reading showed you.
+
+You know the pattern. You've named it. You can probably feel where it lives in your body, the places you override, the moments you perform, the ways you learned not to need.
+
+But knowing isn't the same as changing.
+
+That's what I want to be clear about.
+
+A reading is a map. It shows you the architecture of how you learned to survive. But a map isn't the territory. And understanding the map doesn't rewire your nervous system.
+
+What does rewire it is contact.
+
+Someone staying with you long enough that you finally feel met. Not fixed. Not analyzed. Just met.
+
+That's what a conversation can do.
+
+In thirty minutes, we're not solving anything. We're not rewriting your whole story. We're doing something simpler and much harder: we're starting to rebuild trust between you and yourself.
+
+I'll listen for what's underneath the words you say. Not to diagnose you or add another layer of understanding. But to help you feel what's actually moving through your body when you touch what matters.
+
+And in that contact, something shifts. Not because I have answers. But because for once, you're not doing it alone.
+
+That's the work I do. That's what changes things.
+
+If you want to take this further:
+
+https://chadherst.as.me/30-minute-consult-chad-herst
+
+It's not a sales call. It's not a pitch. It's just the beginning of learning what it feels like to stop abandoning yourself.
+
+—Chad`
+};
+
+async function sendNurtureSequence(email) {
+  try {
+    await sendResendEmail(email, EMAIL1.subject, textToHtml(EMAIL1.text));
+    console.log('Nurture Email 1 sent to', email);
+
+    setTimeout(async () => {
+      try {
+        await sendResendEmail(email, EMAIL2.subject, textToHtml(EMAIL2.text));
+        console.log('Nurture Email 2 sent to', email);
+      } catch (e) {
+        console.error('Email 2 error:', e.message);
+      }
+    }, 2 * 24 * 60 * 60 * 1000);
+
+    setTimeout(async () => {
+      try {
+        await sendResendEmail(email, EMAIL3.subject, textToHtml(EMAIL3.text));
+        console.log('Nurture Email 3 sent to', email);
+      } catch (e) {
+        console.error('Email 3 error:', e.message);
+      }
+    }, 5 * 24 * 60 * 60 * 1000);
+  } catch (e) {
+    console.error('Nurture sequence error:', e.message);
+  }
+}
+
 const server = http.createServer(async (req, res) => {
   if (req.method === 'GET' && serveStatic(req, res)) return;
 
@@ -1271,9 +1601,10 @@ const server = http.createServer(async (req, res) => {
           '- The main prose must contain zero astrology labels.',
           '- All astrology goes only in the placements arrays.',
           '- The prose must still feel chart-specific.',
-          '- Essence must stay purely original signal.',
+          '- Essence must reflect the original vulnerable signal, not the later adult adaptation.',
           '- The Miss must include both misattunement and mixed messages.',
-          '- The Performance must show the packaging of truth into something more tolerable.',
+          '- The Miss may include shame around need, softness, dependence, or vulnerability.',
+          '- The Performance must show the later strategy that formed to stay connected.',
           '- Contact must show the split in real time.',
           '- A New Response must be nuanced, not brutal.',
           '- Each section must end in 3 strong key_terms.',
