@@ -93,8 +93,8 @@ function moonLon(T) {
   const M = md(357.5291092 + 35999.0502909 * T - 0.0001536 * T * T) * D2R;
   const Mp = md(134.9633964 + 477198.8675055 * T + 0.0087414 * T * T) * D2R;
   const F = md(93.2720950 + 483202.0175233 * T - 0.0036539 * T * T) * D2R;
-
   let s = 0;
+
   [
     [6.288774, [0, 0, 1, 0]],
     [1.274027, [2, 0, -1, 0]],
@@ -926,6 +926,132 @@ function validateReading(reading) {
   return problems;
 }
 
+function robustJsonParse(text) {
+  let s = text.replace(/```json\s*/g, '').replace(/```/g, '').trim();
+  const start = s.indexOf('{');
+  if (start === -1) throw new Error('No JSON object found');
+
+  let depth = 0;
+  let end = -1;
+  let inString = false;
+  let escape = false;
+
+  for (let i = start; i < s.length; i++) {
+    const ch = s[i];
+    if (escape) {
+      escape = false;
+      continue;
+    }
+    if (ch === '\\') {
+      escape = true;
+      continue;
+    }
+    if (ch === '"') {
+      inString = !inString;
+      continue;
+    }
+    if (inString) continue;
+    if (ch === '{') depth += 1;
+    else if (ch === '}') {
+      depth -= 1;
+      if (depth === 0) {
+        end = i;
+        break;
+      }
+    }
+  }
+
+  if (end === -1) throw new Error('Unmatched braces');
+  s = s.substring(start, end + 1);
+
+  try {
+    return JSON.parse(s);
+  } catch {}
+
+  s = s.replace(/,\s*]/g, ']').replace(/,\s*}/g, '}');
+  try {
+    return JSON.parse(s);
+  } catch {}
+
+  const oneLine = s
+    .replace(/[\r\n]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .replace(/,\s*]/g, ']')
+    .replace(/,\s*}/g, '}');
+
+  return JSON.parse(oneLine);
+}
+
+function callAnthropicOnce(system, userMsg) {
+  const body = JSON.stringify({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 4200,
+    system,
+    messages: [{ role: 'user', content: userMsg }],
+  });
+
+  return new Promise((resolve, reject) => {
+    const req = https.request({
+      hostname: 'api.anthropic.com',
+      path: '/v1/messages',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(body),
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+    }, res => {
+      let d = '';
+      res.on('data', c => d += c);
+      res.on('end', () => {
+        try {
+          if (d.trim().startsWith('<') || res.statusCode >= 400) {
+            throw new Error('Anthropic API returned status ' + res.statusCode + ': ' + d.substring(0, 300));
+          }
+          const a = JSON.parse(d);
+          if (a.error) throw new Error(a.error.message);
+          const raw = a.content?.[0]?.text || '';
+          resolve(robustJsonParse(raw));
+        } catch (e) {
+          reject(e);
+        }
+      });
+    });
+
+    req.setTimeout(180000, () => {
+      req.destroy(new Error('Anthropic request timeout'));
+    });
+
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
+}
+
+async function callAnthropic(system, userMsg, retries = 3) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      return await callAnthropicOnce(system, userMsg);
+    } catch (e) {
+      const overloaded =
+        e.message &&
+        (e.message.includes('Overloaded') ||
+          e.message.includes('529') ||
+          e.message.includes('503') ||
+          e.message.includes('timeout') ||
+          e.message.includes('ECONNRESET'));
+
+      if (overloaded && attempt < retries) {
+        await new Promise(r => setTimeout(r, attempt * 8000));
+        continue;
+      }
+
+      throw e;
+    }
+  }
+}
+
 async function repairReadingIfNeeded(reading, chartText, transitPrompt, name) {
   const problems = validateReading(reading);
   if (!problems.length) return reading;
@@ -959,6 +1085,31 @@ Keep sections concise.`;
   } catch {
     return reading;
   }
+}
+
+function sendResendEmail(to, subject, html) {
+  return new Promise((resolve, reject) => {
+    const body = JSON.stringify({ from: FROM_EMAIL, to: [to], subject, html });
+
+    const req = https.request({
+      hostname: 'api.resend.com',
+      path: '/emails',
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + RESEND_API_KEY,
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(body),
+      },
+    }, res => {
+      let d = '';
+      res.on('data', c => d += c);
+      res.on('end', () => resolve({ ok: res.statusCode < 300 }));
+    });
+
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
 }
 
 function textToHtml(text) {
@@ -1135,31 +1286,6 @@ async function sendNurtureSequence(email) {
   } catch (e) {
     console.error('Nurture sequence error:', e.message);
   }
-}
-
-function sendResendEmail(to, subject, html) {
-  return new Promise((resolve, reject) => {
-    const body = JSON.stringify({ from: FROM_EMAIL, to: [to], subject, html });
-
-    const req = https.request({
-      hostname: 'api.resend.com',
-      path: '/emails',
-      method: 'POST',
-      headers: {
-        'Authorization': 'Bearer ' + RESEND_API_KEY,
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(body),
-      },
-    }, res => {
-      let d = '';
-      res.on('data', c => d += c);
-      res.on('end', () => resolve({ ok: res.statusCode < 300 }));
-    });
-
-    req.on('error', reject);
-    req.write(body);
-    req.end();
-  });
 }
 
 function fetchJSON(url, headers = {}) {
