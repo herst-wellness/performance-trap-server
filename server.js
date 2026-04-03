@@ -387,23 +387,33 @@ function chartToText(chart, name) {
 
 const SYS = `You are writing a natal chart reading through the Performance Trap Framework. Chad Herst's system. His voice.
 
-IMPORTANT CORE CORRECTION
+THIS IS THE NON-NEGOTIABLE CORE:
+Do NOT confuse the armor with the self.
 Do NOT confuse the adult adaptation with the original essence.
+Do NOT infer Essence from the chart's most dramatic adult trait.
 
-The reading must follow this book-based architecture:
-- Essence is the vulnerable, tender, receptive, alive part that reached first.
-- The Miss is where need, softness, dependency, feeling, or emotional reality became unsafe, shamed, blurred, or costly.
-- The Performance is the later strategy that formed so the person would not have to occupy the position of the needy, overwhelmed, dependent, exposed one.
-- Contact is awareness of both the protector and the vulnerable ache underneath it.
-- A New Response is not just clearer truth-telling. It may also be naming hurt, need, impact, uncertainty, or tenderness without replacing it with competence.
+If the chart contains both:
+- vulnerable receptivity, tenderness, attachment need, softness, sensitivity, permeability
+AND
+- later sharpness, directness, penetrating perception, truth-telling, intensity, strategy, translation, competence
 
-This means:
-- attachment first
-- adaptation second
+Then:
+Essence MUST begin with the vulnerable core.
+The sharper adult edge belongs later, usually in Performance.
 
-Never let the armor become the essence.
-Never let the adult style become the child self.
-Never assume the strongest adult trait was the original signal.
+ADULT EDGE IS NOT AUTOMATICALLY ESSENCE.
+The translator is not automatically essence.
+The truth-teller is not automatically essence.
+The teacher is not automatically essence.
+The room-reader is not automatically essence.
+The framework-maker is not automatically essence.
+
+BOOK-BASED ARCHITECTURE:
+1. Essence = what was tender, alive, needing, receptive, trusting, unguarded
+2. The Miss = how need, softness, dependence, feeling, or vulnerability became unsafe, costly, shamed, blurred, or contradictory
+3. The Performance = who the person became so they would not have to occupy the position of the needy, overwhelmed, dependent, exposed one
+4. Contact = awareness of both the protector and the ache underneath it
+5. A New Response = not fight, not submit, but a way of speaking or staying present that does not replace vulnerability with competence
 
 VOICE
 - Peer to peer. Direct. No mystic. No guru.
@@ -452,16 +462,19 @@ BAD
 - real connection handles real truth
 - curious and electric
 - wired for intensity
+- you came in to expose what was hidden
+- you reached for raw truth first
+- your essence was direct truth-telling
+- your original signal was intensity
 
 BETTER
-- you saw what others avoided
+- you were affected quickly
+- you wanted to be met cleanly
+- you learned not to need much
+- you became the steady one
 - you learned to package it
 - your seeing was welcome, your directness was not
 - the pause between knowing and speaking is where you lose yourself
-- you learned to read two things at once
-- say it before you edit it
-- you learned not to need much
-- you became the steady one
 - you made yourself useful instead of vulnerable
 
 ABSOLUTE BAN: NO ASTROLOGY LABELS IN THE MAIN PROSE
@@ -533,7 +546,7 @@ They must be:
 - not abstract
 
 Good style:
-- needed without feeling safe
+- wanted to be met
 - learned not to need
 - became the steady one
 - package the cutting truth
@@ -561,15 +574,42 @@ Essence is not the mask.
 
 Essence is:
 - what was most alive before defense
-- what was most tender, permeable, wanting, receptive, direct, or trusting before the miss
+- what was most tender, permeable, wanting, receptive, dependent, hopeful, trusting, or unguarded before the miss
 - how this person naturally reached for contact before they had to manage it
 
-If the chart contains both sensitivity and later sharpness, prioritize the sensitivity here and save the sharpness for Performance unless it clearly belonged to the original child signal.
+When in doubt:
+choose the softer truth first.
+
+If the chart contains penetrating perception plus emotional sensitivity, start with the emotional sensitivity.
+If the chart contains directness plus vulnerability, start with the vulnerability.
+If the chart contains brilliance plus attachment hunger, start with the attachment hunger.
+
+DO NOT write Essence as:
+- a truth-teller origin story
+- a blunt child origin story
+- a forceful child origin story
+- a precocious adult in miniature
 
 Questions:
 - What did this person originally want from contact?
 - What was vulnerable, alive, or unguarded in them?
 - What did their body expect to be safe before anything got distorted?
+- What in them most needed holding, not admiring?
+
+Essence should often be driven by:
+- feeling
+- attachment
+- closeness
+- permeability
+- sensitivity
+- tenderness
+- longing to be received
+not by:
+- precision
+- control
+- interpretation
+- strategic delivery
+- adult truth-telling
 
 2 to 3 short paragraphs.
 End by setting up what went wrong.
@@ -582,12 +622,15 @@ The gap between what you needed and what the environment could deliver. Not just
 
 CRITICAL:
 This section is not only "people couldn't handle your truth."
+
 It may be:
 - need was unsafe
 - softness was shamed
 - dependence felt humiliating
 - feeling too much became costly
+- vulnerability burdened the room
 - the field was contradictory, blurred, withholding, coercive, or hard to trust
+- you had to stay easy, low-maintenance, undemanding, composed, or helpful to stay connected
 
 The Miss is:
 - what the environment did to the signal
@@ -608,7 +651,8 @@ Definition:
 The face you built for managing the room. A set of skills, responses, and offerings designed to keep the bond intact. Brilliant adaptation. Also the thing that's been eating you alive.
 
 CRITICAL:
-This is where later adult style belongs.
+This is where the later adult style belongs.
+
 This is where the translator, teacher, achiever, stabilizer, helper, framework-maker, room-reader, useful one, steady one, or meaning-maker belongs.
 
 The Performance is:
@@ -650,6 +694,7 @@ Contact may involve:
 - the ache of not being allowed to need
 - the ache of always being the strong one
 - the ache of turning feeling into usefulness before it can be felt
+- the ache of being known for what you do rather than what you feel
 
 2 to 3 short paragraphs.
 
@@ -730,14 +775,16 @@ Rules for "meaning":
 - no vague filler
 
 CRITICAL WEIGHTING
-Essence should lean more heavily toward:
+Essence should lean heavily toward:
 - Moon
 - Venus
-- 4th house / IC material
+- 4th house / IC
 - Ascendant
 - chart ruler only if it reflects the original reaching
 
-The Miss should lean more heavily toward:
+For Essence, use Mercury or Mars only if they clearly describe the vulnerable original signal, not the later defended style.
+
+The Miss should lean heavily toward:
 - Moon aspects
 - 4th / IC
 - ruler of the 4th
@@ -748,7 +795,7 @@ The Miss should lean more heavily toward:
 - Venus
 - Mercury for contradiction and mixed messages
 
-Performance should lean more heavily toward:
+Performance should lean heavily toward:
 - Mercury
 - Saturn
 - Mars
@@ -836,6 +883,51 @@ const BANNED_ASTRO_TERMS = [
   'astrolog', 'chart', 'placement', 'placements', 'sign', 'signs'
 ];
 
+const ESSENCE_ARMOR_TERMS = [
+  'raw truth',
+  'truth first',
+  'say it straight',
+  'direct truth',
+  'truth with force',
+  'cut through',
+  'cuts through',
+  'intensity was how connection worked',
+  'reached for raw truth',
+  'wanted to expose',
+  'wanted to name what others would not say',
+  'your directness',
+  'your intensity',
+  'sharp edges',
+  'blunt',
+  'force it deserved'
+];
+
+const SOFT_CORE_TERMS = [
+  'tender',
+  'sensitive',
+  'soft',
+  'need',
+  'needed',
+  'needing',
+  'wanted to be met',
+  'wanted closeness',
+  'wanted contact',
+  'receptive',
+  'unguarded',
+  'permeable',
+  'affected',
+  'hurt',
+  'safe',
+  'held',
+  'received',
+  'attachment',
+  'longing',
+  'vulnerable',
+  'low-maintenance',
+  'didn\'t want to burden',
+  'not to be too much'
+];
+
 function extractMainProse(reading) {
   const parts = [];
   (reading.sections || []).forEach(s => parts.push(s.content || ''));
@@ -854,6 +946,19 @@ function hasAstroLeak(reading) {
     const re = new RegExp(`\\b${term}\\b`, 'i');
     return re.test(prose);
   });
+}
+
+function essenceLooksLikeArmor(reading) {
+  const essence = (((reading.sections || [])[0] || {}).content || '').toLowerCase();
+  if (!essence) return false;
+
+  const armorHits = ESSENCE_ARMOR_TERMS.filter(term => essence.includes(term)).length;
+  const softHits = SOFT_CORE_TERMS.filter(term => essence.includes(term)).length;
+
+  if (armorHits >= 2 && softHits === 0) return true;
+  if (armorHits >= 3 && softHits <= 1) return true;
+
+  return false;
 }
 
 function validateReading(reading) {
@@ -917,6 +1022,10 @@ function validateReading(reading) {
     problems.push('Main prose contains astrology labels.');
   }
 
+  if (essenceLooksLikeArmor(reading)) {
+    problems.push('Essence sounds like later armor or adult edge instead of vulnerable core.');
+  }
+
   return problems;
 }
 
@@ -945,6 +1054,11 @@ Common failures:
 - key_terms were weak or slogan-like
 - the utterance sounded too crafted
 - the prose sounded more written than true
+
+IN REPAIR MODE, ESSENCE MUST PASS THIS TEST:
+It should describe the part of the person that needed holding, not the part that later learned to manage the room.
+If it sounds like a sharp adult professional trait, it is probably wrong.
+If it sounds like a tender child signal, it is probably closer.
 
 In repair mode:
 - remove all astrology labels from the main prose
@@ -1602,6 +1716,8 @@ const server = http.createServer(async (req, res) => {
           '- All astrology goes only in the placements arrays.',
           '- The prose must still feel chart-specific.',
           '- Essence must reflect the original vulnerable signal, not the later adult adaptation.',
+          '- Do not make Essence a truth-teller origin story unless the chart gives no softer attachment-based signal.',
+          '- If the chart contains both vulnerability and intensity, start with vulnerability.',
           '- The Miss must include both misattunement and mixed messages.',
           '- The Miss may include shame around need, softness, dependence, or vulnerability.',
           '- The Performance must show the later strategy that formed to stay connected.',
