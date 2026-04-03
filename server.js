@@ -170,7 +170,6 @@ function planetHelio(planet, T) {
   if (!p) return 0;
 
   const poly = coeffs => coeffs.reduce((sum, c, i) => sum + c * Math.pow(T, i), 0);
-
   const L = md(poly(p.L));
   const e = poly(p.e);
   const w = poly(p.w);
@@ -276,8 +275,6 @@ function calcAllPlanets(T) {
   }
   return result;
 }
-
-const SGN = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
 
 function toSign(lon) {
   const l = md(lon);
@@ -385,6 +382,160 @@ function chartToText(chart, name) {
   lines.push(`MC: ${chart.MC.sign} ${chart.MC.deg}°`);
 
   return `${name}'s Chart (Whole Sign Houses):\n${lines.join('\n')}`;
+}
+
+// VALIDATION AND REPAIR
+const BANNED_ASTRO_TERMS = [
+  'aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo', 'libra', 'scorpio', 'sagittarius',
+  'capricorn', 'aquarius', 'pisces',
+  'sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto',
+  'chiron', 'node', 'asc', 'ascendant', 'midheaven', 'mc', 'retrograde', 'house', 'houses',
+  'astrolog', 'chart', 'placement', 'placements', 'sign', 'signs'
+];
+
+function extractMainProse(reading) {
+  const parts = [];
+  (reading.sections || []).forEach(s => parts.push(s.content || ''));
+  (reading.way_home || []).forEach(s => {
+    parts.push(s.content || '');
+    if (s.utterance) parts.push(s.utterance);
+  });
+  if (reading.closing) parts.push(reading.closing);
+  if (reading.transits && reading.transits.synthesis) parts.push(reading.transits.synthesis);
+  return parts.join('\n').toLowerCase();
+}
+
+function hasAstroLeak(reading) {
+  const prose = extractMainProse(reading);
+  return BANNED_ASTRO_TERMS.some(term => {
+    const re = new RegExp(`\\b${term}\\b`, 'i');
+    return re.test(prose);
+  });
+}
+
+function validateReading(reading) {
+  const problems = [];
+
+  if (!reading || typeof reading !== 'object') {
+    problems.push('Reading is not an object.');
+    return problems;
+  }
+
+  if (!Array.isArray(reading.sections) || reading.sections.length !== 3) {
+    problems.push('sections must be an array of length 3.');
+  }
+
+  if (!Array.isArray(reading.way_home) || reading.way_home.length !== 2) {
+    problems.push('way_home must be an array of length 2.');
+  }
+
+  const allSections = []
+    .concat(reading.sections || [])
+    .concat(reading.way_home || []);
+
+  allSections.forEach((s, idx) => {
+    if (!s || typeof s !== 'object') {
+      problems.push(`Section ${idx + 1} is not an object.`);
+      return;
+    }
+
+    if (!s.title || !s.content) {
+      problems.push(`Section ${idx + 1} is missing title or content.`);
+    }
+
+    if (!Array.isArray(s.key_terms) || s.key_terms.length !== 3) {
+      problems.push(`Section ${idx + 1} must have exactly 3 key_terms.`);
+    }
+
+    if (!Array.isArray(s.placements) || s.placements.length < 2 || s.placements.length > 4) {
+      problems.push(`Section ${idx + 1} must have 2 to 4 placements.`);
+    }
+
+    (s.placements || []).forEach((p, pIdx) => {
+      if (!p.name || !p.meaning) {
+        problems.push(`Section ${idx + 1}, placement ${pIdx + 1} missing name or meaning.`);
+      }
+    });
+  });
+
+  if (!reading.closing || typeof reading.closing !== 'string') {
+    problems.push('closing is required.');
+  }
+
+  if (!reading.transits || typeof reading.transits.synthesis !== 'string') {
+    problems.push('transits.synthesis is required.');
+  }
+
+  if (reading.way_home && reading.way_home[1] && !reading.way_home[1].utterance) {
+    problems.push('A new response must include utterance.');
+  }
+
+  if (hasAstroLeak(reading)) {
+    problems.push('Main prose contains astrology labels.');
+  }
+
+  return problems;
+}
+
+async function repairReadingIfNeeded(reading, chartText, transitPrompt, name) {
+  const problems = validateReading(reading);
+  if (!problems.length) return reading;
+
+  console.log('Reading failed validation. Attempting repair:', problems);
+
+  const repairSystem = `${SYS}
+
+REPAIR MODE
+You are repairing a draft that did not fully follow instructions.
+
+Do not start over from scratch in a new voice.
+Keep what is strongest.
+Repair only what is broken.
+
+Most common failures:
+- astrology labels leaked into main prose
+- sections sounded generic
+- Essence drifted into adaptation
+- placements did not match prose tightly enough
+- key_terms were weak, clipped, or slogan-like
+- the utterance sounded too crafted
+- the prose sounded more written than true
+
+In repair mode:
+- remove all astrology labels from the main prose
+- tighten the prose so it feels more exact and less generic
+- keep the reading human and specific
+- make the placements arrays more exact and better matched to the prose
+- keep the output JSON shape exactly the same`;
+
+  const repairPrompt = [
+    `Repair this natal reading for ${name}.`,
+    '',
+    'CHART:',
+    chartText,
+    '',
+    transitPrompt,
+    '',
+    'VALIDATION PROBLEMS TO FIX:',
+    ...problems.map(p => `- ${p}`),
+    '',
+    'DRAFT TO REPAIR:',
+    JSON.stringify(reading)
+  ].join('\n');
+
+  try {
+    const repaired = await callAnthropic(repairSystem, repairPrompt, 2);
+    const repairedProblems = validateReading(repaired);
+    if (!repairedProblems.length) {
+      console.log('Reading repair succeeded.');
+      return repaired;
+    }
+    console.log('Repair still has issues. Returning repaired version anyway:', repairedProblems);
+    return repaired;
+  } catch (e) {
+    console.error('Repair failed:', e.message);
+    return reading;
+  }
 }
 
 // MAILCHIMP
@@ -641,60 +792,6 @@ function fetchJSON(url, headers = {}) {
   });
 }
 
-// TRANSIT WEATHER
-function calcTransitWeather(natalChart) {
-  const now = new Date();
-  const todayJD = jd(now.getUTCFullYear(), now.getUTCMonth() + 1, now.getUTCDate(), 0);
-  const T = (todayJD - 2451545) / 36525;
-  const today = now.toISOString().split('T')[0];
-
-  const ascLon = natalChart.ASC ? natalChart.ASC.lon : 0;
-  const ascSignIdx = Math.floor(ascLon / 30);
-
-  const planets = {
-    Saturn: calcGeoLon('saturn', T),
-    Pluto: calcGeoLon('pluto', T),
-    Neptune: calcGeoLon('neptune', T),
-    Uranus: calcGeoLon('uranus', T),
-  };
-
-  const SGN_NAMES = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
-
-  const weather = {};
-  for (const [name, lon] of Object.entries(planets)) {
-    const signIdx = Math.floor(md(lon) / 30);
-    const sign = SGN_NAMES[signIdx];
-    const deg = Math.floor(md(lon) % 30);
-    const house = ((signIdx - ascSignIdx + 12) % 12) + 1;
-    weather[name] = { sign, deg, house, lon };
-  }
-
-  return { weather, today, ascSignIdx };
-}
-
-function calcAspects(weather) {
-  const planets = Object.entries(weather);
-  const aspects = [];
-  const orb = 8;
-
-  for (let i = 0; i < planets.length; i++) {
-    for (let j = i + 1; j < planets.length; j++) {
-      const [n1, d1] = planets[i];
-      const [n2, d2] = planets[j];
-      let diff = Math.abs(d1.lon - d2.lon);
-      if (diff > 180) diff = 360 - diff;
-
-      if (Math.abs(diff - 0) <= orb) aspects.push({ planets: [n1, n2], type: 'conjunction', diff });
-      if (Math.abs(diff - 60) <= orb) aspects.push({ planets: [n1, n2], type: 'sextile', diff });
-      if (Math.abs(diff - 90) <= orb) aspects.push({ planets: [n1, n2], type: 'square', diff });
-      if (Math.abs(diff - 120) <= orb) aspects.push({ planets: [n1, n2], type: 'trine', diff });
-      if (Math.abs(diff - 180) <= orb) aspects.push({ planets: [n1, n2], type: 'opposition', diff });
-    }
-  }
-
-  return aspects;
-}
-
 function formatTransitsForPrompt(transitData) {
   const { weather, today } = transitData;
   const lines = [`TODAY: ${today}`, ''];
@@ -723,7 +820,7 @@ function formatTransitsForPrompt(transitData) {
   }
 
   lines.push(
-    `FOR THE transits.synthesis FIELD: Write ONE paragraph of 4 to 6 sentences in Chad Herst's voice. DO NOT name any planets, signs, houses, or astrological terms. Translate everything into plain human experience. Describe: (1) what this person is up against right now, (2) how that pressure relates directly to the performance trap named in the reading, and (3) what their growing edge is in this moment. Ground it in the body and in relationship. Short sentences. No comfort. No astrology.`
+    `FOR THE transits.synthesis FIELD: Write ONE paragraph of 4 to 6 sentences in Chad Herst's voice. DO NOT name any planets, signs, houses, or astrological terms. Translate everything into plain human experience. Describe: (1) what this person is up against right now, (2) how that pressure relates directly to the performance trap named in the reading, and (3) what their growing edge is in this moment. Ground it in the body and in relationship. Short sentences. No comfort. No astrology. Do not sound inspirational.`
   );
 
   return lines.join('\n');
@@ -732,9 +829,9 @@ function formatTransitsForPrompt(transitData) {
 const SYS = `You are writing a natal chart reading through the Performance Trap Framework. Chad Herst's system. His voice.
 
 VOICE
-- Peer to peer. Direct. No mystic, no guru.
+- Peer to peer. Direct. No mystic. No guru.
 - Somatic when earned. Never spiritual.
-- Short punchy sentences. Hard stops.
+- Short sentences. Hard stops.
 - Clear over clever.
 - Profanity only when it cuts through.
 - Never call trauma a gift.
@@ -745,39 +842,47 @@ VOICE
 CORE WRITING STANDARD
 Trust the pattern. Do not perform. Write because it is the clearest truth, not because it sounds powerful.
 
-The reading should feel:
+The reading must feel:
 - precise
-- personal
 - restrained
+- personal
 - chart-specific
 - human
+- believable
 
-Do not write lines because they sound good.
-Write them because they are the clearest truth of this chart.
-
-Avoid:
-- inflated language
-- therapeutic slogans
-- branded-sounding phrases
-- flashy metaphors
-- overly neat thesis lines
-- generic "helping" language unless it is made specific
+Do not write lines because they sound impressive.
+Do not write lines because they sound therapeutic.
+Do not write lines because they sound poetic.
+Write them because they are the exact truth of this chart.
 
 If a phrase sounds written rather than true, simplify it.
 
-BAD EXAMPLES
+DO NOT WRITE
+- inflated language
+- generic therapy language
+- branded-sounding phrases
+- clever metaphors
+- polished copywriting lines
+- inspirational turns
+- vague intensity language
+- abstract coach-speak
+
+BAD
 - active knowing
-- retrofit your knowing into service
 - service wrapper
 - translator of the untranslatable
-- heat-seeking missile
 - careful not-saying
+- real connection handles real truth
+- curious and electric
+- wired for intensity
 
 BETTER
 - you saw what others avoided
 - you learned to package it
-- the pause between knowing and speaking
-- truth filtered through other people's comfort
+- your seeing was welcome, your directness was not
+- the pause between knowing and speaking is where you lose yourself
+- you learned to read two things at once
+- say it before you edit it
 
 ABSOLUTE BAN: NO ASTROLOGY LABELS IN THE MAIN PROSE
 Do NOT name:
@@ -796,6 +901,7 @@ That means:
 - no Mercury
 - no Mars retrograde
 - no 7th house
+- no chart language
 - no "your chart shows"
 - no "astrologically"
 - no "this placement means"
@@ -808,28 +914,17 @@ IMPORTANT DISTINCTION
 Less astrology jargon.
 More astrology logic.
 
-The prose should feel like it could only come from this chart, even though the reader never sees the chart language unless they open the dropdown.
+The reader should feel the chart in the prose without seeing the chart language unless they open the dropdown.
 
 SPECIFICITY RULE
 Every section must contain 1 to 3 observations that could not have been written without this chart.
 
 Do not write broad vibe language if the chart gives something more exact.
 
-For example:
-Too broad:
-- curious and electric
-- wired for intensity
-- maps what others miss
-
-Better:
-- quick to read people, but never satisfied by the surface
-- learned to say the true thing in a form others could tolerate
-- the pause between knowing and speaking is where you lose yourself
-
 NARRATIVE RULE
 This must read like one unfolding human story, not five adjacent portraits.
 
-Each section should grow from the previous one.
+Each section must grow from the previous one.
 Use cause and effect:
 - so
 - instead
@@ -845,26 +940,25 @@ because this strategy formed, this cost developed
 because that cost became painful, something began to surface
 because that became visible, a new move is now possible
 
-IMPORTANT NEW OUTPUT RULE
-At the end of EACH section, include a short KEY TERMS block in the JSON array "key_terms".
-
-Guidelines for KEY TERMS:
-- exactly 3 phrases
-- each phrase 3 to 7 words
-- plain, emotionally resonant, specific to this chart
-- clean, memorable, linguistically finished
+KEY TERMS
+Each section must include exactly 3 key_terms.
+They must be:
+- 3 to 7 words each
+- clean
+- memorable
+- natural when read aloud
+- specific to this chart
 - not clipped
+- not slogan-like
 - not abstract
-- not mechanical
-- trap sections should name the cost or stuck position
-- way home sections can be forward-facing
 
-Example style:
-- wants the real version
-- read two things at once
-- package truth carefully
-- the pause before speaking
-- truth without self-erasure
+Good style:
+- sees underneath the surface
+- too much too fast
+- package the cutting truth
+- pause before speaking
+- tired of translating yourself
+- say it before editing
 
 SECTIONS
 
@@ -878,11 +972,12 @@ What your nervous system reached for before it learned to stop reaching. The qua
 
 Function:
 This section must stay PURELY original signal.
-No adaptive language.
+No adaptation here.
 No usefulness.
+No helping.
 No room management.
 No translation.
-No helping others digest anything.
+No packaging.
 
 Essence is:
 - what this system naturally wanted
@@ -890,11 +985,10 @@ Essence is:
 - what kind of contact it expected
 - what felt alive before the miss
 
-It should feel:
-- raw
-- alive
-- specific
-- pre-adaptive
+The strongest Essence sections feel like:
+- wanting the real version, not the safe one
+- feeling the room's actual temperature, not its performed climate
+- expecting matching directness
 
 2 to 3 short paragraphs.
 End by setting up what went wrong.
@@ -910,8 +1004,6 @@ This section must include BOTH:
 - misattunement
 - mixed messages / contradiction / confusion
 
-This is where still-face and double-bind logic merge.
-
 The Miss is:
 - what the environment did to the signal
 - how the person was not met
@@ -921,8 +1013,13 @@ The Miss is:
 Do not drift into adaptation yet.
 This section is about what happened to the signal, not what the person did about it.
 
+The strongest Miss sections feel like:
+- your seeing was valuable, your speaking was too much
+- you learned to read two things at once
+- truth was welcome only when it did not disrupt the room
+
 2 to 3 short paragraphs.
-End showing the impossible position.
+End by naming the impossible position.
 
 3. THE PERFORMANCE
 Subtitle: How you stayed connected
@@ -942,13 +1039,17 @@ Show how the raw signal from Essence got converted into something relationally s
 This section must include:
 - the visible adaptation
 - the inner mechanism that keeps it running
-
-This is where you name:
-- the role they became
-- the relational bargain
-- the packaging of truth
+- the packaging of truth into something people can tolerate
 - the split between direct signal and strategic delivery
 - the brilliance and the cost
+
+This is not generic helping.
+This is converting direct truth into relationally tolerable truth.
+
+The strongest Performance sections feel like:
+- you learned to package it
+- you became the person who could say hard things in ways people could hear
+- every true observation gets filtered through how it will land
 
 2 to 3 short paragraphs.
 End by naming what it costs today.
@@ -968,9 +1069,15 @@ Make this immediate and embodied.
 Show the split in real time.
 Show the pause.
 Show the calculation.
+Show the body.
 Show the cost.
 
 This section should feel as sharp and specific as the first three.
+
+The strongest Contact sections feel like:
+- the protector is the pause
+- one part sees it instantly, another part starts editing
+- the pause between knowing and speaking is where you lose yourself
 
 2 to 3 short paragraphs.
 
@@ -981,7 +1088,7 @@ Definition:
 Not fight, not submit. A way of communicating that doesn't require you to leave yourself to stay connected.
 
 Function:
-This is NOT "always say it raw."
+This is NOT always say it raw.
 This is NOT brutality.
 This is NOT accommodation.
 
@@ -993,23 +1100,32 @@ Show:
 - what a more honest response sounds like
 - how truth can stay connected to relationship
 
+The strongest A New Response sections feel like:
+- say the true thing before you package it
+- let your directness carry the care
+- stop translating yourself into comfort
+
 1 to 2 short paragraphs.
 
 UTTERANCE
 Include one short sentence in the "utterance" field.
 It should feel like something a real person could actually say.
-Not a slogan. Not branded. Not therapy-speak.
+Not a slogan. Not branded. Not therapy-speak. Not too polished.
 
 BAD:
 - I choose authenticity now
 - I speak my truth
-- Here's what I'm actually seeing, period
+- here's what I'm actually seeing
+- truth without self-erasure
+- real connection can handle real truth
 
 BETTER:
 - I need to say this straight.
 - That doesn't line up for me.
 - I'm not going to soften this first.
 - Here's the part that feels true to me.
+- This is what I'm noticing.
+- I want to say this more directly.
 
 CLOSING
 3 to 5 sentences.
@@ -1034,17 +1150,21 @@ Rules for "meaning":
 - no technical overflow
 - no vague filler
 
-Bad:
-- Mind that penetrates to hidden problems and communicates about healing
-- Natural verbal intelligence that adapts and translates for others
+CRITICAL:
+The placements must match the prose exactly.
+Do not pick placements just because they are nearby.
+Pick the placements most directly shaping that specific section.
 
-Better:
+Examples of strong meanings:
 - Quick social reading that adapts fast.
 - Feels what others avoid.
 - Self-worth tied to keeping others comfortable.
 - Direct action gets revised before it lands.
+- Mental processing shaped by service and usefulness.
+- Core self expressed through relationship management.
 
-RESPOND WITH ONLY VALID JSON, nothing before or after:
+OUTPUT
+Return ONLY valid JSON, nothing before or after:
 {
   "sections": [
     {
@@ -1086,10 +1206,12 @@ RESPOND WITH ONLY VALID JSON, nothing before or after:
       "placements": [{"name": "...", "meaning": "..."}]
     }
   ],
-  "closing": "3 to 5 sentences."
+  "closing": "3 to 5 sentences.",
+  "transits": {
+    "synthesis": "one paragraph"
+  }
 }`;
-  
-// STYLED EMAIL TEMPLATE
+
 function textToHtml(text) {
   const bodyHtml = text.split('\n\n').map(p => {
     if (p.includes('https://chadherst.as.me/30-minute-consult-chad-herst')) {
@@ -1376,14 +1498,23 @@ const server = http.createServer(async (req, res) => {
           'Important output reminder:',
           '- The main prose must contain zero astrology labels.',
           '- All astrology goes only in the placements arrays.',
+          '- The prose must still feel chart-specific.',
+          '- Essence must stay purely original signal.',
+          '- The Miss must include both misattunement and mixed messages.',
+          '- The Performance must show the packaging of truth into something more tolerable.',
+          '- Contact must show the split in real time.',
+          '- A New Response must be nuanced, not brutal.',
           '- Each section must end in 3 strong key_terms.',
-          '- Keep the reading personal, specific, and human.'
+          '- Placements must match the prose exactly.',
+          '- Make the reading sharp, restrained, and believable.'
         ].join('\n');
 
-        const [reading] = await Promise.all([
+        let [reading] = await Promise.all([
           callAnthropic(SYS, userPrompt),
           addToMailchimp(email, name)
         ]);
+
+        reading = await repairReadingIfNeeded(reading, text, transitPrompt, name);
 
         res.writeHead(200);
         res.end(JSON.stringify({ lat, lon, reading, chart }));
@@ -1497,17 +1628,20 @@ const server = http.createServer(async (req, res) => {
           return;
         }
 
-        const expandSYS = `You are expanding a Performance Trap natal chart reading for a PDF document. Chad Herst's voice: brutally honest, somatic, direct. No spiritual bypassing. Never call the wound a gift.
+        const expandSYS = `You are expanding a Performance Trap natal chart reading for a PDF document. Chad Herst's voice: direct, somatic, precise. No spiritual bypassing. Never call the wound a gift.
 
 Rules:
-- Peer across the table, not guru
-- Physical sensations before interpretations: tight gut, jaw clench, shallow breath
-- Short punchy sentences. Hard stops.
+- Peer across the table, not guru.
+- Physical sensations before interpretation.
+- Short sentences. Hard stops.
 - Never call the wound a gift. It is a survival strategy.
-- Show what happens in the body, not what it means
+- Show what happens in the body, not what it means.
 - State the hard truth. Period. Move on.
+- Do not become poetic.
+- Do not become inspirational.
+- Do not sound therapeutic or vague.
 
-Expand each section to 2 or 3 paragraphs. Keep each paragraph under 100 words. Be specific to this person's chart.
+Expand each section to 2 or 3 paragraphs. Keep each paragraph under 100 words. Be specific to this person's chart and to the reading already written.
 
 CRITICAL: Keep your total response under 3000 words. Be concise.
 
@@ -1523,7 +1657,9 @@ RESPOND WITH ONLY VALID JSON, no markdown fences, nothing before or after:
           .concat((reading.way_home || []).map(s => s.title.toUpperCase() + '\n' + (s.content || '')))
           .concat([
             '',
-            'Closing: ' + (reading.closing || '')
+            'Closing: ' + (reading.closing || ''),
+            '',
+            'Transit synthesis: ' + ((reading.transits && reading.transits.synthesis) || '')
           ]).join('\n');
 
         const userMsg = 'Expand this reading into a detailed long-form PDF. Same voice rules apply: direct, somatic, no spiritual bypassing, no romanticizing the wound.\n\n' + readingText;
