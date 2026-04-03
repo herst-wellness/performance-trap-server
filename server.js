@@ -385,6 +385,354 @@ function chartToText(chart, name) {
   return `${name}'s Chart (Whole Sign Houses):\n${lines.join('\n')}`;
 }
 
+const SYS = `You are writing a natal chart reading through the Performance Trap Framework. Chad Herst's system. His voice.
+
+VOICE
+- Peer to peer. Direct. No mystic. No guru.
+- Somatic when earned. Never spiritual.
+- Short sentences. Hard stops.
+- Clear over clever.
+- Profanity only when it cuts through.
+- Never call trauma a gift.
+- Never romanticize the wound.
+- State the truth and stop.
+- Never use the word "gift."
+
+CORE WRITING STANDARD
+Trust the pattern. Do not perform. Write because it is the clearest truth, not because it sounds powerful.
+
+The reading must feel:
+- precise
+- restrained
+- personal
+- chart-specific
+- human
+- believable
+
+Do not write lines because they sound impressive.
+Do not write lines because they sound therapeutic.
+Do not write lines because they sound poetic.
+Write them because they are the exact truth of this chart.
+
+If a phrase sounds written rather than true, simplify it.
+
+DO NOT WRITE
+- inflated language
+- generic therapy language
+- branded-sounding phrases
+- clever metaphors
+- polished copywriting lines
+- inspirational turns
+- vague intensity language
+- abstract coach-speak
+
+BAD
+- active knowing
+- service wrapper
+- translator of the untranslatable
+- careful not-saying
+- real connection handles real truth
+- curious and electric
+- wired for intensity
+
+BETTER
+- you saw what others avoided
+- you learned to package it
+- your seeing was welcome, your directness was not
+- the pause between knowing and speaking is where you lose yourself
+- you learned to read two things at once
+- say it before you edit it
+
+ABSOLUTE BAN: NO ASTROLOGY LABELS IN THE MAIN PROSE
+Do NOT name:
+- signs
+- planets
+- houses
+- aspects
+- chart ruler
+- retrograde
+- any astrology terms at all
+
+That means:
+- no Scorpio
+- no Sagittarius
+- no Gemini rising
+- no Mercury
+- no Mars retrograde
+- no 7th house
+- no chart language
+- no "your chart shows"
+- no "astrologically"
+- no "this placement means"
+
+The main prose must read entirely in plain human language.
+
+The astrology belongs ONLY in the placements dropdown.
+
+IMPORTANT DISTINCTION
+Less astrology jargon.
+More astrology logic.
+
+The reader should feel the chart in the prose without seeing the chart language unless they open the dropdown.
+
+SPECIFICITY RULE
+Every section must contain 1 to 3 observations that could not have been written without this chart.
+
+Do not write broad vibe language if the chart gives something more exact.
+
+NARRATIVE RULE
+This must read like one unfolding human story, not five adjacent portraits.
+
+Each section must grow from the previous one.
+Use cause and effect:
+- so
+- instead
+- over time
+- that's when
+- from there
+- because of that
+- eventually
+
+The reader should feel:
+because this happened, this strategy formed
+because this strategy formed, this cost developed
+because that cost became painful, something began to surface
+because that became visible, a new move is now possible
+
+KEY TERMS
+Each section must include exactly 3 key_terms.
+They must be:
+- 3 to 7 words each
+- clean
+- memorable
+- natural when read aloud
+- specific to this chart
+- not clipped
+- not slogan-like
+- not abstract
+
+Good style:
+- sees underneath the surface
+- too much too fast
+- package the cutting truth
+- pause before speaking
+- tired of translating yourself
+- say it before editing
+
+SECTIONS
+
+HOW YOUR PERFORMANCE TRAP FORMED
+
+1. ESSENCE
+Subtitle: The original signal
+
+Definition:
+What your nervous system reached for before it learned to stop reaching. The quality of contact your body expected before anything went wrong.
+
+Function:
+This section must stay PURELY original signal.
+No adaptation here.
+No usefulness.
+No helping.
+No room management.
+No translation.
+No packaging.
+
+Essence is:
+- what this system naturally wanted
+- how it moved before distortion
+- what kind of contact it expected
+- what felt alive before the miss
+
+2 to 3 short paragraphs.
+End by setting up what went wrong.
+
+2. THE MISS
+Subtitle: What belonging required
+
+Definition:
+The gap between what you needed and what the environment could deliver. Not just the absence of attunement, but the presence of contradiction. One signal said come closer. Another said be careful. This is where misattunement and mixed messages meet.
+
+Function:
+This section must include BOTH:
+- misattunement
+- mixed messages / contradiction / confusion
+
+The Miss is:
+- what the environment did to the signal
+- how the person was not met
+- how the field became hard to trust
+- what impossible relational rules got installed
+
+Do not drift into adaptation yet.
+This section is about what happened to the signal, not what the person did about it.
+
+2 to 3 short paragraphs.
+End by naming the impossible position.
+
+3. THE PERFORMANCE
+Subtitle: How you stayed connected
+
+Definition:
+The face you built for managing the room. A set of skills, responses, and offerings designed to keep the bond intact. Brilliant adaptation. Also the thing that's been eating you alive.
+
+Function:
+This is where adaptation lives.
+The face.
+The role.
+The translation.
+The override.
+
+Show how the raw signal from Essence got converted into something relationally safer.
+
+This section must include:
+- the visible adaptation
+- the inner mechanism that keeps it running
+- the packaging of truth into something people can tolerate
+- the split between direct signal and strategic delivery
+- the brilliance and the cost
+
+2 to 3 short paragraphs.
+End by naming what it costs today.
+
+YOUR WAY HOME
+
+4. CONTACT
+Subtitle: Meeting the protectors and the ache
+
+Definition:
+Awareness of both the protectors and the ache beneath them. The protectors are not separate from the ache. They are the adaptation built around it. Contact means being aware of both the strategy and the hurt beneath it.
+
+The ache is the way home.
+
+Function:
+Make this immediate and embodied.
+Show the split in real time.
+Show the pause.
+Show the calculation.
+Show the body.
+Show the cost.
+
+2 to 3 short paragraphs.
+
+5. A NEW RESPONSE
+Subtitle: The move that changes things
+
+Definition:
+Not fight, not submit. A way of communicating that doesn't require you to leave yourself to stay connected.
+
+Function:
+This is NOT always say it raw.
+This is NOT brutality.
+This is NOT accommodation.
+
+It is a cleaner response that does not require self-erasure.
+
+Show:
+- what changes in the moment of speaking
+- what the person stops doing
+- what a more honest response sounds like
+- how truth can stay connected to relationship
+
+1 to 2 short paragraphs.
+
+UTTERANCE
+Include one short sentence in the "utterance" field.
+It should feel like something a real person could actually say.
+Not a slogan. Not branded. Not therapy-speak. Not too polished.
+
+BAD:
+- I choose authenticity now
+- I speak my truth
+- here's what I'm actually seeing
+- truth without self-erasure
+- real connection handles real truth
+
+BETTER:
+- I need to say this straight.
+- That doesn't line up for me.
+- I'm not going to soften this first.
+- Here's the part that feels true to me.
+- This is what I'm noticing.
+- I want to say this more directly.
+
+CLOSING
+3 to 5 sentences.
+A real-life moment where something shifts.
+Not redemptive.
+Not neat.
+Not inspirational.
+Just a concrete scene where the old pattern is present and a new move becomes possible.
+
+PLACEMENTS DROPDOWN RULES
+Each section must include 2 to 4 placements in the "placements" array.
+
+Each placement item must have:
+- "name"
+- "meaning"
+
+Rules for "meaning":
+- 1 short sentence only
+- plain English
+- exact, not padded
+- directly supportive of the prose above
+- no technical overflow
+- no vague filler
+
+CRITICAL:
+The placements must match the prose exactly.
+Do not pick placements just because they are nearby.
+Pick the placements most directly shaping that specific section.
+
+OUTPUT
+Return ONLY valid JSON, nothing before or after:
+{
+  "sections": [
+    {
+      "title": "Essence",
+      "subtitle": "The original signal",
+      "content": "paragraphs",
+      "key_terms": ["term", "term", "term"],
+      "placements": [{"name": "placement", "meaning": "short"}]
+    },
+    {
+      "title": "The miss",
+      "subtitle": "What belonging required",
+      "content": "paragraphs",
+      "key_terms": ["term", "term", "term"],
+      "placements": [{"name": "...", "meaning": "..."}]
+    },
+    {
+      "title": "The performance",
+      "subtitle": "How you stayed connected",
+      "content": "paragraphs",
+      "key_terms": ["term", "term", "term"],
+      "placements": [{"name": "...", "meaning": "..."}]
+    }
+  ],
+  "way_home": [
+    {
+      "title": "Contact",
+      "subtitle": "Meeting the protectors and the ache",
+      "content": "paragraphs",
+      "key_terms": ["term", "term", "term"],
+      "placements": [{"name": "...", "meaning": "..."}]
+    },
+    {
+      "title": "A new response",
+      "subtitle": "The move that changes things",
+      "content": "paragraphs",
+      "utterance": "One sentence",
+      "key_terms": ["term", "term", "term"],
+      "placements": [{"name": "...", "meaning": "..."}]
+    }
+  ],
+  "closing": "3 to 5 sentences.",
+  "transits": {
+    "synthesis": "one paragraph"
+  }
+}`;
+
 // VALIDATION AND REPAIR
 const BANNED_ASTRO_TERMS = [
   'aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo', 'libra', 'scorpio', 'sagittarius',
@@ -622,6 +970,7 @@ function callAnthropicOnce(system, userMsg) {
 
           function robustJsonParse(text) {
             let s = text.replace(/```json\s*/g, '').replace(/```/g, '').trim();
+
             const start = s.indexOf('{');
             if (start === -1) throw new Error('No JSON object found');
 
@@ -866,237 +1215,6 @@ function formatTransitsForPrompt(transitData) {
   return lines.join('\n');
 }
 
-function textToHtml(text) {
-  const bodyHtml = text.split('\n\n').map(p => {
-    if (p.includes('https://chadherst.as.me/30-minute-consult-chad-herst')) {
-      return `<tr><td align="center" style="padding:24px 0;">
-        <a href="https://chadherst.as.me/30-minute-consult-chad-herst" style="display:inline-block; font-family:'Cormorant Garamond',Georgia,serif; font-size:14px; letter-spacing:0.15em; text-transform:uppercase; padding:14px 36px; border:1px solid #8B6B1E; color:#8B6B1E; text-decoration:none;">Book a 30-minute conversation</a>
-      </td></tr>`;
-    }
-    return `<tr><td style="padding:0 0 20px 0; font-family:'Cormorant Garamond',Georgia,serif; font-size:17px; line-height:1.9; color:#352515;">${p.replace(/\n/g, '<br>')}</td></tr>`;
-  }).join('\n');
-
-  return `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!--[if mso]>
-  <style>* { font-family: Georgia, serif !important; }</style>
-  <![endif]-->
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap');
-  </style>
-</head>
-<body style="margin:0; padding:0; background-color:#F4EDE4;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#F4EDE4;">
-    <tr>
-      <td align="center" style="padding:40px 20px;">
-        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px; width:100%;">
-          <tr>
-            <td align="center" style="padding:0 0 32px 0; border-bottom:1px solid #8B6B1E;">
-              <img src="${LOGO_URL}" alt="Herst Wellness" width="600" style="display:block; margin:0 auto; width:100%; max-width:600px; height:auto;" />
-            </td>
-          </tr>
-          <tr><td style="padding:20px 0 0 0;">&nbsp;</td></tr>
-          <tr>
-            <td>
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-                ${bodyHtml}
-              </table>
-            </td>
-          </tr>
-          <tr>
-            <td align="center" style="padding:40px 0 20px 0; border-top:1px solid #E8DED3;">
-              <img src="${LOGO_URL}" alt="Herst Wellness" width="200" style="display:block; margin:0 auto 16px auto; max-width:200px; height:auto;" />
-              <p style="font-family:'Cormorant Garamond',Georgia,serif; font-size:12px; color:#4F4130; margin:0 0 8px 0; line-height:1.6;">
-                765 Market St, San Francisco, CA 94103<br>
-                (415) 686-4411 &middot; <a href="mailto:chad@herstwellness.com" style="color:#8B6B1E; text-decoration:none;">chad@herstwellness.com</a>
-              </p>
-              <p style="font-family:'Cormorant Garamond',Georgia,serif; font-size:12px; color:#4F4130; margin:0;">
-                <a href="https://map.herstwellness.com" style="color:#8B6B1E; text-decoration:none;">map.herstwellness.com</a>
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
-}
-
-// RESEND EMAIL SEQUENCE
-const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const FROM_EMAIL = 'Chad Herst <chad@herstwellness.com>';
-
-function sendResendEmail(to, subject, html) {
-  return new Promise((resolve, reject) => {
-    const body = JSON.stringify({
-      from: FROM_EMAIL,
-      to: [to],
-      subject,
-      html
-    });
-
-    const req = https.request({
-      hostname: 'api.resend.com',
-      path: '/emails',
-      method: 'POST',
-      headers: {
-        'Authorization': 'Bearer ' + RESEND_API_KEY,
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(body)
-      }
-    }, res => {
-      let d = '';
-      res.on('data', c => d += c);
-      res.on('end', () => {
-        console.log('Resend response:', res.statusCode, d.substring(0, 100));
-        resolve({ ok: res.statusCode < 300 });
-      });
-    });
-
-    req.on('error', e => {
-      console.error('Resend error:', e.message);
-      reject(e);
-    });
-
-    req.write(body);
-    req.end();
-  });
-}
-
-const EMAIL1 = {
-  subject: 'What your reading is actually telling you',
-  text: `You just completed a reading that mapped something you've been living inside your whole life.
-
-The reading shows you a pattern. It's not new. You've been running it for decades. But seeing it named, seeing the layers stacked on top of each other, that hits different.
-
-I know because I've lived it. When my brother took his life at twenty, I was sent back to school with no space to grieve. Just go, be fine, don't make it harder on your parents. So I learned the role. I became the good kid. And I've been running that role ever since.
-
-Here's what your reading is actually saying:
-
-At some point early on, you learned that just being yourself wasn't enough to stay connected. So you built a face for the room. You learned the role that would keep you safe, keep you loved, keep you belonging.
-
-That role works. It's gotten you far. But it costs something. Every time you showed up as that version of yourself instead of the real one, something inside got left behind. Overridden. Pushed down.
-
-The reading names that role, your Performance Archetype. It's not a flaw. It's brilliant adaptation. Your nervous system learned how to survive in an environment where connection had to be earned.
-
-But here's what the reading can't tell you: what happens when you finally stop performing.
-
-That's the real work. That's where things change.
-
-For now, sit with this one question:
-
-What would it feel like to just show up as you are, without needing to prove anything first?
-
-Don't answer it. Just let it live in your body for a few days.
-
-—Chad`
-};
-
-const EMAIL2 = {
-  subject: "The thing your reading couldn't say",
-  text: `I want to tell you something that most people skip over.
-
-Insight feels good. You see the pattern, you name it, you understand how you got here. For a moment, it feels like you've solved something. But then you go back to your life, and the pattern is still running.
-
-You still hold your breath before you speak.
-
-You still check the room before you let yourself need.
-
-You still swallow what's true to keep the peace.
-
-The reading showed you the trap. But understanding the trap doesn't spring it.
-
-There's something deeper underneath the performance. I call it the Sacred Wound.
-
-It's not one moment. It's thousands of moments, every time you felt something true and set it aside to stay connected. Every time you chose the relationship over your own truth. That accumulation lives in your body. As tightness. As ache. As something unfinished.
-
-The wound is sacred not because the pain is good. It's sacred because it's precise. It shows you exactly where you've been leaving yourself. And if you stay with it, not fix it, not transcend it, just stay, it becomes a doorway back to yourself.
-
-I spent years trying to meditate it away, stretch past it, yoga it into submission. Then I finally sat still long enough to feel the knot in my gut, that tight, deep thing that had been sitting there for decades, and something in me shifted. Not because it went away. Because I finally stopped running from it.
-
-But here's what stops most people: the moment you touch that wound, your nervous system panics.
-
-Because you've learned something old and deep: needing is dangerous. Showing what hurts makes you too much. So the moment the ache rises, you do what you've always done, you push it down, medicate it, achieve past it, anything but feel it.
-
-That's where the protectors come in.
-
-They're the parts of you that learned to manage, to perform, to stay busy, to stay fine. They're not the enemy. They're the reason you survived. But they're also the reason you're still running the same pattern.
-
-The work isn't about destroying the protectors. It's about finally meeting them. Sitting with them instead of being run by them. When you can do that, something underneath begins to surface.
-
-Contact.
-
-Not the performance of connection. The real thing. You with you. Finally staying long enough to hear what's been trying to reach you all along.
-
-—Chad`
-};
-
-const EMAIL3 = {
-  subject: 'If you want to take this further',
-  text: `You've had a few days to sit with what your reading showed you.
-
-You know the pattern. You've named it. You can probably feel where it lives in your body, the places you override, the moments you perform, the ways you learned not to need.
-
-But knowing isn't the same as changing.
-
-That's what I want to be clear about.
-
-A reading is a map. It shows you the architecture of how you learned to survive. But a map isn't the territory. And understanding the map doesn't rewire your nervous system.
-
-What does rewire it is contact.
-
-Someone staying with you long enough that you finally feel met. Not fixed. Not analyzed. Just met.
-
-That's what a conversation can do.
-
-In thirty minutes, we're not solving anything. We're not rewriting your whole story. We're doing something simpler and much harder: we're starting to rebuild trust between you and yourself.
-
-I'll listen for what's underneath the words you say. Not to diagnose you or add another layer of understanding. But to help you feel what's actually moving through your body when you touch what matters.
-
-And in that contact, something shifts. Not because I have answers. But because for once, you're not doing it alone.
-
-That's the work I do. That's what changes things.
-
-If you want to take this further:
-
-https://chadherst.as.me/30-minute-consult-chad-herst
-
-It's not a sales call. It's not a pitch. It's just the beginning of learning what it feels like to stop abandoning yourself.
-
-—Chad`
-};
-
-async function sendNurtureSequence(email) {
-  try {
-    await sendResendEmail(email, EMAIL1.subject, textToHtml(EMAIL1.text));
-    console.log('Nurture Email 1 sent to', email);
-
-    setTimeout(async () => {
-      try {
-        await sendResendEmail(email, EMAIL2.subject, textToHtml(EMAIL2.text));
-        console.log('Nurture Email 2 sent to', email);
-      } catch (e) {
-        console.error('Email 2 error:', e.message);
-      }
-    }, 2 * 24 * 60 * 60 * 1000);
-
-    setTimeout(async () => {
-      try {
-        await sendResendEmail(email, EMAIL3.subject, textToHtml(EMAIL3.text));
-        console.log('Nurture Email 3 sent to', email);
-      } catch (e) {
-        console.error('Email 3 error:', e.message);
-      }
-    }, 5 * 24 * 60 * 60 * 1000);
-  } catch (e) {
-    console.error('Nurture sequence error:', e.message);
-  }
-}
-
 const server = http.createServer(async (req, res) => {
   if (req.method === 'GET' && serveStatic(req, res)) return;
 
@@ -1211,8 +1329,7 @@ const server = http.createServer(async (req, res) => {
           }
         }, ttsRes => {
           if (ttsRes.statusCode !== 200) {
-            let errData = '';
-            ttsRes.on('data', c => errData += c);
+            ttsRes.on('data', () => {});
             ttsRes.on('end', () => {
               res.writeHead(500);
               res.end(JSON.stringify({ error: 'TTS failed' }));
@@ -1325,8 +1442,6 @@ RESPOND WITH ONLY VALID JSON, no markdown fences, nothing before or after:
           messages: [{ role: 'user', content: userMsg }]
         });
 
-        console.log('Expand: calling Haiku for', name);
-
         const apiReq = https.request({
           hostname: 'api.anthropic.com',
           path: '/v1/messages',
@@ -1342,11 +1457,9 @@ RESPOND WITH ONLY VALID JSON, no markdown fences, nothing before or after:
           apiRes.on('data', c => d += c);
           apiRes.on('end', () => {
             try {
-              console.log('Expand: Haiku response status', apiRes.statusCode, 'length', d.length);
               const a = JSON.parse(d);
               if (a.error) throw new Error('Haiku error: ' + a.error.type + ' - ' + a.error.message);
               const raw = a.content?.[0]?.text || '';
-              console.log('Expand: raw length', raw.length, 'preview:', raw.substring(0, 100));
               let expanded;
               try {
                 expanded = JSON.parse(raw);
@@ -1358,10 +1471,8 @@ RESPOND WITH ONLY VALID JSON, no markdown fences, nothing before or after:
                 'Access-Control-Allow-Origin': '*'
               });
               res.end(JSON.stringify({ expanded }));
-              console.log('Expand: success for', name);
             } catch (e) {
               console.error('Expand error:', e.message);
-              console.error('Raw response:', d.substring(0, 300));
               res.writeHead(500);
               res.end(JSON.stringify({ error: e.message }));
             }
@@ -1369,7 +1480,6 @@ RESPOND WITH ONLY VALID JSON, no markdown fences, nothing before or after:
         });
 
         apiReq.on('error', e => {
-          console.error('Expand request error:', e.message);
           res.writeHead(500);
           res.end(JSON.stringify({ error: e.message }));
         });
