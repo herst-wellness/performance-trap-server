@@ -44,6 +44,7 @@ function serveStatic(req, res) {
   const ext = path.extname(filePath).toLowerCase();
   const mime = MIME_TYPES[ext] || 'application/octet-stream';
   const data = fs.readFileSync(filePath);
+
   res.writeHead(200, {
     'Content-Type': mime,
     'Content-Length': data.length,
@@ -60,11 +61,15 @@ const SIGNS = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', '
 const md = x => ((x % 360) + 360) % 360;
 
 function jd(y, m, d, h) {
-  let Y = y, M = m, D = d + h / 24;
+  let Y = y;
+  let M = m;
+  let D = d + h / 24;
+
   if (M <= 2) {
     Y -= 1;
     M += 12;
   }
+
   const A = Math.floor(Y / 100);
   const B = 2 - A + Math.floor(A / 4);
   return Math.floor(365.25 * (Y + 4716)) + Math.floor(30.6001 * (M + 1)) + D + B - 1524.5;
@@ -73,9 +78,10 @@ function jd(y, m, d, h) {
 function sunLon(T) {
   const L0 = md(280.46646 + 36000.76983 * T + 0.0003032 * T * T);
   const M = md(357.52911 + 35999.05029 * T - 0.0001537 * T * T) * D2R;
-  const C = (1.914602 - 0.004817 * T - 0.000014 * T * T) * Math.sin(M)
-    + (0.019993 - 0.000101 * T) * Math.sin(2 * M)
-    + 0.000289 * Math.sin(3 * M);
+  const C =
+    (1.914602 - 0.004817 * T - 0.000014 * T * T) * Math.sin(M) +
+    (0.019993 - 0.000101 * T) * Math.sin(2 * M) +
+    0.000289 * Math.sin(3 * M);
   const sunTrue = L0 + C;
   const omega = md(125.04 - 1934.136 * T) * D2R;
   return md(sunTrue - 0.00569 - 0.00478 * Math.sin(omega));
@@ -87,6 +93,7 @@ function moonLon(T) {
   const M = md(357.5291092 + 35999.0502909 * T - 0.0001536 * T * T) * D2R;
   const Mp = md(134.9633964 + 477198.8675055 * T + 0.0087414 * T * T) * D2R;
   const F = md(93.2720950 + 483202.0175233 * T - 0.0036539 * T * T) * D2R;
+
   let s = 0;
   [
     [6.288774, [0, 0, 1, 0]],
@@ -116,6 +123,7 @@ function moonLon(T) {
   ].forEach(([a, [dD, dM, dMp, dF]]) => {
     s += a * Math.sin(dD * D + dM * M + dMp * Mp + dF * F);
   });
+
   return md(Lp + s);
 }
 
@@ -124,47 +132,47 @@ function planetHelio(planet, T) {
     mercury: {
       L: [252.250906, 149474.0722491, 0.0003035, 0.000000018],
       e: [0.20563175, 0.000020406, -0.0000000284, -0.00000000017],
-      w: [77.45645, 0.1600388, 0.00046975, 0.00000056]
+      w: [77.45645, 0.1600388, 0.00046975, 0.00000056],
     },
     venus: {
       L: [181.979801, 58519.2130302, 0.00031014, 0.000000015],
       e: [0.00677188, -0.000047766, 0.0000000975, 0.00000000044],
-      w: [131.563707, 1.4022188, -0.00107377, -0.000005765]
+      w: [131.563707, 1.4022188, -0.00107377, -0.000005765],
     },
     earth: {
       L: [100.466456, 36000.7698278, 0.00030322, 0.000000020],
       e: [0.01670862, -0.000042037, -0.0000001236, 0.00000000004],
-      w: [102.937348, 1.7195269, 0.00045962, 0.000000499]
+      w: [102.937348, 1.7195269, 0.00045962, 0.000000499],
     },
     mars: {
       L: [355.433275, 19141.6964746, 0.00031097, 0.000000015],
       e: [0.09340062, 0.000090483, -0.0000000806, -0.00000000035],
-      w: [336.060234, 1.8410449, 0.00013477, 0.000000536]
+      w: [336.060234, 1.8410449, 0.00013477, 0.000000536],
     },
     jupiter: {
       L: [34.351484, 3036.3027748, 0.00022330, 0.000000037],
       e: [0.04849485, 0.000163244, -0.0000004719, -0.00000000197],
-      w: [14.331309, 1.6120730, 0.00103200, -0.000004270]
+      w: [14.331309, 1.6120730, 0.00103200, -0.000004270],
     },
     saturn: {
       L: [50.077444, 1223.5110686, 0.00051908, -0.000000030],
       e: [0.05550825, -0.000346641, -0.0000006452, 0.00000000638],
-      w: [93.056787, 1.9637694, 0.00083757, 0.000004899]
+      w: [93.056787, 1.9637694, 0.00083757, 0.000004899],
     },
     uranus: {
       L: [314.055005, 429.8640561, 0.00030434, 0.000000026],
       e: [0.04629590, -0.000027337, 0.0000000790, 0.000000000025],
-      w: [173.005159, 1.4863784, 0.00021450, 0.000000433]
+      w: [173.005159, 1.4863784, 0.00021450, 0.000000433],
     },
     neptune: {
       L: [304.348665, 219.8833092, 0.00030926, 0.000000018],
       e: [0.00898809, 0.000006408, -0.0000000008],
-      w: [48.123691, 1.4262677, 0.00037918, -0.000000003]
+      w: [48.123691, 1.4262677, 0.00037918, -0.000000003],
     },
     pluto: {
       L: [238.92903833, 145.20780515, 0.0],
       e: [0.24882730, 0.000006, 0.0],
-      w: [224.06891629, 1.555029, 0.0]
+      w: [224.06891629, 1.555029, 0.0],
     },
   };
 
@@ -211,7 +219,7 @@ function helioRadius(planet) {
     saturn: 9.554909,
     uranus: 19.21845,
     neptune: 30.11039,
-    pluto: 39.48
+    pluto: 39.48,
   };
   const ecc = {
     mercury: 0.20563,
@@ -222,8 +230,9 @@ function helioRadius(planet) {
     saturn: 0.05551,
     uranus: 0.04630,
     neptune: 0.00899,
-    pluto: 0.24883
+    pluto: 0.24883,
   };
+
   const a = semi[planet] || 1;
   const e = ecc[planet] || 0;
   return a * (1 - e * e / 2);
@@ -241,21 +250,25 @@ function chironLon(T) {
   const tPeri = 2450128;
   const M = md(n * (jdVal - tPeri));
   const Mrad = M * D2R;
+
   let E = Mrad;
   for (let i = 0; i < 50; i++) {
     const dE = (Mrad - E + e * Math.sin(E)) / (1 - e * Math.cos(E));
     E += dE;
     if (Math.abs(dE) < 1e-10) break;
   }
+
   const v = 2 * Math.atan2(
     Math.sqrt(1 + e) * Math.sin(E / 2),
     Math.sqrt(1 - e) * Math.cos(E / 2)
   ) * R2D;
+
   const wPeri = 185.11;
   const hLon = md(v + wPeri);
   const earthLon = planetHelio('earth', T);
   const earthR = helioRadius('earth');
   const chironR = a * (1 - e * Math.cos(E));
+
   return helioToGeo(hLon, chironR, earthLon, earthR);
 }
 
@@ -264,10 +277,12 @@ function calcGeoLon(planet, T) {
   if (planet === 'moon') return moonLon(T);
   if (planet === 'node') return nnLon(T);
   if (planet === 'chiron') return chironLon(T);
+
   const hLon = planetHelio(planet, T);
   const earthLon = planetHelio('earth', T);
   const earthR = helioRadius('earth');
   const pR = helioRadius(planet);
+
   return helioToGeo(hLon, pR, earthLon, earthR);
 }
 
@@ -284,12 +299,18 @@ function isRetrograde(planet, T, dt = 0.5) {
 function calcAllPlanets(T) {
   const planets = ['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto', 'node', 'chiron'];
   const result = {};
+
   for (const p of planets) {
-    result[p] = { lon: calcGeoLon(p, T), retrograde: isRetrograde(p, T) };
+    result[p] = {
+      lon: calcGeoLon(p, T),
+      retrograde: isRetrograde(p, T),
+    };
   }
+
   result.sun.retrograde = false;
   result.moon.retrograde = false;
   result.node.retrograde = false;
+
   return result;
 }
 
@@ -316,6 +337,7 @@ function calcAsc(jdVal, lat, lon) {
   const cosEps = Math.cos(eps);
   const sinEps = Math.sin(eps);
   const tanLat = Math.tan(latR);
+
   return md(Math.atan2(cosRAMC, -(sinRAMC * cosEps + tanLat * sinEps)) * R2D);
 }
 
@@ -327,16 +349,19 @@ function calcMC(jdVal, lon) {
   const gmst = md(100.4606184 + 36000.7700536 * T0 + 360.98564724 * (jdVal - J0));
   const LMST = md(gmst + lon);
   const RAMC = LMST * D2R;
+
   return md(Math.atan2(Math.tan(RAMC), Math.cos(eps)) * R2D);
 }
 
 function buildChart(ds, ts, tz, lat, lon) {
   const [y, m, d] = ds.split('-').map(Number);
   const [h, mn] = ts.split(':').map(Number);
+
   let u = h + mn / 60 - tz;
   let dd = d;
   let mm = m;
   let yy = y;
+
   if (u < 0) {
     u += 24;
     dd -= 1;
@@ -365,7 +390,7 @@ function buildChart(ds, ts, tz, lat, lon) {
     neptune: 'Neptune',
     pluto: 'Pluto',
     node: 'North Node',
-    chiron: 'Chiron'
+    chiron: 'Chiron',
   };
 
   const chart = {};
@@ -376,12 +401,13 @@ function buildChart(ds, ts, tz, lat, lon) {
       deg: s.deg,
       lon: s.lon,
       house: wsh(val.lon, ascIdx),
-      retrograde: val.retrograde
+      retrograde: val.retrograde,
     };
   }
 
   chart.ASC = { ...toSign(asc), house: null, retrograde: false };
   chart.MC = { ...toSign(mc), house: null, retrograde: false };
+
   return chart;
 }
 
@@ -396,6 +422,7 @@ function chartToText(chart, name) {
 
   lines.push(`ASC: ${chart.ASC.sign} ${chart.ASC.deg}° (Whole Sign Houses. ${chart.ASC.sign} is House 1)`);
   lines.push(`MC: ${chart.MC.sign} ${chart.MC.deg}°`);
+
   return `${name}'s Chart (Whole Sign Houses):\n${lines.join('\n')}`;
 }
 
@@ -421,7 +448,7 @@ function calcTransitWeather(natalChart) {
       sign: SIGNS[signIdx],
       deg: Math.floor(md(lon) % 30),
       house: ((signIdx - ascSignIdx + 12) % 12) + 1,
-      lon
+      lon,
     };
   }
 
@@ -432,6 +459,7 @@ function calcAspects(weather) {
   const planets = Object.entries(weather);
   const aspects = [];
   const orb = 8;
+
   for (let i = 0; i < planets.length; i++) {
     for (let j = i + 1; j < planets.length; j++) {
       const [n1, d1] = planets[i];
@@ -445,16 +473,19 @@ function calcAspects(weather) {
       if (Math.abs(diff - 180) <= orb) aspects.push({ planets: [n1, n2], type: 'opposition' });
     }
   }
+
   return aspects;
 }
 
 function formatTransitsForPrompt(transitData) {
   const { weather, today } = transitData;
   const lines = [`TODAY: ${today}`, ''];
+
   lines.push('CURRENT OUTER PLANET POSITIONS (whole sign houses for this natal chart):');
   for (const [name, data] of Object.entries(weather)) {
     lines.push(`${name}: ${data.sign} ${data.deg}° — currently in natal House ${data.house}`);
   }
+
   lines.push('');
   const aspects = calcAspects(weather);
   if (aspects.length > 0) {
@@ -462,7 +493,9 @@ function formatTransitsForPrompt(transitData) {
     aspects.forEach(a => lines.push(`${a.planets[0]} and ${a.planets[1]}: ${a.type}`));
     lines.push('');
   }
+
   lines.push('FOR THE transits.synthesis FIELD: Write one paragraph of 4 to 6 sentences. No astrology labels in prose. Translate this into human experience. Make it feel like the structure is being audited, loosened, glitched, or exposed.');
+
   return lines.join('\n');
 }
 
@@ -971,10 +1004,11 @@ RESPOND WITH ONLY VALID JSON:
   "closing": "...",
   "transits": { "synthesis": "..." }
 }`;
+
 const BANNED_ASTRO_TERMS = [
   'aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo', 'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces',
   'sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto', 'chiron', 'node', 'asc', 'ascendant', 'mc', 'midheaven',
-  'retrograde', 'house', 'houses', 'chart', 'astrology', 'astrological', 'placement', 'placements', 'sign', 'signs'
+  'retrograde', 'house', 'houses', 'chart', 'astrology', 'astrological', 'placement', 'placements'
 ];
 
 function extractMainProse(reading) {
@@ -996,6 +1030,7 @@ function hasAstroLeak(reading) {
 
 function validateReading(reading) {
   const problems = [];
+
   if (!reading || typeof reading !== 'object') problems.push('Reading is not an object.');
   if (!Array.isArray(reading.sections) || reading.sections.length !== 4) problems.push('sections must have length 4.');
   if (!Array.isArray(reading.way_home) || reading.way_home.length !== 2) problems.push('way_home must have length 2.');
@@ -1014,7 +1049,10 @@ function validateReading(reading) {
     if (!Array.isArray(s.placements) || s.placements.length < 2 || s.placements.length > 4) problems.push(`Section ${idx + 1} needs 2 to 4 placements.`);
   });
 
-  if (reading.way_home && reading.way_home[1] && !reading.way_home[1].utterance) problems.push('A new response needs an utterance.');
+  if (reading.way_home && reading.way_home[1] && !reading.way_home[1].utterance) {
+    problems.push('A new response needs an utterance.');
+  }
+
   return problems;
 }
 
@@ -1026,7 +1064,7 @@ function addToMailchimp(email, firstName) {
     const body = JSON.stringify({
       email_address: email,
       status: 'subscribed',
-      merge_fields: { FNAME: fname, LNAME: lname }
+      merge_fields: { FNAME: fname, LNAME: lname },
     });
     const auth = Buffer.from(`anystring:${MAILCHIMP_KEY}`).toString('base64');
 
@@ -1037,8 +1075,8 @@ function addToMailchimp(email, firstName) {
       headers: {
         'Authorization': `Basic ${auth}`,
         'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(body)
-      }
+        'Content-Length': Buffer.byteLength(body),
+      },
     }, res => {
       let d = '';
       res.on('data', c => d += c);
@@ -1063,7 +1101,7 @@ function callAnthropicOnce(system, userMsg) {
     model: 'claude-sonnet-4-20250514',
     max_tokens: 10000,
     system,
-    messages: [{ role: 'user', content: userMsg }]
+    messages: [{ role: 'user', content: userMsg }],
   });
 
   return new Promise((resolve, reject) => {
@@ -1075,8 +1113,8 @@ function callAnthropicOnce(system, userMsg) {
         'Content-Type': 'application/json',
         'Content-Length': Buffer.byteLength(body),
         'x-api-key': process.env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01'
-      }
+        'anthropic-version': '2023-06-01',
+      },
     }, res => {
       let d = '';
       res.on('data', c => d += c);
@@ -1085,6 +1123,7 @@ function callAnthropicOnce(system, userMsg) {
           if (d.trim().startsWith('<') || res.statusCode >= 400) {
             throw new Error('Anthropic API returned status ' + res.statusCode + ': ' + d.substring(0, 200));
           }
+
           const a = JSON.parse(d);
           if (a.error) throw new Error(a.error.message);
           const raw = a.content?.[0]?.text || '';
@@ -1136,7 +1175,12 @@ function callAnthropicOnce(system, userMsg) {
               return JSON.parse(s);
             } catch {}
 
-            const oneLine = s.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').replace(/,\s*]/g, ']').replace(/,\s*}/g, '}');
+            const oneLine = s
+              .replace(/[\r\n]+/g, ' ')
+              .replace(/\s+/g, ' ')
+              .replace(/,\s*]/g, ']')
+              .replace(/,\s*}/g, '}');
+
             return JSON.parse(oneLine);
           }
 
@@ -1147,7 +1191,15 @@ function callAnthropicOnce(system, userMsg) {
       });
     });
 
-    req.on('error', reject);
+    req.setTimeout(60000, () => {
+      req.destroy(new Error('Anthropic request timeout'));
+    });
+
+    req.on('error', e => {
+      console.error('Anthropic request error:', e.message, e.code);
+      reject(e);
+    });
+
     req.write(body);
     req.end();
   });
@@ -1158,11 +1210,23 @@ async function callAnthropic(system, userMsg, retries = 3) {
     try {
       return await callAnthropicOnce(system, userMsg);
     } catch (e) {
-      const overloaded = e.message && (e.message.includes('Overloaded') || e.message.includes('529') || e.message.includes('503'));
-      if (overloaded && attempt < retries) {
-        await new Promise(r => setTimeout(r, attempt * 8000));
+      const retryable =
+        (e.message && (
+          e.message.includes('Overloaded') ||
+          e.message.includes('529') ||
+          e.message.includes('503') ||
+          e.message.includes('timeout') ||
+          e.message.includes('ECONNRESET')
+        )) ||
+        e.code === 'ECONNRESET';
+
+      if (retryable && attempt < retries) {
+        const wait = attempt * 8000;
+        console.log(`Anthropic retry ${attempt}/${retries} in ${wait / 1000}s because of:`, e.message);
+        await new Promise(r => setTimeout(r, wait));
         continue;
       }
+
       throw e;
     }
   }
@@ -1193,7 +1257,7 @@ If the reading sounds too simple, rebuild complexity from the chart while keepin
     ...problems.map(p => `- ${p}`),
     '',
     'DRAFT:',
-    JSON.stringify(reading)
+    JSON.stringify(reading),
   ].join('\n');
 
   try {
@@ -1269,8 +1333,8 @@ function sendResendEmail(to, subject, html) {
       headers: {
         'Authorization': 'Bearer ' + RESEND_API_KEY,
         'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(body)
-      }
+        'Content-Length': Buffer.byteLength(body),
+      },
     }, res => {
       let d = '';
       res.on('data', c => d += c);
@@ -1309,7 +1373,7 @@ What would it feel like to just show up as you are, without needing to prove any
 
 Don't answer it. Just let it live in your body for a few days.
 
-—Chad`
+—Chad`,
 };
 
 const EMAIL2 = {
@@ -1348,7 +1412,7 @@ Contact.
 
 Not the performance of connection. The real thing. You with you. Finally staying long enough to hear what's been trying to reach you all along.
 
-—Chad`
+—Chad`,
 };
 
 const EMAIL3 = {
@@ -1383,17 +1447,23 @@ https://chadherst.as.me/30-minute-consult-chad-herst
 
 It's not a sales call. It's not a pitch. It's just the beginning of learning what it feels like to stop abandoning yourself.
 
-—Chad`
+—Chad`,
 };
 
 async function sendNurtureSequence(email) {
   try {
     await sendResendEmail(email, EMAIL1.subject, textToHtml(EMAIL1.text));
+
     setTimeout(async () => {
-      try { await sendResendEmail(email, EMAIL2.subject, textToHtml(EMAIL2.text)); } catch {}
+      try {
+        await sendResendEmail(email, EMAIL2.subject, textToHtml(EMAIL2.text));
+      } catch {}
     }, 2 * 24 * 60 * 60 * 1000);
+
     setTimeout(async () => {
-      try { await sendResendEmail(email, EMAIL3.subject, textToHtml(EMAIL3.text)); } catch {}
+      try {
+        await sendResendEmail(email, EMAIL3.subject, textToHtml(EMAIL3.text));
+      } catch {}
     }, 5 * 24 * 60 * 60 * 1000);
   } catch (e) {
     console.error('Nurture sequence error:', e.message);
@@ -1406,14 +1476,21 @@ function fetchJSON(url, headers = {}) {
     https.get({
       hostname: u.hostname,
       path: u.pathname + u.search,
-      headers: { Accept: 'application/json', ...headers }
+      headers: { Accept: 'application/json', ...headers },
     }, res => {
       let d = '';
       res.on('data', c => d += c);
       res.on('end', () => {
-        try { resolve(JSON.parse(d)); } catch (e) { reject(e); }
+        try {
+          resolve(JSON.parse(d));
+        } catch (e) {
+          reject(e);
+        }
       });
-    }).on('error', reject);
+    }).on('error', e => {
+      console.error('fetchJSON error:', e.message, e.code, url);
+      reject(e);
+    });
   });
 }
 
@@ -1474,12 +1551,12 @@ const server = http.createServer(async (req, res) => {
           '- Use The Mask section to show how the defense became socially rewarded and hard to recognize.',
           '- Keep Essence early, original, and prior to adult armor.',
           '- Keep all astrology labels out of the prose.',
-          '- All astrology belongs only in the placements arrays.'
+          '- All astrology belongs only in the placements arrays.',
         ].join('\n');
 
         let [reading] = await Promise.all([
           callAnthropic(SYS, userPrompt),
-          addToMailchimp(email, name)
+          addToMailchimp(email, name),
         ]);
 
         reading = await repairReadingIfNeeded(reading, chartText, transitPrompt, name);
@@ -1511,7 +1588,7 @@ const server = http.createServer(async (req, res) => {
           model: 'tts-1',
           voice: 'echo',
           input: text.substring(0, 4096),
-          speed: 1.25
+          speed: 1.25,
         });
 
         const ttsReq = https.request({
@@ -1521,8 +1598,8 @@ const server = http.createServer(async (req, res) => {
           headers: {
             Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
             'Content-Type': 'application/json',
-            'Content-Length': Buffer.byteLength(ttsBody)
-          }
+            'Content-Length': Buffer.byteLength(ttsBody),
+          },
         }, ttsRes => {
           if (ttsRes.statusCode !== 200) {
             ttsRes.on('data', () => {});
@@ -1536,7 +1613,7 @@ const server = http.createServer(async (req, res) => {
           res.writeHead(200, {
             'Content-Type': 'audio/mpeg',
             'Access-Control-Allow-Origin': '*',
-            'Transfer-Encoding': 'chunked'
+            'Transfer-Encoding': 'chunked',
           });
           ttsRes.pipe(res);
         });
@@ -1567,6 +1644,7 @@ const server = http.createServer(async (req, res) => {
           res.end(JSON.stringify({ error: 'No email' }));
           return;
         }
+
         sendNurtureSequence(email);
         res.writeHead(200);
         res.end(JSON.stringify({ ok: true }));
@@ -1584,6 +1662,7 @@ const server = http.createServer(async (req, res) => {
     req.on('end', async () => {
       try {
         const { reading, name, birthDate, birthCity } = JSON.parse(body);
+
         if (!reading) {
           res.writeHead(400);
           res.end(JSON.stringify({ error: 'No reading provided' }));
@@ -1600,14 +1679,14 @@ const server = http.createServer(async (req, res) => {
           '',
           `Closing: ${reading.closing || ''}`,
           '',
-          `Transits: ${(reading.transits && reading.transits.synthesis) || ''}`
+          `Transits: ${(reading.transits && reading.transits.synthesis) || ''}`,
         ].join('\n\n');
 
         const reqBody = JSON.stringify({
           model: 'claude-haiku-4-5-20251001',
           max_tokens: 8096,
           system: expandSYS,
-          messages: [{ role: 'user', content: 'Expand this reading into a long-form PDF version.\n\n' + readingText }]
+          messages: [{ role: 'user', content: 'Expand this reading into a long-form PDF version.\n\n' + readingText }],
         });
 
         const apiReq = https.request({
@@ -1618,8 +1697,8 @@ const server = http.createServer(async (req, res) => {
             'Content-Type': 'application/json',
             'Content-Length': Buffer.byteLength(reqBody),
             'x-api-key': process.env.ANTHROPIC_API_KEY,
-            'anthropic-version': '2023-06-01'
-          }
+            'anthropic-version': '2023-06-01',
+          },
         }, apiRes => {
           let d = '';
           apiRes.on('data', c => d += c);
@@ -1629,8 +1708,12 @@ const server = http.createServer(async (req, res) => {
               if (a.error) throw new Error(a.error.message);
               const raw = a.content?.[0]?.text || '';
               let expanded;
-              try { expanded = JSON.parse(raw); }
-              catch { expanded = JSON.parse(raw.replace(/```json|```/g, '').trim()); }
+              try {
+                expanded = JSON.parse(raw);
+              } catch {
+                expanded = JSON.parse(raw.replace(/```json|```/g, '').trim());
+              }
+
               res.writeHead(200);
               res.end(JSON.stringify({ expanded }));
             } catch (e) {
