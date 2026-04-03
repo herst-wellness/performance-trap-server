@@ -7,8 +7,9 @@ const PORT = process.env.PORT || 3000;
 const MAILCHIMP_KEY = process.env.MAILCHIMP_API_KEY;
 const MAILCHIMP_LIST_ID = process.env.MAILCHIMP_LIST_ID;
 const MAILCHIMP_SERVER = process.env.MAILCHIMP_SERVER_PREFIX || 'us6';
+const RESEND_API_KEY = process.env.RESEND_API_KEY;
+const FROM_EMAIL = 'Chad Herst <chad@herstwellness.com>';
 
-// LOGO URL (served as static file from /public)
 const BASE_URL = 'https://performance-trap-server.onrender.com';
 const LOGO_URL = BASE_URL + '/Herst-Wellness-Logo-cropped.jpg';
 
@@ -18,7 +19,6 @@ function cors(res) {
   res.setHeader('Content-Type', 'application/json');
 }
 
-// STATIC FILE SERVING
 const MIME_TYPES = {
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
@@ -52,11 +52,10 @@ function serveStatic(req, res) {
   return true;
 }
 
-// VSOP87 TRUNCATED EPHEMERIS
 const D2R = Math.PI / 180;
 const R2D = 180 / Math.PI;
-const md = x => ((x % 360) + 360) % 360;
 const SGN = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
+const md = x => ((x % 360) + 360) % 360;
 
 function jd(y, m, d, h) {
   let Y = y, M = m, D = d + h / 24;
@@ -200,7 +199,7 @@ function helioToGeo(planetLon_h, planetDist, earthLon_h, earthDist) {
   return md(Math.atan2(y, x) * R2D);
 }
 
-function helioRadius(planet, T) {
+function helioRadius(planet) {
   const semi = {
     mercury: 0.387098, venus: 0.72333, earth: 1.000001, mars: 1.523692,
     jupiter: 5.202603, saturn: 9.554909, uranus: 19.21845, neptune: 30.11039, pluto: 39.48
@@ -219,12 +218,12 @@ function nnLon(T) {
 }
 
 function chironLon(T) {
-  const jd_val = T * 36525 + 2451545;
+  const jdVal = T * 36525 + 2451545;
   const a = 13.633;
   const e = 0.3787;
   const n = 360 / (50.7 * 365.25);
-  const t_peri = 2450128;
-  const M = md(n * (jd_val - t_peri));
+  const tPeri = 2450128;
+  const M = md(n * (jdVal - tPeri));
   const Mrad = M * D2R;
   let E = Mrad;
   for (let i = 0; i < 50; i++) {
@@ -236,22 +235,12 @@ function chironLon(T) {
     Math.sqrt(1 + e) * Math.sin(E / 2),
     Math.sqrt(1 - e) * Math.cos(E / 2)
   ) * R2D;
-  const w_peri = 185.11;
-  const hLon = md(v + w_peri);
+  const wPeri = 185.11;
+  const hLon = md(v + wPeri);
   const earthLon = planetHelio('earth', T);
-  const earthR = helioRadius('earth', T);
+  const earthR = helioRadius('earth');
   const chironR = a * (1 - e * Math.cos(E));
   return helioToGeo(hLon, chironR, earthLon, earthR);
-}
-
-function isRetrograde(planet, T, dt = 0.5) {
-  if (planet === 'sun' || planet === 'moon') return false;
-  const before = calcGeoLon(planet, T - dt / 36525);
-  const after = calcGeoLon(planet, T + dt / 36525);
-  let diff = after - before;
-  if (diff > 180) diff -= 360;
-  if (diff < -180) diff += 360;
-  return diff < 0;
 }
 
 function calcGeoLon(planet, T) {
@@ -261,19 +250,30 @@ function calcGeoLon(planet, T) {
   if (planet === 'chiron') return chironLon(T);
   const hLon = planetHelio(planet, T);
   const earthLon = planetHelio('earth', T);
-  const earthR = helioRadius('earth', T);
-  const pR = helioRadius(planet, T);
+  const earthR = helioRadius('earth');
+  const pR = helioRadius(planet);
   return helioToGeo(hLon, pR, earthLon, earthR);
+}
+
+function isRetrograde(planet, T, dt = 0.5) {
+  if (planet === 'sun' || planet === 'moon' || planet === 'node') return false;
+  const before = calcGeoLon(planet, T - dt / 36525);
+  const after = calcGeoLon(planet, T + dt / 36525);
+  let diff = after - before;
+  if (diff > 180) diff -= 360;
+  if (diff < -180) diff += 360;
+  return diff < 0;
 }
 
 function calcAllPlanets(T) {
   const planets = ['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto', 'node', 'chiron'];
   const result = {};
   for (const p of planets) {
-    const lon = calcGeoLon(p, T);
-    const retro = (p !== 'sun' && p !== 'moon' && p !== 'node') ? isRetrograde(p, T) : false;
-    result[p] = { lon, retrograde: retro };
+    result[p] = { lon: calcGeoLon(p, T), retrograde: isRetrograde(p, T) };
   }
+  result.sun.retrograde = false;
+  result.moon.retrograde = false;
+  result.node.retrograde = false;
   return result;
 }
 
@@ -366,7 +366,6 @@ function buildChart(ds, ts, tz, lat, lon) {
 
   chart.ASC = { ...toSign(asc), house: null, retrograde: false };
   chart.MC = { ...toSign(mc), house: null, retrograde: false };
-
   return chart;
 }
 
@@ -385,351 +384,235 @@ function chartToText(chart, name) {
   return `${name}'s Chart (Whole Sign Houses):\n${lines.join('\n')}`;
 }
 
-const SYS = `You are writing a natal chart reading through the Performance Trap framework.
+function calcTransitWeather(natalChart) {
+  const now = new Date();
+  const todayJD = jd(now.getUTCFullYear(), now.getUTCMonth() + 1, now.getUTCDate(), 0);
+  const T = (todayJD - 2451545) / 36525;
+  const today = now.toISOString().split('T')[0];
+  const ascLon = natalChart.ASC ? natalChart.ASC.lon : 0;
+  const ascSignIdx = Math.floor(ascLon / 30);
 
-NON-NEGOTIABLE RULE:
-The astrology decides the content.
-The framework only organizes the content.
+  const planets = {
+    Saturn: calcGeoLon('saturn', T),
+    Pluto: calcGeoLon('pluto', T),
+    Neptune: calcGeoLon('neptune', T),
+    Uranus: calcGeoLon('uranus', T),
+  };
 
-That means:
-- Do NOT decide the meaning from psychology first and then fit the chart to it.
-- Do NOT decide the move from coaching logic first and then fit the chart to it.
-- Read the chart first.
-- Then sort what the chart reveals into the five headings.
+  const weather = {};
+  for (const [name, lon] of Object.entries(planets)) {
+    const signIdx = Math.floor(md(lon) / 30);
+    weather[name] = {
+      sign: SGN[signIdx],
+      deg: Math.floor(md(lon) % 30),
+      house: ((signIdx - ascSignIdx + 12) % 12) + 1,
+      lon
+    };
+  }
 
-The framework gives only the section headings:
-1. Essence
-2. The Miss
-3. The Performance
-4. Contact
-5. A New Response
+  return { weather, today };
+}
 
-The chart determines what goes inside them.
+function calcAspects(weather) {
+  const planets = Object.entries(weather);
+  const aspects = [];
+  const orb = 8;
+  for (let i = 0; i < planets.length; i++) {
+    for (let j = i + 1; j < planets.length; j++) {
+      const [n1, d1] = planets[i];
+      const [n2, d2] = planets[j];
+      let diff = Math.abs(d1.lon - d2.lon);
+      if (diff > 180) diff = 360 - diff;
+      if (Math.abs(diff - 0) <= orb) aspects.push({ planets: [n1, n2], type: 'conjunction' });
+      if (Math.abs(diff - 60) <= orb) aspects.push({ planets: [n1, n2], type: 'sextile' });
+      if (Math.abs(diff - 90) <= orb) aspects.push({ planets: [n1, n2], type: 'square' });
+      if (Math.abs(diff - 120) <= orb) aspects.push({ planets: [n1, n2], type: 'trine' });
+      if (Math.abs(diff - 180) <= orb) aspects.push({ planets: [n1, n2], type: 'opposition' });
+    }
+  }
+  return aspects;
+}
 
-SECOND NON-NEGOTIABLE RULE:
-Do NOT confuse the armor with the self.
-Do NOT confuse the later adult adaptation with the original face.
+function formatTransitsForPrompt(transitData) {
+  const { weather, today } = transitData;
+  const lines = [`TODAY: ${today}`, ''];
+  lines.push('CURRENT OUTER PLANET POSITIONS (whole sign houses for this natal chart):');
+  for (const [name, data] of Object.entries(weather)) {
+    lines.push(`${name}: ${data.sign} ${data.deg}° — currently in natal House ${data.house}`);
+  }
+  lines.push('');
+  const aspects = calcAspects(weather);
+  if (aspects.length > 0) {
+    lines.push('CURRENT ASPECTS BETWEEN OUTER PLANETS:');
+    aspects.forEach(a => lines.push(`${a.planets[0]} and ${a.planets[1]}: ${a.type}`));
+    lines.push('');
+  }
+  lines.push('FOR THE transits.synthesis FIELD: Write ONE paragraph of 4 to 6 sentences. No astrology labels in prose. Translate into plain human experience. Describe the current pressure, how it exposes the trap, and what loosens now. Make it feel like the structure is showing its seams.');
+  return lines.join('\n');
+}
 
-If the chart contains both:
-- vulnerable receptivity, tenderness, attachment need, softness, sensitivity, permeability
-and
-- later sharpness, directness, penetrating perception, truth-telling, strategy, translation, competence
+const SYS = `You are writing a natal chart reading through Chad Herst's Performance Trap framework.
 
-Then:
-Essence must begin with the vulnerable original face.
-The sharper, more adult adaptation belongs later, usually in Performance.
+The astrology decides the content. The framework only organizes it.
 
-THIRD NON-NEGOTIABLE RULE:
-Tell the reading as a story.
+This must sound like a finished app reading, not analysis notes.
 
-The reading must unfold as:
-- who they originally were
-- how that original self was missed
-- how they learned to contort
-- how they find the way back
-- how relationship begins to change
-
-The prose should feel developmental, not diagnostic.
-Each section should explicitly grow out of the one before it.
+MAIN RULES
+- No astrology labels in the prose.
+- The prose must read like one unfolding story.
+- The reading must feel layered, not one-note.
+- Every section should contain more than one dimension of the person when the chart supports that.
+- Do not flatten the person into one trait.
+- Do not reduce the chart to one adaptation.
+- Keep the writing clear, but let the architecture stay alive.
 
 VOICE
-- Peer to peer. Direct. No mystic. No guru.
-- Somatic when earned. Never spiritual.
-- Short sentences. Hard stops.
-- Clear over clever.
-- Profanity only when it cuts through.
-- Never call trauma a gift.
-- Never romanticize the wound.
-- State the truth and stop.
-- Never use the word "gift."
+- Direct. Human. Precise.
+- No guru voice.
+- No therapy jargon.
+- No inflated spirituality.
+- No flashy metaphors unless they are simple and exact.
+- Short to medium sentences.
+- The prose should feel inevitable, not decorated.
 
-CORE WRITING STANDARD
-Trust the pattern. Do not perform. Write because it is the clearest truth, not because it sounds powerful.
-
-The reading must feel:
-- precise
-- restrained
-- personal
-- chart-specific
-- human
-- believable
-
-Do not write lines because they sound impressive.
-Do not write lines because they sound therapeutic.
-Do not write lines because they sound poetic.
-Write them because they are the exact truth of this chart.
-
-If a phrase sounds written rather than true, simplify it.
-
-DO NOT WRITE
-- inflated language
-- generic therapy language
-- branded-sounding phrases
-- clever metaphors
-- polished copywriting lines
-- inspirational turns
-- vague intensity language
-- abstract coach-speak
-
-BAD
-- active knowing
-- service wrapper
-- translator of the untranslatable
-- careful not-saying
-- real connection handles real truth
-- curious and electric
-- wired for intensity
-- you came in wanting to be held in the feeling
-- you reached for raw truth first
-- your essence was direct truth-telling
-- your original signal was intensity
-
-BETTER
-- when you came into the world, you were...
-- originally, you expected...
-- the part of you that arrived first was...
-- but that part of you was not received...
-- so you learned to contort...
-- this became a strength and also a strain...
-- but you are not stuck there...
-- the way home begins with contact...
-- from there, a different response becomes possible...
-
-ABSOLUTE BAN: NO ASTROLOGY LABELS IN THE MAIN PROSE
-Do NOT name:
-- signs
-- planets
-- houses
-- aspects
-- chart ruler
-- retrograde
-- any astrology terms at all
+VERY IMPORTANT
+This reading should feel like:
+1. a story
+2. a system
+3. a person
 
 That means:
-- no Scorpio
-- no Sagittarius
-- no Gemini rising
-- no Mercury
-- no Mars retrograde
-- no 7th house
-- no chart language
-- no "your chart shows"
-- no "astrologically"
-- no "this placement means"
+- Essence should feel like the original face.
+- The Miss should feel like a structural mismatch between that original face and the field.
+- The Performance should feel like a multi-layered contortion, not just one behavior.
+- The Mask should feel brilliantly useful, and therefore hard to recognize as defense.
+- Contact should feel like the old structure is showing its seams.
+- A New Response should feel like less interference, not better management.
 
-The main prose must read entirely in plain human language.
+DO NOT DEFAULT TO GENERIC PSYCHOLOGY
+Do not decide the reading from coaching logic first.
+Do not impose one preferred wound story.
+Do not assume every chart is about need, or truth-telling, or boundaries.
+Let the chart decide.
 
-The astrology belongs ONLY in the placements dropdown.
+DO NOT CONFUSE ARMOR WITH ESSENCE
+If the chart contains both a vulnerable core and a later high-functioning adaptation, Essence must begin with the vulnerable core and not with the later competence.
 
-ASTROLOGY-FIRST RULES BY SECTION
+PROSE BANS
+Do not use:
+- sign names
+- planet names
+- house numbers
+- aspects
+- retrograde
+- chart
+- astrology
+- placement
+- archetype
 
-ESSENCE
-This is the original face.
-This section must be astrologically derived first.
-Then written as origin.
+STRUCTURE
+Use these exact sections and subtitles:
 
-Do not ask:
-what would fit the book here?
-Ask:
-what in this chart looks original, vulnerable, alive, wanting, receptive, or unguarded before adaptation?
+sections[0]
+title: "Your essence"
+subtitle: "The original face"
 
-Essence is not automatically tenderness.
-Essence is not automatically truth-telling.
-Essence is whatever the chart shows was there first.
+sections[1]
+title: "The miss"
+subtitle: "How you were missed"
 
-But if the chart contains both softness and later sharpness, start with softness.
+sections[2]
+title: "The performance, the contortion"
+subtitle: "What you learned to become"
 
-For Essence, weight especially:
-- Moon
-- Venus
-- 4th / IC material
-- Ascendant
-- chart ruler only if it reflects original orientation
+way_home[0]
+title: "Contact"
+subtitle: "The way home begins here"
 
-Only use Mercury or Mars here if they clearly describe the original face, not the later defended style.
+way_home[1]
+title: "A new response"
+subtitle: "What becomes possible now"
+
+WHAT EACH SECTION MUST DO
+
+YOUR ESSENCE
+- Begin as origin story.
+- Use language like: when you came into the world, originally, the part of you that arrived first.
+- Describe the original face before adaptation.
+- Include at least two interacting dimensions if the chart supports them.
+- Keep it specific.
+- It should feel like a real person, not a slogan.
 
 THE MISS
-This is how the original face was not received.
-It must refer back to Essence.
+- Must clearly grow out of Essence.
+- Must show both the mismatch and the contradiction.
+- Not just what was absent, but what was split, confusing, or impossible.
+- It should feel like the original face landed in a field built for something else.
 
-Do not default to:
-your truth was too much.
-
-The chart may point instead toward:
-- emotional non-response
-- inconsistency
-- contradiction
-- conditionality
-- burden
-- shame around need
-- having to be easy, low-maintenance, manageable, or composed
-- feeling unsafe to depend, feel, ask, or affect
-
-For The Miss, weight especially:
-- Moon aspects
-- 4th / IC
-- ruler of the 4th
-- Saturn
-- Neptune
-- Pluto
-- Uranus
-- Venus
-- Mercury for contradiction and mixed messages
-
-THE PERFORMANCE
-This is the contortion.
-This is where later adult style belongs.
-
-This section should answer:
-because your original face was missed in this particular way, what shape did you learn to take on?
-
-The Performance is not generic.
-It may be:
-- translator
-- achiever
-- caretaker
-- teacher
-- appeaser
-- diplomat
-- stabilizer
-- harmless one
-- impressive one
-- useful one
-- meaning-maker
-or something else
-
-This section must include both:
-- the brilliance
-- the exhaustion
-
-For Performance, weight especially:
-- Mercury
-- Saturn
-- Mars
-- Sun
-- Ascendant
-- 6th / 7th / 10th
+THE PERFORMANCE, THE CONTORTION
+- This section may include more than one contortion.
+- Show the adaptation as a system.
+- Include both brilliance and cost.
+- This is where you can name translation, containment, usefulness, self-arrest, room-reading, over-framing, or anything else the chart supports.
+- Do not reduce it to one trick.
 
 CONTACT
-This is the hinge.
-This is where the story turns.
-
-The tone should clearly shift here:
-you are not stuck there.
-there is a way home.
-it begins with contact.
-
-Contact means making contact with both:
-- the protectors, which are the adaptations and contortions
-- the ache underneath them, built from all the times the self was overridden
-
-This section must describe the ache as something waiting to be touched and felt, not solved from above.
-
-For Contact, weight especially:
-- Moon
-- Saturn
-- Venus
-- Chiron
-then:
-- Mercury
-- Mars
-- Pluto
-- Neptune
+- The tone must turn here.
+- The person is not stuck.
+- The protectors begin to show as protectors.
+- The structure begins to show its seams.
+- The ache underneath them must be described clearly.
+- Contact should feel like the original signal getting room to breathe again.
 
 A NEW RESPONSE
-This must be astrologically derived, not psychologically imposed.
-
-Do NOT decide the move from generic coaching logic.
-Do NOT default to:
-- tell the truth
-- feel more
-- name your need
-- set a boundary
-unless the chart specifically supports that move.
-
-The developmental direction is shown especially by:
-- North Node
-- ruler of the North Node
-The form of the move is shown especially by:
-- Mercury
-- Mars
-- Venus
-- Saturn
-- Moon
-- 7th house and ruler of the 7th
-
-So:
-North Node points toward the direction.
-The relational machinery of the chart tells you the concrete move.
-
-This section should answer:
-what is the next honest, chart-derived relational act that interrupts this person's specific form of self-abandonment?
-
-NARRATIVE SHAPE
-This must read like one unfolding story.
-
-Essence should sound like origin:
-- when you came into the world...
-- originally...
-- the part of you that arrived first...
-
-The Miss should sound like injury to the original self:
-- but that part of you...
-- what you expected to be met with...
-- instead...
-
-Performance should sound like consequence:
-- so you learned...
-- that's when you began to...
-- this was the contortion...
-
-Contact should sound like the turn:
-- but you are not stuck there...
-- there is a way back...
-- the way home begins...
-
-A New Response should sound like emergence:
-- once that ache is touched...
-- from there...
-- something different becomes possible...
-- more of your original self begins to return...
+- Derive this from the chart, especially North Node direction plus the relational machinery of the chart.
+- Do not default to generic advice.
+- The move should feel specific.
+- It should sound like less interference, not a better performance.
+- The utterance should feel real, simple, and direct.
 
 KEY TERMS
 Each section must include exactly 3 key_terms.
-They must be:
-- 3 to 7 words each
-- clean
-- memorable
-- natural when read aloud
-- specific to this chart
-- not clipped
-- not slogan-like
-- not abstract
+They should feel memorable and natural, not slogan-like.
 
-OUTPUT RULES
-Respond with ONLY valid JSON.
+PLACEMENTS
+Each section must include 2 to 4 placements.
+These go in the dropdown only.
+Each meaning must be one short sentence.
+Tight. Exact. Plain English.
 
-Shape:
+CLOSING
+- 3 to 5 sentences.
+- A concrete scene.
+- Show the old reflex and the new opening.
+- No tidy redemption.
+
+TRANSITS
+- One paragraph only.
+- Make it feel like the structure is being audited, loosened, glitched, or exposed.
+- No astrology labels in prose.
+
+RESPOND WITH ONLY VALID JSON:
 {
   "sections": [
     {
-      "title": "Essence",
-      "subtitle": "The original signal",
-      "content": "2 to 3 short paragraphs",
+      "title": "Your essence",
+      "subtitle": "The original face",
+      "content": "...",
       "key_terms": ["...", "...", "..."],
       "placements": [{"name": "...", "meaning": "..."}]
     },
     {
       "title": "The miss",
       "subtitle": "How you were missed",
-      "content": "2 to 3 short paragraphs",
+      "content": "...",
       "key_terms": ["...", "...", "..."],
       "placements": [{"name": "...", "meaning": "..."}]
     },
     {
-      "title": "The performance",
-      "subtitle": "The contortion",
-      "content": "2 to 3 short paragraphs",
+      "title": "The performance, the contortion",
+      "subtitle": "What you learned to become",
+      "content": "...",
       "key_terms": ["...", "...", "..."],
       "placements": [{"name": "...", "meaning": "..."}]
     }
@@ -738,69 +621,27 @@ Shape:
     {
       "title": "Contact",
       "subtitle": "The way home begins here",
-      "content": "2 to 3 short paragraphs",
+      "content": "...",
       "key_terms": ["...", "...", "..."],
       "placements": [{"name": "...", "meaning": "..."}]
     },
     {
       "title": "A new response",
       "subtitle": "What becomes possible now",
-      "content": "1 to 2 short paragraphs",
-      "utterance": "One sentence",
+      "content": "...",
+      "utterance": "...",
       "key_terms": ["...", "...", "..."],
       "placements": [{"name": "...", "meaning": "..."}]
     }
   ],
-  "closing": "3 to 5 sentences, a concrete final scene",
-  "transits": {
-    "synthesis": "one paragraph"
-  }
-}
+  "closing": "...",
+  "transits": { "synthesis": "..." }
+}`;
 
-PLACEMENTS DROPDOWN RULES
-Each section must include 2 to 4 placements.
-Each placement meaning must be:
-- 1 short sentence only
-- plain English
-- exact, not padded
-- directly supportive of the prose above
-- no technical overflow
-- no vague filler`;
-
-// VALIDATION AND REPAIR
 const BANNED_ASTRO_TERMS = [
-  'aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo', 'libra', 'scorpio', 'sagittarius',
-  'capricorn', 'aquarius', 'pisces',
-  'sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto',
-  'chiron', 'node', 'asc', 'ascendant', 'midheaven', 'mc', 'retrograde', 'house', 'houses',
-  'astrolog', 'chart', 'placement', 'placements', 'sign', 'signs'
-];
-
-const ESSENCE_ARMOR_TERMS = [
-  'raw truth',
-  'truth first',
-  'say it straight',
-  'direct truth',
-  'truth with force',
-  'cut through',
-  'cuts through',
-  'intensity was how connection worked',
-  'reached for raw truth',
-  'wanted to expose',
-  'wanted to name what others would not say',
-  'your directness',
-  'your intensity',
-  'sharp edges',
-  'blunt',
-  'force it deserved'
-];
-
-const ESSENCE_STORY_STARTERS = [
-  'when you came into the world',
-  'originally',
-  'the part of you that arrived first',
-  'before you learned',
-  'at the beginning'
+  'aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo', 'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces',
+  'sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto', 'chiron', 'node',
+  'asc', 'ascendant', 'midheaven', 'mc', 'retrograde', 'house', 'houses', 'chart', 'astrolog', 'placement', 'placements'
 ];
 
 function extractMainProse(reading) {
@@ -817,168 +658,33 @@ function extractMainProse(reading) {
 
 function hasAstroLeak(reading) {
   const prose = extractMainProse(reading);
-  return BANNED_ASTRO_TERMS.some(term => {
-    const re = new RegExp(`\\b${term}\\b`, 'i');
-    return re.test(prose);
-  });
-}
-
-function essenceLooksLikeArmor(reading) {
-  const essence = (((reading.sections || [])[0] || {}).content || '').toLowerCase();
-  if (!essence) return false;
-
-  const armorHits = ESSENCE_ARMOR_TERMS.filter(term => essence.includes(term)).length;
-  return armorHits >= 2;
-}
-
-function essenceLacksOriginStory(reading) {
-  const essence = (((reading.sections || [])[0] || {}).content || '').toLowerCase();
-  if (!essence) return true;
-  return !ESSENCE_STORY_STARTERS.some(term => essence.includes(term));
+  return BANNED_ASTRO_TERMS.some(term => new RegExp(`\\b${term}\\b`, 'i').test(prose));
 }
 
 function validateReading(reading) {
   const problems = [];
+  if (!reading || typeof reading !== 'object') problems.push('Reading is not an object.');
+  if (!Array.isArray(reading.sections) || reading.sections.length !== 3) problems.push('sections must have length 3.');
+  if (!Array.isArray(reading.way_home) || reading.way_home.length !== 2) problems.push('way_home must have length 2.');
+  if (!reading.closing) problems.push('closing is required.');
+  if (!reading.transits || !reading.transits.synthesis) problems.push('transits.synthesis is required.');
+  if (hasAstroLeak(reading)) problems.push('Astrology labels leaked into the prose.');
 
-  if (!reading || typeof reading !== 'object') {
-    problems.push('Reading is not an object.');
-    return problems;
-  }
-
-  if (!Array.isArray(reading.sections) || reading.sections.length !== 3) {
-    problems.push('sections must be an array of length 3.');
-  }
-
-  if (!Array.isArray(reading.way_home) || reading.way_home.length !== 2) {
-    problems.push('way_home must be an array of length 2.');
-  }
-
-  const allSections = []
-    .concat(reading.sections || [])
-    .concat(reading.way_home || []);
-
+  const allSections = [].concat(reading.sections || []).concat(reading.way_home || []);
   allSections.forEach((s, idx) => {
-    if (!s || typeof s !== 'object') {
-      problems.push(`Section ${idx + 1} is not an object.`);
-      return;
-    }
-
-    if (!s.title || !s.content) {
-      problems.push(`Section ${idx + 1} is missing title or content.`);
-    }
-
-    if (!Array.isArray(s.key_terms) || s.key_terms.length !== 3) {
-      problems.push(`Section ${idx + 1} must have exactly 3 key_terms.`);
-    }
-
-    if (!Array.isArray(s.placements) || s.placements.length < 2 || s.placements.length > 4) {
-      problems.push(`Section ${idx + 1} must have 2 to 4 placements.`);
-    }
-
-    (s.placements || []).forEach((p, pIdx) => {
-      if (!p.name || !p.meaning) {
-        problems.push(`Section ${idx + 1}, placement ${pIdx + 1} missing name or meaning.`);
-      }
-    });
+    if (!s.title || !s.content) problems.push(`Section ${idx + 1} missing title or content.`);
+    if (!Array.isArray(s.key_terms) || s.key_terms.length !== 3) problems.push(`Section ${idx + 1} needs 3 key_terms.`);
+    if (!Array.isArray(s.placements) || s.placements.length < 2 || s.placements.length > 4) problems.push(`Section ${idx + 1} needs 2 to 4 placements.`);
   });
 
-  if (!reading.closing || typeof reading.closing !== 'string') {
-    problems.push('closing is required.');
-  }
-
-  if (!reading.transits || typeof reading.transits.synthesis !== 'string') {
-    problems.push('transits.synthesis is required.');
-  }
-
   if (reading.way_home && reading.way_home[1] && !reading.way_home[1].utterance) {
-    problems.push('A new response must include utterance.');
-  }
-
-  if (hasAstroLeak(reading)) {
-    problems.push('Main prose contains astrology labels.');
-  }
-
-  if (essenceLooksLikeArmor(reading)) {
-    problems.push('Essence sounds like later armor instead of original face.');
-  }
-
-  if (essenceLacksOriginStory(reading)) {
-    problems.push('Essence does not sound like an origin story.');
+    problems.push('A new response needs an utterance.');
   }
 
   return problems;
 }
 
-async function repairReadingIfNeeded(reading, chartText, transitPrompt, name) {
-  const problems = validateReading(reading);
-  if (!problems.length) return reading;
-
-  console.log('Reading failed validation. Attempting repair:', problems);
-
-  const repairSystem = `${SYS}
-
-REPAIR MODE
-You are repairing a draft that did not fully follow instructions.
-
-Do not start over in a new voice.
-Keep what is strongest.
-Repair only what is broken.
-
-Common failures:
-- astrology labels leaked into main prose
-- Essence drifted into adult adaptation
-- Essence described armor instead of original face
-- Essence did not sound like origin
-- The Miss did not clearly grow out of Essence
-- Performance did not feel like a contortion
-- Contact did not feel like the turn toward home
-- A New Response sounded like advice instead of emergence
-- sections sounded generic
-- placements did not match prose tightly enough
-- key_terms were weak or slogan-like
-- the utterance sounded too crafted
-
-CRITICAL:
-Do not impose psychology first.
-Derive the content from the chart first.
-Then tell it as a story.
-
-In repair mode:
-- remove all astrology labels from the main prose
-- restore the astrology-first logic
-- make Essence sound like the original face
-- make The Miss refer back to that original face
-- make Performance sound like the contortion that followed
-- make Contact feel like the way home begins there
-- make A New Response sound like what emerges next
-- keep the output JSON shape exactly the same`;
-
-  const repairPrompt = [
-    `Repair this natal reading for ${name}.`,
-    '',
-    'CHART:',
-    chartText,
-    '',
-    transitPrompt,
-    '',
-    'VALIDATION PROBLEMS TO FIX:',
-    ...problems.map(p => `- ${p}`),
-    '',
-    'DRAFT TO REPAIR:',
-    JSON.stringify(reading)
-  ].join('\n');
-
-  try {
-    const repaired = await callAnthropic(repairSystem, repairPrompt, 2);
-    return repaired;
-  } catch (e) {
-    console.error('Repair failed:', e.message);
-    return reading;
-  }
-}
-
-// MAILCHIMP
-function addToMailchimp(email, firstName) {
+async function addToMailchimp(email, firstName) {
   return new Promise(resolve => {
     const parts = firstName.trim().split(' ');
     const fname = parts[0] || firstName;
@@ -989,7 +695,6 @@ function addToMailchimp(email, firstName) {
       merge_fields: { FNAME: fname, LNAME: lname }
     });
     const auth = Buffer.from(`anystring:${MAILCHIMP_KEY}`).toString('base64');
-
     const req = https.request({
       hostname: `${MAILCHIMP_SERVER}.api.mailchimp.com`,
       path: `/3.0/lists/${MAILCHIMP_LIST_ID}/members`,
@@ -1003,27 +708,19 @@ function addToMailchimp(email, firstName) {
       let d = '';
       res.on('data', c => d += c);
       res.on('end', () => {
-        try {
-          const r = JSON.parse(d);
-          console.log('Mailchimp status:', res.statusCode, JSON.stringify(r).substring(0, 200));
-        } catch {
-          console.log('Mailchimp raw:', d.substring(0, 200));
-        }
+        console.log('Mailchimp status:', res.statusCode, d.substring(0, 200));
         resolve({ ok: true });
       });
     });
-
     req.on('error', e => {
       console.log('Mailchimp error:', e.message);
       resolve({ ok: true });
     });
-
     req.write(body);
     req.end();
   });
 }
 
-// ANTHROPIC
 function callAnthropicOnce(system, userMsg) {
   const body = JSON.stringify({
     model: 'claude-sonnet-4-20250514',
@@ -1049,132 +746,45 @@ function callAnthropicOnce(system, userMsg) {
       res.on('end', () => {
         try {
           if (d.trim().startsWith('<') || res.statusCode >= 400) {
-            console.error('Anthropic API error:', res.statusCode, d.substring(0, 500));
             throw new Error('Anthropic API returned status ' + res.statusCode + ': ' + d.substring(0, 200));
           }
-
           const a = JSON.parse(d);
-          if (a.error) {
-            const err = new Error(a.error.message);
-            err.status = res.statusCode;
-            err.type = a.error.type;
-            throw err;
-          }
-
+          if (a.error) throw new Error(a.error.message);
           const raw = a.content?.[0]?.text || '';
-          console.log('Raw response length:', raw.length);
 
           function robustJsonParse(text) {
             let s = text.replace(/```json\s*/g, '').replace(/```/g, '').trim();
-
             const start = s.indexOf('{');
             if (start === -1) throw new Error('No JSON object found');
-
-            let depth = 0;
-            let end = -1;
-            let inString = false;
-            let escape = false;
-
+            let depth = 0, end = -1, inString = false, escape = false;
             for (let i = start; i < s.length; i++) {
               const ch = s[i];
-              if (escape) {
-                escape = false;
-                continue;
-              }
-              if (ch === '\\') {
-                escape = true;
-                continue;
-              }
-              if (ch === '"') {
-                inString = !inString;
-                continue;
-              }
+              if (escape) { escape = false; continue; }
+              if (ch === '\\') { escape = true; continue; }
+              if (ch === '"') { inString = !inString; continue; }
               if (inString) continue;
               if (ch === '{') depth++;
               else if (ch === '}') {
                 depth--;
-                if (depth === 0) {
-                  end = i;
-                  break;
-                }
+                if (depth === 0) { end = i; break; }
               }
             }
-
             if (end === -1) throw new Error('Unmatched braces');
             s = s.substring(start, end + 1);
-
-            try {
-              return JSON.parse(s);
-            } catch (e) {
-              console.log('First parse attempt:', e.message);
-            }
-
+            try { return JSON.parse(s); } catch {}
             s = s.replace(/,\s*]/g, ']').replace(/,\s*}/g, '}');
-            try {
-              return JSON.parse(s);
-            } catch (e) {
-              console.log('After trailing comma fix:', e.message);
-            }
-
-            let result = '';
-            inString = false;
-            escape = false;
-
-            for (let i = 0; i < s.length; i++) {
-              const ch = s[i];
-              if (escape) {
-                result += ch;
-                escape = false;
-                continue;
-              }
-              if (ch === '\\') {
-                result += ch;
-                escape = true;
-                continue;
-              }
-              if (ch === '"') {
-                inString = !inString;
-                result += ch;
-                continue;
-              }
-              if (inString) {
-                if (ch === '\n') {
-                  result += '\\n';
-                  continue;
-                }
-                if (ch === '\r') {
-                  result += '\\r';
-                  continue;
-                }
-                if (ch === '\t') {
-                  result += '\\t';
-                  continue;
-                }
-              }
-              result += ch;
-            }
-
-            result = result.replace(/,\s*]/g, ']').replace(/,\s*}/g, '}');
-            try {
-              return JSON.parse(result);
-            } catch (e) {
-              console.log('Second parse attempt:', e.message);
-            }
-
+            try { return JSON.parse(s); } catch {}
             let oneLine = s.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ');
             oneLine = oneLine.replace(/,\s*]/g, ']').replace(/,\s*}/g, '}');
             return JSON.parse(oneLine);
           }
 
-          const reading = robustJsonParse(raw);
-          console.log('Reading parsed successfully');
-          resolve(reading);
+          resolve(robustJsonParse(raw));
         } catch (e) {
           reject(e);
         }
       });
     });
-
     req.on('error', reject);
     req.write(body);
     req.end();
@@ -1186,18 +796,9 @@ async function callAnthropic(system, userMsg, retries = 3) {
     try {
       return await callAnthropicOnce(system, userMsg);
     } catch (e) {
-      const isOverloaded = e.message && (
-        e.message.includes('Overloaded') ||
-        e.message.includes('overloaded') ||
-        e.message.includes('529') ||
-        e.status === 529 ||
-        e.status === 503
-      );
-
-      if (isOverloaded && attempt < retries) {
-        const wait = attempt * 8000;
-        console.log(`Anthropic overloaded, retry ${attempt}/${retries} in ${wait / 1000}s...`);
-        await new Promise(r => setTimeout(r, wait));
+      const overloaded = e.message && (e.message.includes('Overloaded') || e.message.includes('529') || e.message.includes('503'));
+      if (overloaded && attempt < retries) {
+        await new Promise(r => setTimeout(r, attempt * 8000));
         continue;
       }
       throw e;
@@ -1205,118 +806,37 @@ async function callAnthropic(system, userMsg, retries = 3) {
   }
 }
 
-function fetchJSON(url, headers = {}) {
-  return new Promise((resolve, reject) => {
-    const u = new URL(url);
-    https.get({
-      hostname: u.hostname,
-      path: u.pathname + u.search,
-      headers: { 'Accept': 'application/json', ...headers }
-    }, res => {
-      let d = '';
-      res.on('data', c => d += c);
-      res.on('end', () => {
-        try {
-          resolve(JSON.parse(d));
-        } catch (e) {
-          reject(e);
-        }
-      });
-    }).on('error', reject);
-  });
-}
+async function repairReadingIfNeeded(reading, chartText, transitPrompt, name) {
+  const problems = validateReading(reading);
+  if (!problems.length) return reading;
 
-function calcTransitWeather(natalChart) {
-  const now = new Date();
-  const todayJD = jd(now.getUTCFullYear(), now.getUTCMonth() + 1, now.getUTCDate(), 0);
-  const T = (todayJD - 2451545) / 36525;
-  const today = now.toISOString().split('T')[0];
+  const repairSYS = `${SYS}\n\nREPAIR MODE\nRepair the draft without flattening it. Keep the layered architecture. Remove astrology labels from prose. Strengthen structural complexity where the draft has become too simple.`;
+  const repairPrompt = [
+    `Repair this reading for ${name}.`,
+    '',
+    'CHART:',
+    chartText,
+    '',
+    transitPrompt,
+    '',
+    'PROBLEMS:',
+    ...problems.map(p => `- ${p}`),
+    '',
+    'DRAFT:',
+    JSON.stringify(reading)
+  ].join('\n');
 
-  const ascLon = natalChart.ASC ? natalChart.ASC.lon : 0;
-  const ascSignIdx = Math.floor(ascLon / 30);
-
-  const planets = {
-    Saturn: calcGeoLon('saturn', T),
-    Pluto: calcGeoLon('pluto', T),
-    Neptune: calcGeoLon('neptune', T),
-    Uranus: calcGeoLon('uranus', T),
-  };
-
-  const weather = {};
-  for (const [name, lon] of Object.entries(planets)) {
-    const signIdx = Math.floor(md(lon) / 30);
-    const sign = SGN[signIdx];
-    const deg = Math.floor(md(lon) % 30);
-    const house = ((signIdx - ascSignIdx + 12) % 12) + 1;
-    weather[name] = { sign, deg, house, lon };
+  try {
+    return await callAnthropic(repairSYS, repairPrompt, 2);
+  } catch {
+    return reading;
   }
-
-  return { weather, today, ascSignIdx };
-}
-
-function calcAspects(weather) {
-  const planets = Object.entries(weather);
-  const aspects = [];
-  const orb = 8;
-
-  for (let i = 0; i < planets.length; i++) {
-    for (let j = i + 1; j < planets.length; j++) {
-      const [n1, d1] = planets[i];
-      const [n2, d2] = planets[j];
-      let diff = Math.abs(d1.lon - d2.lon);
-      if (diff > 180) diff = 360 - diff;
-
-      if (Math.abs(diff - 0) <= orb) aspects.push({ planets: [n1, n2], type: 'conjunction', diff });
-      if (Math.abs(diff - 60) <= orb) aspects.push({ planets: [n1, n2], type: 'sextile', diff });
-      if (Math.abs(diff - 90) <= orb) aspects.push({ planets: [n1, n2], type: 'square', diff });
-      if (Math.abs(diff - 120) <= orb) aspects.push({ planets: [n1, n2], type: 'trine', diff });
-      if (Math.abs(diff - 180) <= orb) aspects.push({ planets: [n1, n2], type: 'opposition', diff });
-    }
-  }
-
-  return aspects;
-}
-
-function formatTransitsForPrompt(transitData) {
-  const { weather, today } = transitData;
-  const lines = [`TODAY: ${today}`, ''];
-
-  lines.push('CURRENT OUTER PLANET POSITIONS (whole sign houses for this natal chart):');
-  for (const [name, data] of Object.entries(weather)) {
-    lines.push(`${name}: ${data.sign} ${data.deg}° — currently in natal House ${data.house}`);
-  }
-
-  lines.push('');
-
-  const aspects = calcAspects(weather);
-  if (aspects.length > 0) {
-    lines.push('CURRENT ASPECTS BETWEEN OUTER PLANETS:');
-    const aspectDescriptions = {
-      conjunction: 'merged, amplifying each other',
-      sextile: 'flowing, supporting each other',
-      square: 'in friction, creating pressure and tension',
-      trine: 'harmonious, easing movement',
-      opposition: 'pulling in different directions'
-    };
-    aspects.forEach(a => {
-      lines.push(`${a.planets[0]} and ${a.planets[1]}: ${a.type} (${aspectDescriptions[a.type]})`);
-    });
-    lines.push('');
-  }
-
-  lines.push(
-    `FOR THE transits.synthesis FIELD: Write ONE paragraph of 4 to 6 sentences in Chad Herst's voice. DO NOT name any planets, signs, houses, or astrological terms. Translate everything into plain human experience. Describe: (1) what this person is up against right now, (2) how that pressure relates directly to the performance trap named in the reading, and (3) what their growing edge is in this moment. Ground it in the body and in relationship. Short sentences. No comfort. No astrology. Do not sound inspirational.`
-  );
-
-  return lines.join('\n');
 }
 
 function textToHtml(text) {
   const bodyHtml = text.split('\n\n').map(p => {
     if (p.includes('https://chadherst.as.me/30-minute-consult-chad-herst')) {
-      return `<tr><td align="center" style="padding:24px 0;">
-        <a href="https://chadherst.as.me/30-minute-consult-chad-herst" style="display:inline-block; font-family:'Cormorant Garamond',Georgia,serif; font-size:14px; letter-spacing:0.15em; text-transform:uppercase; padding:14px 36px; border:1px solid #8B6B1E; color:#8B6B1E; text-decoration:none;">Book a 30-minute conversation</a>
-      </td></tr>`;
+      return `<tr><td align="center" style="padding:24px 0;"><a href="https://chadherst.as.me/30-minute-consult-chad-herst" style="display:inline-block; font-family:'Cormorant Garamond',Georgia,serif; font-size:14px; letter-spacing:0.15em; text-transform:uppercase; padding:14px 36px; border:1px solid #8B6B1E; color:#8B6B1E; text-decoration:none;">Book a 30-minute conversation</a></td></tr>`;
     }
     return `<tr><td style="padding:0 0 20px 0; font-family:'Cormorant Garamond',Georgia,serif; font-size:17px; line-height:1.9; color:#352515;">${p.replace(/\n/g, '<br>')}</td></tr>`;
   }).join('\n');
@@ -1326,64 +846,26 @@ function textToHtml(text) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!--[if mso]>
-  <style>* { font-family: Georgia, serif !important; }</style>
-  <![endif]-->
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap');
-  </style>
+  <style>@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap');</style>
 </head>
 <body style="margin:0; padding:0; background-color:#F4EDE4;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#F4EDE4;">
-    <tr>
-      <td align="center" style="padding:40px 20px;">
-        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px; width:100%;">
-          <tr>
-            <td align="center" style="padding:0 0 32px 0; border-bottom:1px solid #8B6B1E;">
-              <img src="${LOGO_URL}" alt="Herst Wellness" width="600" style="display:block; margin:0 auto; width:100%; max-width:600px; height:auto;" />
-            </td>
-          </tr>
-          <tr><td style="padding:20px 0 0 0;">&nbsp;</td></tr>
-          <tr>
-            <td>
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-                ${bodyHtml}
-              </table>
-            </td>
-          </tr>
-          <tr>
-            <td align="center" style="padding:40px 0 20px 0; border-top:1px solid #E8DED3;">
-              <img src="${LOGO_URL}" alt="Herst Wellness" width="200" style="display:block; margin:0 auto 16px auto; max-width:200px; height:auto;" />
-              <p style="font-family:'Cormorant Garamond',Georgia,serif; font-size:12px; color:#4F4130; margin:0 0 8px 0; line-height:1.6;">
-                765 Market St, San Francisco, CA 94103<br>
-                (415) 686-4411 &middot; <a href="mailto:chad@herstwellness.com" style="color:#8B6B1E; text-decoration:none;">chad@herstwellness.com</a>
-              </p>
-              <p style="font-family:'Cormorant Garamond',Georgia,serif; font-size:12px; color:#4F4130; margin:0;">
-                <a href="https://map.herstwellness.com" style="color:#8B6B1E; text-decoration:none;">map.herstwellness.com</a>
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
+    <tr><td align="center" style="padding:40px 20px;">
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px; width:100%;">
+        <tr><td align="center" style="padding:0 0 32px 0; border-bottom:1px solid #8B6B1E;"><img src="${LOGO_URL}" alt="Herst Wellness" width="600" style="display:block; margin:0 auto; width:100%; max-width:600px; height:auto;" /></td></tr>
+        <tr><td style="padding:20px 0 0 0;">&nbsp;</td></tr>
+        <tr><td><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${bodyHtml}</table></td></tr>
+        <tr><td align="center" style="padding:40px 0 20px 0; border-top:1px solid #E8DED3;"><img src="${LOGO_URL}" alt="Herst Wellness" width="200" style="display:block; margin:0 auto 16px auto; max-width:200px; height:auto;" /><p style="font-family:'Cormorant Garamond',Georgia,serif; font-size:12px; color:#4F4130; margin:0 0 8px 0; line-height:1.6;">765 Market St, San Francisco, CA 94103<br>(415) 686-4411 &middot; <a href="mailto:chad@herstwellness.com" style="color:#8B6B1E; text-decoration:none;">chad@herstwellness.com</a></p><p style="font-family:'Cormorant Garamond',Georgia,serif; font-size:12px; color:#4F4130; margin:0;"><a href="https://map.herstwellness.com" style="color:#8B6B1E; text-decoration:none;">map.herstwellness.com</a></p></td></tr>
+      </table>
+    </td></tr>
   </table>
 </body>
 </html>`;
 }
 
-// RESEND EMAIL SEQUENCE
-const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const FROM_EMAIL = 'Chad Herst <chad@herstwellness.com>';
-
 function sendResendEmail(to, subject, html) {
   return new Promise((resolve, reject) => {
-    const body = JSON.stringify({
-      from: FROM_EMAIL,
-      to: [to],
-      subject,
-      html
-    });
-
+    const body = JSON.stringify({ from: FROM_EMAIL, to: [to], subject, html });
     const req = https.request({
       hostname: 'api.resend.com',
       path: '/emails',
@@ -1396,17 +878,9 @@ function sendResendEmail(to, subject, html) {
     }, res => {
       let d = '';
       res.on('data', c => d += c);
-      res.on('end', () => {
-        console.log('Resend response:', res.statusCode, d.substring(0, 100));
-        resolve({ ok: res.statusCode < 300 });
-      });
+      res.on('end', () => resolve({ ok: res.statusCode < 300 }));
     });
-
-    req.on('error', e => {
-      console.error('Resend error:', e.message);
-      reject(e);
-    });
-
+    req.on('error', reject);
     req.write(body);
     req.end();
   });
@@ -1518,28 +992,28 @@ It's not a sales call. It's not a pitch. It's just the beginning of learning wha
 async function sendNurtureSequence(email) {
   try {
     await sendResendEmail(email, EMAIL1.subject, textToHtml(EMAIL1.text));
-    console.log('Nurture Email 1 sent to', email);
-
     setTimeout(async () => {
-      try {
-        await sendResendEmail(email, EMAIL2.subject, textToHtml(EMAIL2.text));
-        console.log('Nurture Email 2 sent to', email);
-      } catch (e) {
-        console.error('Email 2 error:', e.message);
-      }
+      try { await sendResendEmail(email, EMAIL2.subject, textToHtml(EMAIL2.text)); } catch {}
     }, 2 * 24 * 60 * 60 * 1000);
-
     setTimeout(async () => {
-      try {
-        await sendResendEmail(email, EMAIL3.subject, textToHtml(EMAIL3.text));
-        console.log('Nurture Email 3 sent to', email);
-      } catch (e) {
-        console.error('Email 3 error:', e.message);
-      }
+      try { await sendResendEmail(email, EMAIL3.subject, textToHtml(EMAIL3.text)); } catch {}
     }, 5 * 24 * 60 * 60 * 1000);
   } catch (e) {
     console.error('Nurture sequence error:', e.message);
   }
+}
+
+function fetchJSON(url, headers = {}) {
+  return new Promise((resolve, reject) => {
+    const u = new URL(url);
+    https.get({ hostname: u.hostname, path: u.pathname + u.search, headers: { Accept: 'application/json', ...headers } }, res => {
+      let d = '';
+      res.on('data', c => d += c);
+      res.on('end', () => {
+        try { resolve(JSON.parse(d)); } catch (e) { reject(e); }
+      });
+    }).on('error', reject);
+  });
 }
 
 const server = http.createServer(async (req, res) => {
@@ -1565,11 +1039,9 @@ const server = http.createServer(async (req, res) => {
     req.on('end', async () => {
       try {
         const { city, name, email, date, time, tz } = JSON.parse(body);
-
-        const geoData = await fetchJSON(
-          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`,
-          { 'User-Agent': 'PerformanceTrapApp/1.0' }
-        );
+        const geoData = await fetchJSON(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`, {
+          'User-Agent': 'PerformanceTrapApp/1.0'
+        });
 
         if (!geoData.length) {
           res.writeHead(400);
@@ -1581,9 +1053,6 @@ const server = http.createServer(async (req, res) => {
         const lon = parseFloat(geoData[0].lon);
         const chart = buildChart(date, time, parseFloat(tz), lat, lon);
         const text = chartToText(chart, name);
-
-        console.log('Chart for', name, ':\n' + text);
-
         const transitData = calcTransitWeather(chart);
         const transitPrompt = formatTransitsForPrompt(transitData);
 
@@ -1595,20 +1064,15 @@ const server = http.createServer(async (req, res) => {
           transitPrompt,
           '',
           'Important output reminder:',
-          '- Astrology decides the content first.',
-          '- The framework only organizes the content.',
-          '- The main prose must contain zero astrology labels.',
-          '- All astrology goes only in the placements arrays.',
-          '- Tell the reading as a developmental story.',
-          '- Essence must sound like the original face, not the later adaptation.',
-          '- The Miss must clearly grow out of Essence.',
-          '- Performance must feel like the contortion learned in response.',
-          '- Contact must feel like the turn toward home.',
-          '- A New Response must come from the chart, especially the North Node direction expressed through the relational machinery of the chart.',
-          '- Do not default to generic coaching advice.',
-          '- Each section must end in 3 strong key_terms.',
-          '- Placements must match the prose exactly.',
-          '- Make the reading sharp, restrained, specific, and human.'
+          '- Keep the story clear, but not simplistic.',
+          '- Let multiple dimensions of the chart stay alive in each section when appropriate.',
+          '- Do not flatten the person into one theme.',
+          '- Make the performance feel like a system, not a single trick.',
+          '- Make the mask brilliantly useful, so the defense is hard to recognize.',
+          '- Make Contact feel like the structure is showing its seams.',
+          '- Make A New Response feel like less interference, not better management.',
+          '- No astrology labels in prose.',
+          '- All astrology goes in the placements arrays only.'
         ].join('\n');
 
         let [reading] = await Promise.all([
@@ -1619,7 +1083,7 @@ const server = http.createServer(async (req, res) => {
         reading = await repairReadingIfNeeded(reading, text, transitPrompt, name);
 
         res.writeHead(200);
-        res.end(JSON.stringify({ lat, lon, reading, chart }));
+        res.end(JSON.stringify({ lat, lon, chart, reading }));
       } catch (e) {
         console.error('Error:', e.message, e.stack);
         res.writeHead(500);
@@ -1640,20 +1104,13 @@ const server = http.createServer(async (req, res) => {
           res.end(JSON.stringify({ error: 'No text provided' }));
           return;
         }
-
-        const ttsBody = JSON.stringify({
-          model: 'tts-1',
-          voice: 'echo',
-          input: text.substring(0, 4096),
-          speed: 1.25
-        });
-
+        const ttsBody = JSON.stringify({ model: 'tts-1', voice: 'echo', input: text.substring(0, 4096), speed: 1.25 });
         const ttsReq = https.request({
           hostname: 'api.openai.com',
           path: '/v1/audio/speech',
           method: 'POST',
           headers: {
-            'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+            Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
             'Content-Type': 'application/json',
             'Content-Length': Buffer.byteLength(ttsBody)
           }
@@ -1666,7 +1123,6 @@ const server = http.createServer(async (req, res) => {
             });
             return;
           }
-
           res.writeHead(200, {
             'Content-Type': 'audio/mpeg',
             'Access-Control-Allow-Origin': '*',
@@ -1674,12 +1130,10 @@ const server = http.createServer(async (req, res) => {
           });
           ttsRes.pipe(res);
         });
-
         ttsReq.on('error', e => {
           res.writeHead(500);
           res.end(JSON.stringify({ error: e.message }));
         });
-
         ttsReq.write(ttsBody);
         ttsReq.end();
       } catch (e) {
@@ -1701,12 +1155,8 @@ const server = http.createServer(async (req, res) => {
           res.end(JSON.stringify({ error: 'No email' }));
           return;
         }
-        console.log('Opt-in received for:', email);
         sendNurtureSequence(email);
-        res.writeHead(200, {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        });
+        res.writeHead(200);
         res.end(JSON.stringify({ ok: true }));
       } catch (e) {
         res.writeHead(500);
@@ -1717,7 +1167,6 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (req.method === 'POST' && req.url === '/expand') {
-    console.log('Expand endpoint hit');
     let body = '';
     req.on('data', c => body += c);
     req.on('end', async () => {
@@ -1729,47 +1178,23 @@ const server = http.createServer(async (req, res) => {
           return;
         }
 
-        const expandSYS = `You are expanding a Performance Trap natal chart reading for a PDF document. Chad Herst's voice: direct, somatic, precise. No spiritual bypassing. Never call the wound a gift.
-
-Rules:
-- Peer across the table, not guru.
-- Physical sensations before interpretation.
-- Short sentences. Hard stops.
-- Never call the wound a gift. It is a survival strategy.
-- Show what happens in the body, not what it means.
-- State the hard truth. Period. Move on.
-- Do not become poetic.
-- Do not become inspirational.
-- Do not sound therapeutic or vague.
-
-Expand each section to 2 or 3 paragraphs. Keep each paragraph under 100 words. Be specific to this person's chart and to the reading already written.
-
-CRITICAL: Keep your total response under 3000 words. Be concise.
-
-RESPOND WITH ONLY VALID JSON, no markdown fences, nothing before or after:
-{"headline":"one sentence","sections":[{"title":"exact section title from input","content":"2-3 paragraphs separated by newline"}],"closing":"one concrete scene in the body","transits_expanded":"2 paragraphs on the transit weather"}`;
+        const expandSYS = `You are expanding a Performance Trap reading for PDF. Same voice. Same person. Keep the layered architecture. No astrology labels in prose. No spiritual bypassing. No romanticizing. Expand the existing reading, do not reinvent it. Respond with valid JSON only.`;
 
         const readingText = [
-          'Person: ' + name + ', born ' + birthDate + ', ' + birthCity,
+          `Person: ${name}, born ${birthDate}, ${birthCity}`,
           '',
-          'Sections:'
-        ]
-          .concat((reading.sections || []).map(s => s.title.toUpperCase() + '\n' + (s.content || '')))
-          .concat((reading.way_home || []).map(s => s.title.toUpperCase() + '\n' + (s.content || '')))
-          .concat([
-            '',
-            'Closing: ' + (reading.closing || ''),
-            '',
-            'Transit synthesis: ' + ((reading.transits && reading.transits.synthesis) || '')
-          ]).join('\n');
-
-        const userMsg = 'Expand this reading into a detailed long-form PDF. Same voice rules apply: direct, somatic, no spiritual bypassing, no romanticizing the wound.\n\n' + readingText;
+          ...(reading.sections || []).map(s => `${s.title.toUpperCase()}\n${s.content}`),
+          ...(reading.way_home || []).map(s => `${s.title.toUpperCase()}\n${s.content}`),
+          '',
+          `Closing: ${reading.closing || ''}`,
+          `Transits: ${(reading.transits && reading.transits.synthesis) || ''}`
+        ].join('\n\n');
 
         const reqBody = JSON.stringify({
           model: 'claude-haiku-4-5-20251001',
           max_tokens: 8096,
           system: expandSYS,
-          messages: [{ role: 'user', content: userMsg }]
+          messages: [{ role: 'user', content: 'Expand this reading into a long-form PDF version.\n\n' + readingText }]
         });
 
         const apiReq = https.request({
@@ -1788,21 +1213,14 @@ RESPOND WITH ONLY VALID JSON, no markdown fences, nothing before or after:
           apiRes.on('end', () => {
             try {
               const a = JSON.parse(d);
-              if (a.error) throw new Error('Haiku error: ' + a.error.type + ' - ' + a.error.message);
+              if (a.error) throw new Error(a.error.message);
               const raw = a.content?.[0]?.text || '';
               let expanded;
-              try {
-                expanded = JSON.parse(raw);
-              } catch {
-                expanded = JSON.parse(raw.replace(/```json|```/g, '').trim());
-              }
-              res.writeHead(200, {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-              });
+              try { expanded = JSON.parse(raw); }
+              catch { expanded = JSON.parse(raw.replace(/```json|```/g, '').trim()); }
+              res.writeHead(200);
               res.end(JSON.stringify({ expanded }));
             } catch (e) {
-              console.error('Expand error:', e.message);
               res.writeHead(500);
               res.end(JSON.stringify({ error: e.message }));
             }
@@ -1813,7 +1231,6 @@ RESPOND WITH ONLY VALID JSON, no markdown fences, nothing before or after:
           res.writeHead(500);
           res.end(JSON.stringify({ error: e.message }));
         });
-
         apiReq.write(reqBody);
         apiReq.end();
       } catch (e) {
