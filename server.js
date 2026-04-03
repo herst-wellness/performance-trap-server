@@ -56,6 +56,7 @@ function serveStatic(req, res) {
 const D2R = Math.PI / 180;
 const R2D = 180 / Math.PI;
 const md = x => ((x % 360) + 360) % 360;
+const SGN = ['Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo', 'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'];
 
 function jd(y, m, d, h) {
   let Y = y, M = m, D = d + h / 24;
@@ -488,16 +489,16 @@ async function repairReadingIfNeeded(reading, chartText, transitPrompt, name) {
 REPAIR MODE
 You are repairing a draft that did not fully follow instructions.
 
-Do not start over from scratch in a new voice.
+Do not start over in a new voice.
 Keep what is strongest.
 Repair only what is broken.
 
-Most common failures:
+Common failures:
 - astrology labels leaked into main prose
-- sections sounded generic
 - Essence drifted into adaptation
+- sections sounded generic
 - placements did not match prose tightly enough
-- key_terms were weak, clipped, or slogan-like
+- key_terms were weak or slogan-like
 - the utterance sounded too crafted
 - the prose sounded more written than true
 
@@ -525,12 +526,6 @@ In repair mode:
 
   try {
     const repaired = await callAnthropic(repairSystem, repairPrompt, 2);
-    const repairedProblems = validateReading(repaired);
-    if (!repairedProblems.length) {
-      console.log('Reading repair succeeded.');
-      return repaired;
-    }
-    console.log('Repair still has issues. Returning repaired version anyway:', repairedProblems);
     return repaired;
   } catch (e) {
     console.error('Repair failed:', e.message);
@@ -627,7 +622,6 @@ function callAnthropicOnce(system, userMsg) {
 
           function robustJsonParse(text) {
             let s = text.replace(/```json\s*/g, '').replace(/```/g, '').trim();
-
             const start = s.indexOf('{');
             if (start === -1) throw new Error('No JSON object found');
 
@@ -646,7 +640,7 @@ function callAnthropicOnce(system, userMsg) {
                 escape = true;
                 continue;
               }
-              if (ch === '"' && !escape) {
+              if (ch === '"') {
                 inString = !inString;
                 continue;
               }
@@ -729,11 +723,6 @@ function callAnthropicOnce(system, userMsg) {
 
           const reading = robustJsonParse(raw);
           console.log('Reading parsed successfully');
-          console.log('Fields present:', Object.keys(reading).join(', '));
-          console.log('sections count:', (reading.sections || []).length);
-          console.log('way_home count:', (reading.way_home || []).length);
-          console.log('has closing:', !!reading.closing);
-
           resolve(reading);
         } catch (e) {
           reject(e);
@@ -792,6 +781,57 @@ function fetchJSON(url, headers = {}) {
   });
 }
 
+function calcTransitWeather(natalChart) {
+  const now = new Date();
+  const todayJD = jd(now.getUTCFullYear(), now.getUTCMonth() + 1, now.getUTCDate(), 0);
+  const T = (todayJD - 2451545) / 36525;
+  const today = now.toISOString().split('T')[0];
+
+  const ascLon = natalChart.ASC ? natalChart.ASC.lon : 0;
+  const ascSignIdx = Math.floor(ascLon / 30);
+
+  const planets = {
+    Saturn: calcGeoLon('saturn', T),
+    Pluto: calcGeoLon('pluto', T),
+    Neptune: calcGeoLon('neptune', T),
+    Uranus: calcGeoLon('uranus', T),
+  };
+
+  const weather = {};
+  for (const [name, lon] of Object.entries(planets)) {
+    const signIdx = Math.floor(md(lon) / 30);
+    const sign = SGN[signIdx];
+    const deg = Math.floor(md(lon) % 30);
+    const house = ((signIdx - ascSignIdx + 12) % 12) + 1;
+    weather[name] = { sign, deg, house, lon };
+  }
+
+  return { weather, today, ascSignIdx };
+}
+
+function calcAspects(weather) {
+  const planets = Object.entries(weather);
+  const aspects = [];
+  const orb = 8;
+
+  for (let i = 0; i < planets.length; i++) {
+    for (let j = i + 1; j < planets.length; j++) {
+      const [n1, d1] = planets[i];
+      const [n2, d2] = planets[j];
+      let diff = Math.abs(d1.lon - d2.lon);
+      if (diff > 180) diff = 360 - diff;
+
+      if (Math.abs(diff - 0) <= orb) aspects.push({ planets: [n1, n2], type: 'conjunction', diff });
+      if (Math.abs(diff - 60) <= orb) aspects.push({ planets: [n1, n2], type: 'sextile', diff });
+      if (Math.abs(diff - 90) <= orb) aspects.push({ planets: [n1, n2], type: 'square', diff });
+      if (Math.abs(diff - 120) <= orb) aspects.push({ planets: [n1, n2], type: 'trine', diff });
+      if (Math.abs(diff - 180) <= orb) aspects.push({ planets: [n1, n2], type: 'opposition', diff });
+    }
+  }
+
+  return aspects;
+}
+
 function formatTransitsForPrompt(transitData) {
   const { weather, today } = transitData;
   const lines = [`TODAY: ${today}`, ''];
@@ -825,392 +865,6 @@ function formatTransitsForPrompt(transitData) {
 
   return lines.join('\n');
 }
-
-const SYS = `You are writing a natal chart reading through the Performance Trap Framework. Chad Herst's system. His voice.
-
-VOICE
-- Peer to peer. Direct. No mystic. No guru.
-- Somatic when earned. Never spiritual.
-- Short sentences. Hard stops.
-- Clear over clever.
-- Profanity only when it cuts through.
-- Never call trauma a gift.
-- Never romanticize the wound.
-- State the truth and stop.
-- Never use the word "gift."
-
-CORE WRITING STANDARD
-Trust the pattern. Do not perform. Write because it is the clearest truth, not because it sounds powerful.
-
-The reading must feel:
-- precise
-- restrained
-- personal
-- chart-specific
-- human
-- believable
-
-Do not write lines because they sound impressive.
-Do not write lines because they sound therapeutic.
-Do not write lines because they sound poetic.
-Write them because they are the exact truth of this chart.
-
-If a phrase sounds written rather than true, simplify it.
-
-DO NOT WRITE
-- inflated language
-- generic therapy language
-- branded-sounding phrases
-- clever metaphors
-- polished copywriting lines
-- inspirational turns
-- vague intensity language
-- abstract coach-speak
-
-BAD
-- active knowing
-- service wrapper
-- translator of the untranslatable
-- careful not-saying
-- real connection handles real truth
-- curious and electric
-- wired for intensity
-
-BETTER
-- you saw what others avoided
-- you learned to package it
-- your seeing was welcome, your directness was not
-- the pause between knowing and speaking is where you lose yourself
-- you learned to read two things at once
-- say it before you edit it
-
-ABSOLUTE BAN: NO ASTROLOGY LABELS IN THE MAIN PROSE
-Do NOT name:
-- signs
-- planets
-- houses
-- aspects
-- chart ruler
-- retrograde
-- any astrology terms at all
-
-That means:
-- no Scorpio
-- no Sagittarius
-- no Gemini rising
-- no Mercury
-- no Mars retrograde
-- no 7th house
-- no chart language
-- no "your chart shows"
-- no "astrologically"
-- no "this placement means"
-
-The main prose must read entirely in plain human language.
-
-The astrology belongs ONLY in the placements dropdown.
-
-IMPORTANT DISTINCTION
-Less astrology jargon.
-More astrology logic.
-
-The reader should feel the chart in the prose without seeing the chart language unless they open the dropdown.
-
-SPECIFICITY RULE
-Every section must contain 1 to 3 observations that could not have been written without this chart.
-
-Do not write broad vibe language if the chart gives something more exact.
-
-NARRATIVE RULE
-This must read like one unfolding human story, not five adjacent portraits.
-
-Each section must grow from the previous one.
-Use cause and effect:
-- so
-- instead
-- over time
-- that's when
-- from there
-- because of that
-- eventually
-
-The reader should feel:
-because this happened, this strategy formed
-because this strategy formed, this cost developed
-because that cost became painful, something began to surface
-because that became visible, a new move is now possible
-
-KEY TERMS
-Each section must include exactly 3 key_terms.
-They must be:
-- 3 to 7 words each
-- clean
-- memorable
-- natural when read aloud
-- specific to this chart
-- not clipped
-- not slogan-like
-- not abstract
-
-Good style:
-- sees underneath the surface
-- too much too fast
-- package the cutting truth
-- pause before speaking
-- tired of translating yourself
-- say it before editing
-
-SECTIONS
-
-HOW YOUR PERFORMANCE TRAP FORMED
-
-1. ESSENCE
-Subtitle: The original signal
-
-Definition:
-What your nervous system reached for before it learned to stop reaching. The quality of contact your body expected before anything went wrong.
-
-Function:
-This section must stay PURELY original signal.
-No adaptation here.
-No usefulness.
-No helping.
-No room management.
-No translation.
-No packaging.
-
-Essence is:
-- what this system naturally wanted
-- how it moved before distortion
-- what kind of contact it expected
-- what felt alive before the miss
-
-The strongest Essence sections feel like:
-- wanting the real version, not the safe one
-- feeling the room's actual temperature, not its performed climate
-- expecting matching directness
-
-2 to 3 short paragraphs.
-End by setting up what went wrong.
-
-2. THE MISS
-Subtitle: What belonging required
-
-Definition:
-The gap between what you needed and what the environment could deliver. Not just the absence of attunement, but the presence of contradiction. One signal said come closer. Another said be careful. This is where misattunement and mixed messages meet.
-
-Function:
-This section must include BOTH:
-- misattunement
-- mixed messages / contradiction / confusion
-
-The Miss is:
-- what the environment did to the signal
-- how the person was not met
-- how the field became hard to trust
-- what impossible relational rules got installed
-
-Do not drift into adaptation yet.
-This section is about what happened to the signal, not what the person did about it.
-
-The strongest Miss sections feel like:
-- your seeing was valuable, your speaking was too much
-- you learned to read two things at once
-- truth was welcome only when it did not disrupt the room
-
-2 to 3 short paragraphs.
-End by naming the impossible position.
-
-3. THE PERFORMANCE
-Subtitle: How you stayed connected
-
-Definition:
-The face you built for managing the room. A set of skills, responses, and offerings designed to keep the bond intact. Brilliant adaptation. Also the thing that's been eating you alive.
-
-Function:
-This is where adaptation lives.
-The face.
-The role.
-The translation.
-The override.
-
-Show how the raw signal from Essence got converted into something relationally safer.
-
-This section must include:
-- the visible adaptation
-- the inner mechanism that keeps it running
-- the packaging of truth into something people can tolerate
-- the split between direct signal and strategic delivery
-- the brilliance and the cost
-
-This is not generic helping.
-This is converting direct truth into relationally tolerable truth.
-
-The strongest Performance sections feel like:
-- you learned to package it
-- you became the person who could say hard things in ways people could hear
-- every true observation gets filtered through how it will land
-
-2 to 3 short paragraphs.
-End by naming what it costs today.
-
-YOUR WAY HOME
-
-4. CONTACT
-Subtitle: Meeting the protectors and the ache
-
-Definition:
-Awareness of both the protectors and the ache beneath them. The protectors are not separate from the ache. They are the adaptation built around it. Contact means being aware of both the strategy and the hurt beneath it.
-
-The ache is the way home.
-
-Function:
-Make this immediate and embodied.
-Show the split in real time.
-Show the pause.
-Show the calculation.
-Show the body.
-Show the cost.
-
-This section should feel as sharp and specific as the first three.
-
-The strongest Contact sections feel like:
-- the protector is the pause
-- one part sees it instantly, another part starts editing
-- the pause between knowing and speaking is where you lose yourself
-
-2 to 3 short paragraphs.
-
-5. A NEW RESPONSE
-Subtitle: The move that changes things
-
-Definition:
-Not fight, not submit. A way of communicating that doesn't require you to leave yourself to stay connected.
-
-Function:
-This is NOT always say it raw.
-This is NOT brutality.
-This is NOT accommodation.
-
-It is a cleaner response that does not require self-erasure.
-
-Show:
-- what changes in the moment of speaking
-- what the person stops doing
-- what a more honest response sounds like
-- how truth can stay connected to relationship
-
-The strongest A New Response sections feel like:
-- say the true thing before you package it
-- let your directness carry the care
-- stop translating yourself into comfort
-
-1 to 2 short paragraphs.
-
-UTTERANCE
-Include one short sentence in the "utterance" field.
-It should feel like something a real person could actually say.
-Not a slogan. Not branded. Not therapy-speak. Not too polished.
-
-BAD:
-- I choose authenticity now
-- I speak my truth
-- here's what I'm actually seeing
-- truth without self-erasure
-- real connection can handle real truth
-
-BETTER:
-- I need to say this straight.
-- That doesn't line up for me.
-- I'm not going to soften this first.
-- Here's the part that feels true to me.
-- This is what I'm noticing.
-- I want to say this more directly.
-
-CLOSING
-3 to 5 sentences.
-A real-life moment where something shifts.
-Not redemptive.
-Not neat.
-Not inspirational.
-Just a concrete scene where the old pattern is present and a new move becomes possible.
-
-PLACEMENTS DROPDOWN RULES
-Each section must include 2 to 4 placements in the "placements" array.
-
-Each placement item must have:
-- "name"
-- "meaning"
-
-Rules for "meaning":
-- 1 short sentence only
-- plain English
-- exact, not padded
-- directly supportive of the prose above
-- no technical overflow
-- no vague filler
-
-CRITICAL:
-The placements must match the prose exactly.
-Do not pick placements just because they are nearby.
-Pick the placements most directly shaping that specific section.
-
-Examples of strong meanings:
-- Quick social reading that adapts fast.
-- Feels what others avoid.
-- Self-worth tied to keeping others comfortable.
-- Direct action gets revised before it lands.
-- Mental processing shaped by service and usefulness.
-- Core self expressed through relationship management.
-
-OUTPUT
-Return ONLY valid JSON, nothing before or after:
-{
-  "sections": [
-    {
-      "title": "Essence",
-      "subtitle": "The original signal",
-      "content": "paragraphs",
-      "key_terms": ["term", "term", "term"],
-      "placements": [{"name": "placement", "meaning": "short"}]
-    },
-    {
-      "title": "The miss",
-      "subtitle": "What belonging required",
-      "content": "paragraphs",
-      "key_terms": ["term", "term", "term"],
-      "placements": [{"name": "...", "meaning": "..."}]
-    },
-    {
-      "title": "The performance",
-      "subtitle": "How you stayed connected",
-      "content": "paragraphs",
-      "key_terms": ["term", "term", "term"],
-      "placements": [{"name": "...", "meaning": "..."}]
-    }
-  ],
-  "way_home": [
-    {
-      "title": "Contact",
-      "subtitle": "Meeting the protectors and the ache",
-      "content": "paragraphs",
-      "key_terms": ["term", "term", "term"],
-      "placements": [{"name": "...", "meaning": "..."}]
-    },
-    {
-      "title": "A new response",
-      "subtitle": "The move that changes things",
-      "content": "paragraphs",
-      "utterance": "One sentence",
-      "key_terms": ["term", "term", "term"],
-      "placements": [{"name": "...", "meaning": "..."}]
-    }
-  ],
-  "closing": "3 to 5 sentences.",
-  "transits": {
-    "synthesis": "one paragraph"
-  }
-}`;
 
 function textToHtml(text) {
   const bodyHtml = text.split('\n\n').map(p => {
