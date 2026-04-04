@@ -1050,6 +1050,114 @@ Keep sections concise.`;
   }
 }
 
+function fetchJSON(url, headers = {}) {
+  return new Promise((resolve, reject) => {
+    const u = new URL(url);
+
+    https.get(
+      {
+        hostname: u.hostname,
+        path: u.pathname + u.search,
+        headers: { Accept: 'application/json', ...headers },
+      },
+      res => {
+        let d = '';
+
+        res.on('data', c => {
+          d += c;
+        });
+
+        res.on('end', () => {
+          try {
+            resolve(JSON.parse(d));
+          } catch (e) {
+            reject(e);
+          }
+        });
+      }
+    ).on('error', reject);
+  });
+}
+
+function addToMailchimp(email, firstName) {
+  return new Promise(resolve => {
+    if (!MAILCHIMP_KEY || !MAILCHIMP_LIST_ID) {
+      resolve({ ok: true, skipped: true });
+      return;
+    }
+
+    const safeName = (firstName || '').trim();
+    const parts = safeName.split(' ').filter(Boolean);
+    const fname = parts[0] || safeName || '';
+    const lname = parts.slice(1).join(' ') || '';
+
+    const body = JSON.stringify({
+      email_address: email,
+      status: 'subscribed',
+      merge_fields: {
+        FNAME: fname,
+        LNAME: lname,
+      },
+    });
+
+    const auth = Buffer.from(`anystring:${MAILCHIMP_KEY}`).toString('base64');
+
+    const req = https.request(
+      {
+        hostname: `${MAILCHIMP_SERVER}.api.mailchimp.com`,
+        path: `/3.0/lists/${MAILCHIMP_LIST_ID}/members`,
+        method: 'POST',
+        headers: {
+          Authorization: `Basic ${auth}`,
+          'Content-Type': 'application/json',
+          'Content-Length': Buffer.byteLength(body),
+        },
+      },
+      res => {
+        let d = '';
+        res.on('data', c => {
+          d += c;
+        });
+        res.on('end', () => {
+          console.log('Mailchimp status:', res.statusCode, d.substring(0, 200));
+          resolve({ ok: true });
+        });
+      }
+    );
+
+    req.on('error', e => {
+      console.log('Mailchimp error:', e.message);
+      resolve({ ok: true });
+    });
+
+    req.write(body);
+    req.end();
+  });
+}
+
+async function callAnthropic(system, userMsg, retries = 3) {
+  for (let attempt = 1; attempt <= retries; attempt += 1) {
+    try {
+      return await callAnthropicOnce(system, userMsg);
+    } catch (e) {
+      const overloaded =
+        e.message &&
+        (e.message.includes('Overloaded') ||
+          e.message.includes('529') ||
+          e.message.includes('503') ||
+          e.message.includes('timeout') ||
+          e.message.includes('ECONNRESET'));
+
+      if (overloaded && attempt < retries) {
+        await new Promise(r => setTimeout(r, attempt * 8000));
+        continue;
+      }
+
+      throw e;
+    }
+  }
+}
+
 const server = http.createServer(async (req, res) => {
   if (req.method === 'GET' && serveStatic(req, res)) return;
 
