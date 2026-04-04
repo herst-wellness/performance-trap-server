@@ -407,7 +407,6 @@ function buildChart(ds, ts, tz, lat, lon) {
 
   chart.ASC = { ...toSign(asc), house: null, retrograde: false };
   chart.MC = { ...toSign(mc), house: null, retrograde: false };
-
   return chart;
 }
 
@@ -593,27 +592,10 @@ More:
 - how one layer formed on top of another
 - how the defense became hard to see
 
-BAD STYLE EXAMPLES
-- emotional precision
-- brilliant synthesizer
-- natural translator
-- master teacher
-- gifted depth-holder
-- profound wisdom bearer
-
-BETTER STYLE
-- learned to carry what the room could not hold
-- the pause came before the action
-- the managing part got mistaken for character
-- the mask stayed one step removed from the rawness
-- the structure worked so well nobody questioned it
-- the ache stayed underneath the usefulness
-
 SECTION RULES
 
 1. Your essence
 Subtitle: The original face
-
 This section must sound like origin.
 Use language like:
 - when you came into the world
@@ -621,12 +603,7 @@ Use language like:
 - originally
 - before anything got reorganized
 
-This section must answer:
-What did this system naturally reach for before adaptation?
-What kind of contact did it expect?
-What kind of reality did it assume was possible?
-
-PRIORITY WEIGHTING:
+Weight:
 - Moon first
 - Venus second
 - 4th / IC tone
@@ -634,32 +611,18 @@ PRIORITY WEIGHTING:
 - chart ruler if truly original
 - Mercury or Sun only if they clearly belong to the original face and not later adaptation
 
-Essence should feel:
-- early
-- alive
-- vulnerable
-- pre-armor
-- specific
-
 2 short paragraphs only.
 
 2. The miss
 Subtitle: How you were missed
-
-This section must grow directly out of Essence.
-
-The Miss must include:
+This section must show:
 - mismatch
 - contradiction
 - the field's emotional rules
-- what was allowed on the surface
-- what was moving underneath
+- surface reality versus underground reality
 - the impossible lesson that got installed
 
-This section should often show:
-surface reality versus underground reality
-
-PRIORITY WEIGHTING:
+Weight:
 - Moon aspects
 - 4th house / IC
 - Saturn
@@ -667,58 +630,39 @@ PRIORITY WEIGHTING:
 - Pluto
 - Uranus
 - Venus
-- Mercury for mixed messages and double-bind logic
-
-Stay with what the field did to the original signal.
+- Mercury for mixed messages
 
 2 short paragraphs only.
 
 3. The performance, the contortion
 Subtitle: What you learned to become
-
 This section must be layered.
+Show:
+- first contortion
+- second contortion if the chart supports it
+- brilliance
+- cost
 
-Do not stop at one adaptation.
-If the chart supports multiple layers, show multiple layers.
-
-Ask:
-What formed first?
-What formed on top of that?
-What became smooth enough to feel natural?
-What part of the self learned to self-arrest?
-
-This section should often contain:
-first contortion
-then second contortion
-
-PRIORITY WEIGHTING:
+Weight:
 - Mercury
 - Saturn
 - Mars
 - Sun
 - Ascendant
 - South Node if relevant
-- 6th / 7th / 10th / 11th houses as relevant
+- 6th / 7th / 10th / 11th houses
 
 2 short paragraphs only.
 
 4. The mask you learned
 Subtitle: The face that made the trap invisible
+This section is distinct from the contortion.
+Show:
+- why nobody questioned this defense
+- why it looked admirable
+- how it created distance while looking gifted, wise, warm, or useful
 
-This is distinct from the contortion.
-
-The mask should answer:
-Why did nobody question this defense?
-Why did it look admirable?
-Why did the outside world experience it as gift rather than distance?
-
-This section should show:
-- the elegant face
-- the useful face
-- the gifted face
-- the socially rewarded face
-
-PRIORITY WEIGHTING:
+Weight:
 - Ascendant
 - Sun
 - Mercury
@@ -731,22 +675,13 @@ PRIORITY WEIGHTING:
 
 5. Contact
 Subtitle: The way home begins here
-
 Start with visibility, not inspiration.
-
-This section should often include:
-- the manager sounding less like identity and more like instruction
-- the narrator beginning to glitch
-- the smooth adaptation showing its seams
+Show:
+- the structure becoming visible as structure
 - protectors revealing themselves as protectors
+- ache underneath them
 
-This section must hold BOTH:
-- protectors
-- ache
-
-The ache is the way home.
-
-PRIORITY WEIGHTING:
+Weight:
 - Moon
 - Saturn
 - Venus
@@ -755,17 +690,20 @@ PRIORITY WEIGHTING:
 - Mars
 - Pluto
 - Neptune
-- relevant transits if they expose the machinery
+- relevant transits
 
 2 short paragraphs only.
 
 6. A new response
 Subtitle: What becomes possible now
-
 This must be chart-led.
+Frame it as the third option:
+not overwhelming the room,
+not saving the room through performance,
+but less interference, more signal.
 
-The North Node gives developmental direction.
-But the actual move must be routed through:
+Weight:
+- North Node
 - Mercury
 - Mars
 - Venus
@@ -773,32 +711,11 @@ But the actual move must be routed through:
 - Saturn
 - 7th house
 - ruler of the 7th
-- any crucial relational signatures
-
-This section must NOT feel like generic coaching advice.
-
-Frame it as:
-the third option
-
-Not:
-overwhelm the room
-Not:
-save the room through performance
-But:
-less interference, more signal
-
-The utterance should be:
-- short
-- human
-- real
-- unbranded
 
 1 short paragraph plus utterance.
 
 KEY TERMS
 Each section must contain exactly 3 key_terms.
-They should be natural, memorable, specific, and readable aloud.
-Not slogans.
 
 PLACEMENTS
 Each section must contain 2 to 4 placements.
@@ -815,12 +732,7 @@ No neat redemption.
 TRANSITS
 1 short paragraph.
 No astrology labels in the prose.
-It should feel like:
-the system is under audit,
-the mask is glitching,
-the structure is loosening,
-the camouflage is failing,
-the original signal is closer to the surface.
+It should feel like the system is under audit, the mask is glitching, the structure is loosening, or the camouflage is failing.
 
 RESPOND WITH ONLY VALID JSON:
 {
@@ -982,6 +894,57 @@ function robustJsonParse(text) {
   return JSON.parse(oneLine);
 }
 
+function addToMailchimp(email, firstName) {
+  return new Promise(resolve => {
+    if (!MAILCHIMP_KEY || !MAILCHIMP_LIST_ID) {
+      resolve({ ok: true, skipped: true });
+      return;
+    }
+
+    const safeName = (firstName || '').trim();
+    const parts = safeName.split(' ').filter(Boolean);
+    const fname = parts[0] || safeName || '';
+    const lname = parts.slice(1).join(' ') || '';
+
+    const body = JSON.stringify({
+      email_address: email,
+      status: 'subscribed',
+      merge_fields: {
+        FNAME: fname,
+        LNAME: lname,
+      },
+    });
+
+    const auth = Buffer.from(`anystring:${MAILCHIMP_KEY}`).toString('base64');
+
+    const req = https.request({
+      hostname: `${MAILCHIMP_SERVER}.api.mailchimp.com`,
+      path: `/3.0/lists/${MAILCHIMP_LIST_ID}/members`,
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${auth}`,
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(body),
+      },
+    }, res => {
+      let d = '';
+      res.on('data', c => d += c);
+      res.on('end', () => {
+        console.log('Mailchimp status:', res.statusCode, d.substring(0, 200));
+        resolve({ ok: true });
+      });
+    });
+
+    req.on('error', e => {
+      console.log('Mailchimp error:', e.message);
+      resolve({ ok: true });
+    });
+
+    req.write(body);
+    req.end();
+  });
+}
+
 function callAnthropicOnce(system, userMsg) {
   const body = JSON.stringify({
     model: 'claude-sonnet-4-20250514',
@@ -1085,231 +1048,6 @@ Keep sections concise.`;
   } catch {
     return reading;
   }
-}
-
-function sendResendEmail(to, subject, html) {
-  return new Promise((resolve, reject) => {
-    const body = JSON.stringify({ from: FROM_EMAIL, to: [to], subject, html });
-
-    const req = https.request({
-      hostname: 'api.resend.com',
-      path: '/emails',
-      method: 'POST',
-      headers: {
-        'Authorization': 'Bearer ' + RESEND_API_KEY,
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(body),
-      },
-    }, res => {
-      let d = '';
-      res.on('data', c => d += c);
-      res.on('end', () => resolve({ ok: res.statusCode < 300 }));
-    });
-
-    req.on('error', reject);
-    req.write(body);
-    req.end();
-  });
-}
-
-function textToHtml(text) {
-  const bodyHtml = text.split('\n\n').map(p => {
-    if (p.includes('https://chadherst.as.me/30-minute-consult-chad-herst')) {
-      return `<tr><td align="center" style="padding:24px 0;"><a href="https://chadherst.as.me/30-minute-consult-chad-herst" style="display:inline-block; font-family:'Cormorant Garamond',Georgia,serif; font-size:14px; letter-spacing:0.15em; text-transform:uppercase; padding:14px 36px; border:1px solid #8B6B1E; color:#8B6B1E; text-decoration:none;">Book a 30-minute conversation</a></td></tr>`;
-    }
-    return `<tr><td style="padding:0 0 20px 0; font-family:'Cormorant Garamond',Georgia,serif; font-size:17px; line-height:1.9; color:#352515;">${p.replace(/\n/g, '<br>')}</td></tr>`;
-  }).join('\n');
-
-  return `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap');
-  </style>
-</head>
-<body style="margin:0; padding:0; background-color:#F4EDE4;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#F4EDE4;">
-    <tr>
-      <td align="center" style="padding:40px 20px;">
-        <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px; width:100%;">
-          <tr>
-            <td align="center" style="padding:0 0 32px 0; border-bottom:1px solid #8B6B1E;">
-              <img src="${LOGO_URL}" alt="Herst Wellness" width="600" style="display:block; margin:0 auto; width:100%; max-width:600px; height:auto;" />
-            </td>
-          </tr>
-          <tr><td style="padding:20px 0 0 0;">&nbsp;</td></tr>
-          <tr>
-            <td>
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-                ${bodyHtml}
-              </table>
-            </td>
-          </tr>
-          <tr>
-            <td align="center" style="padding:40px 0 20px 0; border-top:1px solid #E8DED3;">
-              <img src="${LOGO_URL}" alt="Herst Wellness" width="200" style="display:block; margin:0 auto 16px auto; max-width:200px; height:auto;" />
-              <p style="font-family:'Cormorant Garamond',Georgia,serif; font-size:12px; color:#4F4130; margin:0 0 8px 0; line-height:1.6;">
-                765 Market St, San Francisco, CA 94103<br>
-                (415) 686-4411 &middot; <a href="mailto:chad@herstwellness.com" style="color:#8B6B1E; text-decoration:none;">chad@herstwellness.com</a>
-              </p>
-              <p style="font-family:'Cormorant Garamond',Georgia,serif; font-size:12px; color:#4F4130; margin:0;">
-                <a href="https://map.herstwellness.com" style="color:#8B6B1E; text-decoration:none;">map.herstwellness.com</a>
-              </p>
-            </td>
-          </tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
-}
-
-const EMAIL1 = {
-  subject: 'What your reading is actually telling you',
-  text: `You just completed a reading that mapped something you've been living inside your whole life.
-
-The reading shows you a pattern. It's not new. You've been running it for decades. But seeing it named, seeing the layers stacked on top of each other, that hits different.
-
-I know because I've lived it. When my brother took his life at twenty, I was sent back to school with no space to grieve. Just go, be fine, don't make it harder on your parents. So I learned the role. I became the good kid. And I've been running that role ever since.
-
-Here's what your reading is actually saying:
-
-At some point early on, you learned that just being yourself wasn't enough to stay connected. So you built a face for the room. You learned the role that would keep you safe, keep you loved, keep you belonging.
-
-That role works. It's gotten you far. But it costs something. Every time you showed up as that version of yourself instead of the real one, something inside got left behind. Overridden. Pushed down.
-
-The reading names that role. It's not a flaw. It's brilliant adaptation. Your nervous system learned how to survive in an environment where connection had to be earned.
-
-But here's what the reading can't tell you: what happens when you finally stop performing.
-
-That's the real work. That's where things change.
-
-For now, sit with this one question:
-
-What would it feel like to just show up as you are, without needing to prove anything first?
-
-Don't answer it. Just let it live in your body for a few days.
-
-—Chad`,
-};
-
-const EMAIL2 = {
-  subject: "The thing your reading couldn't say",
-  text: `I want to tell you something that most people skip over.
-
-Insight feels good. You see the pattern, you name it, you understand how you got here. For a moment, it feels like you've solved something. But then you go back to your life, and the pattern is still running.
-
-You still hold your breath before you speak.
-
-You still check the room before you let yourself need.
-
-You still swallow what's true to keep the peace.
-
-The reading showed you the trap. But understanding the trap doesn't spring it.
-
-There's something deeper underneath the performance. I call it the Sacred Wound.
-
-It's not one moment. It's thousands of moments, every time you felt something true and set it aside to stay connected. Every time you chose the relationship over your own truth. That accumulation lives in your body. As tightness. As ache. As something unfinished.
-
-The wound is sacred not because the pain is good. It's sacred because it's precise. It shows you exactly where you've been leaving yourself. And if you stay with it, not fix it, not transcend it, just stay, it becomes a doorway back to yourself.
-
-I spent years trying to meditate it away, stretch past it, yoga it into submission. Then I finally sat still long enough to feel the knot in my gut, that tight, deep thing that had been sitting there for decades, and something in me shifted. Not because it went away. Because I finally stopped running from it.
-
-But here's what stops most people: the moment you touch that wound, your nervous system panics.
-
-Because you've learned something old and deep: needing is dangerous. Showing what hurts makes you too much. So the moment the ache rises, you do what you've always done, you push it down, medicate it, achieve past it, anything but feel it.
-
-That's where the protectors come in.
-
-They're the parts of you that learned to manage, to perform, to stay busy, to stay fine. They're not the enemy. They're the reason you survived. But they're also the reason you're still running the same pattern.
-
-The work isn't about destroying the protectors. It's about finally meeting them. Sitting with them instead of being run by them. When you can do that, something underneath begins to surface.
-
-Contact.
-
-Not the performance of connection. The real thing. You with you. Finally staying long enough to hear what's been trying to reach you all along.
-
-—Chad`,
-};
-
-const EMAIL3 = {
-  subject: 'If you want to take this further',
-  text: `You've had a few days to sit with what your reading showed you.
-
-You know the pattern. You've named it. You can probably feel where it lives in your body, the places you override, the moments you perform, the ways you learned not to need.
-
-But knowing isn't the same as changing.
-
-That's what I want to be clear about.
-
-A reading is a map. It shows you the architecture of how you learned to survive. But a map isn't the territory. And understanding the map doesn't rewire your nervous system.
-
-What does rewire it is contact.
-
-Someone staying with you long enough that you finally feel met. Not fixed. Not analyzed. Just met.
-
-That's what a conversation can do.
-
-In thirty minutes, we're not solving anything. We're not rewriting your whole story. We're doing something simpler and much harder: we're starting to rebuild trust between you and yourself.
-
-I'll listen for what's underneath the words you say. Not to diagnose you or add another layer of understanding. But to help you feel what's actually moving through your body when you touch what matters.
-
-And in that contact, something shifts. Not because I have answers. But because for once, you're not doing it alone.
-
-That's the work I do. That's what changes things.
-
-If you want to take this further:
-
-https://chadherst.as.me/30-minute-consult-chad-herst
-
-It's not a sales call. It's not a pitch. It's just the beginning of learning what it feels like to stop abandoning yourself.
-
-—Chad`,
-};
-
-async function sendNurtureSequence(email) {
-  try {
-    await sendResendEmail(email, EMAIL1.subject, textToHtml(EMAIL1.text));
-    setTimeout(async () => {
-      try {
-        await sendResendEmail(email, EMAIL2.subject, textToHtml(EMAIL2.text));
-      } catch {}
-    }, 2 * 24 * 60 * 60 * 1000);
-    setTimeout(async () => {
-      try {
-        await sendResendEmail(email, EMAIL3.subject, textToHtml(EMAIL3.text));
-      } catch {}
-    }, 5 * 24 * 60 * 60 * 1000);
-  } catch (e) {
-    console.error('Nurture sequence error:', e.message);
-  }
-}
-
-function fetchJSON(url, headers = {}) {
-  return new Promise((resolve, reject) => {
-    const u = new URL(url);
-    https.get({
-      hostname: u.hostname,
-      path: u.pathname + u.search,
-      headers: { Accept: 'application/json', ...headers },
-    }, res => {
-      let d = '';
-      res.on('data', c => d += c);
-      res.on('end', () => {
-        try {
-          resolve(JSON.parse(d));
-        } catch (e) {
-          reject(e);
-        }
-      });
-    }).on('error', e => {
-      console.error('fetchJSON error:', e.message, e.code, url);
-      reject(e);
-    });
-  });
 }
 
 const server = http.createServer(async (req, res) => {
@@ -1564,4 +1302,4 @@ const server = http.createServer(async (req, res) => {
   res.end(JSON.stringify({ error: 'Not found' }));
 });
 
-server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+server.listen(PORT, () => console.log(\`Server running on port \${PORT}\`));
