@@ -33,6 +33,7 @@ const MIME_TYPES = {
 function serveStatic(req, res) {
   const publicDir = path.join(__dirname, 'public');
   const filePath = path.join(publicDir, req.url);
+
   if (!filePath.startsWith(publicDir)) return false;
 
   try {
@@ -63,13 +64,11 @@ const md = x => ((x % 360) + 360) % 360;
 function jd(y, m, d, h) {
   let Y = y;
   let M = m;
-  let D = d + h / 24;
-
+  const D = d + h / 24;
   if (M <= 2) {
     Y -= 1;
     M += 12;
   }
-
   const A = Math.floor(Y / 100);
   const B = 2 - A + Math.floor(A / 4);
   return Math.floor(365.25 * (Y + 4716)) + Math.floor(30.6001 * (M + 1)) + D + B - 1524.5;
@@ -93,8 +92,8 @@ function moonLon(T) {
   const M = md(357.5291092 + 35999.0502909 * T - 0.0001536 * T * T) * D2R;
   const Mp = md(134.9633964 + 477198.8675055 * T + 0.0087414 * T * T) * D2R;
   const F = md(93.2720950 + 483202.0175233 * T - 0.0036539 * T * T) * D2R;
-  let s = 0;
 
+  let s = 0;
   [
     [6.288774, [0, 0, 1, 0]],
     [1.274027, [2, 0, -1, 0]],
@@ -107,10 +106,10 @@ function moonLon(T) {
     [0.053322, [2, 0, 1, 0]],
     [0.045758, [2, -1, 0, 0]],
     [-0.040923, [0, 1, -1, 0]],
-    [-0.034720, [1, 0, 0, 0]],
+    [-0.03472, [1, 0, 0, 0]],
     [-0.030383, [0, 1, 1, 0]],
     [0.015327, [2, 0, 0, -2]],
-    [0.010980, [0, 0, 1, -2]],
+    [0.01098, [0, 0, 1, -2]],
     [0.010675, [4, 0, -1, 0]],
     [0.010034, [0, 0, 3, 0]],
     [0.008548, [4, 0, -2, 0]],
@@ -132,47 +131,47 @@ function planetHelio(planet, T) {
     mercury: {
       L: [252.250906, 149474.0722491, 0.0003035, 0.000000018],
       e: [0.20563175, 0.000020406, -0.0000000284, -0.00000000017],
-      w: [77.45645, 0.1600388, 0.00046975, 0.00000056],
+      w: [77.45645, 0.1600388, 0.00046975, 0.00000056]
     },
     venus: {
       L: [181.979801, 58519.2130302, 0.00031014, 0.000000015],
       e: [0.00677188, -0.000047766, 0.0000000975, 0.00000000044],
-      w: [131.563707, 1.4022188, -0.00107377, -0.000005765],
+      w: [131.563707, 1.4022188, -0.00107377, -0.000005765]
     },
     earth: {
-      L: [100.466456, 36000.7698278, 0.00030322, 0.000000020],
+      L: [100.466456, 36000.7698278, 0.00030322, 0.00000002],
       e: [0.01670862, -0.000042037, -0.0000001236, 0.00000000004],
-      w: [102.937348, 1.7195269, 0.00045962, 0.000000499],
+      w: [102.937348, 1.7195269, 0.00045962, 0.000000499]
     },
     mars: {
       L: [355.433275, 19141.6964746, 0.00031097, 0.000000015],
       e: [0.09340062, 0.000090483, -0.0000000806, -0.00000000035],
-      w: [336.060234, 1.8410449, 0.00013477, 0.000000536],
+      w: [336.060234, 1.8410449, 0.00013477, 0.000000536]
     },
     jupiter: {
-      L: [34.351484, 3036.3027748, 0.00022330, 0.000000037],
+      L: [34.351484, 3036.3027748, 0.0002233, 0.000000037],
       e: [0.04849485, 0.000163244, -0.0000004719, -0.00000000197],
-      w: [14.331309, 1.6120730, 0.00103200, -0.000004270],
+      w: [14.331309, 1.612073, 0.001032, -0.00000427]
     },
     saturn: {
-      L: [50.077444, 1223.5110686, 0.00051908, -0.000000030],
+      L: [50.077444, 1223.5110686, 0.00051908, -0.00000003],
       e: [0.05550825, -0.000346641, -0.0000006452, 0.00000000638],
-      w: [93.056787, 1.9637694, 0.00083757, 0.000004899],
+      w: [93.056787, 1.9637694, 0.00083757, 0.000004899]
     },
     uranus: {
       L: [314.055005, 429.8640561, 0.00030434, 0.000000026],
-      e: [0.04629590, -0.000027337, 0.0000000790, 0.000000000025],
-      w: [173.005159, 1.4863784, 0.00021450, 0.000000433],
+      e: [0.0462959, -0.000027337, 0.000000079, 0.000000000025],
+      w: [173.005159, 1.4863784, 0.0002145, 0.000000433]
     },
     neptune: {
       L: [304.348665, 219.8833092, 0.00030926, 0.000000018],
       e: [0.00898809, 0.000006408, -0.0000000008],
-      w: [48.123691, 1.4262677, 0.00037918, -0.000000003],
+      w: [48.123691, 1.4262677, 0.00037918, -0.000000003]
     },
     pluto: {
       L: [238.92903833, 145.20780515, 0.0],
-      e: [0.24882730, 0.000006, 0.0],
-      w: [224.06891629, 1.555029, 0.0],
+      e: [0.2488273, 0.000006, 0.0],
+      w: [224.06891629, 1.555029, 0.0]
     },
   };
 
@@ -212,27 +211,26 @@ function helioToGeo(planetLonH, planetDist, earthLonH, earthDist) {
 function helioRadius(planet) {
   const semi = {
     mercury: 0.387098,
-    venus: 0.723330,
+    venus: 0.72333,
     earth: 1.000001,
     mars: 1.523692,
     jupiter: 5.202603,
     saturn: 9.554909,
     uranus: 19.21845,
     neptune: 30.11039,
-    pluto: 39.48,
+    pluto: 39.48
   };
   const ecc = {
     mercury: 0.20563,
     venus: 0.00677,
     earth: 0.01671,
-    mars: 0.09340,
+    mars: 0.0934,
     jupiter: 0.04849,
     saturn: 0.05551,
-    uranus: 0.04630,
+    uranus: 0.0463,
     neptune: 0.00899,
-    pluto: 0.24883,
+    pluto: 0.24883
   };
-
   const a = semi[planet] || 1;
   const e = ecc[planet] || 0;
   return a * (1 - e * e / 2);
@@ -268,7 +266,6 @@ function chironLon(T) {
   const earthLon = planetHelio('earth', T);
   const earthR = helioRadius('earth');
   const chironR = a * (1 - e * Math.cos(E));
-
   return helioToGeo(hLon, chironR, earthLon, earthR);
 }
 
@@ -282,12 +279,12 @@ function calcGeoLon(planet, T) {
   const earthLon = planetHelio('earth', T);
   const earthR = helioRadius('earth');
   const pR = helioRadius(planet);
-
   return helioToGeo(hLon, pR, earthLon, earthR);
 }
 
 function isRetrograde(planet, T, dt = 0.5) {
   if (planet === 'sun' || planet === 'moon' || planet === 'node') return false;
+
   const before = calcGeoLon(planet, T - dt / 36525);
   const after = calcGeoLon(planet, T + dt / 36525);
   let diff = after - before;
@@ -303,7 +300,7 @@ function calcAllPlanets(T) {
   for (const p of planets) {
     result[p] = {
       lon: calcGeoLon(p, T),
-      retrograde: isRetrograde(p, T),
+      retrograde: isRetrograde(p, T)
     };
   }
 
@@ -337,7 +334,6 @@ function calcAsc(jdVal, lat, lon) {
   const cosEps = Math.cos(eps);
   const sinEps = Math.sin(eps);
   const tanLat = Math.tan(latR);
-
   return md(Math.atan2(cosRAMC, -(sinRAMC * cosEps + tanLat * sinEps)) * R2D);
 }
 
@@ -349,7 +345,6 @@ function calcMC(jdVal, lon) {
   const gmst = md(100.4606184 + 36000.7700536 * T0 + 360.98564724 * (jdVal - J0));
   const LMST = md(gmst + lon);
   const RAMC = LMST * D2R;
-
   return md(Math.atan2(Math.tan(RAMC), Math.cos(eps)) * R2D);
 }
 
@@ -390,7 +385,7 @@ function buildChart(ds, ts, tz, lat, lon) {
     neptune: 'Neptune',
     pluto: 'Pluto',
     node: 'North Node',
-    chiron: 'Chiron',
+    chiron: 'Chiron'
   };
 
   const chart = {};
@@ -401,12 +396,13 @@ function buildChart(ds, ts, tz, lat, lon) {
       deg: s.deg,
       lon: s.lon,
       house: wsh(val.lon, ascIdx),
-      retrograde: val.retrograde,
+      retrograde: val.retrograde
     };
   }
 
   chart.ASC = { ...toSign(asc), house: null, retrograde: false };
   chart.MC = { ...toSign(mc), house: null, retrograde: false };
+
   return chart;
 }
 
@@ -447,7 +443,7 @@ function calcTransitWeather(natalChart) {
       sign: SIGNS[signIdx],
       deg: Math.floor(md(lon) % 30),
       house: ((signIdx - ascSignIdx + 12) % 12) + 1,
-      lon,
+      lon
     };
   }
 
@@ -465,6 +461,7 @@ function calcAspects(weather) {
       const [n2, d2] = planets[j];
       let diff = Math.abs(d1.lon - d2.lon);
       if (diff > 180) diff = 360 - diff;
+
       if (Math.abs(diff - 0) <= orb) aspects.push({ planets: [n1, n2], type: 'conjunction' });
       if (Math.abs(diff - 60) <= orb) aspects.push({ planets: [n1, n2], type: 'sextile' });
       if (Math.abs(diff - 90) <= orb) aspects.push({ planets: [n1, n2], type: 'square' });
@@ -486,6 +483,7 @@ function formatTransitsForPrompt(transitData) {
   }
 
   lines.push('');
+
   const aspects = calcAspects(weather);
   if (aspects.length > 0) {
     lines.push('CURRENT ASPECTS BETWEEN OUTER PLANETS:');
@@ -493,7 +491,7 @@ function formatTransitsForPrompt(transitData) {
     lines.push('');
   }
 
-  lines.push('FOR THE transits.synthesis FIELD: Write one paragraph of 3 to 5 sentences. No astrology labels in prose. Translate this into human experience. Make it feel like the structure is being audited, loosened, glitched, or exposed.');
+  lines.push('FOR THE transits.synthesis FIELD: Write one paragraph of 4 to 6 sentences. No astrology labels in prose. Translate this into human experience. Make it feel like the structure is being audited, loosened, glitched, or exposed.');
 
   return lines.join('\n');
 }
@@ -503,7 +501,9 @@ const SYS = `You are writing a natal chart reading through Chad Herst's Performa
 The astrology decides the content.
 The framework only organizes it.
 
-Your job is to produce app-ready copy that keeps the clarity of a finished reading while reaching much closer to the depth, layering, and internal architecture of a real blueprint.
+The goal is this:
+Keep the clarity and readability of a finished app reading.
+But reach much closer to the depth, layering, and internal architecture of a real blueprint.
 
 This must not read like a personality summary.
 It must read like a trap.
@@ -580,7 +580,7 @@ CRITICAL WRITING STANDARD
 Do not make the person sound impressive before you make the trap visible.
 
 Do not write polished identity copy.
-Do not write résumé language.
+Do not write resume language.
 Do not write flattering summary language.
 
 BAN THESE KINDS OF PHRASES IN THE PROSE
@@ -1029,6 +1029,7 @@ RESPOND WITH ONLY VALID JSON:
   "closing": "...",
   "transits": { "synthesis": "..." }
 }`;
+
 const BANNED_ASTRO_TERMS = [
   'aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo', 'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces',
   'sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto', 'chiron', 'node', 'asc', 'ascendant', 'mc', 'midheaven',
@@ -1054,6 +1055,7 @@ function hasAstroLeak(reading) {
 
 function validateReading(reading) {
   const problems = [];
+
   if (!reading || typeof reading !== 'object') problems.push('Reading is not an object.');
   if (!Array.isArray(reading.sections) || reading.sections.length !== 4) problems.push('sections must have length 4.');
   if (!Array.isArray(reading.way_home) || reading.way_home.length !== 2) problems.push('way_home must have length 2.');
@@ -1061,7 +1063,10 @@ function validateReading(reading) {
   if (!reading.transits || !reading.transits.synthesis) problems.push('transits.synthesis is required.');
   if (hasAstroLeak(reading)) problems.push('Astrology labels leaked into the prose.');
 
-  const allSections = [].concat(reading.sections || []).concat(reading.way_home || []);
+  const allSections = []
+    .concat(reading.sections || [])
+    .concat(reading.way_home || []);
+
   allSections.forEach((s, idx) => {
     if (!s || typeof s !== 'object') {
       problems.push(`Section ${idx + 1} missing.`);
@@ -1072,20 +1077,30 @@ function validateReading(reading) {
     if (!Array.isArray(s.placements) || s.placements.length < 2 || s.placements.length > 4) problems.push(`Section ${idx + 1} needs 2 to 4 placements.`);
   });
 
-  if (reading.way_home && reading.way_home[1] && !reading.way_home[1].utterance) problems.push('A new response needs an utterance.');
+  if (reading.way_home && reading.way_home[1] && !reading.way_home[1].utterance) {
+    problems.push('A new response needs an utterance.');
+  }
+
   return problems;
 }
 
 function addToMailchimp(email, firstName) {
   return new Promise(resolve => {
-    const parts = firstName.trim().split(' ');
-    const fname = parts[0] || firstName;
+    if (!MAILCHIMP_KEY || !MAILCHIMP_LIST_ID) {
+      resolve({ ok: true });
+      return;
+    }
+
+    const parts = (firstName || '').trim().split(' ');
+    const fname = parts[0] || firstName || '';
     const lname = parts.slice(1).join(' ') || '';
+
     const body = JSON.stringify({
       email_address: email,
       status: 'subscribed',
       merge_fields: { FNAME: fname, LNAME: lname }
     });
+
     const auth = Buffer.from(`anystring:${MAILCHIMP_KEY}`).toString('base64');
 
     const req = https.request({
@@ -1116,7 +1131,7 @@ function addToMailchimp(email, firstName) {
   });
 }
 
-function callAnthropicOnce(system, userMsg) {
+function callAnthropicOnce(system, userMsg, timeoutMs = 90000) {
   const body = JSON.stringify({
     model: 'claude-sonnet-4-20250514',
     max_tokens: 10000,
@@ -1141,8 +1156,9 @@ function callAnthropicOnce(system, userMsg) {
       res.on('end', () => {
         try {
           if (d.trim().startsWith('<') || res.statusCode >= 400) {
-            throw new Error('Anthropic API returned status ' + res.statusCode + ': ' + d.substring(0, 200));
+            throw new Error(`Anthropic API returned status ${res.statusCode}: ${d.substring(0, 200)}`);
           }
+
           const a = JSON.parse(d);
           if (a.error) throw new Error(a.error.message);
           const raw = a.content?.[0]?.text || '';
@@ -1173,7 +1189,7 @@ function callAnthropicOnce(system, userMsg) {
               }
               if (inString) continue;
               if (ch === '{') depth += 1;
-              else if (ch === '}') {
+              if (ch === '}') {
                 depth -= 1;
                 if (depth === 0) {
                   end = i;
@@ -1183,6 +1199,7 @@ function callAnthropicOnce(system, userMsg) {
             }
 
             if (end === -1) throw new Error('Unmatched braces');
+
             s = s.substring(start, end + 1);
 
             try {
@@ -1190,11 +1207,17 @@ function callAnthropicOnce(system, userMsg) {
             } catch {}
 
             s = s.replace(/,\s*]/g, ']').replace(/,\s*}/g, '}');
+
             try {
               return JSON.parse(s);
             } catch {}
 
-            const oneLine = s.replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').replace(/,\s*]/g, ']').replace(/,\s*}/g, '}');
+            const oneLine = s
+              .replace(/[\r\n]+/g, ' ')
+              .replace(/\s+/g, ' ')
+              .replace(/,\s*]/g, ']')
+              .replace(/,\s*}/g, '}');
+
             return JSON.parse(oneLine);
           }
 
@@ -1203,6 +1226,10 @@ function callAnthropicOnce(system, userMsg) {
           reject(e);
         }
       });
+    });
+
+    req.setTimeout(timeoutMs, () => {
+      req.destroy(new Error('Anthropic request timeout'));
     });
 
     req.on('error', reject);
@@ -1214,13 +1241,21 @@ function callAnthropicOnce(system, userMsg) {
 async function callAnthropic(system, userMsg, retries = 3) {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
-      return await callAnthropicOnce(system, userMsg);
+      return await callAnthropicOnce(system, userMsg, 90000);
     } catch (e) {
-      const overloaded = e.message && (e.message.includes('Overloaded') || e.message.includes('529') || e.message.includes('503'));
-      if (overloaded && attempt < retries) {
+      const message = e && e.message ? e.message : '';
+      const retryable =
+        message.includes('Overloaded') ||
+        message.includes('529') ||
+        message.includes('503') ||
+        message.includes('timeout') ||
+        message.includes('ECONNRESET');
+
+      if (retryable && attempt < retries) {
         await new Promise(r => setTimeout(r, attempt * 8000));
         continue;
       }
+
       throw e;
     }
   }
@@ -1266,6 +1301,7 @@ function textToHtml(text) {
     if (p.includes('https://chadherst.as.me/30-minute-consult-chad-herst')) {
       return `<tr><td align="center" style="padding:24px 0;"><a href="https://chadherst.as.me/30-minute-consult-chad-herst" style="display:inline-block; font-family:'Cormorant Garamond',Georgia,serif; font-size:14px; letter-spacing:0.15em; text-transform:uppercase; padding:14px 36px; border:1px solid #8B6B1E; color:#8B6B1E; text-decoration:none;">Book a 30-minute conversation</a></td></tr>`;
     }
+
     return `<tr><td style="padding:0 0 20px 0; font-family:'Cormorant Garamond',Georgia,serif; font-size:17px; line-height:1.9; color:#352515;">${p.replace(/\n/g, '<br>')}</td></tr>`;
   }).join('\n');
 
@@ -1318,6 +1354,11 @@ function textToHtml(text) {
 
 function sendResendEmail(to, subject, html) {
   return new Promise((resolve, reject) => {
+    if (!RESEND_API_KEY) {
+      resolve({ ok: true });
+      return;
+    }
+
     const body = JSON.stringify({ from: FROM_EMAIL, to: [to], subject, html });
 
     const req = https.request({
@@ -1447,11 +1488,17 @@ It's not a sales call. It's not a pitch. It's just the beginning of learning wha
 async function sendNurtureSequence(email) {
   try {
     await sendResendEmail(email, EMAIL1.subject, textToHtml(EMAIL1.text));
+
     setTimeout(async () => {
-      try { await sendResendEmail(email, EMAIL2.subject, textToHtml(EMAIL2.text)); } catch {}
+      try {
+        await sendResendEmail(email, EMAIL2.subject, textToHtml(EMAIL2.text));
+      } catch {}
     }, 2 * 24 * 60 * 60 * 1000);
+
     setTimeout(async () => {
-      try { await sendResendEmail(email, EMAIL3.subject, textToHtml(EMAIL3.text)); } catch {}
+      try {
+        await sendResendEmail(email, EMAIL3.subject, textToHtml(EMAIL3.text));
+      } catch {}
     }, 5 * 24 * 60 * 60 * 1000);
   } catch (e) {
     console.error('Nurture sequence error:', e.message);
@@ -1461,6 +1508,7 @@ async function sendNurtureSequence(email) {
 function fetchJSON(url, headers = {}) {
   return new Promise((resolve, reject) => {
     const u = new URL(url);
+
     https.get({
       hostname: u.hostname,
       path: u.pathname + u.search,
@@ -1469,625 +1517,14 @@ function fetchJSON(url, headers = {}) {
       let d = '';
       res.on('data', c => d += c);
       res.on('end', () => {
-        try { resolve(JSON.parse(d)); } catch (e) { reject(e); }
-      });
-    }).on('error', reject);
-  });
-}
-
-const server = http.createServer(async (req, res) => {
-  if (req.method === 'GET' && serveStatic(req, res)) return;
-
-  cors(res);
-
-  if (req.method === 'OPTIONS') {
-    res.writeHead(200);
-    res.end();
-    return;
-  }
-
-  if (req.method === 'GET' && req.url === '/health') {
-    res.writeHead(200);
-    res.end(JSON.stringify({ ok: true, engine: 'vsop87-js' }));
-    return;
-  }
-
-  if (req.method === 'POST' && req.url === '/reading') {
-    let body = '';
-    req.on('data', c => body += c);
-    req.on('end', async () => {
-      try {
-        const { city, name, email, date, time, tz } = JSON.parse(body);
-
-        const geoData = await fetchJSON(
-          \`https://nominatim.openstreetmap.org/search?q=\${encodeURIComponent(city)}&format=json&limit=1\`,
-          { 'User-Agent': 'PerformanceTrapApp/1.0' }
-        );
-
-        if (!geoData.length) {
-          res.writeHead(400);
-          res.end(JSON.stringify({ error: \`Could not find "\${city}". Try: "San Rafael, California, USA"\` }));
-          return;
-        }
-
-        const lat = parseFloat(geoData[0].lat);
-        const lon = parseFloat(geoData[0].lon);
-        const chart = buildChart(date, time, parseFloat(tz), lat, lon);
-        const chartText = chartToText(chart, name);
-        const transitData = calcTransitWeather(chart);
-        const transitPrompt = formatTransitsForPrompt(transitData);
-
-        const userPrompt = [
-          \`Read this chart for \${name}:\`,
-          '',
-          chartText,
-          '',
-          transitPrompt,
-          '',
-          'Important output reminder:',
-          '- Keep the clarity of a finished app reading.',
-          '- Reach for more depth and internal architecture than a one-theme summary.',
-          '- Do not flatten the person into one adaptation.',
-          '- Let the Performance be layered if the chart supports that.',
-          '- Use The Mask section to show how the defense became socially rewarded and hard to recognize.',
-          '- Keep Essence early, original, and prior to adult armor.',
-          '- Keep all astrology labels out of the prose.',
-          '- All astrology belongs only in the placements arrays.'
-        ].join('\\n');
-
-        let [reading] = await Promise.all([
-          callAnthropic(SYS, userPrompt),
-          addToMailchimp(email, name)
-        ]);
-
-        reading = await repairReadingIfNeeded(reading, chartText, transitPrompt, name);
-
-        res.writeHead(200);
-        res.end(JSON.stringify({ lat, lon, chart, reading }));
-      } catch (e) {
-        console.error('Error:', e.message, e.stack);
-        res.writeHead(500);
-        res.end(JSON.stringify({ error: e.message || 'Something went wrong.' }));
-      }
-    });
-    return;
-  }
-
-  if (req.method === 'POST' && req.url === '/tts') {
-    let body = '';
-    req.on('data', c => body += c);
-    req.on('end', async () => {
-      try {
-        const { text } = JSON.parse(body);
-        if (!text) {
-          res.writeHead(400);
-          res.end(JSON.stringify({ error: 'No text provided' }));
-          return;
-        }
-
-        const ttsBody = JSON.stringify({
-          model: 'tts-1',
-          voice: 'echo',
-          input: text.substring(0, 4096),
-          speed: 1.25
-        });
-
-        const ttsReq = https.request({
-          hostname: 'api.openai.com',
-          path: '/v1/audio/speech',
-          method: 'POST',
-          headers: {
-            Authorization: \`Bearer \${process.env.OPENAI_API_KEY}\`,
-            'Content-Type': 'application/json',
-            'Content-Length': Buffer.byteLength(ttsBody)
-          }
-        }, ttsRes => {
-          if (ttsRes.statusCode !== 200) {
-            ttsRes.on('data', () => {});
-            ttsRes.on('end', () => {
-              res.writeHead(500);
-              res.end(JSON.stringify({ error: 'TTS failed' }));
-            });
-            return;
-          }
-
-          res.writeHead(200, {
-            'Content-Type': 'audio/mpeg',
-            'Access-Control-Allow-Origin': '*',
-            'Transfer-Encoding': 'chunked'
-          });
-          ttsRes.pipe(res);
-        });
-
-        ttsReq.on('error', e => {
-          res.writeHead(500);
-          res.end(JSON.stringify({ error: e.message }));
-        });
-
-        ttsReq.write(ttsBody);
-        ttsReq.end();
-      } catch (e) {
-        res.writeHead(500);
-        res.end(JSON.stringify({ error: e.message }));
-      }
-    });
-    return;
-  }
-
-  if (req.method === 'POST' && req.url === '/optin') {
-    let body = '';
-    req.on('data', c => body += c);
-    req.on('end', async () => {
-      try {
-        const { email } = JSON.parse(body);
-        if (!email) {
-          res.writeHead(400);
-          res.end(JSON.stringify({ error: 'No email' }));
-          return;
-        }
-        sendNurtureSequence(email);
-        res.writeHead(200);
-        res.end(JSON.stringify({ ok: true }));
-      } catch (e) {
-        res.writeHead(500);
-        res.end(JSON.stringify({ error: e.message }));
-      }
-    });
-    return;
-  }
-
-  if (req.method === 'POST' && req.url === '/expand') {
-    let body = '';
-    req.on('data', c => body += c);
-    req.on('end', async () => {
-      try {
-        const { reading, name, birthDate, birthCity } = JSON.parse(body);
-        if (!reading) {
-          res.writeHead(400);
-          res.end(JSON.stringify({ error: 'No reading provided' }));
-          return;
-        }
-
-        const expandSYS = \`You are expanding a Performance Trap reading for PDF. Same person. Same voice. Keep the layered architecture. Keep the six-section structure. No astrology labels in prose. Do not flatten the reading. Do not become inspirational. Respond with valid JSON only.\`;
-
-        const readingText = [
-          \`Person: \${name}, born \${birthDate}, \${birthCity}\`,
-          '',
-          ...(reading.sections || []).map(s => \`\${s.title.toUpperCase()}\\n\${s.content}\`),
-          ...(reading.way_home || []).map(s => \`\${s.title.toUpperCase()}\\n\${s.content}\`),
-          '',
-          \`Closing: \${reading.closing || ''}\`,
-          '',
-          \`Transits: \${(reading.transits && reading.transits.synthesis) || ''}\`
-        ].join('\\n\\n');
-
-        const reqBody = JSON.stringify({
-          model: 'claude-haiku-4-5-20251001',
-          max_tokens: 8096,
-          system: expandSYS,
-          messages: [{ role: 'user', content: 'Expand this reading into a long-form PDF version.\\n\\n' + readingText }]
-        });
-
-        const apiReq = https.request({
-          hostname: 'api.anthropic.com',
-          path: '/v1/messages',
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Content-Length': Buffer.byteLength(reqBody),
-            'x-api-key': process.env.ANTHROPIC_API_KEY,
-            'anthropic-version': '2023-06-01'
-          }
-        }, apiRes => {
-          let d = '';
-          apiRes.on('data', c => d += c);
-          apiRes.on('end', () => {
-            try {
-              const a = JSON.parse(d);
-              if (a.error) throw new Error(a.error.message);
-              const raw = a.content?.[0]?.text || '';
-              let expanded;
-              try { expanded = JSON.parse(raw); }
-              catch { expanded = JSON.parse(raw.replace(/```json|```/g, '').trim()); }
-              res.writeHead(200);
-              res.end(JSON.stringify({ expanded }));
-            } catch (e) {
-              res.writeHead(500);
-              res.end(JSON.stringify({ error: e.message }));
-            }
-          });
-        });
-
-        apiReq.on('error', e => {
-          res.writeHead(500);
-          res.end(JSON.stringify({ error: e.message }));
-        });
-
-        apiReq.write(reqBody);
-        apiReq.end();
-      } catch (e) {
-        res.writeHead(500);
-        res.end(JSON.stringify({ error: e.message }));
-      }
-    });
-    return;
-  }
-
-  res.writeHead(404);
-  res.end(JSON.stringify({ error: 'Not found' }));
-});
-
-server.listen(PORT, () => console.log(\`Server running on port \${PORT}\`));
-
-const BANNED_ASTRO_TERMS = [
-  'aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo', 'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces',
-  'sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto', 'chiron', 'node', 'asc', 'ascendant', 'mc', 'midheaven',
-  'retrograde', 'house', 'houses', 'chart', 'astrology', 'astrological', 'placement', 'placements'
-];
-
-function extractMainProse(reading) {
-  const parts = [];
-  (reading.sections || []).forEach(s => parts.push(s.content || ''));
-  (reading.way_home || []).forEach(s => {
-    parts.push(s.content || '');
-    if (s.utterance) parts.push(s.utterance);
-  });
-  if (reading.closing) parts.push(reading.closing);
-  if (reading.transits && reading.transits.synthesis) parts.push(reading.transits.synthesis);
-  return parts.join('\n').toLowerCase();
-}
-
-function hasAstroLeak(reading) {
-  const prose = extractMainProse(reading);
-  return BANNED_ASTRO_TERMS.some(term => new RegExp(`\\b${term}\\b`, 'i').test(prose));
-}
-
-function validateReading(reading) {
-  const problems = [];
-
-  if (!reading || typeof reading !== 'object') problems.push('Reading is not an object.');
-  if (!Array.isArray(reading.sections) || reading.sections.length !== 4) problems.push('sections must have length 4.');
-  if (!Array.isArray(reading.way_home) || reading.way_home.length !== 2) problems.push('way_home must have length 2.');
-  if (!reading.closing) problems.push('closing is required.');
-  if (!reading.transits || !reading.transits.synthesis) problems.push('transits.synthesis is required.');
-  if (hasAstroLeak(reading)) problems.push('Astrology labels leaked into the prose.');
-
-  const allSections = [].concat(reading.sections || []).concat(reading.way_home || []);
-  allSections.forEach((s, idx) => {
-    if (!s || typeof s !== 'object') {
-      problems.push(`Section ${idx + 1} missing.`);
-      return;
-    }
-    if (!s.title || !s.content) problems.push(`Section ${idx + 1} missing title or content.`);
-    if (!Array.isArray(s.key_terms) || s.key_terms.length !== 3) problems.push(`Section ${idx + 1} needs 3 key_terms.`);
-    if (!Array.isArray(s.placements) || s.placements.length < 2 || s.placements.length > 4) problems.push(`Section ${idx + 1} needs 2 to 4 placements.`);
-  });
-
-  if (reading.way_home && reading.way_home[1] && !reading.way_home[1].utterance) {
-    problems.push('A new response needs an utterance.');
-  }
-
-  return problems;
-}
-
-function robustJsonParse(text) {
-  let s = text.replace(/```json\s*/g, '').replace(/```/g, '').trim();
-  const start = s.indexOf('{');
-  if (start === -1) throw new Error('No JSON object found');
-
-  let depth = 0;
-  let end = -1;
-  let inString = false;
-  let escape = false;
-
-  for (let i = start; i < s.length; i++) {
-    const ch = s[i];
-    if (escape) {
-      escape = false;
-      continue;
-    }
-    if (ch === '\\') {
-      escape = true;
-      continue;
-    }
-    if (ch === '"') {
-      inString = !inString;
-      continue;
-    }
-    if (inString) continue;
-    if (ch === '{') depth += 1;
-    else if (ch === '}') {
-      depth -= 1;
-      if (depth === 0) {
-        end = i;
-        break;
-      }
-    }
-  }
-
-  if (end === -1) throw new Error('Unmatched braces');
-  s = s.substring(start, end + 1);
-
-  try {
-    return JSON.parse(s);
-  } catch {}
-
-  s = s.replace(/,\s*]/g, ']').replace(/,\s*}/g, '}');
-  try {
-    return JSON.parse(s);
-  } catch {}
-
-  const oneLine = s
-    .replace(/[\r\n]+/g, ' ')
-    .replace(/\s+/g, ' ')
-    .replace(/,\s*]/g, ']')
-    .replace(/,\s*}/g, '}');
-
-  return JSON.parse(oneLine);
-}
-
-function addToMailchimp(email, firstName) {
-  return new Promise(resolve => {
-    if (!MAILCHIMP_KEY || !MAILCHIMP_LIST_ID) {
-      resolve({ ok: true, skipped: true });
-      return;
-    }
-
-    const safeName = (firstName || '').trim();
-    const parts = safeName.split(' ').filter(Boolean);
-    const fname = parts[0] || safeName || '';
-    const lname = parts.slice(1).join(' ') || '';
-
-    const body = JSON.stringify({
-      email_address: email,
-      status: 'subscribed',
-      merge_fields: {
-        FNAME: fname,
-        LNAME: lname,
-      },
-    });
-
-    const auth = Buffer.from(`anystring:${MAILCHIMP_KEY}`).toString('base64');
-
-    const req = https.request({
-      hostname: `${MAILCHIMP_SERVER}.api.mailchimp.com`,
-      path: `/3.0/lists/${MAILCHIMP_LIST_ID}/members`,
-      method: 'POST',
-      headers: {
-        'Authorization': `Basic ${auth}`,
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(body),
-      },
-    }, res => {
-      let d = '';
-      res.on('data', c => d += c);
-      res.on('end', () => {
-        console.log('Mailchimp status:', res.statusCode, d.substring(0, 200));
-        resolve({ ok: true });
-      });
-    });
-
-    req.on('error', e => {
-      console.log('Mailchimp error:', e.message);
-      resolve({ ok: true });
-    });
-
-    req.write(body);
-    req.end();
-  });
-}
-
-function callAnthropicOnce(system, userMsg) {
-  const body = JSON.stringify({
-    model: 'claude-sonnet-4-20250514',
-    max_tokens: 4200,
-    system,
-    messages: [{ role: 'user', content: userMsg }],
-  });
-
-  return new Promise((resolve, reject) => {
-    const req = https.request({
-      hostname: 'api.anthropic.com',
-      path: '/v1/messages',
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Content-Length': Buffer.byteLength(body),
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-      },
-    }, res => {
-      let d = '';
-      res.on('data', c => d += c);
-      res.on('end', () => {
         try {
-          if (d.trim().startsWith('<') || res.statusCode >= 400) {
-            throw new Error('Anthropic API returned status ' + res.statusCode + ': ' + d.substring(0, 300));
-          }
-          const a = JSON.parse(d);
-          if (a.error) throw new Error(a.error.message);
-          const raw = a.content?.[0]?.text || '';
-          resolve(robustJsonParse(raw));
+          resolve(JSON.parse(d));
         } catch (e) {
           reject(e);
         }
       });
-    });
-
-    req.setTimeout(180000, () => {
-      req.destroy(new Error('Anthropic request timeout'));
-    });
-
-    req.on('error', reject);
-    req.write(body);
-    req.end();
+    }).on('error', reject);
   });
-}
-
-async function callAnthropic(system, userMsg, retries = 3) {
-  for (let attempt = 1; attempt <= retries; attempt++) {
-    try {
-      return await callAnthropicOnce(system, userMsg);
-    } catch (e) {
-      const overloaded =
-        e.message &&
-        (e.message.includes('Overloaded') ||
-          e.message.includes('529') ||
-          e.message.includes('503') ||
-          e.message.includes('timeout') ||
-          e.message.includes('ECONNRESET'));
-
-      if (overloaded && attempt < retries) {
-        await new Promise(r => setTimeout(r, attempt * 8000));
-        continue;
-      }
-
-      throw e;
-    }
-  }
-}
-
-async function repairReadingIfNeeded(reading, chartText, transitPrompt, name) {
-  const problems = validateReading(reading);
-  if (!problems.length) return reading;
-
-  const repairSystem = `${SYS}
-
-REPAIR MODE
-Repair the draft without flattening it.
-Keep the layered architecture.
-Remove astrology labels from prose.
-Strengthen any section that feels one-note or generic.
-Keep sections concise.`;
-
-  const repairPrompt = [
-    `Repair this reading for ${name}.`,
-    '',
-    'CHART:',
-    chartText,
-    '',
-    transitPrompt,
-    '',
-    'PROBLEMS:',
-    ...problems.map(p => `- ${p}`),
-    '',
-    'DRAFT:',
-    JSON.stringify(reading),
-  ].join('\n');
-
-  try {
-    return await callAnthropic(repairSystem, repairPrompt, 2);
-  } catch {
-    return reading;
-  }
-}
-
-function fetchJSON(url, headers = {}) {
-  return new Promise((resolve, reject) => {
-    const u = new URL(url);
-
-    https.get(
-      {
-        hostname: u.hostname,
-        path: u.pathname + u.search,
-        headers: { Accept: 'application/json', ...headers },
-      },
-      res => {
-        let d = '';
-
-        res.on('data', c => {
-          d += c;
-        });
-
-        res.on('end', () => {
-          try {
-            resolve(JSON.parse(d));
-          } catch (e) {
-            reject(e);
-          }
-        });
-      }
-    ).on('error', reject);
-  });
-}
-
-function addToMailchimp(email, firstName) {
-  return new Promise(resolve => {
-    if (!MAILCHIMP_KEY || !MAILCHIMP_LIST_ID) {
-      resolve({ ok: true, skipped: true });
-      return;
-    }
-
-    const safeName = (firstName || '').trim();
-    const parts = safeName.split(' ').filter(Boolean);
-    const fname = parts[0] || safeName || '';
-    const lname = parts.slice(1).join(' ') || '';
-
-    const body = JSON.stringify({
-      email_address: email,
-      status: 'subscribed',
-      merge_fields: {
-        FNAME: fname,
-        LNAME: lname,
-      },
-    });
-
-    const auth = Buffer.from(`anystring:${MAILCHIMP_KEY}`).toString('base64');
-
-    const req = https.request(
-      {
-        hostname: `${MAILCHIMP_SERVER}.api.mailchimp.com`,
-        path: `/3.0/lists/${MAILCHIMP_LIST_ID}/members`,
-        method: 'POST',
-        headers: {
-          Authorization: `Basic ${auth}`,
-          'Content-Type': 'application/json',
-          'Content-Length': Buffer.byteLength(body),
-        },
-      },
-      res => {
-        let d = '';
-        res.on('data', c => {
-          d += c;
-        });
-        res.on('end', () => {
-          console.log('Mailchimp status:', res.statusCode, d.substring(0, 200));
-          resolve({ ok: true });
-        });
-      }
-    );
-
-    req.on('error', e => {
-      console.log('Mailchimp error:', e.message);
-      resolve({ ok: true });
-    });
-
-    req.write(body);
-    req.end();
-  });
-}
-
-async function callAnthropic(system, userMsg, retries = 3) {
-  for (let attempt = 1; attempt <= retries; attempt += 1) {
-    try {
-      return await callAnthropicOnce(system, userMsg);
-    } catch (e) {
-      const overloaded =
-        e.message &&
-        (e.message.includes('Overloaded') ||
-          e.message.includes('529') ||
-          e.message.includes('503') ||
-          e.message.includes('timeout') ||
-          e.message.includes('ECONNRESET'));
-
-      if (overloaded && attempt < retries) {
-        await new Promise(r => setTimeout(r, attempt * 8000));
-        continue;
-      }
-
-      throw e;
-    }
-  }
 }
 
 const server = http.createServer(async (req, res) => {
@@ -2147,12 +1584,12 @@ const server = http.createServer(async (req, res) => {
           '- Use The Mask section to show how the defense became socially rewarded and hard to recognize.',
           '- Keep Essence early, original, and prior to adult armor.',
           '- Keep all astrology labels out of the prose.',
-          '- All astrology belongs only in the placements arrays.',
+          '- All astrology belongs only in the placements arrays.'
         ].join('\n');
 
         let [reading] = await Promise.all([
           callAnthropic(SYS, userPrompt),
-          addToMailchimp(email, name),
+          addToMailchimp(email, name)
         ]);
 
         reading = await repairReadingIfNeeded(reading, chartText, transitPrompt, name);
@@ -2184,7 +1621,7 @@ const server = http.createServer(async (req, res) => {
           model: 'tts-1',
           voice: 'echo',
           input: text.substring(0, 4096),
-          speed: 1.25,
+          speed: 1.25
         });
 
         const ttsReq = https.request({
@@ -2194,8 +1631,8 @@ const server = http.createServer(async (req, res) => {
           headers: {
             Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
             'Content-Type': 'application/json',
-            'Content-Length': Buffer.byteLength(ttsBody),
-          },
+            'Content-Length': Buffer.byteLength(ttsBody)
+          }
         }, ttsRes => {
           if (ttsRes.statusCode !== 200) {
             ttsRes.on('data', () => {});
@@ -2209,7 +1646,7 @@ const server = http.createServer(async (req, res) => {
           res.writeHead(200, {
             'Content-Type': 'audio/mpeg',
             'Access-Control-Allow-Origin': '*',
-            'Transfer-Encoding': 'chunked',
+            'Transfer-Encoding': 'chunked'
           });
           ttsRes.pipe(res);
         });
@@ -2275,14 +1712,14 @@ const server = http.createServer(async (req, res) => {
           '',
           `Closing: ${reading.closing || ''}`,
           '',
-          `Transits: ${(reading.transits && reading.transits.synthesis) || ''}`,
+          `Transits: ${(reading.transits && reading.transits.synthesis) || ''}`
         ].join('\n\n');
 
         const reqBody = JSON.stringify({
           model: 'claude-haiku-4-5-20251001',
-          max_tokens: 5000,
+          max_tokens: 8096,
           system: expandSYS,
-          messages: [{ role: 'user', content: 'Expand this reading into a long-form PDF version.\n\n' + readingText }],
+          messages: [{ role: 'user', content: 'Expand this reading into a long-form PDF version.\n\n' + readingText }]
         });
 
         const apiReq = https.request({
@@ -2293,8 +1730,8 @@ const server = http.createServer(async (req, res) => {
             'Content-Type': 'application/json',
             'Content-Length': Buffer.byteLength(reqBody),
             'x-api-key': process.env.ANTHROPIC_API_KEY,
-            'anthropic-version': '2023-06-01',
-          },
+            'anthropic-version': '2023-06-01'
+          }
         }, apiRes => {
           let d = '';
           apiRes.on('data', c => d += c);
@@ -2304,6 +1741,7 @@ const server = http.createServer(async (req, res) => {
               if (a.error) throw new Error(a.error.message);
               const raw = a.content?.[0]?.text || '';
               let expanded;
+
               try {
                 expanded = JSON.parse(raw);
               } catch {
@@ -2317,10 +1755,6 @@ const server = http.createServer(async (req, res) => {
               res.end(JSON.stringify({ error: e.message }));
             }
           });
-        });
-
-        apiReq.setTimeout(180000, () => {
-          apiReq.destroy(new Error('Expand request timeout'));
         });
 
         apiReq.on('error', e => {
@@ -2342,4 +1776,4 @@ const server = http.createServer(async (req, res) => {
   res.end(JSON.stringify({ error: 'Not found' }));
 });
 
-server.listen(PORT, () => console.log('Server running on port ' + PORT));
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
