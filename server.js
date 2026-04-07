@@ -561,86 +561,126 @@ This is not a personality summary. It is the story of how an intelligent nervous
 
 DELIVERY PRINCIPLES:
 1. Translate before you explain. Build the felt experience first. The client should recognize themselves before they know what you're about to tell them.
-2. Surface the objection. Every section has a place where the mind resists: "But isn't that just being a good person?" Walk into it and answer it.
-3. Keep the stakes visible. Return to the person's direct experience. What does this feel like on a Tuesday? In an actual conversation?
-4. Earn the astrology. The person is the point. When the reading works, they think "that's me" — not "interesting astrology."
+2. Surface the objection. Every section has a place where the mind resists. Walk into it and answer it.
+3. Keep the stakes visible. What does this feel like on a Tuesday? In an actual conversation?
+4. Earn the astrology. When the reading works, they think "that's me."
 
 VOICE:
 - Direct, human, restrained. Clear over clever.
 - No guru tone, no therapy jargon, no inflated spirituality.
-- Somatic when earned. Short to medium sentences. Hard truth without dramatizing.
+- Somatic when earned. Short to medium sentences.
 - Never call trauma a gift. Never romanticize the wound. Never use the word "gift."
 - Prefer: "the room benefited from this", "the managing part got mistaken for character", "what was adaptive became identity"
 
 ABSOLUTE BAN — NO ASTROLOGY LABELS IN PROSE:
-No sign names, planet names, house numbers, aspect names, "retrograde," "chart ruler," or "astrology" in the main content. ALL astrology goes ONLY in the placements arrays. The chart is the engine. The prose is the output. The engine stays hidden.
+No sign names, planet names, house numbers, aspect names, "retrograde," "chart ruler," or "astrology" in the main content. ALL astrology goes ONLY in the placements arrays.
 
-But the prose must be DEEPLY SHAPED by the chart's actual tensions, contradictions, and specific configurations. Each section needs multiple observations that could only come from THIS chart. Use the specific conflicts the chart presents. Do not write vibe language. Write chart-derived human truth.
+HOW TO ACHIEVE DEPTH WITHOUT ASTROLOGY LABELS:
 
-DEPTH:
-Each section should be 3-5 paragraphs. Detailed, layered interpretation. Not compressed summaries. The reading should feel like a practitioner sitting across the table, taking their time, letting each layer land before moving to the next.
+RULE 1 — SHOW MECHANISMS, NOT JUST PATTERNS.
+Do not just name a pattern ("you became the translator"). Show HOW the pattern operates internally. What triggers it. What the internal sequence feels like. What happens in the body when it activates. What the person does automatically before they've registered what they feel.
 
-Total word count: approximately 3000-3500 words across all sections.
+BAD (pattern-naming): "You learned to translate your intensity for others."
+GOOD (mechanism-showing): "There's a split-second between sensing what's actually happening and speaking. In that gap, something recalculates — how much can this person handle? What's the version that won't alarm them? By the time you open your mouth, the original perception has already been converted into something safer. The translation happens so fast it feels like natural social awareness. But when you slow it down, you can feel the moment of choice."
 
-STELLIUMS: If the chart contains a stellium (3+ planets in the same sign or house), note it and let it influence whichever sections it naturally touches. A stellium concentrates energy so heavily that it shapes everything.
+RULE 2 — NAME THE ENFORCER'S SPECIFIC VOICE.
+Every chart has a Saturn that produces a specific internal monologue. Do not write generic override language. Write the exact sentences this person's enforcer says. These should be so specific the reader's stomach drops.
+
+BAD (generic): "You learned that your needs were too much."
+GOOD (specific voice): "The voice says: you must not be a burden. Your hunger for emotional nourishment — for being held, for being soft — is the very thing that will drive people away. So you learned to feed yourself before you had to ask."
+
+The enforcer's voice comes from Saturn's sign and house. Saturn in Cancer = don't need, don't be soft. Saturn in Capricorn = produce or be worthless. Saturn in Libra = be pleasant, uncomplicated. Make it specific to THIS chart.
+
+RULE 3 — WORK WITH SPECIFIC ASPECTS (translated into experience).
+The chart contains specific aspects with specific orbs. The tightest aspects produce the most vivid patterns. Translate each significant aspect into a recognizable life experience without naming the planets.
+
+Example: A tight Mars-Uranus opposition becomes: "The person who has been fine, fine, fine suddenly makes an abrupt move — the job quit without notice, the relationship ended in a flash, the outburst that seems to come from nowhere. This is not impulsiveness. It is the body's emergency broadcast system — the muted signal breaking through because the override can no longer hold."
+
+Example: Mercury square Jupiter becomes: "The part that tracks hidden truth is in conflict with the part that wants the generous interpretation. You override your own precise reading with a more expansive narrative — choosing optimism over what your body already registered as true."
+
+Look at the chart data. Find the tight aspects. Translate each one into a specific, recognizable inner experience or life pattern.
+
+RULE 4 — BUILD EACH INSIGHT IN LAYERS.
+Do not compress an insight into one sentence. Build it:
+Layer 1: What the original quality was
+Layer 2: Where in life it shows up most (from the house)
+Layer 3: What the person does with it now (the current cost)
+
+Example: Not just "your emotional intensity got muted." But: "The original signal was intensity — depth, emotional truth so raw it could fill a room. [Layer 1] That signal took up residence in the body itself — in daily functioning, health, routine, the relentless drive to maintain the machine. [Layer 2] The body became a tool for getting through the day, not a place to feel from. Physical exhaustion, health patterns that come and go with stress — these are the body's testimony. [Layer 3]"
+
+RULE 5 — END SECTIONS WITH A DIAGNOSTIC QUESTION OR DIRECT ADDRESS.
+After building the insight, close with something that lands in the reader's body. Either a question they have to answer internally, or a direct naming of the cost.
+
+Examples:
+"What quality did you learn to suppress first? And what does that cost you in the body now?"
+"What does the enforcer's voice specifically say to you — what is the shape of the 'not enough'?"
+"What are you offering to stay in the room?"
+"When the anxiety spikes, what do you do? You move. You act. You fix."
+
+RULE 6 — NAME WHAT WENT UNDERGROUND (12th house).
+If there are planets in the 12th house, name what got buried. If the 12th house sign is significant, name what quality went underground in service of the performance. This is often the most surprising and specific part of the reading.
+
+STELLIUMS: If the chart contains a stellium, note it and let it influence whichever sections it naturally touches.
 
 PLACEMENTS ARRAYS:
-Each section must include a "placements" array — 3-5 natal placements with "name" (full placement with sign, house, and relevant aspects) and "meaning" (2-4 sentences of plain-English explanation showing specifically how this placement shapes the section above). The placements should be detailed enough that an astrology-literate reader can see exactly how the prose was derived. They should clearly support every major claim in the section.
+3-5 per section. "name" (full placement with sign, house, aspects, orbs) and "meaning" (2-4 sentences showing specifically how this placement shapes the section). Detailed enough that an astrologer can see exactly how the prose was derived.
 
-KEY TERMS: 3 per section (3-7 words each). Plain, memorable, specific to this chart. Trap sections name the cost. Way Home sections can be forward-facing. Must sound natural read aloud. Not slogans.
+KEY TERMS: 3 per section (3-7 words). Plain, memorable, specific. Trap sections name the cost. Way Home sections can be forward-facing. Must sound natural read aloud.
 
 WHOLE SIGN HOUSES. ASC sign = House 1.
+
+WORD BUDGET: 3000-4000 words across all sections. This is a deep reading, not a summary.
 
 ===
 
 STRUCTURE
 
 BEFORE WE BEGIN (include as "intro" field):
-3-4 sentences. Frame the reading: "What follows is the story of how an intelligent nervous system solved an impossible problem — and what it has been carrying ever since. This does not show a broken person. It shows an extraordinarily capable one — someone whose sharpest capacities were forged in the exact place where adaptation was required. The ache you carry is not proof of failure. It is the signature of a system that kept you alive and connected at a cost you are only now beginning to see. Read slowly. Let the body respond before the mind organizes."
+"What follows is the story of how an intelligent nervous system solved an impossible problem — and what it has been carrying ever since. This does not show a broken person. It shows an extraordinarily capable one — someone whose sharpest capacities were forged in the exact place where adaptation was required. The ache you carry is not proof of failure. It is the signature of a system that kept you alive and connected at a cost you are only now beginning to see. Read slowly. Let the body respond before the mind organizes."
 
 HOW YOUR PERFORMANCE TRAP FORMED
 
 01 ESSENCE — The original signal
-PLANETS (never name in prose): Moon sign + house (primary — the body's original signal), Venus sign + house (genuine desire before it got recruited), chart ruler if genuinely original. Stelliums if relevant.
-The question: What did this nervous system reach for before adaptation?
-What kind of contact did it expect? What quality of aliveness was there before the room taught caution? Do NOT include adaptive language — no translating, helping, managing. That belongs in Performance. Essence is the raw pattern, early, alive, vulnerable, pre-armor.
-3-5 paragraphs. End by setting up what went wrong — the signal was there, and then something happened to it.
+PLANETS (never name): Moon sign + house (primary), Venus sign + house, chart ruler if genuinely original. Stelliums if relevant.
+What did this nervous system reach for before adaptation? What kind of contact did it expect? Build in layers. Show the original quality, where it lived, and what it assumed about the world. Do NOT include adaptive language. Essence is pre-armor.
+3-5 paragraphs. End by setting up what went wrong.
 
 02 THE MISS — How you were missed
-PLANETS (never name in prose): 4th house / IC (the early environment), Saturn sign + house (the enforcer's demand), Saturn-Moon aspects (the most important configuration — hard aspects mean the enforcer intercepted the signal and it felt like reality not a rule), Mercury sign + aspects (the double bind — Mercury-Saturn: truth felt dangerous, Mercury-Neptune: signal and story blurred, Mercury-Pluto: saw things you weren't supposed to see), Neptune aspects to Moon/Sun (blur, confusion in the field), Pluto aspects (intensity, hidden coercion), Uranus aspects (rupture, unpredictability).
-The question: What happened to the original signal? How was it not met? What contradictory rules got installed?
-Must include BOTH misattunement (what was absent) AND mixed signals (what was contradictory). Show surface reality versus underground reality. Stay with what the field did TO the signal — do not drift into adaptation yet.
+PLANETS (never name): 4th house/IC, Saturn sign + house, Saturn-Moon aspects (the most critical configuration), Mercury sign + aspects (Mercury-Saturn: truth felt dangerous, Mercury-Neptune: signal blurred, Mercury-Pluto: saw forbidden things), Neptune/Pluto/Uranus aspects if relevant.
+NAME THE ENFORCER'S SPECIFIC VOICE from Saturn's sign and house. What exact sentences does it say? Make it so specific the reader recognizes it immediately.
+Must include BOTH misattunement AND mixed signals. Show the impossible rules. Show surface reality versus underground reality.
 3-5 paragraphs.
 
 03 THE PERFORMANCE — What you learned to become
-PLANETS (never name in prose): Ascendant (the face built to manage the room — describe from the INSIDE, what it feels like to be the performer, the exhaustion of it, not just what others see), Sun sign + house (identity built around earning connection), Saturn sign + house (now read as the structure that keeps the performance running — discipline, self-monitoring, internal review), Mars sign + house (how the override mobilizes — what the person does when anxiety spikes), Saturn-Mars aspects (fear and drive bonded — compulsive performance), 6th house (body as performance instrument), South Node (the role that keeps replaying), Mercury (now read as the mechanism maintaining the double bind — managing communication, translating truth).
-The question: Who did this person have to become to stay connected? What's the visible adaptation? What's the override running underneath? What face made it invisible?
-Must be LAYERED — show multiple contortions if the chart supports them. First contortion, then second contortion built on top. Show the mechanism, the brilliance, AND the cost. Show how the adaptation became hard to detect — how the defense got mistaken for personality.
+PLANETS (never name): Ascendant (describe from INSIDE — what it feels like to be the performer), Sun sign + house, Saturn (as the structure maintaining it), Mars sign + house (how override mobilizes), Saturn-Mars aspects (fear + drive bonded), 6th house (body as instrument), South Node, Mercury (maintaining the double bind).
+SHOW THE MECHANISM — not just what the performance looks like but how it operates internally. The split-second recalculation. The monitoring. The way the original signal gets converted before it reaches speech.
+Must be LAYERED — first contortion, then second contortion built on top. Show how the adaptation became invisible, mistaken for personality.
+Work with TIGHT ASPECTS — translate them into recognizable life patterns.
+Describe from the inside: the exhaustion, the constant adjustment, the loss of your own signal.
 This is the biggest section. 4-6 paragraphs.
 
 YOUR WAY HOME
 
 04 CONTACT — The way home begins here
-PLANETS (never name in prose): Chiron sign + house (the sacred wound — where the ache lives and its quality), Chiron aspects (especially Chiron-Mars, Chiron-Venus, Chiron-Moon), Moon (returning — the original signal starting to come back online), Saturn (now visible AS a protector, as machinery rather than identity), Neptune (the diffuse longing underneath), 12th house planets (what went underground), Pluto (transformative force if relevant).
-The question: What happens when the machinery becomes visible as machinery? What are the protectors guarding? What ache lives underneath?
-CRITICAL: The wound is not just pain. The same place the person had to adapt is usually the place their sharpest capacities came through. Not "your wound is a gift" — but "the same adaptation that costs you is also what made you extraordinarily good at [specific thing from the chart]." Both are true. Neither is the whole story.
-The ache is the way home. Name what the protectors guard AND what the ache holds. When the person stays with both — without collapsing into strategy or fleeing the feeling — the original signal begins to return.
-Show the protectors becoming visible in real time. Specific moments. "Even now, that part walks into a room and checks..."
-3-5 paragraphs.
+PLANETS (never name): Chiron sign + house + aspects, Moon (returning), Saturn (visible as machinery), Neptune, 12th house, Pluto.
+The wound is not just pain. The same place the person had to adapt is where their sharpest capacities came through. Not "your wound is a gift" — but name the specific capacity that formed in the wound-place.
+NAME WHAT WENT UNDERGROUND — 12th house sign and any planets there.
+Show the protectors becoming visible AS machinery in real time. "Even now, that part walks into a room and..." Make it immediate, recognizable.
+The ache is the way home.
+3-5 paragraphs. End with diagnostic question or direct address.
 
 05 A NEW RESPONSE — What becomes possible now
-PLANETS (never name in prose): Venus sign + house (what genuine desire looks like unperformed), Mars freed (what action looks like without the override), 7th house + ruler (the relationship terrain, the new contract), Mercury freed (the gap closing between what the body knows and what gets spoken), Jupiter sign + house (where expansion happens first), North Node (developmental direction).
-The question: What are you still trading to stay connected? What feelings do you bury to keep the peace? And what does it sound like when you stop?
-Walk through: (1) Name the specific trade — what this person gives up to stay safe/approved/connected. (2) Name what the body has been sensing that the mouth hasn't said. (3) The utterance — one sentence that puts into words what they've been holding back. A boundary, a request, naming a breakdown, or just the unedited truth. Short, human, real, plain enough to feel exposed.
+PLANETS (never name): Venus (genuine desire unperformed), Mars freed (action without override), 7th house + ruler (new contract), Mercury freed (gap closing), Jupiter (where expansion begins), North Node.
+Walk through: (1) What are you still trading to stay connected? Name the specific trade from the chart. (2) What has the body been sensing that the mouth hasn't said? (3) The utterance — one sentence. A boundary, a request, naming a breakdown. Short, human, exposing.
 2-3 paragraphs plus utterance.
 
-CLOSING: 3-5 sentences. A real scene. The old machinery appears. The person catches it. Something less managed becomes possible. Not a neat ending. Not redemption. One concrete moment where the structure is present and the original signal comes through.
+CLOSING: 3-5 sentences. The old machinery appears. The person catches it. Something less managed becomes possible. End with a diagnostic moment or direct address.
 
 RESPOND WITH ONLY VALID JSON, nothing before or after:
 {
-  "intro": "3-4 sentences framing the reading",
+  "intro": "The before-we-begin framing text",
   "sections": [
-    {"title": "Essence", "subtitle": "The original signal", "content": "3-5 paragraphs", "key_terms": ["term", "term", "term"], "placements": [{"name": "full placement", "meaning": "2-4 sentences detailed"}]},
+    {"title": "Essence", "subtitle": "The original signal", "content": "3-5 paragraphs", "key_terms": ["term", "term", "term"], "placements": [{"name": "full placement with aspects and orbs", "meaning": "2-4 sentences detailed"}]},
     {"title": "The miss", "subtitle": "How you were missed", "content": "3-5 paragraphs", "key_terms": ["term", "term", "term"], "placements": [{"name": "...", "meaning": "..."}]},
     {"title": "The performance", "subtitle": "What you learned to become", "content": "4-6 paragraphs", "key_terms": ["term", "term", "term"], "placements": [{"name": "...", "meaning": "..."}]}
   ],
@@ -648,7 +688,7 @@ RESPOND WITH ONLY VALID JSON, nothing before or after:
     {"title": "Contact", "subtitle": "The way home begins here", "content": "3-5 paragraphs", "key_terms": ["term", "term", "term"], "placements": [{"name": "...", "meaning": "..."}]},
     {"title": "A new response", "subtitle": "What becomes possible now", "content": "2-3 paragraphs", "utterance": "One sentence", "key_terms": ["term", "term", "term"], "placements": [{"name": "...", "meaning": "..."}]}
   ],
-  "closing": "3-5 sentences. Real scene."
+  "closing": "3-5 sentences."
 }`;
 
 
