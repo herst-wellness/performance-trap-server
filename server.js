@@ -311,11 +311,23 @@ function chartToText(chart, name) {
   const lines = order.map(k => {
     const v = chart[k];
     if (!v) return '';
-    const r = v.retrograde ? ' (R)' : '';
+    const r = v.retrograde ? ' RETROGRADE' : '';
     return `${k}: ${v.sign} ${v.deg}°${r} · House ${v.house}`;
   }).filter(Boolean);
   lines.push(`ASC: ${chart['ASC'].sign} ${chart['ASC'].deg}° (Whole Sign Houses — ${chart['ASC'].sign} is House 1)`);
   lines.push(`MC: ${chart['MC'].sign} ${chart['MC'].deg}°`);
+
+  // Add prominent retrograde summary
+  const retrogrades = order.filter(k => chart[k] && chart[k].retrograde);
+  if (retrogrades.length) {
+    lines.push('');
+    lines.push('RETROGRADE PLANETS (must be interpreted as retrograde in the reading):');
+    retrogrades.forEach(k => {
+      const v = chart[k];
+      lines.push(`  ${k} RETROGRADE in ${v.sign} · House ${v.house} — energy works INWARD, must be named as retrograde`);
+    });
+  }
+
   return `${name}'s Chart (Whole Sign Houses):\n${lines.join('\n')}`;
 }
 
@@ -366,17 +378,19 @@ function calcNatalAspects(chart) {
   return aspects;
 }
 
-function aspectsToText(aspects) {
+function aspectsToText(aspects, chart) {
   if (!aspects.length) return 'No major aspects found.';
 
   const lines = ['NATAL ASPECTS (sorted tightest first):'];
   aspects.forEach(a => {
     const tight = a.orb < 1 ? ' *** VERY TIGHT' : a.orb < 3 ? ' ** TIGHT' : '';
-    lines.push(`  ${a.body1} ${a.type} ${a.body2} (orb ${a.orb}°)${tight}`);
+    const r1 = (chart[a.body1] && chart[a.body1].retrograde) ? ' (R)' : '';
+    const r2 = (chart[a.body2] && chart[a.body2].retrograde) ? ' (R)' : '';
+    lines.push(`  ${a.body1}${r1} ${a.type} ${a.body2}${r2} (orb ${a.orb}°)${tight}`);
   });
 
   lines.push('');
-  lines.push('IMPORTANT: Use ONLY these aspects in your reading. Do NOT invent aspects that are not listed here. The tightest aspects (marked ** or ***) produce the most vivid patterns and should be prioritized.');
+  lines.push('IMPORTANT: Use ONLY these aspects in your reading. Do NOT invent aspects that are not listed here. When citing an aspect, use the EXACT orb from this list. The tightest aspects (marked ** or ***) produce the most vivid patterns and should be prioritized.');
 
   return lines.join('\n');
 }
@@ -631,52 +645,64 @@ VOICE:
 - Direct, human, restrained. Clear over clever.
 - Somatic when earned. Short to medium sentences.
 - Never call trauma a gift. Never romanticize the wound. Never use "gift."
-- Prefer: "the room benefited from this", "the managing part got mistaken for character", "what was adaptive became identity"
 
 ASTROLOGY IN THE PROSE:
-Name the placements directly in the reading. Use sign names, planet names, house numbers, and aspects with orbs. The reading should feel like a practitioner sitting across the table, referencing the chart as they speak. The astrology is woven into the story, not separated from it.
+Name placements directly. Use sign names, planet names, house numbers, aspects with orbs. The reading should feel like a practitioner referencing the chart as they speak.
 
-But always TRANSLATE before you EXPLAIN. Build the felt experience first — what the pattern feels like from the inside — then name the placement that confirms it. The astrology arrives as confirmation of something the reader already recognizes, not as a door they have to push through.
-
-Example of the right order:
-"The voice says: you must not be a burden. Your hunger for emotional nourishment — for being held, for being soft — is the very thing that will drive people away. [felt experience first] Your Saturn is in Cancer in the 2nd house. This is the enforcer stationed at the very ground of self-worth. [chart confirms]"
+But TRANSLATE BEFORE YOU EXPLAIN. Build the felt experience first, then name the placement that confirms it. The astrology arrives as confirmation, not as a door the reader has to push through.
 
 CRITICAL — ASPECTS:
-You will receive a list of NATAL ASPECTS calculated from the actual chart positions, sorted by orb. USE ONLY THESE ASPECTS. Do NOT invent, guess, or assume aspects that are not in the provided list. If an aspect is not listed, it does not exist in this chart. The tightest aspects (marked ** or ***) are the most important and should be prioritized in the reading.
+You receive a list of NATAL ASPECTS calculated from actual chart positions, sorted by orb. USE ONLY THESE ASPECTS. Do NOT invent, guess, or assume aspects not in the list. If an aspect is not listed, it does not exist. When citing an aspect, use the EXACT orb from the list — do not approximate.
 
-If a key aspect (like Saturn-Moon) does NOT appear in the list, do not pretend it exists. Instead, look for alternative connections — for example, Saturn in the Moon's sign, or Saturn and Moon in the same element. Name what IS there, not what you wish were there.
+If a key aspect (like Saturn-Moon) does NOT appear in the list, do not pretend it exists. Look for alternative connections — Saturn in the Moon's sign, same element, etc. Name what IS there.
+
+CRITICAL — RETROGRADES:
+When a planet is marked RETROGRADE in the chart data, you MUST interpret it as retrograde. Retrograde energy works INWARD first. This fundamentally changes how the planet operates and must be named in the reading.
+
+Specific retrograde interpretations:
+- Mars retrograde: Force turned INWARD. NOT direct or straightforward. The person does not lack fire — they have an inferno directed at themselves. The override mobilizes through internal acceleration, self-interrogation before action. Do NOT describe Mars Rx as "a direct impulse" or "honest straightforward energy." It is the opposite.
+- Saturn retrograde: The enforcer is a deeply PRIVATE INTERNAL voice, not external authority. It has been running so long it feels like architecture, not pattern. The person self-polices before anyone else has a chance to.
+- Chiron retrograde: The wound is SELF-INFLICTED in the sense that it's about what you did to yourself to belong, not what others did to you. The ways you tamped down your own initiative, anger, raw selfhood.
+- Mercury retrograde: Communication turns inward — the person processes and reprocesses internally, may struggle to externalize their most important truths.
+- Venus retrograde: Desire and value systems are internalized and revisited — the person may question whether they deserve what they want.
+
+CRITICAL — ASPECT INTERPRETATIONS TO INCLUDE:
+- Saturn-Pluto aspects: The enforcer bonded to survival-level stakes. The conviction that losing control — letting the mask slip — would be genuinely dangerous. Not just interpersonally but existentially. The override feels absolute.
+- Sun-Neptune conjunctions: Identity dissolves into others' needs. Idealization in relationship. Confusion about where you end and others begin. In the 7th house, this is the performance trap's most intimate expression.
+- Mars-Uranus oppositions: The override in its most volatile form. Fine, fine, fine — then a sudden eruptive move. Job quit without notice, relationship ended in a flash. Not impulsiveness but the body's emergency broadcast system.
+- Mercury-Jupiter squares: The precise reading overridden by the generous interpretation. Doubting your own accurate perception in favor of a more expansive, optimistic narrative.
 
 HOW TO ACHIEVE DEPTH:
 
 RULE 1 — SHOW MECHANISMS, NOT JUST PATTERNS.
-Don't just name the pattern. Show how it operates internally. The split-second recalculation. The monitoring. What triggers it. What the body does before the mind registers.
+Don't name the pattern and move on. Show how it operates internally — the split-second recalculation, the monitoring, what triggers it, what the body does before the mind registers.
 
 RULE 2 — NAME THE ENFORCER'S SPECIFIC VOICE.
-Saturn's sign and house produce a specific internal monologue. Write the exact sentences the enforcer says. Saturn in Cancer = don't need, don't be soft, don't be a burden. Saturn in Capricorn = produce or be worthless. Make it so specific the reader's stomach drops.
+Saturn's sign and house produce a specific internal monologue. Write the exact sentences. Saturn in Cancer = "You must not be a burden. Your hunger for being held, for being soft, is what will drive people away." Make it so specific the reader's stomach drops.
 
-RULE 3 — WORK WITH THE ACTUAL TIGHT ASPECTS.
-Look at the aspects list. Find the tightest ones. Translate each into a recognizable life experience.
-
-Example: Mars opposite Uranus at 0°23' becomes: "The person who has been fine, fine, fine suddenly makes an abrupt move — the job quit without notice, the relationship ended in a flash. This is not impulsiveness. It is the body's emergency broadcast system — the muted signal breaking through because the override can no longer hold."
-
-Example: Mercury square Jupiter becomes: "The part that tracks hidden truth is in conflict with the part that wants the generous interpretation. You override your precise reading with a more expansive narrative."
+RULE 3 — WORK WITH THE TIGHT ASPECTS.
+The tightest aspects (*** and **) produce the most vivid life patterns. Translate each into a recognizable experience the person will immediately identify.
 
 RULE 4 — BUILD EACH INSIGHT IN LAYERS.
-Layer 1: What the original quality was (from the sign)
-Layer 2: Where in life it shows up (from the house)
-Layer 3: What the person does with it now (the current cost)
+Layer 1: What the original quality was (sign). Layer 2: Where it lives (house). Layer 3: What the person does with it now (cost).
 
-RULE 5 — END SECTIONS WITH DIAGNOSTIC QUESTIONS OR DIRECT ADDRESS.
+RULE 5 — DEVELOP KEY INSIGHTS, DON'T STATE AND MOVE ON.
+When you land on a sharp insight — "one-way valve," "see through others but never let them see through you" — do NOT state it once and move past. Give it 2-3 sentences of unpacking. Show what it looks like in daily life. Let it land.
+
+RULE 6 — END SECTIONS WITH DIAGNOSTIC QUESTIONS.
 "What quality did you learn to suppress first?"
-"What does the enforcer's voice specifically say to you?"
+"What does the enforcer's voice say to you?"
 "When the anxiety spikes, what do you do?"
 
-RULE 6 — NAME WHAT WENT UNDERGROUND.
-12th house sign and any planets there — what got buried in service of the performance.
+RULE 7 — NAME WHAT WENT UNDERGROUND (12th house).
+12th house sign and any planets — what got buried in service of the performance.
 
-STELLIUMS: If 3+ planets share a sign or house, note it and let it influence the relevant sections.
+RULE 8 — VERIFY ORBS AGAINST THE DATA.
+When citing any aspect with an orb, copy the EXACT orb from the aspects list. Do not round, estimate, or invent orb values.
 
-KEY TERMS: 3 per section (3-7 words). Plain, memorable, specific. Trap sections name the cost. Way Home sections can be forward-facing.
+STELLIUMS: If 3+ planets share a sign or house, note it.
+
+KEY TERMS: 3 per section (3-7 words). Plain, memorable, specific.
 
 WHOLE SIGN HOUSES. ASC sign = House 1.
 
@@ -692,32 +718,31 @@ BEFORE WE BEGIN (as "intro" field):
 HOW YOUR PERFORMANCE TRAP FORMED
 
 01 ESSENCE — The original signal
-PLANETS: Moon sign + house (primary), Venus sign + house, chart ruler if original. Stelliums if relevant.
-What did this nervous system reach for before adaptation? Build in layers. Name the placements. Translate into felt experience first, then let the chart confirm. Do NOT include adaptive language — Essence is pre-armor.
+PLANETS: Moon sign + house (primary), Venus sign + house, chart ruler if original. Stelliums if relevant. If Moon is retrograde, interpret as retrograde.
+What did this nervous system reach for before adaptation? Essence is pre-armor. Do NOT include adaptive language.
 3-5 paragraphs. End by setting up what went wrong.
 
 02 THE MISS — How you were missed
-PLANETS: 4th house/IC, Saturn sign + house, Saturn-Moon aspects (or Saturn-Moon connection if no classical aspect), Mercury sign + aspects, Neptune/Pluto/Uranus aspects if in the list.
-NAME THE ENFORCER'S SPECIFIC VOICE. Must include BOTH misattunement AND mixed signals. Show the impossible rules.
-CHECK THE ASPECTS LIST for Saturn-Moon. If there is no aspect, say so honestly and describe the alternative connection (e.g., Saturn in the Moon's sign).
+PLANETS: 4th house/IC, Saturn sign + house (interpret retrograde if applicable), Saturn-Moon aspects (CHECK THE LIST — if none exists, say so and describe alternative connection), Mercury + aspects, Neptune/Pluto/Uranus aspects from list. Saturn-Pluto aspects if in list (survival-level stakes).
+NAME THE ENFORCER'S SPECIFIC VOICE. Include BOTH misattunement AND mixed signals.
 3-5 paragraphs.
 
 03 THE PERFORMANCE — What you learned to become
-PLANETS: Ascendant (from INSIDE), Sun sign + house, Saturn (structure), Mars sign + house (override engine), Saturn-Mars aspects if in list, 6th house, South Node, Mercury (maintaining bind).
-Show the mechanism. Show layers of contortion. Work with the TIGHT ASPECTS from the list. Describe from the inside: the exhaustion, the constant adjustment.
+PLANETS: Ascendant (from INSIDE — the exhaustion of performing), Sun sign + house, Sun-Neptune if in list (identity dissolution), Saturn (structure), Mars sign + house (INTERPRET RETROGRADE — force turned inward, not direct), Saturn-Mars aspects if in list, 6th house, South Node, Mercury.
+Show LAYERS of contortion. Work with TIGHT ASPECTS. Develop key insights — don't state and move on.
 4-6 paragraphs.
 
 YOUR WAY HOME
 
 04 CONTACT — The way home begins here
-PLANETS: Chiron sign + house + aspects from list, Moon (returning), Saturn (visible as machinery), Neptune, 12th house, Pluto.
-The wound is also where the sharpest capacities formed. Name what went underground. Show protectors becoming visible in real time. The ache is the way home.
-End with diagnostic question.
-3-5 paragraphs.
+PLANETS: Chiron sign + house + aspects (INTERPRET RETROGRADE if applicable — wound is self-inflicted), Moon (returning), Saturn (visible as machinery), Neptune, 12th house, Pluto.
+The wound is where the sharpest capacities formed. Name what went underground.
+MUST contain at least one real-time scene: "You're in a conversation and you notice yourself calculating how much truth this person can handle before you've even registered what YOU want to say." Concrete, immediate, recognizable.
+Contact must be AS DETAILED as Performance. 4-5 paragraphs minimum. End with diagnostic question.
 
 05 A NEW RESPONSE — What becomes possible now
-PLANETS: Venus (desire unperformed), Mars freed, 7th house + ruler, Mercury freed, Jupiter, North Node.
-What are you still trading? What has the body been sensing? One utterance — a boundary, request, or unedited truth.
+PLANETS: Venus (desire unperformed), Mars freed (INTERPRET what Mars Rx freed looks like — internal before external), 7th house + ruler, Mercury freed, Jupiter, North Node.
+What are you still trading? What has the body been sensing? One utterance.
 2-3 paragraphs plus utterance.
 
 CLOSING: 3-5 sentences. Old machinery appears. Something less managed becomes possible.
@@ -726,12 +751,12 @@ RESPOND WITH ONLY VALID JSON:
 {
   "intro": "framing text",
   "sections": [
-    {"title": "Essence", "subtitle": "The original signal", "content": "3-5 paragraphs with placements named in prose", "key_terms": ["term", "term", "term"]},
-    {"title": "The miss", "subtitle": "How you were missed", "content": "3-5 paragraphs with placements named in prose", "key_terms": ["term", "term", "term"]},
-    {"title": "The performance", "subtitle": "What you learned to become", "content": "4-6 paragraphs with placements named in prose", "key_terms": ["term", "term", "term"]}
+    {"title": "Essence", "subtitle": "The original signal", "content": "3-5 paragraphs", "key_terms": ["term", "term", "term"]},
+    {"title": "The miss", "subtitle": "How you were missed", "content": "3-5 paragraphs", "key_terms": ["term", "term", "term"]},
+    {"title": "The performance", "subtitle": "What you learned to become", "content": "4-6 paragraphs", "key_terms": ["term", "term", "term"]}
   ],
   "way_home": [
-    {"title": "Contact", "subtitle": "The way home begins here", "content": "3-5 paragraphs with placements named in prose", "key_terms": ["term", "term", "term"]},
+    {"title": "Contact", "subtitle": "The way home begins here", "content": "4-5 paragraphs minimum", "key_terms": ["term", "term", "term"]},
     {"title": "A new response", "subtitle": "What becomes possible now", "content": "2-3 paragraphs", "utterance": "One sentence", "key_terms": ["term", "term", "term"]}
   ],
   "closing": "3-5 sentences."
@@ -998,7 +1023,7 @@ const server = http.createServer(async (req, res) => {
         const chart = buildChart(date, time, parseFloat(tz), lat, lon);
         const text = chartToText(chart, name);
         const aspects = calcNatalAspects(chart);
-        const aspectText = aspectsToText(aspects);
+        const aspectText = aspectsToText(aspects, chart);
         const userPrompt = `Read this chart for ${name}:\n\n${text}\n\n${aspectText}`;
         console.log('Chart for', name, ':\n' + text + '\n' + aspectText);
         const [reading] = await Promise.all([
