@@ -11,6 +11,7 @@ const MAILCHIMP_SERVER = process.env.MAILCHIMP_SERVER_PREFIX || 'us6';
 // ── LOGO URL (served as static file from /public) ─────────────
 const BASE_URL = 'https://performance-trap-server.onrender.com';
 const LOGO_URL = BASE_URL + '/Herst-Wellness-Logo-cropped.jpg';
+const CHAPTER_ONE_AUDIO_URL = BASE_URL + '/audio/chapter-one.mp3';
 
 function cors(res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -28,6 +29,7 @@ const MIME_TYPES = {
   '.ico': 'image/x-icon',
   '.css': 'text/css',
   '.js':  'text/javascript',
+  '.mp3': 'audio/mpeg',
 };
 
 function serveStatic(req, res) {
@@ -973,6 +975,39 @@ It's not a sales call. It's not a pitch. It's just the beginning of learning wha
 —Chad`
 };
 
+const LAUNCH_TEAM_EMAIL = {
+  subject: "You're on the launch team",
+  text: `Thank you for saying yes to this.
+
+The book is called The Performance Trap: The Ache No Success Will Ever Fix. It's out in September. Your job is simple: read it when the advance copy arrives, and if it lands for you, post an honest review on Amazon around launch day. That's it.
+
+Reviews are how a book moves from one person's shelf to someone else's search results. You're helping it find the people who need it.
+
+I'll send the advance copy. In the meantime, you're welcome to take the Map if you haven't already. It's a personalized reading based on the framework from the book: https://map.herstwellness.com
+
+If this isn't the right time for you and you'd rather not be on the team, just reply and let me know. No hard feelings.
+
+Talk soon,
+Chad`
+};
+
+const CHAPTER_ONE_EMAIL = {
+  subject: 'Chapter One, in my voice',
+  text: (audioUrl) => `Here it is: ${audioUrl}
+
+"The Day the Mask Cracked." It's the chapter where the story really begins. The phone call. My brother. The day everything I'd built started to come apart.
+
+It's 28 minutes. You can listen on a walk, in the car, or anywhere you've got room to sit with it.
+
+If something in it lands for you and you want to go deeper, the full book is on its way. You can join the launch team here to get an advance copy: https://herstwellness.com/the-book
+
+Or if you'd rather see how the pattern shows up in your own life first, the Map is here: https://map.herstwellness.com
+
+Either way, thanks for being here.
+
+Chad`
+};
+
 async function sendNurtureSequence(email) {
   try {
     // Email 1 — immediately
@@ -1100,6 +1135,47 @@ const server = http.createServer(async (req, res) => {
         res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
         res.end(JSON.stringify({ ok: true }));
       } catch(e) {
+        res.writeHead(500); res.end(JSON.stringify({ error: e.message }));
+      }
+    });
+    return;
+  }
+
+  // ── LAUNCH TEAM WELCOME ──────────────────────────────────────
+  if (req.method === 'POST' && req.url === '/launch-team-welcome') {
+    let body = '';
+    req.on('data', c => body += c);
+    req.on('end', async () => {
+      try {
+        const { email } = JSON.parse(body);
+        if (!email) { res.writeHead(400); res.end(JSON.stringify({ error: 'No email provided' })); return; }
+        console.log('Launch team welcome triggered for:', email);
+        await sendResendEmail(email, LAUNCH_TEAM_EMAIL.subject, textToHtml(LAUNCH_TEAM_EMAIL.text));
+        res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+        res.end(JSON.stringify({ ok: true }));
+      } catch(e) {
+        console.error('Launch team welcome error:', e.message);
+        res.writeHead(500); res.end(JSON.stringify({ error: e.message }));
+      }
+    });
+    return;
+  }
+
+  // ── CHAPTER ONE AUDIO DELIVERY ───────────────────────────────
+  if (req.method === 'POST' && req.url === '/chapter-one-audio') {
+    let body = '';
+    req.on('data', c => body += c);
+    req.on('end', async () => {
+      try {
+        const { email } = JSON.parse(body);
+        if (!email) { res.writeHead(400); res.end(JSON.stringify({ error: 'No email provided' })); return; }
+        console.log('Chapter One audio triggered for:', email);
+        const emailBody = CHAPTER_ONE_EMAIL.text(CHAPTER_ONE_AUDIO_URL);
+        await sendResendEmail(email, CHAPTER_ONE_EMAIL.subject, textToHtml(emailBody));
+        res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+        res.end(JSON.stringify({ ok: true }));
+      } catch(e) {
+        console.error('Chapter One audio error:', e.message);
         res.writeHead(500); res.end(JSON.stringify({ error: e.message }));
       }
     });
