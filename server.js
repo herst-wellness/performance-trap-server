@@ -980,11 +980,13 @@ const LAUNCH_TEAM_EMAIL = {
   subject: "You're on the launch team",
   text: `Thank you for saying yes to this.
 
-The book is called The Performance Trap: The Ache No Success Will Ever Fix. It's out in September. Your job is simple: read it when the advance copy arrives, and if it lands for you, post an honest review on Amazon around launch day. That's it.
+The book is yours. You can read it right now in whatever format works for you: https://herstwellness.com/book
 
-Reviews are how a book moves from one person's shelf to someone else's search results. You're helping it find the people who need it.
+There you'll find Kindle, EPUB, and PDF downloads, plus the audio of every chapter in my voice — opening credits, every chapter, all the way through. Read at your own pace.
 
-I'll send the advance copy. In the meantime, you're welcome to take the Map if you haven't already. It's a personalized reading based on the framework from the book: https://map.herstwellness.com
+One ask. The book comes out publicly in September. Hold your Amazon review until launch week. I'll send you a reminder when the day comes. If the book lands for you, an honest review during that window is the single most useful thing you can do for it. Honest is the word. If it doesn't land for you, say that too. I'd rather have a true two-star than a courteous five.
+
+If you haven't taken the Map yet, it's a personalized reading based on the framework from the book. A good companion piece while you're reading: https://map.herstwellness.com
 
 If this isn't the right time for you and you'd rather not be on the team, just reply and let me know. No hard feelings.
 
@@ -1201,10 +1203,41 @@ const server = http.createServer(async (req, res) => {
     req.on('data', c => body += c);
     req.on('end', async () => {
       try {
-        const { email } = JSON.parse(body);
+        const { email, firstName } = JSON.parse(body);
         if (!email) { res.writeHead(400); res.end(JSON.stringify({ error: 'No email provided' })); return; }
-        console.log('Launch team welcome triggered for:', email);
-        await sendResendEmail(email, LAUNCH_TEAM_EMAIL.subject, textToHtml(LAUNCH_TEAM_EMAIL.text));
+        console.log('Launch team welcome triggered for:', email, firstName || '(no name)');
+
+        // Send welcome email + add to Mailchimp in parallel
+        await Promise.all([
+          sendResendEmail(email, LAUNCH_TEAM_EMAIL.subject, textToHtml(LAUNCH_TEAM_EMAIL.text)),
+          addToMailchimp(email, firstName || '')
+        ]);
+
+        // Apply "Launch Team" tag in Mailchimp (separate API call)
+        const crypto = require('crypto');
+        const subscriberHash = crypto.createHash('md5').update(email.toLowerCase()).digest('hex');
+        const tagBody = JSON.stringify({ tags: [{ name: 'Launch Team', status: 'active' }] });
+        const tagAuth = Buffer.from(`anystring:${MAILCHIMP_KEY}`).toString('base64');
+        const tagReq = https.request({
+          hostname: `${MAILCHIMP_SERVER}.api.mailchimp.com`,
+          path: `/3.0/lists/${MAILCHIMP_LIST_ID}/members/${subscriberHash}/tags`,
+          method: 'POST',
+          headers: {
+            'Authorization': `Basic ${tagAuth}`,
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(tagBody)
+          }
+        }, tagRes => {
+          let td = '';
+          tagRes.on('data', c => td += c);
+          tagRes.on('end', () => {
+            console.log('Mailchimp tag status:', tagRes.statusCode, td.substring(0, 200));
+          });
+        });
+        tagReq.on('error', e => console.log('Mailchimp tag error:', e.message));
+        tagReq.write(tagBody);
+        tagReq.end();
+
         res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
         res.end(JSON.stringify({ ok: true }));
       } catch(e) {
