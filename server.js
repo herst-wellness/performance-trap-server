@@ -31,6 +31,8 @@ const MIME_TYPES = {
   '.css': 'text/css',
   '.js':  'text/javascript',
   '.mp3': 'audio/mpeg',
+   '.epub': 'application/epub+zip',
+  '.pdf': 'application/pdf',
 };
 
 function serveStatic(req, res) {
@@ -1091,6 +1093,284 @@ const server = http.createServer(async (req, res) => {
       <p><a href="https://map.herstwellness.com">map.herstwellness.com</a></p>
     </div>
   </div>
+</body>
+</html>`;
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=300' });
+    res.end(html);
+    return;
+  }
+  if (req.method === 'GET' && req.url === '/book') {
+    const tracks = [
+      { num: 1,  file: '01-opening-credits.mp3',                 title: 'Opening Credits',                          duration: '1:42',  part: 'front' },
+      { num: 2,  file: '02-introduction.mp3',                    title: 'Introduction',                             duration: '12:57', part: 'front' },
+      { num: 3,  file: '04-ch01-the-day-the-mask-cracked.mp3',   title: 'Chapter One: The Day the Mask Cracked',    duration: '28:17', part: 'one' },
+      { num: 4,  file: '05-ch02-am-i-a-man-or-a-mooch.mp3',      title: 'Chapter Two: Am I a Man or a Mooch?',      duration: '36:30', part: 'one' },
+      { num: 5,  file: '06-ch03-i-thought-the-hard-part-was-over.mp3', title: 'Chapter Three: I Thought the Hard Part Was Over', duration: '27:29', part: 'one' },
+      { num: 6,  file: '07-ch04-the-beginning-of-the-end.mp3',   title: 'Chapter Four: The Beginning of the End',   duration: '9:05',  part: 'one' },
+      { num: 7,  file: '08-ch05-proving-myself-into-pain.mp3',   title: 'Chapter Five: Proving Myself into Pain',   duration: '14:08', part: 'one' },
+      { num: 8,  file: '09-ch06-the-good-kid.mp3',               title: 'Chapter Six: The Good Kid',                duration: '16:25', part: 'one' },
+      { num: 9,  file: '10-ch07-walls.mp3',                      title: 'Chapter Seven: Walls',                     duration: '16:49', part: 'one' },
+      { num: 10, file: '11-ch08-snot-and-all.mp3',               title: 'Chapter Eight: Snot and All',              duration: '19:23', part: 'one' },
+      { num: 11, file: '12-ch09-my-way-home.mp3',                title: 'Chapter Nine: My Way Home',                duration: '21:46', part: 'one' },
+      { num: 12, file: '13-bridge-the-performance-trap.mp3',     title: 'Bridge: The Performance Trap',             duration: '21:40', part: 'one' },
+      { num: 13, file: '15-how-to-use-this-section.mp3',         title: 'How to Use This Section',                  duration: '20:45', part: 'two' },
+      { num: 14, file: '16-methods-breaking-the-performance-trap.mp3', title: 'Methods: Breaking the Performance Trap', duration: '17:55', part: 'two' },
+      { num: 15, file: '17-ch10-overwhelm.mp3',                  title: 'Chapter Ten: Overwhelm',                   duration: '19:08', part: 'two' },
+      { num: 16, file: '18-try-this-overwhelm.mp3',              title: 'Try This: Overwhelm',                      duration: '6:16',  part: 'two', sub: true },
+      { num: 17, file: '19-ch11-the-inner-critic.mp3',           title: 'Chapter Eleven: The Inner Critic',         duration: '22:04', part: 'two' },
+      { num: 18, file: '20-try-this-the-inner-critic.mp3',       title: 'Try This: The Inner Critic',               duration: '8:14',  part: 'two', sub: true },
+      { num: 19, file: '21-ch12-emptiness.mp3',                  title: 'Chapter Twelve: Emptiness',                duration: '15:16', part: 'two' },
+      { num: 20, file: '22-try-this-emptiness.mp3',              title: 'Try This: Emptiness',                      duration: '5:34',  part: 'two', sub: true },
+      { num: 21, file: '23-ch13-self-abandonment.mp3',           title: 'Chapter Thirteen: Self-Abandonment',       duration: '15:40', part: 'two' },
+      { num: 22, file: '24-try-this-self-abandonment.mp3',       title: 'Try This: Self-Abandonment',               duration: '6:59',  part: 'two', sub: true },
+      { num: 23, file: '25-ch14-the-pressure-to-perform.mp3',    title: 'Chapter Fourteen: The Pressure to Perform',duration: '12:33', part: 'two' },
+      { num: 24, file: '26-try-this-pressure-to-perform.mp3',    title: 'Try This: Pressure to Perform',            duration: '5:04',  part: 'two', sub: true },
+      { num: 25, file: '27-epilogue-the-hidden-trail.mp3',       title: 'Epilogue: The Hidden Trail',               duration: '14:39', part: 'back' },
+      { num: 26, file: '28-acknowledgements.mp3',                title: 'Acknowledgements',                         duration: '7:55',  part: 'back' },
+      { num: 27, file: '29-notes-and-resources.mp3',             title: 'Notes and Resources',                      duration: '48:31', part: 'back' },
+      { num: 28, file: '30-about-the-author.mp3',                title: 'About the Author',                         duration: '1:17',  part: 'back' },
+    ];
+
+    const renderTrack = (t) => `
+      <li class="track${t.sub ? ' sub' : ''}" data-num="${t.num}" data-file="${BASE_URL}/audio/${t.file}">
+        <button class="track-btn" type="button">
+          <span class="track-title">${t.title}</span>
+          <span class="track-dur">${t.duration}</span>
+        </button>
+      </li>`;
+
+    const partFront = tracks.filter(t => t.part === 'front').map(renderTrack).join('');
+    const partOne   = tracks.filter(t => t.part === 'one').map(renderTrack).join('');
+    const partTwo   = tracks.filter(t => t.part === 'two').map(renderTrack).join('');
+    const partBack  = tracks.filter(t => t.part === 'back').map(renderTrack).join('');
+
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Performance Trap — Chad Herst</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+<style>
+  body { margin:0; padding:0; background:#F4EDE4; font-family:'Cormorant Garamond',Georgia,serif; color:#352515; }
+  .wrap { max-width:680px; margin:0 auto; padding:40px 20px; }
+  .logo-top { display:block; width:100%; max-width:680px; height:auto; margin:0 auto; }
+  .divider { border:none; border-top:1px solid #8B6B1E; margin:32px 0; }
+  h1 { font-family:'Playfair Display',Georgia,serif; font-size:36px; line-height:1.15; color:#352515; margin:0 0 8px 0; font-weight:700; }
+  .subtitle { font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:20px; color:#8B6B1E; margin:0 0 8px 0; letter-spacing:0.04em; }
+  .author { font-family:'Cormorant Garamond',Georgia,serif; font-size:16px; color:#4F4130; margin:0 0 32px 0; letter-spacing:0.08em; text-transform:uppercase; }
+  p { font-size:18px; line-height:1.85; margin:0 0 20px 0; }
+  h2 { font-family:'Playfair Display',Georgia,serif; font-size:24px; color:#352515; margin:48px 0 16px 0; font-weight:700; }
+  .resume { background:#EFE6D8; border-left:3px solid #8B6B1E; padding:16px 20px; margin:24px 0; display:none; }
+  .resume.show { display:block; }
+  .resume p { margin:0 0 12px 0; font-size:16px; }
+  .resume button { font-family:'Cormorant Garamond',Georgia,serif; font-size:13px; letter-spacing:0.15em; text-transform:uppercase; padding:10px 24px; border:1px solid #8B6B1E; background:transparent; color:#8B6B1E; cursor:pointer; margin-right:8px; }
+  .resume button:hover { background:#8B6B1E; color:#FBF7F0; }
+  .player-wrap { background:#EFE6D8; border:1px solid #8B6B1E; padding:24px; margin:24px 0 16px 0; }
+  .now-playing { font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:15px; color:#4F4130; text-align:center; margin:0 0 12px 0; }
+  .now-playing strong { font-style:normal; color:#352515; font-weight:500; }
+  .plyr--audio .plyr__controls { background:transparent; color:#352515; padding:8px; }
+  .plyr--audio .plyr__control:hover { background:#8B6B1E; color:#FBF7F0; }
+  .plyr--audio .plyr__control[aria-expanded=true] { background:#8B6B1E; color:#FBF7F0; }
+  .plyr--full-ui input[type=range] { color:#8B6B1E; }
+  .plyr__menu__container { background:#FBF7F0; border:1px solid #8B6B1E; }
+  .chapter-list { list-style:none; padding:0; margin:8px 0 0 0; }
+  .part-header { font-family:'Playfair Display',Georgia,serif; font-size:18px; color:#8B6B1E; margin:32px 0 8px 0; padding-bottom:6px; border-bottom:1px solid #E8DED3; letter-spacing:0.05em; text-transform:uppercase; font-weight:700; }
+  .part-header:first-child { margin-top:16px; }
+  .track { margin:0; }
+  .track.sub { padding-left:32px; }
+  .track-btn { width:100%; background:transparent; border:none; border-bottom:1px solid #E8DED3; padding:14px 4px; text-align:left; cursor:pointer; font-family:'Cormorant Garamond',Georgia,serif; color:#352515; display:flex; justify-content:space-between; align-items:baseline; gap:16px; }
+  .track-btn:hover { background:#EFE6D8; }
+  .track-btn.playing { background:#EFE6D8; }
+  .track-btn.playing .track-title { color:#8B6B1E; font-weight:500; }
+  .track-title { font-size:17px; line-height:1.4; }
+  .track.sub .track-title { font-style:italic; font-size:16px; color:#4F4130; }
+  .track-dur { font-size:14px; color:#8B6B1E; font-style:italic; flex-shrink:0; letter-spacing:0.05em; }
+  .downloads { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin:24px 0; }
+  @media (max-width: 540px) { .downloads { grid-template-columns:1fr; } }
+  .dl-card { background:#FBF7F0; border:1px solid #8B6B1E; padding:20px; text-align:center; text-decoration:none; color:#352515; display:block; transition:background 0.2s; }
+  .dl-card:hover { background:#EFE6D8; }
+  .dl-card img { display:block; width:100%; max-width:160px; height:auto; margin:0 auto 16px auto; box-shadow:0 4px 12px rgba(53,37,21,0.15); }
+  .dl-format { font-family:'Playfair Display',Georgia,serif; font-size:20px; color:#352515; margin:0 0 4px 0; font-weight:700; }
+  .dl-desc { font-family:'Cormorant Garamond',Georgia,serif; font-size:14px; font-style:italic; color:#4F4130; margin:0; }
+  .kindle-howto { background:#EFE6D8; padding:24px; margin:16px 0 32px 0; border-left:3px solid #8B6B1E; }
+  .kindle-howto h3 { font-family:'Playfair Display',Georgia,serif; font-size:20px; margin:0 0 12px 0; color:#352515; }
+  .kindle-howto p { font-size:16px; margin:0 0 12px 0; }
+  .kindle-howto ol { font-size:16px; line-height:1.85; padding-left:20px; margin:0; }
+  .kindle-howto li { margin-bottom:10px; }
+  .kindle-howto a { color:#8B6B1E; }
+  .footer { text-align:center; padding:40px 0 20px 0; border-top:1px solid #E8DED3; margin-top:48px; }
+  .footer img { display:block; margin:0 auto 16px auto; max-width:200px; height:auto; }
+  .footer p { font-size:12px; color:#4F4130; margin:0 0 8px 0; line-height:1.6; }
+  .footer a { color:#8B6B1E; text-decoration:none; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <img src="${LOGO_URL}" alt="Herst Wellness" class="logo-top" />
+    <hr class="divider" />
+
+    <h1>The Performance Trap</h1>
+    <p class="subtitle">The Ache No Success Will Ever Fix</p>
+    <p class="author">Chad Herst</p>
+
+    <p>This is the audiobook, in my voice. Twenty-eight tracks, just over seven hours, recorded chapter by chapter. Read in any order. Stop when you need to. Your place is saved automatically — when you come back, the player will offer to pick up where you left off.</p>
+
+    <div class="resume" id="resume-banner">
+      <p id="resume-text">Resume from where you left off?</p>
+      <button id="resume-yes" type="button">Resume</button>
+      <button id="resume-no" type="button">Start over</button>
+    </div>
+
+    <div class="player-wrap">
+      <p class="now-playing">Now playing: <strong id="now-title">Opening Credits</strong></p>
+      <audio id="player" controls preload="metadata">
+        <source src="${BASE_URL}/audio/01-opening-credits.mp3" type="audio/mpeg" />
+      </audio>
+    </div>
+
+    <h2>Chapters</h2>
+    <ul class="chapter-list">
+      <li class="part-header">Front Matter</li>
+      ${partFront}
+      <li class="part-header">Part One: Finding My Way Home</li>
+      ${partOne}
+      <li class="part-header">Part Two: From Understanding to Embodiment</li>
+      ${partTwo}
+      <li class="part-header">Back Matter</li>
+      ${partBack}
+    </ul>
+
+    <h2>Read it instead</h2>
+    <p>If you'd rather read than listen, the book is available in two formats. Click either cover to download.</p>
+
+    <div class="downloads">
+      <a class="dl-card" href="${BASE_URL}/downloads/the-performance-trap.epub" download>
+        <img src="${BASE_URL}/book-cover.jpg" alt="The Performance Trap cover" />
+        <p class="dl-format">EPUB</p>
+        <p class="dl-desc">For Kindle, Apple Books, Kobo, and most e-readers</p>
+      </a>
+      <a class="dl-card" href="${BASE_URL}/downloads/the-performance-trap.pdf" download>
+        <img src="${BASE_URL}/book-cover.jpg" alt="The Performance Trap cover" />
+        <p class="dl-format">PDF</p>
+        <p class="dl-desc">For desktop, tablet, or printing</p>
+      </a>
+    </div>
+
+    <div class="kindle-howto">
+      <h3>How to read the EPUB on your Kindle</h3>
+      <p>Amazon stopped supporting the old AZW3 format, but EPUB works perfectly through their official Send to Kindle service. Three ways to do it — pick whichever is easiest:</p>
+      <ol>
+        <li><strong>Email it.</strong> Every Kindle account has a personal email address ending in <em>@kindle.com</em>. Find yours at <a href="https://www.amazon.com/myk" target="_blank" rel="noopener">amazon.com/myk</a> under Preferences → Personal Document Settings. Email the EPUB to that address as an attachment, and it shows up on your Kindle in a few minutes.</li>
+        <li><strong>Use the web uploader.</strong> Go to <a href="https://www.amazon.com/sendtokindle" target="_blank" rel="noopener">amazon.com/sendtokindle</a>, sign in, and drag the EPUB into the browser. Same result, no email.</li>
+        <li><strong>Use the desktop app.</strong> Download Send to Kindle for Mac or Windows from Amazon, then right-click the EPUB and choose "Send to Kindle."</li>
+      </ol>
+      <p>For the PDF: open it on any computer, tablet, or phone. Most people read PDFs in their browser, in Apple Books, or in Adobe Acrobat.</p>
+    </div>
+
+    <div class="footer">
+      <img src="${LOGO_URL}" alt="Herst Wellness" />
+      <p>765 Market St, San Francisco, CA 94103<br>(415) 686-4411 &middot; <a href="mailto:chad@herstwellness.com">chad@herstwellness.com</a></p>
+      <p><a href="https://map.herstwellness.com">map.herstwellness.com</a></p>
+    </div>
+  </div>
+
+  <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+  <script>
+    const TRACKS = ${JSON.stringify(tracks.map(t => ({ num: t.num, file: BASE_URL + '/audio/' + t.file, title: t.title, duration: t.duration })))};
+    const STORAGE_KEY = 'performance-trap-progress';
+    const audio = document.getElementById('player');
+    const nowTitle = document.getElementById('now-title');
+    const player = new Plyr(audio, {
+      controls: ['play', 'rewind', 'progress', 'current-time', 'duration', 'fast-forward', 'mute', 'volume', 'settings'],
+      settings: ['speed'],
+      speed: { selected: 1, options: [0.75, 1, 1.25, 1.5, 1.75, 2] },
+      seekTime: 15,
+      keyboard: { focused: true, global: false },
+    });
+
+    let currentNum = 1;
+
+    function loadProgress() {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
+    }
+    function saveProgress(num, time) {
+      try {
+        const p = loadProgress();
+        p.lastTrack = num;
+        p.lastTime = time;
+        p.tracks = p.tracks || {};
+        p.tracks[num] = time;
+        p.updated = Date.now();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(p));
+      } catch {}
+    }
+    function fmtTime(s) {
+      s = Math.floor(s || 0);
+      const m = Math.floor(s / 60);
+      const sec = s % 60;
+      return m + ':' + (sec < 10 ? '0' : '') + sec;
+    }
+    function loadTrack(num, seekTime) {
+      const t = TRACKS.find(x => x.num === num);
+      if (!t) return;
+      currentNum = num;
+      audio.src = t.file;
+      audio.load();
+      nowTitle.textContent = t.title;
+      document.querySelectorAll('.track-btn').forEach(b => b.classList.remove('playing'));
+      const li = document.querySelector('.track[data-num="' + num + '"] .track-btn');
+      if (li) li.classList.add('playing');
+      if (seekTime && seekTime > 2) {
+        audio.addEventListener('loadedmetadata', function once() {
+          audio.currentTime = seekTime;
+          audio.removeEventListener('loadedmetadata', once);
+        });
+      }
+    }
+
+    document.querySelectorAll('.track').forEach(li => {
+      li.querySelector('.track-btn').addEventListener('click', () => {
+        const num = parseInt(li.dataset.num, 10);
+        loadTrack(num, 0);
+        player.play();
+      });
+    });
+
+    let saveTimer = 0;
+    audio.addEventListener('timeupdate', () => {
+      const now = Date.now();
+      if (now - saveTimer > 5000) {
+        saveTimer = now;
+        if (audio.currentTime > 0) saveProgress(currentNum, audio.currentTime);
+      }
+    });
+    audio.addEventListener('ended', () => {
+      const next = TRACKS.find(x => x.num === currentNum + 1);
+      if (next) { loadTrack(next.num, 0); player.play(); }
+    });
+
+    const progress = loadProgress();
+    if (progress.lastTrack && progress.lastTime > 5) {
+      const t = TRACKS.find(x => x.num === progress.lastTrack);
+      if (t) {
+        const banner = document.getElementById('resume-banner');
+        document.getElementById('resume-text').textContent = 'Resume "' + t.title + '" from ' + fmtTime(progress.lastTime) + '?';
+        banner.classList.add('show');
+        document.getElementById('resume-yes').addEventListener('click', () => {
+          banner.classList.remove('show');
+          loadTrack(progress.lastTrack, progress.lastTime);
+        });
+        document.getElementById('resume-no').addEventListener('click', () => {
+          banner.classList.remove('show');
+          loadTrack(1, 0);
+        });
+      }
+    }
+
+    loadTrack(1, 0);
+  </script>
 </body>
 </html>`;
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=300' });
