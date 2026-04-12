@@ -1081,7 +1081,10 @@ const server = http.createServer(async (req, res) => {
       </audio>
       <div class="duration">28 minutes</div>
     </div>
-    <p>If something in it lands and you want to go further, the full book is here: <a href="https://herstwellness.com/book" style="color:#8B6B1E;">herstwellness.com/book</a></p>
+<p>If this lands for you, the book comes out in September. I'm putting together a small launch team — readers willing to post an honest Amazon review around launch week in exchange for getting the book early. If that's you:</p>
+    <div style="text-align:center; margin:32px 0 8px 0;">
+      <a href="https://herstwellness.com/launch-team" style="display:inline-block; font-family:'Cormorant Garamond',Georgia,serif; font-size:14px; letter-spacing:0.2em; text-transform:uppercase; padding:16px 36px; background:#8B6B1E; color:#FBF7F0; text-decoration:none;">Join the Launch Team</a>
+    </div>    
     <div class="footer">
       <img src="${LOGO_URL}" alt="Herst Wellness" />
       <p>765 Market St, San Francisco, CA 94103<br>(415) 686-4411 &middot; <a href="mailto:chad@herstwellness.com">chad@herstwellness.com</a></p>
