@@ -12,6 +12,7 @@ const MAILCHIMP_SERVER = process.env.MAILCHIMP_SERVER_PREFIX || 'us6';
 const BASE_URL = 'https://performance-trap-server.onrender.com';
 const LOGO_URL = BASE_URL + '/Herst-Wellness-Logo-cropped.jpg';
 const CHAPTER_ONE_AUDIO_URL = BASE_URL + '/audio/chapter-one.mp3';
+const LISTEN_PAGE_URL = BASE_URL + '/listen/chapter-one';
 
 function cors(res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -993,13 +994,13 @@ Chad`
 
 const CHAPTER_ONE_EMAIL = {
   subject: 'Chapter One, in my voice',
-  text: (audioUrl) => `Here it is: ${audioUrl}
+  text: (listenUrl) => `Listen here: ${listenUrl}
 
 "The Day the Mask Cracked." It's the chapter where the story really begins. The phone call. My brother. The day everything I'd built started to come apart.
 
 It's 28 minutes. You can listen on a walk, in the car, or anywhere you've got room to sit with it.
 
-If something in it lands for you and you want to go deeper, the full book is on its way. You can join the launch team here to get an advance copy: https://herstwellness.com/the-book
+If something in it lands for you and you want to go deeper, the full book is on its way. You can join the launch team here to get an advance copy: https://herstwellness.com/book
 
 Or if you'd rather see how the pattern shows up in your own life first, the Map is here: https://map.herstwellness.com
 
@@ -1038,6 +1039,59 @@ async function sendNurtureSequence(email) {
 const server = http.createServer(async (req, res) => {
   // ── STATIC FILES (logo, etc.) ────────────────────────────────
   if (req.method === 'GET' && serveStatic(req, res)) { return; }
+
+  if (req.method === 'GET' && req.url === '/listen/chapter-one') {
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter One — The Performance Trap</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  body { margin:0; padding:0; background:#F4EDE4; font-family:'Cormorant Garamond',Georgia,serif; color:#352515; }
+  .wrap { max-width:600px; margin:0 auto; padding:40px 20px; }
+  .logo-top { display:block; width:100%; max-width:600px; height:auto; margin:0 auto; }
+  .divider { border:none; border-top:1px solid #8B6B1E; margin:32px 0; }
+  h1 { font-family:'Playfair Display',Georgia,serif; font-size:32px; line-height:1.2; color:#352515; margin:0 0 8px 0; font-weight:700; }
+  .subtitle { font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:18px; color:#8B6B1E; margin:0 0 32px 0; letter-spacing:0.05em; }
+  p { font-size:18px; line-height:1.9; margin:0 0 20px 0; }
+  .player-wrap { background:#EFE6D8; border:1px solid #8B6B1E; padding:24px; margin:32px 0; text-align:center; }
+  audio { width:100%; max-width:520px; }
+  .duration { font-size:14px; color:#4F4130; font-style:italic; margin-top:12px; letter-spacing:0.05em; }
+  .footer { text-align:center; padding:40px 0 20px 0; border-top:1px solid #E8DED3; margin-top:48px; }
+  .footer img { display:block; margin:0 auto 16px auto; max-width:200px; height:auto; }
+  .footer p { font-size:12px; color:#4F4130; margin:0 0 8px 0; line-height:1.6; }
+  .footer a { color:#8B6B1E; text-decoration:none; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <img src="${LOGO_URL}" alt="Herst Wellness" class="logo-top" />
+    <hr class="divider" />
+    <h1>Chapter One</h1>
+    <p class="subtitle">The Day the Mask Cracked</p>
+    <p>This is where the story really begins. The phone call. My brother. The day everything I'd built started to come apart.</p>
+    <p>Find a quiet twenty-eight minutes. A walk works. So does the car. Anywhere you've got room to sit with it.</p>
+    <div class="player-wrap">
+      <audio controls preload="metadata" src="${CHAPTER_ONE_AUDIO_URL}">
+        Your browser does not support audio playback. <a href="${CHAPTER_ONE_AUDIO_URL}">Download the MP3</a>.
+      </audio>
+      <div class="duration">28 minutes</div>
+    </div>
+    <p>If something in it lands and you want to go further, the full book is here: <a href="https://herstwellness.com/book" style="color:#8B6B1E;">herstwellness.com/book</a></p>
+    <div class="footer">
+      <img src="${LOGO_URL}" alt="Herst Wellness" />
+      <p>765 Market St, San Francisco, CA 94103<br>(415) 686-4411 &middot; <a href="mailto:chad@herstwellness.com">chad@herstwellness.com</a></p>
+      <p><a href="https://map.herstwellness.com">map.herstwellness.com</a></p>
+    </div>
+  </div>
+</body>
+</html>`;
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=300' });
+    res.end(html);
+    return;
+  }
 
   cors(res);
   if (req.method === 'OPTIONS') { res.writeHead(200); res.end(); return; }
@@ -1170,7 +1224,7 @@ const server = http.createServer(async (req, res) => {
         const { email } = JSON.parse(body);
         if (!email) { res.writeHead(400); res.end(JSON.stringify({ error: 'No email provided' })); return; }
         console.log('Chapter One audio triggered for:', email);
-        const emailBody = CHAPTER_ONE_EMAIL.text(CHAPTER_ONE_AUDIO_URL);
+        const emailBody = CHAPTER_ONE_EMAIL.text(LISTEN_PAGE_URL);
         await sendResendEmail(email, CHAPTER_ONE_EMAIL.subject, textToHtml(emailBody));
         res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
         res.end(JSON.stringify({ ok: true }));
