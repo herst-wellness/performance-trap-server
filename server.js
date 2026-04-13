@@ -1171,6 +1171,12 @@ const server = http.createServer(async (req, res) => {
   .player-wrap { background:#EFE6D8; border:1px solid #8B6B1E; padding:24px; margin:24px 0 16px 0; }
   .now-playing { font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:15px; color:#4F4130; text-align:center; margin:0 0 12px 0; }
   .now-playing strong { font-style:normal; color:#352515; font-weight:500; }
+  .speed-pills { display:flex; align-items:center; justify-content:center; gap:8px; margin-top:16px; flex-wrap:wrap; }
+  .speed-label { font-family:'Cormorant Garamond',Georgia,serif; font-size:14px; color:#4F4130; font-style:italic; letter-spacing:0.05em; margin-right:4px; }
+  .speed-pill { font-family:'Cormorant Garamond',Georgia,serif; font-size:14px; padding:6px 14px; background:transparent; border:1px solid #8B6B1E; color:#8B6B1E; cursor:pointer; transition:all 0.15s; letter-spacing:0.03em; }
+  .speed-pill:hover { background:#F4EDE4; }
+  .speed-pill.active { background:#8B6B1E; color:#FBF7F0; }
+  .auto-save-hint { text-align:center; font-size:14px; color:#4F4130; margin:8px 0 16px 0; }
   .plyr--audio .plyr__controls { background:transparent; color:#352515; padding:8px; }
   .plyr--audio .plyr__control:hover { background:#8B6B1E; color:#FBF7F0; }
   .plyr--audio .plyr__control[aria-expanded=true] { background:#8B6B1E; color:#FBF7F0; }
@@ -1216,8 +1222,9 @@ const server = http.createServer(async (req, res) => {
     <p class="subtitle">The Ache No Success Will Ever Fix</p>
     <p class="author">Chad Herst</p>
 
-    <p>This is the audiobook, in my voice. Twenty-eight tracks, just over seven hours, recorded chapter by chapter. Read in any order. Stop when you need to. Your place is saved automatically — when you come back, the player will offer to pick up where you left off.</p>
-
+   <p>This is the audiobook, in my voice. Twenty-eight tracks, just over seven hours, recorded chapter by chapter. Read in any order. Stop when you need to.</p>
+    <p><em>Prefer to read? The EPUB and PDF are below — keep scrolling.</em></p>
+    
     <div class="resume" id="resume-banner">
       <p id="resume-text">Resume from where you left off?</p>
       <button id="resume-yes" type="button">Resume</button>
@@ -1229,7 +1236,16 @@ const server = http.createServer(async (req, res) => {
       <audio id="player" controls preload="metadata">
         <source src="${AUDIO_BASE_URL}/01-opening-credits.mp3" type="audio/mpeg" />
       </audio>
+      <div class="speed-pills">
+        <span class="speed-label">Speed</span>
+        <button type="button" class="speed-pill" data-speed="0.75">0.75&times;</button>
+        <button type="button" class="speed-pill active" data-speed="1">1&times;</button>
+        <button type="button" class="speed-pill" data-speed="1.25">1.25&times;</button>
+        <button type="button" class="speed-pill" data-speed="1.5">1.5&times;</button>
+        <button type="button" class="speed-pill" data-speed="2">2&times;</button>
+      </div>
     </div>
+    <p class="auto-save-hint"><em>Your place is saved automatically — close the tab and come back anytime.</em></p>
 
     <h2>Chapters</h2>
     <ul class="chapter-list">
@@ -1284,9 +1300,7 @@ const server = http.createServer(async (req, res) => {
     const audio = document.getElementById('player');
     const nowTitle = document.getElementById('now-title');
     const player = new Plyr(audio, {
-      controls: ['play', 'rewind', 'progress', 'current-time', 'duration', 'fast-forward', 'mute', 'volume', 'settings'],
-      settings: ['speed'],
-      speed: { selected: 1, options: [0.75, 1, 1.25, 1.5, 1.75, 2] },
+      controls: ['play', 'rewind', 'progress', 'current-time', 'duration', 'fast-forward', 'mute', 'volume'],
       seekTime: 15,
       keyboard: { focused: true, global: false },
     });
@@ -1369,6 +1383,15 @@ const server = http.createServer(async (req, res) => {
         });
       }
     }
+
+    document.querySelectorAll('.speed-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const speed = parseFloat(btn.dataset.speed);
+        audio.playbackRate = speed;
+        document.querySelectorAll('.speed-pill').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
 
     loadTrack(1, 0);
   </script>
