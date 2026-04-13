@@ -1126,15 +1126,28 @@ const server = http.createServer(async (req, res) => {
       { num: 22, file: '24-try-this-self-abandonment.mp3',       title: 'Try This: Self-Abandonment',               duration: '6:59',  part: 'two', sub: true },
       { num: 23, file: '25-ch14-the-pressure-to-perform.mp3',    title: 'Chapter Fourteen: The Pressure to Perform',duration: '12:33', part: 'two' },
       { num: 24, file: '26-try-this-pressure-to-perform.mp3',    title: 'Try This: Pressure to Perform',            duration: '5:04',  part: 'two', sub: true },
-      { num: 25, file: '27-epilogue-the-hidden-trail.mp3',       title: 'Epilogue: The Hidden Trail',               duration: '14:39', part: 'back' },
+      { num: 25, file: '27-epilogue-the-hidden-trail.mp3',       title: 'Epilogue: The Hidden Trail',               duration: '14:39', part: 'two' },
       { num: 26, file: '28-acknowledgements.mp3',                title: 'Acknowledgements',                         duration: '7:55',  part: 'back' },
       { num: 27, file: '29-notes-and-resources.mp3',             title: 'Notes and Resources',                      duration: '48:31', part: 'back' },
       { num: 28, file: '30-about-the-author.mp3',                title: 'About the Author',                         duration: '1:17',  part: 'back' },
     ];
 
+    // Convert "MM:SS" or "HH:MM:SS" to seconds
+    const parseDuration = (s) => {
+      const parts = s.split(':').map(Number);
+      if (parts.length === 2) return parts[0] * 60 + parts[1];
+      if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+      return 0;
+    };
+    const totalSeconds = tracks.reduce((sum, t) => sum + parseDuration(t.duration), 0);
+    const totalHours = Math.floor(totalSeconds / 3600);
+    const totalMinutes = Math.floor((totalSeconds % 3600) / 60);
+    const totalDurationText = `${totalHours} hours ${totalMinutes} minutes`;
+
     const renderTrack = (t) => `
-      <li class="track${t.sub ? ' sub' : ''}" data-num="${t.num}" data-file="${AUDIO_BASE_URL}/${t.file}">
+      <li class="track${t.sub ? ' sub' : ''}" data-num="${t.num}" data-seconds="${parseDuration(t.duration)}">
         <button class="track-btn" type="button">
+          <span class="check-mark" aria-label="completed">&#10003;</span>
           <span class="track-title">${t.title}</span>
           <span class="track-dur">${t.duration}</span>
         </button>
@@ -1150,7 +1163,7 @@ const server = http.createServer(async (req, res) => {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Performance Trap — Chad Herst</title>
+<title>The Performance Trap &mdash; Chad Herst</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
 <style>
@@ -1160,7 +1173,8 @@ const server = http.createServer(async (req, res) => {
   .divider { border:none; border-top:1px solid #8B6B1E; margin:32px 0; }
   h1 { font-family:'Playfair Display',Georgia,serif; font-size:36px; line-height:1.15; color:#352515; margin:0 0 8px 0; font-weight:700; }
   .subtitle { font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:20px; color:#8B6B1E; margin:0 0 8px 0; letter-spacing:0.04em; }
-  .author { font-family:'Cormorant Garamond',Georgia,serif; font-size:16px; color:#4F4130; margin:0 0 32px 0; letter-spacing:0.08em; text-transform:uppercase; }
+  .author { font-family:'Cormorant Garamond',Georgia,serif; font-size:16px; color:#4F4130; margin:0 0 4px 0; letter-spacing:0.08em; text-transform:uppercase; }
+  .book-meta { font-family:'Cormorant Garamond',Georgia,serif; font-size:15px; color:#4F4130; font-style:italic; margin:0 0 32px 0; letter-spacing:0.03em; }
   p { font-size:18px; line-height:1.85; margin:0 0 20px 0; }
   h2 { font-family:'Playfair Display',Georgia,serif; font-size:24px; color:#352515; margin:48px 0 16px 0; font-weight:700; }
   .resume { background:#EFE6D8; border-left:3px solid #8B6B1E; padding:16px 20px; margin:24px 0; display:none; }
@@ -1168,9 +1182,20 @@ const server = http.createServer(async (req, res) => {
   .resume p { margin:0 0 12px 0; font-size:16px; }
   .resume button { font-family:'Cormorant Garamond',Georgia,serif; font-size:13px; letter-spacing:0.15em; text-transform:uppercase; padding:10px 24px; border:1px solid #8B6B1E; background:transparent; color:#8B6B1E; cursor:pointer; margin-right:8px; }
   .resume button:hover { background:#8B6B1E; color:#FBF7F0; }
+  .resume button.primary { background:#8B6B1E; color:#FBF7F0; }
+  .resume button.primary:hover { background:#6F551A; }
   .player-wrap { background:#EFE6D8; border:1px solid #8B6B1E; padding:24px; margin:24px 0 16px 0; }
-  .now-playing { font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:15px; color:#4F4130; text-align:center; margin:0 0 12px 0; }
-  .now-playing strong { font-style:normal; color:#352515; font-weight:500; }
+  .player-header { display:flex; gap:16px; align-items:flex-start; margin-bottom:16px; }
+  .player-header-cover { width:72px; height:auto; flex-shrink:0; box-shadow:0 3px 10px rgba(53,37,21,0.2); }
+  .player-header-text { flex:1; min-width:0; }
+  .now-playing-label { font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:13px; color:#4F4130; margin:0 0 2px 0; letter-spacing:0.05em; text-transform:uppercase; }
+  .now-playing-title { font-family:'Playfair Display',Georgia,serif; font-size:18px; color:#352515; margin:0 0 6px 0; font-weight:700; line-height:1.25; }
+  .now-playing-context { font-family:'Cormorant Garamond',Georgia,serif; font-size:13px; color:#4F4130; font-style:italic; margin:0; }
+  .overall-progress { margin:0 0 16px 0; }
+  .progress-stats { display:flex; justify-content:space-between; font-family:'Cormorant Garamond',Georgia,serif; font-size:13px; color:#4F4130; margin-bottom:6px; letter-spacing:0.03em; }
+  .progress-stats strong { color:#8B6B1E; font-weight:500; }
+  .progress-bar { width:100%; height:6px; background:#D9CBAF; border-radius:3px; overflow:hidden; }
+  .progress-fill { height:100%; background:#8B6B1E; width:0%; transition:width 0.5s ease; }
   .speed-pills { display:flex; align-items:center; justify-content:center; gap:8px; margin-top:16px; flex-wrap:wrap; }
   .speed-label { font-family:'Cormorant Garamond',Georgia,serif; font-size:14px; color:#4F4130; font-style:italic; letter-spacing:0.05em; margin-right:4px; }
   .speed-pill { font-family:'Cormorant Garamond',Georgia,serif; font-size:14px; padding:6px 14px; background:transparent; border:1px solid #8B6B1E; color:#8B6B1E; cursor:pointer; transition:all 0.15s; letter-spacing:0.03em; }
@@ -1181,21 +1206,28 @@ const server = http.createServer(async (req, res) => {
   .plyr--audio .plyr__control:hover { background:#8B6B1E; color:#FBF7F0; }
   .plyr--audio .plyr__control[aria-expanded=true] { background:#8B6B1E; color:#FBF7F0; }
   .plyr--full-ui input[type=range] { color:#8B6B1E; }
-  .plyr__menu__container { background:#FBF7F0; border:1px solid #8B6B1E; }
-  .chapter-list { list-style:none; padding:0; margin:8px 0 0 0; }
-  .part-header { font-family:'Playfair Display',Georgia,serif; font-size:18px; color:#8B6B1E; margin:32px 0 8px 0; padding-bottom:6px; border-bottom:1px solid #E8DED3; letter-spacing:0.05em; text-transform:uppercase; font-weight:700; }
-  .part-header:first-child { margin-top:16px; }
+  .jump-nav { display:flex; gap:8px; flex-wrap:wrap; margin:16px 0 12px 0; padding-bottom:12px; border-bottom:1px solid #E8DED3; }
+  .jump-nav a { font-family:'Cormorant Garamond',Georgia,serif; font-size:13px; color:#8B6B1E; text-decoration:none; letter-spacing:0.08em; text-transform:uppercase; padding:4px 10px; border:1px solid transparent; transition:all 0.15s; }
+  .jump-nav a:hover { border-color:#8B6B1E; background:#EFE6D8; }
+  .chapter-list { list-style:none; padding:0; margin:0; }
+  .part-header { font-family:'Playfair Display',Georgia,serif; font-size:17px; color:#8B6B1E; margin:24px 0 4px 0; padding-bottom:4px; border-bottom:1px solid #E8DED3; letter-spacing:0.05em; text-transform:uppercase; font-weight:700; scroll-margin-top:20px; }
+  .part-header:first-child { margin-top:8px; }
+  .part-header.back { color:#A89680; }
   .track { margin:0; }
-  .track.sub { padding-left:32px; }
-  .track-btn { width:100%; background:transparent; border:none; border-bottom:1px solid #E8DED3; padding:14px 4px; text-align:left; cursor:pointer; font-family:'Cormorant Garamond',Georgia,serif; color:#352515; display:flex; justify-content:space-between; align-items:baseline; gap:16px; }
+  .track.sub { padding-left:28px; }
+  .track-btn { width:100%; background:transparent; border:none; border-bottom:1px solid #E8DED3; border-left:3px solid transparent; padding:9px 4px 9px 10px; text-align:left; cursor:pointer; font-family:'Cormorant Garamond',Georgia,serif; color:#352515; display:flex; justify-content:space-between; align-items:baseline; gap:12px; }
   .track-btn:hover { background:#EFE6D8; }
-  .track-btn.playing { background:#EFE6D8; }
+  .track-btn.playing { background:#EFE6D8; border-left-color:#8B6B1E; }
   .track-btn.playing .track-title { color:#8B6B1E; font-weight:500; }
-  .track-title { font-size:17px; line-height:1.4; }
-  .track.sub .track-title { font-style:italic; font-size:16px; color:#4F4130; }
-  .track-dur { font-size:14px; color:#8B6B1E; font-style:italic; flex-shrink:0; letter-spacing:0.05em; }
+  .track-title { font-size:15px; line-height:1.35; flex:1; }
+  .track.sub .track-title { font-style:italic; font-size:14px; color:#4F4130; }
+  .track-dur { font-size:13px; color:#8B6B1E; font-style:italic; flex-shrink:0; letter-spacing:0.05em; }
+  .check-mark { display:inline-block; width:16px; font-size:14px; color:#8B6B1E; opacity:0; flex-shrink:0; transition:opacity 0.2s; }
+  .track.completed .check-mark { opacity:1; }
+  .track.back-matter .track-title { color:#6F6050; font-style:italic; }
+  .track.back-matter .track-dur { color:#A89680; }
   .downloads { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin:24px 0; }
-  @media (max-width: 540px) { .downloads { grid-template-columns:1fr; } }
+  @media (max-width: 540px) { .downloads { grid-template-columns:1fr; } .player-header-cover { width:56px; } }
   .dl-card { background:#FBF7F0; border:1px solid #8B6B1E; padding:20px; text-align:center; text-decoration:none; color:#352515; display:block; transition:background 0.2s; }
   .dl-card:hover { background:#EFE6D8; }
   .dl-card img { display:block; width:100%; max-width:160px; height:auto; margin:0 auto 16px auto; box-shadow:0 4px 12px rgba(53,37,21,0.15); }
@@ -1221,21 +1253,39 @@ const server = http.createServer(async (req, res) => {
     <h1>The Performance Trap</h1>
     <p class="subtitle">The Ache No Success Will Ever Fix</p>
     <p class="author">Chad Herst</p>
+    <p class="book-meta">${totalDurationText} &middot; 28 tracks</p>
 
-   <p>This is the audiobook, in my voice. Twenty-eight tracks, just over seven hours, recorded chapter by chapter. Read in any order. Stop when you need to.</p>
-    <p><em>Prefer to read? The EPUB and PDF are below — keep scrolling.</em></p>
-    
+    <p>This is the audiobook, in my voice. Twenty-eight tracks, just over seven hours, recorded chapter by chapter. Read in any order. Stop when you need to.</p>
+    <p><em>Prefer to read? The EPUB and PDF are below &mdash; keep scrolling.</em></p>
+
     <div class="resume" id="resume-banner">
-      <p id="resume-text">Resume from where you left off?</p>
-      <button id="resume-yes" type="button">Resume</button>
+      <p id="resume-text">Welcome back. Pick up where you left off?</p>
+      <button id="resume-yes" class="primary" type="button">Resume</button>
       <button id="resume-no" type="button">Start over</button>
     </div>
 
     <div class="player-wrap">
-      <p class="now-playing">Now playing: <strong id="now-title">Opening Credits</strong></p>
+      <div class="player-header">
+        <img src="${BASE_URL}/book-cover.jpg" alt="The Performance Trap cover" class="player-header-cover" />
+        <div class="player-header-text">
+          <p class="now-playing-label">Now playing</p>
+          <p class="now-playing-title" id="now-title">Opening Credits</p>
+          <p class="now-playing-context" id="now-context">Chapter 1 of 28</p>
+        </div>
+      </div>
+
+      <div class="overall-progress">
+        <div class="progress-stats">
+          <span><strong id="progress-percent">0%</strong> complete</span>
+          <span><strong id="progress-remaining">${totalDurationText}</strong> remaining</span>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+      </div>
+
       <audio id="player" controls preload="metadata">
         <source src="${AUDIO_BASE_URL}/01-opening-credits.mp3" type="audio/mpeg" />
       </audio>
+
       <div class="speed-pills">
         <span class="speed-label">Speed</span>
         <button type="button" class="speed-pill" data-speed="0.75">0.75&times;</button>
@@ -1245,17 +1295,23 @@ const server = http.createServer(async (req, res) => {
         <button type="button" class="speed-pill" data-speed="2">2&times;</button>
       </div>
     </div>
-    <p class="auto-save-hint"><em>Your place is saved automatically — close the tab and come back anytime.</em></p>
+    <p class="auto-save-hint"><em>Your place is saved automatically &mdash; close the tab and come back anytime.</em></p>
 
     <h2>Chapters</h2>
+    <nav class="jump-nav" aria-label="Jump to section">
+      <a href="#section-front">Front</a>
+      <a href="#section-one">Part One</a>
+      <a href="#section-two">Part Two</a>
+      <a href="#section-back">Back Matter</a>
+    </nav>
     <ul class="chapter-list">
-      <li class="part-header">Front Matter</li>
+      <li class="part-header" id="section-front">Front Matter</li>
       ${partFront}
-      <li class="part-header">Part One: Finding My Way Home</li>
+      <li class="part-header" id="section-one">Part One: Finding My Way Home</li>
       ${partOne}
-      <li class="part-header">Part Two: From Understanding to Embodiment</li>
+      <li class="part-header" id="section-two">Part Two: From Understanding to Embodiment</li>
       ${partTwo}
-      <li class="part-header">Back Matter</li>
+      <li class="part-header back" id="section-back">Back Matter</li>
       ${partBack}
     </ul>
 
@@ -1277,9 +1333,9 @@ const server = http.createServer(async (req, res) => {
 
     <div class="kindle-howto">
       <h3>How to read the EPUB on your Kindle</h3>
-      <p>Amazon stopped supporting the old AZW3 format, but EPUB works perfectly through their official Send to Kindle service. Three ways to do it — pick whichever is easiest:</p>
+      <p>Amazon stopped supporting the old AZW3 format, but EPUB works perfectly through their official Send to Kindle service. Three ways to do it &mdash; pick whichever is easiest:</p>
       <ol>
-        <li><strong>Email it.</strong> Every Kindle account has a personal email address ending in <em>@kindle.com</em>. Find yours at <a href="https://www.amazon.com/myk" target="_blank" rel="noopener">amazon.com/myk</a> under Preferences → Personal Document Settings. Email the EPUB to that address as an attachment, and it shows up on your Kindle in a few minutes.</li>
+        <li><strong>Email it.</strong> Every Kindle account has a personal email address ending in <em>@kindle.com</em>. Find yours at <a href="https://www.amazon.com/myk" target="_blank" rel="noopener">amazon.com/myk</a> under Preferences &rarr; Personal Document Settings. Email the EPUB to that address as an attachment, and it shows up on your Kindle in a few minutes.</li>
         <li><strong>Use the web uploader.</strong> Go to <a href="https://www.amazon.com/sendtokindle" target="_blank" rel="noopener">amazon.com/sendtokindle</a>, sign in, and drag the EPUB into the browser. Same result, no email.</li>
         <li><strong>Use the desktop app.</strong> Download Send to Kindle for Mac or Windows from Amazon, then right-click the EPUB and choose "Send to Kindle."</li>
       </ol>
@@ -1295,10 +1351,16 @@ const server = http.createServer(async (req, res) => {
 
   <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
   <script>
-    const TRACKS = ${JSON.stringify(tracks.map(t => ({ num: t.num, file: AUDIO_BASE_URL + '/' + t.file, title: t.title, duration: t.duration })))};
-    const STORAGE_KEY = 'performance-trap-progress';
+    const TRACKS = ${JSON.stringify(tracks.map(t => ({ num: t.num, file: AUDIO_BASE_URL + '/' + t.file, title: t.title, duration: t.duration, seconds: parseDuration(t.duration), part: t.part })))};
+    const TOTAL_SECONDS = ${totalSeconds};
+    const STORAGE_KEY = 'performance-trap-progress-v2';
     const audio = document.getElementById('player');
     const nowTitle = document.getElementById('now-title');
+    const nowContext = document.getElementById('now-context');
+    const progressPercent = document.getElementById('progress-percent');
+    const progressRemaining = document.getElementById('progress-remaining');
+    const progressFill = document.getElementById('progress-fill');
+
     const player = new Plyr(audio, {
       controls: ['play', 'rewind', 'progress', 'current-time', 'duration', 'fast-forward', 'mute', 'volume'],
       seekTime: 15,
@@ -1316,17 +1378,72 @@ const server = http.createServer(async (req, res) => {
         p.lastTrack = num;
         p.lastTime = time;
         p.tracks = p.tracks || {};
-        p.tracks[num] = time;
+        p.tracks[num] = p.tracks[num] || {};
+        p.tracks[num].position = time;
+        // Mark completed at 90% of chapter duration
+        const t = TRACKS.find(x => x.num === num);
+        if (t && time >= t.seconds * 0.9) {
+          p.tracks[num].completed = true;
+          const li = document.querySelector('.track[data-num="' + num + '"]');
+          if (li) li.classList.add('completed');
+        }
         p.updated = Date.now();
         localStorage.setItem(STORAGE_KEY, JSON.stringify(p));
       } catch {}
     }
+
+    function applyStoredCompletions() {
+      const p = loadProgress();
+      if (!p.tracks) return;
+      Object.keys(p.tracks).forEach(num => {
+        if (p.tracks[num] && p.tracks[num].completed) {
+          const li = document.querySelector('.track[data-num="' + num + '"]');
+          if (li) li.classList.add('completed');
+        }
+      });
+    }
+
     function fmtTime(s) {
       s = Math.floor(s || 0);
       const m = Math.floor(s / 60);
       const sec = s % 60;
       return m + ':' + (sec < 10 ? '0' : '') + sec;
     }
+    function fmtRemaining(s) {
+      s = Math.floor(s || 0);
+      if (s <= 0) return 'Complete';
+      const h = Math.floor(s / 3600);
+      const m = Math.floor((s % 3600) / 60);
+      if (h > 0) return h + 'h ' + m + 'm remaining';
+      return m + 'm remaining';
+    }
+
+    function updateOverallProgress() {
+      // Sum: completed chapter durations + completed time in chapters up to current + current position
+      const p = loadProgress();
+      let elapsed = 0;
+      for (const t of TRACKS) {
+        if (t.num < currentNum) {
+          // Count the stored position for earlier tracks, or full duration if completed
+          const stored = p.tracks && p.tracks[t.num];
+          if (stored && stored.completed) {
+            elapsed += t.seconds;
+          } else if (stored && typeof stored.position === 'number') {
+            elapsed += Math.min(stored.position, t.seconds);
+          } else {
+            // Assume not listened
+          }
+        } else if (t.num === currentNum) {
+          elapsed += audio.currentTime || 0;
+        }
+      }
+      const pct = Math.min(100, Math.floor((elapsed / TOTAL_SECONDS) * 100));
+      const remaining = Math.max(0, TOTAL_SECONDS - elapsed);
+      progressPercent.textContent = pct + '%';
+      progressFill.style.width = pct + '%';
+      progressRemaining.textContent = fmtRemaining(remaining);
+    }
+
     function loadTrack(num, seekTime) {
       const t = TRACKS.find(x => x.num === num);
       if (!t) return;
@@ -1334,6 +1451,7 @@ const server = http.createServer(async (req, res) => {
       audio.src = t.file;
       audio.load();
       nowTitle.textContent = t.title;
+      nowContext.textContent = 'Chapter ' + num + ' of ' + TRACKS.length;
       document.querySelectorAll('.track-btn').forEach(b => b.classList.remove('playing'));
       const li = document.querySelector('.track[data-num="' + num + '"] .track-btn');
       if (li) li.classList.add('playing');
@@ -1341,9 +1459,19 @@ const server = http.createServer(async (req, res) => {
         audio.addEventListener('loadedmetadata', function once() {
           audio.currentTime = seekTime;
           audio.removeEventListener('loadedmetadata', once);
+          updateOverallProgress();
         });
+      } else {
+        updateOverallProgress();
       }
     }
+
+    // Mark back-matter tracks visually
+    document.querySelectorAll('.track').forEach(li => {
+      const num = parseInt(li.dataset.num, 10);
+      const t = TRACKS.find(x => x.num === num);
+      if (t && t.part === 'back') li.classList.add('back-matter');
+    });
 
     document.querySelectorAll('.track').forEach(li => {
       li.querySelector('.track-btn').addEventListener('click', () => {
@@ -1359,19 +1487,42 @@ const server = http.createServer(async (req, res) => {
       if (now - saveTimer > 5000) {
         saveTimer = now;
         if (audio.currentTime > 0) saveProgress(currentNum, audio.currentTime);
+        updateOverallProgress();
       }
     });
     audio.addEventListener('ended', () => {
+      saveProgress(currentNum, TRACKS.find(x => x.num === currentNum).seconds);
       const next = TRACKS.find(x => x.num === currentNum + 1);
       if (next) { loadTrack(next.num, 0); player.play(); }
     });
 
+    // Smooth scroll for jump nav
+    document.querySelectorAll('.jump-nav a').forEach(a => {
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = document.querySelector(a.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+
+    // Speed pills
+    document.querySelectorAll('.speed-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const speed = parseFloat(btn.dataset.speed);
+        audio.playbackRate = speed;
+        document.querySelectorAll('.speed-pill').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+      });
+    });
+
+    // Initial setup
+    applyStoredCompletions();
     const progress = loadProgress();
     if (progress.lastTrack && progress.lastTime > 5) {
       const t = TRACKS.find(x => x.num === progress.lastTrack);
       if (t) {
         const banner = document.getElementById('resume-banner');
-        document.getElementById('resume-text').textContent = 'Resume "' + t.title + '" from ' + fmtTime(progress.lastTime) + '?';
+        document.getElementById('resume-text').textContent = 'Welcome back. Pick up where you left off in "' + t.title + '" at ' + fmtTime(progress.lastTime) + '?';
         banner.classList.add('show');
         document.getElementById('resume-yes').addEventListener('click', () => {
           banner.classList.remove('show');
@@ -1384,16 +1535,8 @@ const server = http.createServer(async (req, res) => {
       }
     }
 
-    document.querySelectorAll('.speed-pill').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const speed = parseFloat(btn.dataset.speed);
-        audio.playbackRate = speed;
-        document.querySelectorAll('.speed-pill').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-      });
-    });
-
     loadTrack(1, 0);
+    updateOverallProgress();
   </script>
 </body>
 </html>`;
