@@ -10,6 +10,7 @@ const MAILCHIMP_SERVER = process.env.MAILCHIMP_SERVER_PREFIX || 'us6';
 
 // ── LOGO URL (served as static file from /public) ─────────────
 const BASE_URL = 'https://performance-trap-server.onrender.com';
+const AUDIO_BASE_URL = 'https://pub-3e45b3813f2d4b1b81f913aad060a3b8.r2.dev/audio';
 const LOGO_URL = BASE_URL + '/Herst-Wellness-Logo-cropped.jpg';
 const CHAPTER_ONE_AUDIO_URL = BASE_URL + '/audio/chapter-one.mp3';
 const LISTEN_PAGE_URL = BASE_URL + '/listen/chapter-one';
@@ -1132,7 +1133,7 @@ const server = http.createServer(async (req, res) => {
     ];
 
     const renderTrack = (t) => `
-      <li class="track${t.sub ? ' sub' : ''}" data-num="${t.num}" data-file="${BASE_URL}/audio/${t.file}">
+      <li class="track${t.sub ? ' sub' : ''}" data-num="${t.num}" data-file="${AUDIO_BASE_URL}/${t.file}">
         <button class="track-btn" type="button">
           <span class="track-title">${t.title}</span>
           <span class="track-dur">${t.duration}</span>
@@ -1226,7 +1227,7 @@ const server = http.createServer(async (req, res) => {
     <div class="player-wrap">
       <p class="now-playing">Now playing: <strong id="now-title">Opening Credits</strong></p>
       <audio id="player" controls preload="metadata">
-        <source src="${BASE_URL}/audio/01-opening-credits.mp3" type="audio/mpeg" />
+        <source src="${AUDIO_BASE_URL}/01-opening-credits.mp3" type="audio/mpeg" />
       </audio>
     </div>
 
@@ -1278,7 +1279,7 @@ const server = http.createServer(async (req, res) => {
 
   <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
   <script>
-    const TRACKS = ${JSON.stringify(tracks.map(t => ({ num: t.num, file: BASE_URL + '/audio/' + t.file, title: t.title, duration: t.duration })))};
+    const TRACKS = ${JSON.stringify(tracks.map(t => ({ num: t.num, file: AUDIO_BASE_URL + '/' + t.file, title: t.title, duration: t.duration })))};
     const STORAGE_KEY = 'performance-trap-progress';
     const audio = document.getElementById('player');
     const nowTitle = document.getElementById('now-title');
