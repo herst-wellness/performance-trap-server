@@ -1277,8 +1277,7 @@ const server = http.createServer(async (req, res) => {
       <div class="overall-progress">
         <div class="progress-stats">
           <span><strong id="progress-percent">0%</strong> complete</span>
-          <span><strong id="progress-remaining">${totalDurationText}</strong> remaining</span>
-        </div>
+<span><strong id="progress-remaining">${totalDurationText}</strong></span>        </div>
         <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
       </div>
 
