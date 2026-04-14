@@ -739,7 +739,7 @@ WORD BUDGET: 3000-4000 words across all sections.
 STRUCTURE
 
 BEFORE WE BEGIN (as "intro" field):
-"What follows is the story of how an intelligent nervous system solved an impossible problem — and what it has been carrying ever since. This does not show a broken person. It shows an extraordinarily capable one — someone whose sharpest capacities were forged in the exact place where adaptation was required. The ache you carry is not proof of failure. It is the signature of a system that kept you alive and connected at a cost you are only now beginning to see. Read slowly. Let the body respond before the mind organizes."
+"This is your performance trap, mapped from the moment you arrived. It's not a horoscope. It's a reading of how you built your trap of performance, who you had to become to belong. It will show you the cost you've been living with, and it will also show you the path forward. Read slowly. Let the body respond before the mind organizes."
 
 HOW YOUR PERFORMANCE TRAP FORMED
 
