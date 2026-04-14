@@ -1718,6 +1718,26 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // ── GENERAL LIST SIGNUP (no Launch Team tag) ─────────────────
+  if (req.method === 'POST' && req.url === '/general-list-signup') {
+    let body = '';
+    req.on('data', c => body += c);
+    req.on('end', async () => {
+      try {
+        const { email } = JSON.parse(body);
+        if (!email || !email.includes('@')) { res.writeHead(400); res.end(JSON.stringify({ error: 'Invalid email' })); return; }
+        console.log('General list signup for:', email);
+        await addToMailchimp(email, '');
+        res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+        res.end(JSON.stringify({ ok: true }));
+      } catch(e) {
+        console.error('General list signup error:', e.message);
+        res.writeHead(500); res.end(JSON.stringify({ error: e.message }));
+      }
+    });
+    return;
+  }
+  
   // ── CHAPTER ONE AUDIO DELIVERY ───────────────────────────────
   if (req.method === 'POST' && req.url === '/chapter-one-audio') {
     let body = '';
