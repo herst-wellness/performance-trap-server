@@ -312,16 +312,22 @@ function buildChart(ds, ts, tz, lat, lon) {
   return chart;
 }
 
-function chartToText(chart, name) {
+function chartToText(chart, name, noTime) {
   const order = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','North Node','Chiron'];
   const lines = order.map(k => {
     const v = chart[k];
     if (!v) return '';
     const r = v.retrograde ? ' RETROGRADE' : '';
+    if (noTime) {
+      return `${k}: ${v.sign} ${v.deg}°${r}`;
+    }
     return `${k}: ${v.sign} ${v.deg}°${r} · House ${v.house}`;
   }).filter(Boolean);
-  lines.push(`ASC: ${chart['ASC'].sign} ${chart['ASC'].deg}° (Whole Sign Houses — ${chart['ASC'].sign} is House 1)`);
-  lines.push(`MC: ${chart['MC'].sign} ${chart['MC'].deg}°`);
+
+  if (!noTime) {
+    lines.push(`ASC: ${chart['ASC'].sign} ${chart['ASC'].deg}° (Whole Sign Houses — ${chart['ASC'].sign} is House 1)`);
+    lines.push(`MC: ${chart['MC'].sign} ${chart['MC'].deg}°`);
+  }
 
   // Add prominent retrograde summary
   const retrogrades = order.filter(k => chart[k] && chart[k].retrograde);
@@ -330,14 +336,26 @@ function chartToText(chart, name) {
     lines.push('RETROGRADE PLANETS (must be interpreted as retrograde in the reading):');
     retrogrades.forEach(k => {
       const v = chart[k];
-      lines.push(`  ${k} RETROGRADE in ${v.sign} · House ${v.house} — energy works INWARD, must be named as retrograde`);
+      const houseStr = noTime ? '' : ` · House ${v.house}`;
+      lines.push(`  ${k} RETROGRADE in ${v.sign}${houseStr} — energy works INWARD, must be named as retrograde`);
     });
+  }
+
+  if (noTime) {
+    lines.push('');
+    lines.push('IMPORTANT: This person does NOT know their exact birth time. The chart was calculated using noon as a placeholder. This means:');
+    lines.push('  - The Ascendant is UNKNOWN. Do NOT reference rising sign or Ascendant.');
+    lines.push('  - All HOUSE PLACEMENTS are UNKNOWN. Do NOT reference houses (1st, 2nd, 6th, 7th, etc.) anywhere in the reading.');
+    lines.push('  - The Moon\'s sign is usually reliable but its exact degree may be off by up to 6°. Treat the Moon sign as the primary essence signal.');
+    lines.push('  - Work entirely from SIGNS and ASPECTS. Build the reading around what each planet is doing in its sign and what aspects connect them.');
+    lines.push('  - At the START of the Essence section, briefly acknowledge: "Because you don\'t know your exact birth time, this reading works from the planetary signs and their aspects rather than the houses. The pattern is still here — it just shows up in what you\'re reaching for, what holds you back, and what wants out, rather than which areas of life they play in."');
+    return `${name}'s Chart (NO BIRTH TIME — signs and aspects only):\n${lines.join('\n')}`;
   }
 
   return `${name}'s Chart (Whole Sign Houses):\n${lines.join('\n')}`;
 }
 
-function calcNatalAspects(chart) {
+function calcNatalAspects(chart, noTime) {
   const ASPECT_TYPES = [
     { name: 'conjunction', angle: 0, orb: 8 },
     { name: 'sextile', angle: 60, orb: 6 },
@@ -346,7 +364,9 @@ function calcNatalAspects(chart) {
     { name: 'opposition', angle: 180, orb: 8 },
   ];
 
-  const bodies = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','North Node','Chiron','ASC','MC'];
+  const bodies = noTime
+    ? ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','North Node','Chiron']
+    : ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','North Node','Chiron','ASC','MC'];
   const aspects = [];
 
   for (let i = 0; i < bodies.length; i++) {
@@ -1554,21 +1574,24 @@ const server = http.createServer(async (req, res) => {
     req.on('data', c => body += c);
     req.on('end', async () => {
       try {
-        const { city, name, email, date, time, tz } = JSON.parse(body);
+        const { city, name, email, date, time, tz, noTime } = JSON.parse(body);
         const geoData = await fetchJSON(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`, { 'User-Agent': 'PerformanceTrapApp/1.0' });
         if (!geoData.length) { res.writeHead(400); res.end(JSON.stringify({ error: `Could not find "${city}". Try: "San Rafael, California, USA"` })); return; }
         const lat = parseFloat(geoData[0].lat), lon = parseFloat(geoData[0].lon);
-        const chart = buildChart(date, time, parseFloat(tz), lat, lon);
-        const text = chartToText(chart, name);
-        const aspects = calcNatalAspects(chart);
+        // If no birth time, use noon UTC and timezone 0 to get the most central possible Moon position
+        const useTime = noTime ? '12:00' : time;
+        const useTz = noTime ? 0 : parseFloat(tz);
+        const chart = buildChart(date, useTime, useTz, lat, lon);
+        const text = chartToText(chart, name, noTime);
+        const aspects = calcNatalAspects(chart, noTime);
         const aspectText = aspectsToText(aspects, chart);
         const userPrompt = `Read this chart for ${name}:\n\n${text}\n\n${aspectText}`;
-        console.log('Chart for', name, ':\n' + text + '\n' + aspectText);
+        console.log('Chart for', name, '(noTime=' + !!noTime + '):\n' + text + '\n' + aspectText);
         const [reading] = await Promise.all([
           callAnthropic(SYS, userPrompt),
           addToMailchimp(email, name)
         ]);
-        res.writeHead(200); res.end(JSON.stringify({ lat, lon, reading, chart }));
+        res.writeHead(200); res.end(JSON.stringify({ lat, lon, reading, chart, noTime: !!noTime }));
       } catch(e) {
         console.error('Error:', e.message, e.stack);
         res.writeHead(500); res.end(JSON.stringify({ error: e.message || 'Something went wrong.' }));
