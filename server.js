@@ -890,11 +890,15 @@ At some point early on, you learned that just being yourself wasn't enough to st
 
 That role works. It's gotten you far. But it costs something. Every time you showed up as that version of yourself instead of the real one, something inside got left behind. Overridden. Pushed down.
 
-The reading names that role — your Performance Archetype. It's not a flaw. It's brilliant adaptation. Your nervous system learned how to survive in an environment where connection had to be earned.
+The reading names that role. It's not a flaw. It's brilliant adaptation. Your nervous system learned how to survive in an environment where connection had to be earned.
 
 But here's what the reading can't tell you: what happens when you finally stop performing.
 
 That's the real work. That's where things change.
+
+If you want to hear where this whole framework came from — the day my own performance trap finally cracked — I recorded the first chapter of my book in my own voice. It's twenty-eight minutes. The phone call. My brother. The day everything I'd built started to come apart.
+
+https://performance-trap-server.onrender.com/listen/chapter-one
 
 For now, sit with this one question:
 
@@ -927,19 +931,15 @@ The wound is sacred not because the pain is good. It's sacred because it's preci
 
 I spent years trying to meditate it away, stretch past it, yoga it into submission. Then I finally sat still long enough to feel the knot in my gut — that tight, deep thing that had been sitting there for decades — and something in me shifted. Not because it went away. Because I finally stopped running from it.
 
-But here's what stops most people: the moment you touch that wound, your nervous system panics.
+This is what I wrote a whole book about. It's called The Performance Trap, and it comes out in September. But I'm not making you wait until then.
 
-Because you've learned something old and deep: needing is dangerous. Showing what hurts makes you too much. So the moment the ache rises, you do what you've always done — you push it down, medicate it, achieve past it, anything but feel it.
+I'm putting together a small launch team — readers willing to post an honest Amazon review around launch week in exchange for getting the book early. If you join, you get the book right now in whatever format works for you: audio in my own voice (every chapter, just over seven hours), EPUB for your Kindle or e-reader, or PDF for desktop or tablet. Read it at your own pace between now and September.
 
-That's where the protectors come in.
+The only thing I ask is that if it lands for you, you post an honest review on Amazon during launch week. Honest is the word. If it doesn't land for you, say that too. I'd rather have a true two-star than a courteous five.
 
-They're the parts of you that learned to manage, to perform, to stay busy, to stay fine. They're not the enemy. They're the reason you survived. But they're also the reason you're still running the same pattern.
+If you want in:
 
-The work isn't about destroying the protectors. It's about finally meeting them. Sitting with them instead of being run by them. When you can do that, something underneath begins to surface.
-
-Contact.
-
-Not the performance of connection. The real thing. You with you. Finally staying long enough to hear what's been trying to reach you all along.
+https://herstwellness.com/launch-team
 
 —Chad`
 };
@@ -956,25 +956,23 @@ That's what I want to be clear about.
 
 A reading is a map. It shows you the architecture of how you learned to survive. But a map isn't the territory. And understanding the map doesn't rewire your nervous system.
 
-What does rewire it is contact.
+What does rewire it is contact. With yourself first. Then with someone else who can stay with you long enough that you finally feel met.
 
-Someone staying with you long enough that you finally feel met. Not fixed. Not analyzed. Just met.
+The book is the long version of that work. Every chapter is a step in the sequence I walked myself — from the day my mask cracked, through the years of trying to meditate the ache away, to the practices that actually changed something. The whole arc, in my own voice, plus the methods I use with clients now.
 
-That's what a conversation can do.
+If the reading lit something up in you, the book is where to take it next.
 
-In thirty minutes, we're not solving anything. We're not rewriting your whole story. We're doing something simpler and much harder: we're starting to rebuild trust between you and yourself.
+I'm putting together a launch team for September. If you join, you get everything right now: the audiobook in my own voice (every chapter, all the way through, just over seven hours), the EPUB for your Kindle or e-reader, and the PDF for desktop or tablet. Read or listen at your own pace.
 
-I'll listen for what's underneath the words you say. Not to diagnose you or add another layer of understanding. But to help you feel what's actually moving through your body when you touch what matters.
+The only ask is an honest Amazon review around launch week. That's it. If the book lands, say so. If it doesn't, say that too.
 
-And in that contact, something shifts. Not because I have answers. But because for once, you're not doing it alone.
+https://herstwellness.com/launch-team
 
-That's the work I do. That's what changes things.
-
-If you want to take this further:
+If you'd rather skip the book and just talk — I do thirty-minute conversations. No pitch, no homework, just two people sitting with what's actually moving:
 
 https://chadherst.as.me/30-minute-consult-chad-herst
 
-It's not a sales call. It's not a pitch. It's just the beginning of learning what it feels like to stop abandoning yourself.
+Either way, thanks for being here.
 
 —Chad`
 };
