@@ -1005,7 +1005,7 @@ const CHAPTER_ONE_EMAIL = {
 
 It's 28 minutes. You can listen on a walk, in the car, or anywhere you've got room to sit with it.
 
-If something in it lands for you and you want to go deeper, the full book is on its way. You can join the launch team here to get an advance copy: https://herstwellness.com/book
+If something in it lands for you, the book comes out in September. I'm putting together a small launch team — readers willing to post an honest Amazon review around launch week in exchange for getting the book early. If that's you: https://herstwellness.com/launch-team
 
 Or if you'd rather see how the pattern shows up in your own life first, the Map is here: https://map.herstwellness.com
 
