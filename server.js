@@ -313,7 +313,9 @@ function buildChart(ds, ts, tz, lat, lon) {
 }
 
 function chartToText(chart, name, noTime) {
-  const order = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','North Node','Chiron'];
+  const order = noTime
+    ? ['Sun','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','North Node','Chiron']
+    : ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','North Node','Chiron'];
   const lines = order.map(k => {
     const v = chart[k];
     if (!v) return '';
@@ -346,7 +348,6 @@ function chartToText(chart, name, noTime) {
     lines.push('IMPORTANT: This person does NOT know their exact birth time. The chart was calculated using noon as a placeholder. This means:');
     lines.push('  - The Ascendant is UNKNOWN. Do NOT reference rising sign or Ascendant.');
     lines.push('  - All HOUSE PLACEMENTS are UNKNOWN. Do NOT reference houses (1st, 2nd, 6th, 7th, etc.) anywhere in the reading.');
-    lines.push('  - The Moon\'s sign is usually reliable but its exact degree may be off by up to 6°. Treat the Moon sign as the primary essence signal.');
     lines.push('  - Work entirely from SIGNS and ASPECTS. Build the reading around what each planet is doing in its sign and what aspects connect them.');
     lines.push('  - At the START of the Essence section, briefly acknowledge: "Because you don\'t know your exact birth time, this reading works from the planetary signs and their aspects rather than the houses. The pattern is still here — it just shows up in what you\'re reaching for, what holds you back, and what wants out, rather than which areas of life they play in."');
     return `${name}'s Chart (NO BIRTH TIME — signs and aspects only):\n${lines.join('\n')}`;
@@ -365,7 +366,7 @@ function calcNatalAspects(chart, noTime) {
   ];
 
   const bodies = noTime
-    ? ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','North Node','Chiron']
+    ? ['Sun','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','North Node','Chiron']
     : ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto','North Node','Chiron','ASC','MC'];
   const aspects = [];
 
@@ -1751,7 +1752,7 @@ const server = http.createServer(async (req, res) => {
         const userPrompt = `Read this chart for ${name}:\n\n${text}\n\n${aspectText}`;
         console.log('Chart for', name, '(noTime=' + !!noTime + '):\n' + text + '\n' + aspectText);
         const [reading] = await Promise.all([
-          callAnthropic(SYS, userPrompt),
+          callAnthropic(noTime ? SYS_NO_TIME : SYS, userPrompt),
           addToMailchimp(email, name)
         ]);
         res.writeHead(200); res.end(JSON.stringify({ lat, lon, reading, chart, noTime: !!noTime }));
