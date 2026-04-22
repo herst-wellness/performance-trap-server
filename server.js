@@ -1742,12 +1742,13 @@ const server = http.createServer(async (req, res) => {
     req.on('data', c => body += c);
     req.on('end', async () => {
       try {
-        const { city, name, email, date, time, tz, noTime } = JSON.parse(body);
+        const { city, name, email, date, time, noTime } = JSON.parse(body);
 const geoData = await fetchJSON(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`, { 'User-Agent': 'PerformanceTrapApp/1.0 (chad@herstwellness.com)' });        if (!geoData.length) { res.writeHead(400); res.end(JSON.stringify({ error: `Could not find "${city}". Try: "San Rafael, California, USA"` })); return; }
         const lat = parseFloat(geoData[0].lat), lon = parseFloat(geoData[0].lon);
+        const tz = Math.round(lon / 15);
         // If no birth time, use noon UTC and timezone 0 to get the most central possible Moon position
         const useTime = noTime ? '12:00' : time;
-        const useTz = noTime ? 0 : parseFloat(tz);
+        const useTz = noTime ? 0 : tz;
         const chart = buildChart(date, useTime, useTz, lat, lon);
         const text = chartToText(chart, name, noTime);
         const aspects = calcNatalAspects(chart, noTime);
