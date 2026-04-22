@@ -1244,8 +1244,14 @@ const server = http.createServer(async (req, res) => {
     <h1>Chapter One</h1>
     <p class="subtitle">The Day the Mask Cracked</p>
     <p>This is where the story really begins. The phone call. My brother. The day everything I'd built started to come apart.</p>
-    <p>Find a quiet twenty-eight minutes. A walk works. So does the car. Anywhere you've got room to sit with it.</p>
-    <div class="player-wrap">
+    <p>Twenty-eight minutes, in my own voice. Enter your name and email and I'll send it to you.</p>
+    <div id="gateForm" class="player-wrap">
+      <input type="text" id="gateName" placeholder="Your first name" style="width:100%; padding:12px; font-size:16px; border:1px solid #d4c5a0; background:#FBF7F0; font-family:'Cormorant Garamond',Georgia,serif; margin-bottom:12px; box-sizing:border-box;">
+      <input type="email" id="gateEmail" placeholder="Your email address" style="width:100%; padding:12px; font-size:16px; border:1px solid #d4c5a0; background:#FBF7F0; font-family:'Cormorant Garamond',Georgia,serif; margin-bottom:12px; box-sizing:border-box;">
+      <button onclick="unlockAudio()" style="width:100%; padding:14px; background:#8B6B1E; color:#FBF7F0; border:none; font-family:'Cormorant Garamond',Georgia,serif; font-size:14px; letter-spacing:0.2em; text-transform:uppercase; cursor:pointer;">Send Me Chapter One</button>
+      <p id="gateMsg" style="margin-top:12px; font-size:14px; color:#6b5a3a; font-style:italic; min-height:20px;"></p>
+    </div>
+    <div id="playerWrap" class="player-wrap" style="display:none;">
       <audio controls preload="metadata" src="${CHAPTER_ONE_AUDIO_URL}">
         Your browser does not support audio playback. <a href="${CHAPTER_ONE_AUDIO_URL}">Download the MP3</a>.
       </audio>
@@ -1266,6 +1272,21 @@ const server = http.createServer(async (req, res) => {
       <p id="listMsg" style="margin-top:12px; font-size:14px; color:#6b5a3a; font-style:italic; min-height:20px;"></p>
     </div>
     <script>
+    async function unlockAudio(){
+      const name=document.getElementById('gateName').value.trim();
+      const email=document.getElementById('gateEmail').value.trim();
+      const msg=document.getElementById('gateMsg');
+      if(!email||!email.includes('@')){msg.textContent='Please enter a valid email.';return;}
+      msg.textContent='Sending...';
+      try{
+        const [r1,r2]=await Promise.all([
+          fetch('/chapter-one-audio',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})}),
+          fetch('/general-list-signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,firstName:name})})
+        ]);
+        if(r1.ok){document.getElementById('gateForm').style.display='none';document.getElementById('playerWrap').style.display='block';msg.textContent='';}
+        else{msg.textContent='Something went wrong. Please try again.';}
+      }catch(e){msg.textContent='Something went wrong. Please try again.';}
+    }
     function showListForm(e){e.preventDefault();document.getElementById('listFormWrap').style.display='block';document.getElementById('listEmail').focus();}
     async function submitList(){
       const name=document.getElementById('listName').value.trim();
