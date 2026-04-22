@@ -573,7 +573,16 @@ function fetchJSON(url, headers = {}) {
     const u = new URL(url);
     https.get({ hostname: u.hostname, path: u.pathname + u.search, headers: { 'Accept': 'application/json', ...headers } }, res => {
       let d = ''; res.on('data', c => d += c);
-      res.on('end', () => { try { resolve(JSON.parse(d)); } catch(e) { reject(e); } });
+      res.on('end', () => {
+        try {
+          if (d.trim().startsWith('<') || res.statusCode >= 400) {
+            console.error('fetchJSON error:', res.statusCode, d.substring(0, 200));
+            reject(new Error('Geocoding service returned status ' + res.statusCode));
+            return;
+          }
+          resolve(JSON.parse(d));
+        } catch(e) { reject(e); }
+      });
     }).on('error', reject);
   });
 }
@@ -1738,8 +1747,7 @@ const server = http.createServer(async (req, res) => {
     req.on('end', async () => {
       try {
         const { city, name, email, date, time, tz, noTime } = JSON.parse(body);
-        const geoData = await fetchJSON(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`, { 'User-Agent': 'PerformanceTrapApp/1.0' });
-        if (!geoData.length) { res.writeHead(400); res.end(JSON.stringify({ error: `Could not find "${city}". Try: "San Rafael, California, USA"` })); return; }
+const geoData = await fetchJSON(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`, { 'User-Agent': 'PerformanceTrapApp/1.0 (chad@herstwellness.com)' });        if (!geoData.length) { res.writeHead(400); res.end(JSON.stringify({ error: `Could not find "${city}". Try: "San Rafael, California, USA"` })); return; }
         const lat = parseFloat(geoData[0].lat), lon = parseFloat(geoData[0].lon);
         // If no birth time, use noon UTC and timezone 0 to get the most central possible Moon position
         const useTime = noTime ? '12:00' : time;
