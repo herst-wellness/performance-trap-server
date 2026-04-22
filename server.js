@@ -432,8 +432,8 @@ function addToMailchimp(email, firstName) {
     const auth = Buffer.from(`anystring:${MAILCHIMP_KEY}`).toString('base64');
     const req = https.request({
       hostname: `${MAILCHIMP_SERVER}.api.mailchimp.com`,
-      path: `/3.0/lists/${MAILCHIMP_LIST_ID}/members`,
-      method: 'POST',
+      path: `/3.0/lists/${MAILCHIMP_LIST_ID}/members/${require('crypto').createHash('md5').update(email.toLowerCase()).digest('hex')}`,
+      method: 'PUT'
       headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }
     }, res => {
       let d = '';
