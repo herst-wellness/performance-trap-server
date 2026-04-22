@@ -1257,20 +1257,6 @@ const server = http.createServer(async (req, res) => {
       </audio>
       <div class="duration">28 minutes</div>
     </div>
-<p>The book comes out in September. But you can read it now — every chapter, every format, including the audio in my voice.</p>
-    <div style="text-align:center; margin:32px 0 8px 0;">
-      <a href="https://herstwellness.com/launch-team" style="display:inline-block; font-family:'Cormorant Garamond',Georgia,serif; font-size:14px; letter-spacing:0.2em; text-transform:uppercase; padding:16px 36px; background:#8B6B1E; color:#FBF7F0; text-decoration:none;">Read the Book Early</a>
-    </div>
-    <p style="margin-top:40px; font-style:italic; color:#6b5a3a;">Not ready for that? I'll email you when the book is out.</p>
-    <div style="text-align:center; margin:16px 0 8px 0;">
-      <a href="#" onclick="showListForm(event)" style="display:inline-block; font-family:'Cormorant Garamond',Georgia,serif; font-size:13px; letter-spacing:0.2em; text-transform:uppercase; padding:14px 32px; background:transparent; color:#8B6B1E; border:1px solid #8B6B1E; text-decoration:none;">Join the List</a>
-    </div>
-    <div id="listFormWrap" style="display:none; max-width:400px; margin:20px auto 0; padding:20px; background:rgba(139,107,30,0.05); border-left:2px solid #8B6B1E;">
-      <input type="text" id="listName" placeholder="Your first name" style="width:100%; padding:12px; font-size:16px; border:1px solid #d4c5a0; background:#FBF7F0; font-family:'Cormorant Garamond',Georgia,serif; margin-bottom:12px; box-sizing:border-box;">
-      <input type="email" id="listEmail" placeholder="Your email address" style="width:100%; padding:12px; font-size:16px; border:1px solid #d4c5a0; background:#FBF7F0; font-family:'Cormorant Garamond',Georgia,serif; margin-bottom:12px; box-sizing:border-box;">
-      <button onclick="submitList()" style="width:100%; padding:12px; background:#8B6B1E; color:#FBF7F0; border:none; font-family:'Cormorant Garamond',Georgia,serif; font-size:14px; letter-spacing:0.2em; text-transform:uppercase; cursor:pointer;">Send</button>
-      <p id="listMsg" style="margin-top:12px; font-size:14px; color:#6b5a3a; font-style:italic; min-height:20px;"></p>
-    </div>
     <script>
     async function unlockAudio(){
       const name=document.getElementById('gateName').value.trim();
@@ -1284,19 +1270,6 @@ const server = http.createServer(async (req, res) => {
           fetch('/general-list-signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,firstName:name})})
         ]);
         if(r1.ok){document.getElementById('gateForm').style.display='none';document.getElementById('playerWrap').style.display='block';msg.textContent='';}
-        else{msg.textContent='Something went wrong. Please try again.';}
-      }catch(e){msg.textContent='Something went wrong. Please try again.';}
-    }
-    function showListForm(e){e.preventDefault();document.getElementById('listFormWrap').style.display='block';document.getElementById('listEmail').focus();}
-    async function submitList(){
-      const name=document.getElementById('listName').value.trim();
-      const email=document.getElementById('listEmail').value.trim();
-      const msg=document.getElementById('listMsg');
-      if(!email||!email.includes('@')){msg.textContent='Please enter a valid email.';return;}
-      msg.textContent='Sending...';
-      try{
-        const res=await fetch('/general-list-signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,firstName:name})});
-        if(res.ok){msg.textContent="You're in. I'll email you when the book is out.";document.getElementById('listName').disabled=true;document.getElementById('listEmail').disabled=true;}
         else{msg.textContent='Something went wrong. Please try again.';}
       }catch(e){msg.textContent='Something went wrong. Please try again.';}
     }
