@@ -1260,6 +1260,7 @@ const server = http.createServer(async (req, res) => {
       <a href="#" onclick="showListForm(event)" style="display:inline-block; font-family:'Cormorant Garamond',Georgia,serif; font-size:13px; letter-spacing:0.2em; text-transform:uppercase; padding:14px 32px; background:transparent; color:#8B6B1E; border:1px solid #8B6B1E; text-decoration:none;">Join the List</a>
     </div>
     <div id="listFormWrap" style="display:none; max-width:400px; margin:20px auto 0; padding:20px; background:rgba(139,107,30,0.05); border-left:2px solid #8B6B1E;">
+      <input type="text" id="listName" placeholder="Your first name" style="width:100%; padding:12px; font-size:16px; border:1px solid #d4c5a0; background:#FBF7F0; font-family:'Cormorant Garamond',Georgia,serif; margin-bottom:12px; box-sizing:border-box;">
       <input type="email" id="listEmail" placeholder="Your email address" style="width:100%; padding:12px; font-size:16px; border:1px solid #d4c5a0; background:#FBF7F0; font-family:'Cormorant Garamond',Georgia,serif; margin-bottom:12px; box-sizing:border-box;">
       <button onclick="submitList()" style="width:100%; padding:12px; background:#8B6B1E; color:#FBF7F0; border:none; font-family:'Cormorant Garamond',Georgia,serif; font-size:14px; letter-spacing:0.2em; text-transform:uppercase; cursor:pointer;">Send</button>
       <p id="listMsg" style="margin-top:12px; font-size:14px; color:#6b5a3a; font-style:italic; min-height:20px;"></p>
@@ -1267,13 +1268,14 @@ const server = http.createServer(async (req, res) => {
     <script>
     function showListForm(e){e.preventDefault();document.getElementById('listFormWrap').style.display='block';document.getElementById('listEmail').focus();}
     async function submitList(){
+      const name=document.getElementById('listName').value.trim();
       const email=document.getElementById('listEmail').value.trim();
       const msg=document.getElementById('listMsg');
       if(!email||!email.includes('@')){msg.textContent='Please enter a valid email.';return;}
       msg.textContent='Sending...';
       try{
-        const res=await fetch('/general-list-signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
-        if(res.ok){msg.textContent="You're in. I'll email you when the book is out.";document.getElementById('listEmail').disabled=true;}
+        const res=await fetch('/general-list-signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,firstName:name})});
+        if(res.ok){msg.textContent="You're in. I'll email you when the book is out.";document.getElementById('listName').disabled=true;document.getElementById('listEmail').disabled=true;}
         else{msg.textContent='Something went wrong. Please try again.';}
       }catch(e){msg.textContent='Something went wrong. Please try again.';}
     }
@@ -1895,10 +1897,10 @@ const geoData = await fetchJSON(`https://nominatim.openstreetmap.org/search?q=${
     req.on('data', c => body += c);
     req.on('end', async () => {
       try {
-        const { email } = JSON.parse(body);
+        const { email, firstName } = JSON.parse(body);
         if (!email || !email.includes('@')) { res.writeHead(400); res.end(JSON.stringify({ error: 'Invalid email' })); return; }
-        console.log('General list signup for:', email);
-        await addToMailchimp(email, '');
+        console.log('General list signup for:', email, firstName || '(no name)');
+        await addToMailchimp(email, firstName || '');
         res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
         res.end(JSON.stringify({ ok: true }));
       } catch(e) {
