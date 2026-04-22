@@ -432,7 +432,7 @@ function addToMailchimp(email, firstName) {
     const auth = Buffer.from(`anystring:${MAILCHIMP_KEY}`).toString('base64');
     const req = https.request({
       hostname: `${MAILCHIMP_SERVER}.api.mailchimp.com`,
-      path: `/3.0/lists/${MAILCHIMP_LIST_ID}/members/${require('crypto').createHash('md5').update(email.toLowerCase()).digest('hex')}`
+      path: `/3.0/lists/${MAILCHIMP_LIST_ID}/members/${require('crypto').createHash('md5').update(email.toLowerCase()).digest('hex')}`,
       method: 'PUT',
       headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }
     }, res => {
@@ -1242,10 +1242,9 @@ const server = http.createServer(async (req, res) => {
       </audio>
       <div class="duration">28 minutes</div>
     </div>
-<p>If Chapter One landed for you, the book comes out in September. But if you want to keep reading or listening right now, I'm putting together a small launch team — readers willing to post an honest Amazon review around launch week in exchange for getting the whole book the moment they sign up: audio in my own voice, EPUB, and PDF.</p>
-    <p>If you're up for that:</p>
+<p>The book comes out in September. But you can read it now — every chapter, every format, including the audio in my voice.</p>
     <div style="text-align:center; margin:32px 0 8px 0;">
-      <a href="https://herstwellness.com/launch-team" style="display:inline-block; font-family:'Cormorant Garamond',Georgia,serif; font-size:14px; letter-spacing:0.2em; text-transform:uppercase; padding:16px 36px; background:#8B6B1E; color:#FBF7F0; text-decoration:none;">Join the Launch Team</a>
+      <a href="https://herstwellness.com/launch-team" style="display:inline-block; font-family:'Cormorant Garamond',Georgia,serif; font-size:14px; letter-spacing:0.2em; text-transform:uppercase; padding:16px 36px; background:#8B6B1E; color:#FBF7F0; text-decoration:none;">Read the Book Early</a>
     </div>
     <p style="margin-top:40px; font-style:italic; color:#6b5a3a;">Not ready for that? I'll email you when the book is out.</p>
     <div style="text-align:center; margin:16px 0 8px 0;">
