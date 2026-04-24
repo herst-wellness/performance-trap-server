@@ -1669,11 +1669,14 @@ const server = http.createServer(async (req, res) => {
     });
 
     let saveTimer = 0;
-   let advancing = false;
+let advancing = false;
+let lastAdvancedFrom = 0;
 
 function advanceToNext() {
   if (advancing) return;
+  if (lastAdvancedFrom === currentNum) return;
   advancing = true;
+  lastAdvancedFrom = currentNum;
   saveProgress(currentNum, TRACKS.find(x => x.num === currentNum).seconds);
   const next = TRACKS.find(x => x.num === currentNum + 1);
   if (next) {
