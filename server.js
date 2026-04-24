@@ -955,7 +955,8 @@ function textToHtml(text) {
 <html>
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+  <meta name="robots" content="noindex, nofollow">
   <!--[if mso]>
   <style>* { font-family: Georgia, serif !important; }</style>
   <![endif]-->
@@ -1349,6 +1350,7 @@ const server = http.createServer(async (req, res) => {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
 <title>The Performance Trap &mdash; Chad Herst</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
