@@ -1669,19 +1669,35 @@ const server = http.createServer(async (req, res) => {
     });
 
     let saveTimer = 0;
-    audio.addEventListener('timeupdate', () => {
-      const now = Date.now();
-      if (now - saveTimer > 5000) {
-        saveTimer = now;
-        if (audio.currentTime > 0) saveProgress(currentNum, audio.currentTime);
-        updateOverallProgress();
-      }
-    });
-    audio.addEventListener('ended', () => {
-      saveProgress(currentNum, TRACKS.find(x => x.num === currentNum).seconds);
-      const next = TRACKS.find(x => x.num === currentNum + 1);
-      if (next) { loadTrack(next.num, 0); player.play(); }
-    });
+   let advancing = false;
+
+function advanceToNext() {
+  if (advancing) return;
+  advancing = true;
+  saveProgress(currentNum, TRACKS.find(x => x.num === currentNum).seconds);
+  const next = TRACKS.find(x => x.num === currentNum + 1);
+  if (next) {
+    loadTrack(next.num, 0);
+    player.play();
+  }
+  setTimeout(() => { advancing = false; }, 2000);
+}
+
+audio.addEventListener('timeupdate', () => {
+  const now = Date.now();
+  if (now - saveTimer > 5000) {
+    saveTimer = now;
+    if (audio.currentTime > 0) saveProgress(currentNum, audio.currentTime);
+    updateOverallProgress();
+  }
+  if (audio.duration && audio.currentTime >= audio.duration - 0.4 && !advancing) {
+    advanceToNext();
+  }
+});
+
+audio.addEventListener('ended', () => {
+  advanceToNext();
+});
 
     // Smooth scroll for jump nav
     document.querySelectorAll('.jump-nav a').forEach(a => {
