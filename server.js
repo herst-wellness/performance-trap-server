@@ -1148,10 +1148,12 @@ Either way, thanks for being here.
 };
 
 const LAUNCH_TEAM_EMAIL = {
-  subject: 'The book is yours',
-  text: `I'm sharing my book with a small group of readers before it comes out in September. You're one of them.
+  subject: 'I wrote a book and I want you to read it',
+  text: `I wrote a book. It's called The Performance Trap: The Ache No Success Will Ever Fix. It comes out in September, and I'm sharing it early with a small group of readers. You're one of them.
 
-The book is yours. You can read it right now in whatever format works for you: https://herstwellness.com/book
+The book is about what happens when you build your whole life around proving yourself, and the cost that comes with it. It's part memoir, part framework, part practice. The whole arc, in my own voice.
+
+You can read it right now in whatever format works for you: https://herstwellness.com/book
 
 There you'll find the audio of every chapter in my voice, plus EPUB and PDF downloads. Read at your own pace.
 
