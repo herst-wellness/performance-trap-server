@@ -1148,20 +1148,19 @@ Either way, thanks for being here.
 };
 
 const LAUNCH_TEAM_EMAIL = {
-  subject: "You're on the launch team",
-  text: `Thank you for saying yes to this.
+  subject: 'The book is yours',
+  text: `I'm sharing my book with a small group of readers before it comes out in September. You're one of them.
 
 The book is yours. You can read it right now in whatever format works for you: https://herstwellness.com/book
 
-There you'll find Kindle, EPUB, and PDF downloads, plus the audio of every chapter in my voice — opening credits, every chapter, all the way through. Read at your own pace.
+There you'll find the audio of every chapter in my voice, plus EPUB and PDF downloads. Read at your own pace.
 
-One ask. The book comes out publicly in September. Hold your Amazon review until launch week. I'll send you a reminder when the day comes. If the book lands for you, an honest review during that window is the single most useful thing you can do for it. Honest is the word. If it doesn't land for you, say that too. I'd rather have a true two-star than a courteous five.
+One ask. If the book lands for you, I'd love an honest Amazon review during launch week in September. I'll send a reminder when the day comes. Honest is the word. If it doesn't land, say that too. I'd rather have a true two-star than a courteous five.
 
-If you haven't taken the Map yet, it's a personalized reading based on the framework from the book. A good companion piece while you're reading: https://map.herstwellness.com
+If you haven't taken the Map yet, it's a personalized reading based on the framework from the book: https://map.herstwellness.com
 
-If this isn't the right time for you and you'd rather not be on the team, just reply and let me know. No hard feelings.
+If this isn't the right time, just reply and let me know. No hard feelings.
 
-Talk soon,
 Chad`
 };
 
