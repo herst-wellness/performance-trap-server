@@ -1519,17 +1519,13 @@ const server = http.createServer(async (req, res) => {
         <p class="dl-desc">For desktop, tablet, or printing</p>
       </a>
     </div>
-
-    <div class="kindle-howto">
-      <h3>How to read the EPUB on your Kindle</h3>
-      <p>Amazon stopped supporting the old AZW3 format, but EPUB works perfectly through their official Send to Kindle service. Three ways to do it &mdash; pick whichever is easiest:</p>
-      <ol>
-        <li><strong>Email it.</strong> Every Kindle account has a personal email address ending in <em>@kindle.com</em>. Find yours at <a href="https://www.amazon.com/myk" target="_blank" rel="noopener">amazon.com/myk</a> under Preferences &rarr; Personal Document Settings. Email the EPUB to that address as an attachment, and it shows up on your Kindle in a few minutes.</li>
-        <li><strong>Use the web uploader.</strong> Go to <a href="https://www.amazon.com/sendtokindle" target="_blank" rel="noopener">amazon.com/sendtokindle</a>, sign in, and drag the EPUB into the browser. Same result, no email.</li>
-        <li><strong>Use the desktop app.</strong> Download Send to Kindle for Mac or Windows from Amazon, then right-click the EPUB and choose "Send to Kindle."</li>
-      </ol>
-      <p>For the PDF: open it on any computer, tablet, or phone. Most people read PDFs in their browser, in Apple Books, or in Adobe Acrobat.</p>
-    </div>
+<div class="kindle-howto">
+  <h3>How to read the book</h3>
+  <p>The PDF is the easiest option. Open it on any computer, tablet, or phone. Most people read PDFs in their browser, in Preview, in Apple Books, or in Adobe Acrobat. Nothing to install, no account, no setup.</p>
+  <p>If you'd rather read on a Kindle, the EPUB works through Amazon's Send to Kindle service. The most reliable method is the web uploader: go to <a href="https://www.amazon.com/sendtokindle" target="_blank" rel="noopener">amazon.com/sendtokindle</a>, sign in, and drag the EPUB into the browser. It shows up on your Kindle in a few minutes.</p>
+  <p>You can also email the EPUB as an attachment to your personal <em>@kindle.com</em> address (find it at <a href="https://www.amazon.com/myk" target="_blank" rel="noopener">amazon.com/myk</a> under Preferences &rarr; Personal Document Settings). One thing that trips people up: Amazon only accepts files from email addresses on your Approved Personal Document List, which is on that same page. Make sure the address you're sending from is on the list before you send.</p>
+  <p>If none of this works, just open the PDF on your laptop. It's a real book either way. And if you're stuck, email me at <a href="mailto:chad@herstwellness.com">chad@herstwellness.com</a> and I'll send it to your Kindle from my end.</p>
+</div>
 
     <div class="footer">
       <img src="${LOGO_URL}" alt="Herst Wellness" />
