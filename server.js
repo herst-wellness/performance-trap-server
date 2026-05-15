@@ -1915,6 +1915,27 @@ const geoData = await fetchJSON(`https://nominatim.openstreetmap.org/search?q=${
         if (!email || !email.includes('@')) { res.writeHead(400); res.end(JSON.stringify({ error: 'Invalid email' })); return; }
         console.log('General list signup for:', email, firstName || '(no name)');
         await addToMailchimp(email, firstName || '');
+        const crypto = require('crypto');
+const subscriberHash = crypto.createHash('md5').update(email.toLowerCase()).digest('hex');
+const tagBody = JSON.stringify({ tags: [{ name: 'Chapter One', status: 'active' }] });
+const tagAuth = Buffer.from(`anystring:${MAILCHIMP_KEY}`).toString('base64');
+const tagReq = https.request({
+  hostname: `${MAILCHIMP_SERVER}.api.mailchimp.com`,
+  path: `/3.0/lists/${MAILCHIMP_LIST_ID}/members/${subscriberHash}/tags`,
+  method: 'POST',
+  headers: {
+    'Authorization': `Basic ${tagAuth}`,
+    'Content-Type': 'application/json',
+    'Content-Length': Buffer.byteLength(tagBody)
+  }
+}, tagRes => {
+  let td = '';
+  tagRes.on('data', c => td += c);
+  tagRes.on('end', () => console.log('Chapter One tag:', tagRes.statusCode));
+});
+tagReq.on('error', e => console.log('Tag error:', e.message));
+tagReq.write(tagBody);
+tagReq.end();
         res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
         res.end(JSON.stringify({ ok: true }));
       } catch(e) {
