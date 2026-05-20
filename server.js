@@ -1148,18 +1148,16 @@ Either way, thanks for being here.
 };
 
 const LAUNCH_TEAM_EMAIL = {
-  subject: 'I wrote a book and I want you to read it',
-  text: `I wrote a book. It's called The Performance Trap: The Ache No Success Will Ever Fix. It comes out in September, and I'm sharing it early with a small group of readers. You're one of them.
+  subject: 'Welcome to the launch team',
+  text: `Welcome to the launch team. The book is The Performance Trap: The Ache No Success Will Ever Fix, out September 4. You're now part of a small group reading it early.
 
-The book is about what happens when you build your whole life around proving yourself, and the cost that comes with it. It's part memoir, part framework, part practice. The whole arc, in my own voice.
+The book is about what happens when you build your whole life around proving yourself, and the cost that comes with it. It's part memoir, part framework, part practice.
 
-You can read it right now in whatever format works for you: https://herstwellness.com/book
+You can read it right now in whatever format works for you. The full audio in my own voice, plus EPUB and PDF downloads. Read at your own pace.
 
-There you'll find the audio of every chapter in my voice, plus EPUB and PDF downloads. Read at your own pace.
+https://herstwellness.com/book
 
-One ask. If the book lands for you, I'd love an honest Amazon review during launch week in September. I'll send a reminder when the day comes. Honest is the word. If it doesn't land, say that too. I'd rather have a true two-star than a courteous five.
-
-If you haven't taken the Map yet, it's a personalized reading based on the framework from the book: https://map.herstwellness.com
+One ask. If the book lands for you, I'd love an honest Amazon review during launch week in September. I'll send a reminder when launch week arrives. Honest is the word. If it doesn't land, say that too. I'd rather have a true two-star than a courteous five.
 
 If this isn't the right time, just reply and let me know. No hard feelings.
 
