@@ -1148,18 +1148,16 @@ Either way, thanks for being here.
 };
 
 const LAUNCH_TEAM_EMAIL = {
-  subject: 'Welcome to the launch team',
-  text: `Welcome to the launch team. The book is The Performance Trap: The Ache No Success Will Ever Fix, out September 4. You're now part of a small group reading it early.
+  subject: 'The book is yours.',
+  text: `The book is The Performance Trap: The Ache No Success Will Ever Fix, out September 4. I've added you to a small group of readers getting it early.
 
-The book is about what happens when you build your whole life around proving yourself, and the cost that comes with it. It's part memoir, part framework, part practice.
-
-You can read it right now in whatever format works for you. The full audio in my own voice, plus EPUB and PDF downloads. Read at your own pace.
+The book is about what happens when you build your whole life around proving yourself, and the cost that comes with it. It's part memoir, part framework, part practice. You can read it right now in whatever format works for you. The full audio in my own voice, plus EPUB and PDF downloads. Read at your own pace.
 
 https://herstwellness.com/book
 
-One ask. If the book lands for you, I'd love an honest Amazon review during launch week in September. I'll send a reminder when launch week arrives. Honest is the word. If it doesn't land, say that too. I'd rather have a true two-star than a courteous five.
+One ask, if you're up for it. If the book lands for you, I'd love an honest Amazon review during launch week in September. I'll send a reminder when launch week arrives. Honest is the word. If it doesn't land, say that too. I'd rather have a true two-star than a courteous five.
 
-If this isn't the right time, just reply and let me know. No hard feelings.
+If this isn't the right time, or you'd rather not be on the team, just reply and let me know. No hard feelings.
 
 Chad`
 };
