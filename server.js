@@ -1387,6 +1387,57 @@ const server = http.createServer(async (req, res) => {
     res.end(introhtml);
     return;
   }
+  if (req.method === 'GET' && req.url === '/listen/optimized-and-empty') {
+    const oehtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Optimized and Empty — The Performance Trap</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  body { margin:0; padding:0; background:#F4EDE4; font-family:'Cormorant Garamond',Georgia,serif; color:#352515; }
+  .wrap { max-width:600px; margin:0 auto; padding:40px 20px; }
+  .logo-top { display:block; width:100%; max-width:600px; height:auto; margin:0 auto; }
+  .divider { border:none; border-top:1px solid #8B6B1E; margin:32px 0; }
+  h1 { font-family:'Playfair Display',Georgia,serif; font-size:32px; line-height:1.2; color:#352515; margin:0 0 8px 0; font-weight:700; }
+  .subtitle { font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:18px; color:#8B6B1E; margin:0 0 32px 0; letter-spacing:0.05em; }
+  p { font-size:18px; line-height:1.9; margin:0 0 20px 0; }
+  .player-wrap { background:#EFE6D8; border:1px solid #8B6B1E; padding:24px; margin:32px 0; text-align:center; }
+  audio { width:100%; max-width:520px; }
+  .duration { font-size:14px; color:#4F4130; font-style:italic; margin-top:12px; letter-spacing:0.05em; }
+  .footer { text-align:center; padding:40px 0 20px 0; border-top:1px solid #E8DED3; margin-top:48px; }
+  .footer img { display:block; margin:0 auto 16px auto; max-width:200px; height:auto; }
+  .footer p { font-size:12px; color:#4F4130; margin:0 0 8px 0; line-height:1.6; }
+  .footer a { color:#8B6B1E; text-decoration:none; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <img src="${LOGO_URL}" alt="Herst Wellness" class="logo-top" />
+    <hr class="divider" />
+    <h1>Optimized and Empty</h1>
+    <p class="subtitle">From The Performance Trap</p>
+    <p>A room full of ambition and no warmth. A wedding that felt like a product launch. Startup founders who talked about users instead of people. And underneath all the metrics and mindset hacks, the same fear I grew up with in Marin County: if I stop producing, I'm nothing.</p>
+    <div class="player-wrap">
+      <audio controls preload="metadata" src="${AUDIO_BASE_URL}/optimized-and-empty.mp3">
+        Your browser does not support audio playback.
+      </audio>
+      <div class="duration">8 minutes</div>
+    </div>
+    <div class="footer">
+      <img src="${LOGO_URL}" alt="Herst Wellness" />
+      <p>765 Market St, San Francisco, CA 94103<br>(415) 686-4411 &middot; <a href="mailto:chad@herstwellness.com">chad@herstwellness.com</a></p>
+      <p><a href="https://herstwellness.com">herstwellness.com</a></p>
+    </div>
+  </div>
+</body>
+</html>`;
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=300' });
+    res.end(oehtml);
+    return;
+  }
   if (req.method === 'GET' && req.url === '/book') {
     const tracks = [
       { num: 1,  file: '01-opening-credits.mp3',                 title: 'Opening Credits',                          duration: '1:42',  part: 'front' },
