@@ -1475,7 +1475,7 @@ const server = http.createServer(async (req, res) => {
       <audio controls preload="metadata" src="${AUDIO_BASE_URL}/newsletter-04.mp3">
         Your browser does not support audio playback.
       </audio>
-      <div class="duration">6 minutes</div>
+      <div class="duration">5 minutes</div>
     </div>
     <div class="footer">
       <img src="${LOGO_URL}" alt="Herst Wellness" />
