@@ -1588,14 +1588,14 @@ const server = http.createServer(async (req, res) => {
   .big-btn:focus-visible { outline:4px solid #352515; outline-offset:3px; }
   #big-back, #big-fwd { width:80px; height:80px; }
   .big-num { position:absolute; font-family:'Cormorant Garamond',Georgia,serif; font-size:16px; font-weight:600; line-height:1; }
-  .big-play { width:108px; height:108px; background:#8B6B1E; color:#FBF7F0; border-color:#6F551A; }
-  .big-play:hover { background:#6F551A; color:#FBF7F0; }
+  .big-play { width:168px; height:168px; background:#C0392B; color:#FFFFFF; border-color:#962D22; border-width:4px; }
+  .big-play:hover { background:#962D22; color:#FFFFFF; }
   .big-play .icon-pause { display:none; }
   .big-play.is-playing .icon-play { display:none; }
   .big-play.is-playing .icon-pause { display:block; }
   @media (max-width: 540px) {
     #big-back, #big-fwd { width:72px; height:72px; }
-    .big-play { width:96px; height:96px; }
+    .big-play { width:140px; height:140px; }
     .big-controls { gap:18px; }
   }
 
@@ -1899,7 +1899,7 @@ const server = http.createServer(async (req, res) => {
         const num = parseInt(li.dataset.num, 10);
         const p = loadProgress();
         const rec = p.tracks && p.tracks[num];
-        const resumeAt = (rec && !rec.completed && rec.position > 5) ? rec.position : 0;
+        const resumeAt = (rec && !rec.completed && rec.position > 5) ? Math.max(0, rec.position - 5) : 0;
         loadTrack(num, resumeAt);
         player.play();
       });
@@ -1996,10 +1996,11 @@ const server = http.createServer(async (req, res) => {
     if (progress.lastTrack && progress.lastTime > 5) {
       const t = TRACKS.find(x => x.num === progress.lastTrack);
       if (t) {
-        loadTrack(progress.lastTrack, Math.max(0, progress.lastTime - 5));
+        const resumeAt = Math.max(0, progress.lastTime - 5);
+        loadTrack(progress.lastTrack, resumeAt);
         const banner = document.getElementById('resume-banner');
         document.getElementById('resume-text').textContent =
-          'Picking up where you left off in "' + t.title + '" at ' + fmtTime(progress.lastTime) + '. Press play when you\\'re ready.';
+          'Picking up where you left off in "' + t.title + '" at ' + fmtTime(resumeAt) + '. Press play when you\\'re ready.';
         banner.classList.add('show');
         document.getElementById('resume-restart').addEventListener('click', () => {
           banner.classList.remove('show');
