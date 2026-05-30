@@ -1569,18 +1569,36 @@ const server = http.createServer(async (req, res) => {
   h2 { font-family:'Playfair Display',Georgia,serif; font-size:24px; color:#352515; margin:48px 0 16px 0; font-weight:700; }
   .resume { background:#EFE6D8; border-left:3px solid #8B6B1E; padding:16px 20px; margin:24px 0; display:none; }
   .resume.show { display:block; }
-  .resume p { margin:0 0 12px 0; font-size:16px; }
-  .resume button { font-family:'Cormorant Garamond',Georgia,serif; font-size:13px; letter-spacing:0.15em; text-transform:uppercase; padding:10px 24px; border:1px solid #8B6B1E; background:transparent; color:#8B6B1E; cursor:pointer; margin-right:8px; }
+  .resume p { margin:0 0 12px 0; font-size:17px; }
+  .resume button { font-family:'Cormorant Garamond',Georgia,serif; font-size:13px; letter-spacing:0.15em; text-transform:uppercase; padding:10px 24px; border:1px solid #8B6B1E; background:transparent; color:#8B6B1E; cursor:pointer; }
   .resume button:hover { background:#8B6B1E; color:#FBF7F0; }
-  .resume button.primary { background:#8B6B1E; color:#FBF7F0; }
-  .resume button.primary:hover { background:#6F551A; }
   .player-wrap { background:#EFE6D8; border:1px solid #8B6B1E; padding:24px; margin:24px 0 16px 0; }
   .player-header { display:flex; gap:16px; align-items:flex-start; margin-bottom:16px; }
   .player-header-cover { width:72px; height:auto; flex-shrink:0; box-shadow:0 3px 10px rgba(53,37,21,0.2); }
   .player-header-text { flex:1; min-width:0; }
   .now-playing-label { font-family:'Cormorant Garamond',Georgia,serif; font-style:italic; font-size:13px; color:#4F4130; margin:0 0 2px 0; letter-spacing:0.05em; text-transform:uppercase; }
-  .now-playing-title { font-family:'Playfair Display',Georgia,serif; font-size:18px; color:#352515; margin:0 0 6px 0; font-weight:700; line-height:1.25; }
-  .now-playing-context { font-family:'Cormorant Garamond',Georgia,serif; font-size:13px; color:#4F4130; font-style:italic; margin:0; }
+  .now-playing-title { font-family:'Playfair Display',Georgia,serif; font-size:23px; color:#352515; margin:0 0 6px 0; font-weight:700; line-height:1.25; }
+  .now-playing-context { font-family:'Cormorant Garamond',Georgia,serif; font-size:14px; color:#4F4130; font-style:italic; margin:0; }
+
+  /* ── LARGE HIGH-CONTRAST CONTROLS (low-vision friendly) ── */
+  .big-controls { display:flex; align-items:center; justify-content:center; gap:24px; margin:24px 0 22px 0; }
+  .big-btn { position:relative; display:flex; align-items:center; justify-content:center; border:3px solid #8B6B1E; background:#FBF7F0; color:#8B6B1E; cursor:pointer; border-radius:50%; padding:0; transition:background 0.15s, color 0.15s; }
+  .big-btn svg { width:46%; height:46%; fill:currentColor; }
+  .big-btn:hover { background:#8B6B1E; color:#FBF7F0; }
+  .big-btn:focus-visible { outline:4px solid #352515; outline-offset:3px; }
+  #big-back, #big-fwd { width:80px; height:80px; }
+  .big-num { position:absolute; font-family:'Cormorant Garamond',Georgia,serif; font-size:16px; font-weight:600; line-height:1; }
+  .big-play { width:108px; height:108px; background:#8B6B1E; color:#FBF7F0; border-color:#6F551A; }
+  .big-play:hover { background:#6F551A; color:#FBF7F0; }
+  .big-play .icon-pause { display:none; }
+  .big-play.is-playing .icon-play { display:none; }
+  .big-play.is-playing .icon-pause { display:block; }
+  @media (max-width: 540px) {
+    #big-back, #big-fwd { width:72px; height:72px; }
+    .big-play { width:96px; height:96px; }
+    .big-controls { gap:18px; }
+  }
+
   .overall-progress { margin:0 0 16px 0; }
   .progress-stats { display:flex; justify-content:space-between; font-family:'Cormorant Garamond',Georgia,serif; font-size:13px; color:#4F4130; margin-bottom:6px; letter-spacing:0.03em; }
   .progress-stats strong { color:#8B6B1E; font-weight:500; }
@@ -1649,9 +1667,8 @@ const server = http.createServer(async (req, res) => {
     <p><em>Prefer to read? The EPUB and PDF are below &mdash; keep scrolling.</em></p>
 
     <div class="resume" id="resume-banner">
-      <p id="resume-text">Welcome back. Pick up where you left off?</p>
-      <button id="resume-yes" class="primary" type="button">Resume</button>
-      <button id="resume-no" type="button">Start over</button>
+      <p id="resume-text"></p>
+      <button id="resume-restart" type="button">Start from the beginning</button>
     </div>
 
     <div class="player-wrap">
@@ -1669,6 +1686,21 @@ const server = http.createServer(async (req, res) => {
           <span><strong id="progress-percent">0%</strong> complete</span>
 <span><strong id="progress-remaining">${totalDurationText}</strong></span>        </div>
         <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+      </div>
+
+      <div class="big-controls" role="group" aria-label="Audio controls">
+        <button type="button" id="big-back" class="big-btn" aria-label="Back fifteen seconds">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.5 8V4l-5 5 5 5V10c2.76 0 5 2.24 5 5s-2.24 5-5 5-5-2.24-5-5h-2c0 3.87 3.13 7 7 7s7-3.13 7-7-3.13-7-7-7z"/></svg>
+          <span class="big-num">15</span>
+        </button>
+        <button type="button" id="big-play" class="big-btn big-play" aria-label="Play or pause">
+          <svg class="icon-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+          <svg class="icon-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+        </button>
+        <button type="button" id="big-fwd" class="big-btn" aria-label="Forward fifteen seconds">
+          <svg viewBox="0 0 24 24" aria-hidden="true" style="transform:scaleX(-1)"><path d="M12.5 8V4l-5 5 5 5V10c2.76 0 5 2.24 5 5s-2.24 5-5 5-5-2.24-5-5h-2c0 3.87 3.13 7 7 7s7-3.13 7-7-3.13-7-7-7z"/></svg>
+          <span class="big-num">15</span>
+        </button>
       </div>
 
       <audio id="player" controls preload="metadata">
@@ -1804,19 +1836,15 @@ const server = http.createServer(async (req, res) => {
     }
 
     function updateOverallProgress() {
-      // Sum: completed chapter durations + completed time in chapters up to current + current position
       const p = loadProgress();
       let elapsed = 0;
       for (const t of TRACKS) {
         if (t.num < currentNum) {
-          // Count the stored position for earlier tracks, or full duration if completed
           const stored = p.tracks && p.tracks[t.num];
           if (stored && stored.completed) {
             elapsed += t.seconds;
           } else if (stored && typeof stored.position === 'number') {
             elapsed += Math.min(stored.position, t.seconds);
-          } else {
-            // Assume not listened
           }
         } else if (t.num === currentNum) {
           elapsed += audio.currentTime || 0;
@@ -1827,6 +1855,20 @@ const server = http.createServer(async (req, res) => {
       progressPercent.textContent = pct + '%';
       progressFill.style.width = pct + '%';
       progressRemaining.textContent = fmtRemaining(remaining);
+    }
+
+    // Reliable seek once the audio is ready
+    function seekWhenReady(time) {
+      if (!time || time < 2) return;
+      const doSeek = () => { try { audio.currentTime = time; updateOverallProgress(); } catch(e) {} };
+      if (audio.readyState >= 1) {
+        doSeek();
+      } else {
+        audio.addEventListener('loadedmetadata', function h() {
+          doSeek();
+          audio.removeEventListener('loadedmetadata', h);
+        });
+      }
     }
 
     function loadTrack(num, seekTime) {
@@ -1840,15 +1882,8 @@ const server = http.createServer(async (req, res) => {
       document.querySelectorAll('.track-btn').forEach(b => b.classList.remove('playing'));
       const li = document.querySelector('.track[data-num="' + num + '"] .track-btn');
       if (li) li.classList.add('playing');
-      if (seekTime && seekTime > 2) {
-        audio.addEventListener('loadedmetadata', function once() {
-          audio.currentTime = seekTime;
-          audio.removeEventListener('loadedmetadata', once);
-          updateOverallProgress();
-        });
-      } else {
-        updateOverallProgress();
-      }
+      seekWhenReady(seekTime);
+      updateOverallProgress();
     }
 
     // Mark back-matter tracks visually
@@ -1858,47 +1893,82 @@ const server = http.createServer(async (req, res) => {
       if (t && t.part === 'back') li.classList.add('back-matter');
     });
 
+    // Clicking a chapter resumes from where you stopped in that chapter
     document.querySelectorAll('.track').forEach(li => {
       li.querySelector('.track-btn').addEventListener('click', () => {
         const num = parseInt(li.dataset.num, 10);
-        loadTrack(num, 0);
+        const p = loadProgress();
+        const rec = p.tracks && p.tracks[num];
+        const resumeAt = (rec && !rec.completed && rec.position > 5) ? rec.position : 0;
+        loadTrack(num, resumeAt);
         player.play();
       });
     });
 
     let saveTimer = 0;
-let advancing = false;
-let lastAdvancedFrom = 0;
+    let advancing = false;
+    let lastAdvancedFrom = 0;
 
-function advanceToNext() {
-  if (advancing) return;
-  if (lastAdvancedFrom === currentNum) return;
-  advancing = true;
-  lastAdvancedFrom = currentNum;
-  saveProgress(currentNum, TRACKS.find(x => x.num === currentNum).seconds);
-  const next = TRACKS.find(x => x.num === currentNum + 1);
-  if (next) {
-    loadTrack(next.num, 0);
-    player.play();
-  }
-  setTimeout(() => { advancing = false; }, 2000);
-}
+    function advanceToNext() {
+      if (advancing) return;
+      if (lastAdvancedFrom === currentNum) return;
+      advancing = true;
+      lastAdvancedFrom = currentNum;
+      saveProgress(currentNum, TRACKS.find(x => x.num === currentNum).seconds);
+      const next = TRACKS.find(x => x.num === currentNum + 1);
+      if (next) {
+        loadTrack(next.num, 0);
+        player.play();
+      }
+      setTimeout(() => { advancing = false; }, 2000);
+    }
 
-audio.addEventListener('timeupdate', () => {
-  const now = Date.now();
-  if (now - saveTimer > 5000) {
-    saveTimer = now;
-    if (audio.currentTime > 0) saveProgress(currentNum, audio.currentTime);
-    updateOverallProgress();
-  }
-  if (audio.duration && audio.currentTime >= audio.duration - 0.4 && !advancing) {
-    advanceToNext();
-  }
-});
+    audio.addEventListener('timeupdate', () => {
+      const now = Date.now();
+      if (now - saveTimer > 5000) {
+        saveTimer = now;
+        if (audio.currentTime > 0) saveProgress(currentNum, audio.currentTime);
+        updateOverallProgress();
+      }
+      if (audio.duration && audio.currentTime >= audio.duration - 0.4 && !advancing) {
+        advanceToNext();
+      }
+    });
 
-audio.addEventListener('ended', () => {
-  advanceToNext();
-});
+    audio.addEventListener('ended', () => {
+      advanceToNext();
+    });
+
+    // Save the moment they pause, switch tabs, or close the page
+    audio.addEventListener('pause', () => {
+      if (audio.currentTime > 0) saveProgress(currentNum, audio.currentTime);
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden && audio.currentTime > 0) saveProgress(currentNum, audio.currentTime);
+    });
+    window.addEventListener('pagehide', () => {
+      if (audio.currentTime > 0) saveProgress(currentNum, audio.currentTime);
+    });
+
+    // ── BIG CONTROLS ──
+    const bigPlay = document.getElementById('big-play');
+    function syncPlayIcon() {
+      if (audio.paused) bigPlay.classList.remove('is-playing');
+      else bigPlay.classList.add('is-playing');
+    }
+    bigPlay.addEventListener('click', () => {
+      if (audio.paused) player.play();
+      else player.pause();
+    });
+    audio.addEventListener('play', syncPlayIcon);
+    audio.addEventListener('pause', syncPlayIcon);
+    document.getElementById('big-back').addEventListener('click', () => {
+      audio.currentTime = Math.max(0, audio.currentTime - 15);
+    });
+    document.getElementById('big-fwd').addEventListener('click', () => {
+      const max = audio.duration || Number.MAX_SAFE_INTEGER;
+      audio.currentTime = Math.min(max, audio.currentTime + 15);
+    });
 
     // Smooth scroll for jump nav
     document.querySelectorAll('.jump-nav a').forEach(a => {
@@ -1919,27 +1989,29 @@ audio.addEventListener('ended', () => {
       });
     });
 
-    // Initial setup
+    // ── INITIAL SETUP: auto-resume where they left off ──
     applyStoredCompletions();
     const progress = loadProgress();
+    let resumed = false;
     if (progress.lastTrack && progress.lastTime > 5) {
       const t = TRACKS.find(x => x.num === progress.lastTrack);
       if (t) {
+        loadTrack(progress.lastTrack, progress.lastTime);
         const banner = document.getElementById('resume-banner');
-        document.getElementById('resume-text').textContent = 'Welcome back. Pick up where you left off in "' + t.title + '" at ' + fmtTime(progress.lastTime) + '?';
+        document.getElementById('resume-text').textContent =
+          'Picking up where you left off in "' + t.title + '" at ' + fmtTime(progress.lastTime) + '. Press play when you\\'re ready.';
         banner.classList.add('show');
-        document.getElementById('resume-yes').addEventListener('click', () => {
-          banner.classList.remove('show');
-          loadTrack(progress.lastTrack, progress.lastTime);
-        });
-        document.getElementById('resume-no').addEventListener('click', () => {
+        document.getElementById('resume-restart').addEventListener('click', () => {
           banner.classList.remove('show');
           loadTrack(1, 0);
         });
+        resumed = true;
       }
     }
-
-    loadTrack(1, 0);
+    if (!resumed) {
+      loadTrack(1, 0);
+    }
+    syncPlayIcon();
     updateOverallProgress();
   </script>
 </body>
@@ -1948,7 +2020,6 @@ audio.addEventListener('ended', () => {
     res.end(html);
     return;
   }
-
   cors(res);
   if (req.method === 'OPTIONS') { res.writeHead(200); res.end(); return; }
 
