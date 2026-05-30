@@ -1996,7 +1996,7 @@ const server = http.createServer(async (req, res) => {
     if (progress.lastTrack && progress.lastTime > 5) {
       const t = TRACKS.find(x => x.num === progress.lastTrack);
       if (t) {
-        loadTrack(progress.lastTrack, progress.lastTime);
+        loadTrack(progress.lastTrack, Math.max(0, progress.lastTime - 5));
         const banner = document.getElementById('resume-banner');
         document.getElementById('resume-text').textContent =
           'Picking up where you left off in "' + t.title + '" at ' + fmtTime(progress.lastTime) + '. Press play when you\\'re ready.';
