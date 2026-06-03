@@ -1477,6 +1477,18 @@ const server = http.createServer(async (req, res) => {
       </audio>
       <div class="duration">5 minutes</div>
     </div>
+    <div class="player-wrap">
+      <audio controls preload="metadata" src="${AUDIO_BASE_URL}/newsletter-04.mp3">
+        Your browser does not support audio playback.
+      </audio>
+      <div class="duration">5 minutes</div>
+    </div>
+
+    <p style="text-align:center; margin:0 0 8px 0;">The book comes out in September. You can read it now, every chapter, every format, if you're up for posting an honest Amazon review during launch week.</p>
+    <div style="text-align:center; margin:0 0 16px 0;">
+      <a href="https://herstwellness.com/launch-team" style="display:inline-block; font-family:'Cormorant Garamond',Georgia,serif; font-size:14px; letter-spacing:0.2em; text-transform:uppercase; padding:14px 36px; border:1px solid #8B6B1E; color:#8B6B1E; text-decoration:none;">Join the launch team</a>
+    </div>
+    <div class="footer">
     <div class="footer">
       <img src="${LOGO_URL}" alt="Herst Wellness" />
       <p>765 Market St, San Francisco, CA 94103<br>(415) 686-4411 &middot; <a href="mailto:chad@herstwellness.com">chad@herstwellness.com</a></p>
