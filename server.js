@@ -1471,12 +1471,7 @@ const server = http.createServer(async (req, res) => {
     <h1>Newsletter Four</h1>
     <p class="subtitle">I could hear my voice agreeing</p>
     <p>The day I finished what I thought was the final draft of the book, I got on Zoom with a friend in marketing. I kept saying yes. My body was bracing the whole time.</p>
-    <div class="player-wrap">
-      <audio controls preload="metadata" src="${AUDIO_BASE_URL}/newsletter-04.mp3">
-        Your browser does not support audio playback.
-      </audio>
-      <div class="duration">5 minutes</div>
-    </div>
+  
     <div class="player-wrap">
       <audio controls preload="metadata" src="${AUDIO_BASE_URL}/newsletter-04.mp3">
         Your browser does not support audio playback.
@@ -1488,7 +1483,6 @@ const server = http.createServer(async (req, res) => {
     <div style="text-align:center; margin:0 0 16px 0;">
       <a href="https://herstwellness.com/launch-team" style="display:inline-block; font-family:'Cormorant Garamond',Georgia,serif; font-size:14px; letter-spacing:0.2em; text-transform:uppercase; padding:14px 36px; border:1px solid #8B6B1E; color:#8B6B1E; text-decoration:none;">Join the launch team</a>
     </div>
-    <div class="footer">
     <div class="footer">
       <img src="${LOGO_URL}" alt="Herst Wellness" />
       <p>765 Market St, San Francisco, CA 94103<br>(415) 686-4411 &middot; <a href="mailto:chad@herstwellness.com">chad@herstwellness.com</a></p>
