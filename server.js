@@ -2141,6 +2141,7 @@ const server = http.createServer(async (req, res) => {
     req.on('data', c => body += c);
     req.on('end', async () => {
       try {
+        res.writeHead(410); res.end(JSON.stringify({ error: 'The Map is no longer available.' })); return;
         const { city, name, email, date, time, noTime } = JSON.parse(body);
 const geoData = await fetchJSON(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`, { 'User-Agent': 'PerformanceTrapApp/1.0 (chad@herstwellness.com)' });        if (!geoData.length) { res.writeHead(400); res.end(JSON.stringify({ error: `Could not find "${city}". Try: "San Rafael, California, USA"` })); return; }
         const lat = parseFloat(geoData[0].lat), lon = parseFloat(geoData[0].lon);
