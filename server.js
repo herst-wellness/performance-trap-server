@@ -1101,9 +1101,9 @@ The wound is sacred not because the pain is good. It's sacred because it's preci
 
 I spent years trying to meditate it away, stretch past it, yoga it into submission. Then I finally sat still long enough to feel the knot in my gut — that tight, deep thing that had been sitting there for decades — and something in me shifted. Not because it went away. Because I finally stopped running from it.
 
-This is what I wrote a whole book about. It's called The Performance Trap, and it comes out in September. But I'm not making you wait until then.
+This is what I wrote a whole book about. It's called The Performance Trap, and it comes out in October. But I'm not making you wait until then.
 
-I'm putting together a small launch team — readers willing to post an honest Amazon review around launch week in exchange for getting the book early. If you join, you get the book right now in whatever format works for you: audio in my own voice (every chapter, just over seven hours), EPUB for your Kindle or e-reader, or PDF for desktop or tablet. Read it at your own pace between now and September.
+I'm putting together a small launch team — readers willing to post an honest Amazon review around launch week in exchange for getting the book early. If you join, you get the book right now in whatever format works for you: audio in my own voice (every chapter, just over seven hours), EPUB for your Kindle or e-reader, or PDF for desktop or tablet. Read it at your own pace between now and October.
 
 The only thing I ask is that if it lands for you, you post an honest review on Amazon during launch week. Honest is the word. If it doesn't land for you, say that too. I'd rather have a true two-star than a courteous five.
 
@@ -1132,7 +1132,7 @@ The book is the long version of that work. Every chapter is a step in the sequen
 
 If the reading lit something up in you, the book is where to take it next.
 
-I'm putting together a launch team for September. If you join, you get everything right now: the audiobook in my own voice (every chapter, all the way through, just over seven hours), the EPUB for your Kindle or e-reader, and the PDF for desktop or tablet. Read or listen at your own pace.
+I'm putting together a launch team for October. If you join, you get everything right now: the audiobook in my own voice (every chapter, all the way through, just over seven hours), the EPUB for your Kindle or e-reader, and the PDF for desktop or tablet. Read or listen at your own pace.
 
 The only ask is an honest Amazon review around launch week. That's it. If the book lands, say so. If it doesn't, say that too.
 
@@ -1149,13 +1149,13 @@ Either way, thanks for being here.
 
 const LAUNCH_TEAM_EMAIL = {
   subject: 'The book is yours.',
-  text: `The book is The Performance Trap: The Ache No Success Will Ever Fix, out September 4. I've added you to a small group of readers getting it early.
+  text: `The book is The Performance Trap: The Ache No Success Will Ever Fix, out October 1. I've added you to a small group of readers getting it early.
 
 The book is about what happens when you build your whole life around proving yourself, and the cost that comes with it. It's part memoir, part framework, part practice. You can read it right now in whatever format works for you. The full audio in my own voice, plus EPUB and PDF downloads. Read at your own pace.
 
 https://herstwellness.com/book
 
-One ask, if you're up for it. If the book lands for you, I'd love an honest Amazon review during launch week in September. I'll send a reminder when launch week arrives. Honest is the word. If it doesn't land, say that too. I'd rather have a true two-star than a courteous five.
+One ask, if you're up for it. If the book lands for you, I'd love an honest Amazon review during launch week in early October. I'll send a reminder when launch week arrives. Honest is the word. If it doesn't land, say that too. I'd rather have a true two-star than a courteous five.
 
 If this isn't the right time, or you'd rather not be on the team, just reply and let me know. No hard feelings.
 
@@ -1170,7 +1170,7 @@ const CHAPTER_ONE_EMAIL = {
 
 It's 28 minutes. You can listen on a walk, in the car, or anywhere you've got room to sit with it.
 
-The book comes out in September. But you can read it now — every chapter, every format, including the audio in my voice. If you're up for posting an honest Amazon review around launch week, the book is yours: https://herstwellness.com/launch-team
+The book comes out in October. But you can read it now — every chapter, every format, including the audio in my voice. If you're up for posting an honest Amazon review around launch week, the book is yours: https://herstwellness.com/launch-team
 
 Or if you'd rather see how the pattern shows up in your own life first, the Map is here: https://map.herstwellness.com
 
@@ -1479,7 +1479,7 @@ const server = http.createServer(async (req, res) => {
       <div class="duration">5 minutes</div>
     </div>
 
-    <p style="text-align:center; margin:0 0 8px 0;">The book comes out in September. You can read it now, every chapter, every format, if you're up for posting an honest Amazon review during launch week.</p>
+    <p style="text-align:center; margin:0 0 8px 0;">The book comes out in October. You can read it now, every chapter, every format, if you're up for posting an honest Amazon review during launch week.</p>
     <div style="text-align:center; margin:0 0 16px 0;">
       <a href="https://herstwellness.com/launch-team" style="display:inline-block; font-family:'Cormorant Garamond',Georgia,serif; font-size:14px; letter-spacing:0.2em; text-transform:uppercase; padding:14px 36px; border:1px solid #8B6B1E; color:#8B6B1E; text-decoration:none;">Join the launch team</a>
     </div>
