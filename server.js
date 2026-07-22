@@ -1256,6 +1256,14 @@ const server = http.createServer(async (req, res) => {
       </audio>
       <div class="duration">28 minutes</div>
     </div>
+    <div id="nextWrap" style="display:none; margin:40px 0 0 0; padding-top:32px; border-top:1px solid #8B6B1E;">
+  <h2 style="font-family:'Playfair Display',Georgia,serif; font-size:26px; line-height:1.2; color:#352515; margin:0 0 20px 0; font-weight:700;">If you want the rest of it</h2>
+  <p>The whole book is recorded. Every chapter, in my voice, a little over seven hours. The EPUB and the PDF too, if you'd rather read.</p>
+  <p>It comes out October 1. You can have all of it now if you'll post an honest Amazon review during launch week. That's the whole trade. If the book doesn't land for you, say that. I'd rather have a true two-star than a courteous five.</p>
+  <div style="text-align:center; margin:32px 0 0 0;">
+    <a href="https://herstwellness.com/launch-team" style="display:inline-block; font-family:'Cormorant Garamond',Georgia,serif; font-size:14px; letter-spacing:0.2em; text-transform:uppercase; padding:14px 36px; border:1px solid #8B6B1E; color:#8B6B1E; text-decoration:none;">Join the launch team</a>
+  </div>
+</div>
     <script>
     async function unlockAudio(){
       const name=document.getElementById('gateName').value.trim();
@@ -1268,7 +1276,7 @@ const server = http.createServer(async (req, res) => {
           fetch('/chapter-one-audio',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})}),
           fetch('/general-list-signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,firstName:name})})
         ]);
-        if(r1.ok){document.getElementById('gateForm').style.display='none';document.getElementById('playerWrap').style.display='block';msg.textContent='';}
+         if(r1.ok){document.getElementById('gateForm').style.display='none';document.getElementById('playerWrap').style.display='block';document.getElementById('nextWrap').style.display='block';msg.textContent='';}
         else{msg.textContent='Something went wrong. Please try again.';}
       }catch(e){msg.textContent='Something went wrong. Please try again.';}
     }
