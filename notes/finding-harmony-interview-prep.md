@@ -86,4 +86,6 @@ The reason I can even see this ache is that I have one place I fully belong — 
 
 ## Pre-interview message
 
-Decision: send a short note to Harmony (ask her to share with Russell — no direct email on file for him). Purpose: flag the shift since the June questionnaire — the center of gravity moved from "the ache / spiritual bypassing" in general to belonging and its contracts, sparked by the John Campbell episode. Keep it short; do not send the essay; leave the discovery for the recording. Draft saved in Gmail.
+A short note to Harmony (asking her to share with Russell — no direct email on file for him) is drafted and saved in Gmail: "Before our recording on the 31st — a small update." It flags the shift since the June questionnaire — the center of gravity moving from "the ache / spiritual bypassing" in general to belonging and its contracts, sparked by the John Campbell episode.
+
+**Decision (July 24): holding off on sending.** The recording is more than a month out, and Chad isn't sure the feelings from the John Campbell night will still be what he wants to center by then. The draft stays unsent in Gmail. Revisit closer to the date — roughly the week of Aug 24: check whether the belonging thesis still feels like the true center, revise or discard the draft accordingly, and only then send (or don't). If the frame has shifted again by then, update this doc before the recording.
