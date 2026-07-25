@@ -1218,6 +1218,13 @@ const server = http.createServer(async (req, res) => {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <title>Chapter One — The Performance Trap</title>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-RGBQ9JX82L"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-RGBQ9JX82L');
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 <style>
   body { margin:0; padding:0; background:#F4EDE4; font-family:'Cormorant Garamond',Georgia,serif; color:#352515; }
@@ -1276,8 +1283,7 @@ const server = http.createServer(async (req, res) => {
           fetch('/chapter-one-audio',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})}),
           fetch('/general-list-signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,firstName:name})})
         ]);
-         if(r1.ok){document.getElementById('gateForm').style.display='none';document.getElementById('playerWrap').style.display='block';document.getElementById('nextWrap').style.display='block';msg.textContent='';}
-        else{msg.textContent='Something went wrong. Please try again.';}
+         if(r1.ok){document.getElementById('gateForm').style.display='none';document.getElementById('playerWrap').style.display='block';document.getElementById('nextWrap').style.display='block';msg.textContent='';gtag('event','chapter_one_signup');}        else{msg.textContent='Something went wrong. Please try again.';}
       }catch(e){msg.textContent='Something went wrong. Please try again.';}
     }
     </script>  
