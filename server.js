@@ -1172,9 +1172,7 @@ It's 28 minutes. You can listen on a walk, in the car, or anywhere you've got ro
 
 The book comes out in October. But you can read it now — every chapter, every format, including the audio in my voice. If you're up for posting an honest Amazon review around launch week, the book is yours: https://herstwellness.com/launch-team
 
-Or if you'd rather see how the pattern shows up in your own life first, the Map is here: https://map.herstwellness.com
-
-Either way, thanks for being here.
+Thanks for being here.
 
 Chad`
 };
