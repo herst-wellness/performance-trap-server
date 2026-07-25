@@ -1205,6 +1205,7 @@ async function sendNurtureSequence(email) {
 }
 
 const server = http.createServer(async (req, res) => {
+  req.url = req.url.split('?')[0];
   // ── STATIC FILES (logo, etc.) ────────────────────────────────
   if (req.method === 'GET' && serveStatic(req, res)) { return; }
 
