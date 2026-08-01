@@ -378,13 +378,22 @@ function extractOpenAIText(payload) {
   return chunks.join('\n').trim() || null;
 }
 
-async function callOpenAI(message, history) {
+const NORMAL_OUTPUT_TOKENS = 2048;
+const RETRY_OUTPUT_TOKENS = 4096;
+
+function logIncompleteResponse(fields) {
+  // Content-free diagnostic only: never pass message or history text here.
+  console.error('[companion] incomplete response', fields);
+}
+
+async function requestOpenAI(message, history, maxOutputTokens) {
   const model = process.env.COMPANION_MODEL || process.env.OPENAI_MODEL;
   const input = [
     ...cleanHistory(history),
     { role: 'user', content: message },
   ];
-  const response = await fetch('https://api.openai.com/v1/responses', {
+  const openaiUrl = process.env.OPENAI_API_BASE_URL || 'https://api.openai.com/v1/responses';
+  const response = await fetch(openaiUrl, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
@@ -394,23 +403,56 @@ async function callOpenAI(message, history) {
       model,
       instructions: FULL_INSTRUCTIONS,
       input,
-      max_output_tokens: 500,
+      max_output_tokens: maxOutputTokens,
       store: false,
     }),
   });
   if (!response.ok) throw new Error('OpenAI request failed');
-  const text = extractOpenAIText(await response.json());
+  const payload = await response.json();
+  const text = extractOpenAIText(payload);
   if (!text) throw new Error('OpenAI returned no text');
-  return text;
+  const incomplete =
+    payload.status === 'incomplete' ||
+    Boolean(payload.incomplete_details && payload.incomplete_details.reason);
+  return {
+    text,
+    incomplete,
+    reason: incomplete ? (payload.incomplete_details && payload.incomplete_details.reason) || 'incomplete' : null,
+    requestId: response.headers.get('x-request-id') || null,
+  };
 }
 
-async function callAnthropic(message, history) {
+async function callOpenAI(message, history) {
+  let attempt = await requestOpenAI(message, history, NORMAL_OUTPUT_TOKENS);
+  if (attempt.incomplete) {
+    logIncompleteResponse({
+      provider: 'openai',
+      reason: attempt.reason,
+      requestId: attempt.requestId,
+      attempt: 1,
+    });
+    attempt = await requestOpenAI(message, history, RETRY_OUTPUT_TOKENS);
+    if (attempt.incomplete) {
+      logIncompleteResponse({
+        provider: 'openai',
+        reason: attempt.reason,
+        requestId: attempt.requestId,
+        attempt: 2,
+      });
+      throw new Error('OpenAI response remained incomplete after retry');
+    }
+  }
+  return attempt.text;
+}
+
+async function requestAnthropic(message, history, maxTokens) {
   const model = process.env.COMPANION_MODEL || process.env.ANTHROPIC_MODEL;
   const messages = [
     ...cleanHistory(history),
     { role: 'user', content: message },
   ];
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
+  const anthropicUrl = process.env.ANTHROPIC_API_BASE_URL || 'https://api.anthropic.com/v1/messages';
+  const response = await fetch(anthropicUrl, {
     method: 'POST',
     headers: {
       'x-api-key': process.env.ANTHROPIC_API_KEY || '',
@@ -421,7 +463,7 @@ async function callAnthropic(message, history) {
       model,
       system: FULL_INSTRUCTIONS,
       messages,
-      max_tokens: 500,
+      max_tokens: maxTokens,
     }),
   });
   if (!response.ok) throw new Error('Anthropic request failed');
@@ -434,7 +476,41 @@ async function callAnthropic(message, history) {
         .trim()
     : '';
   if (!text) throw new Error('Anthropic returned no text');
-  return text;
+  const incomplete =
+    payload.stop_reason === 'max_tokens' ||
+    payload.stop_reason === 'model_context_window_exceeded';
+  return {
+    text,
+    incomplete,
+    stopReason: payload.stop_reason || null,
+    outputTokens: (payload.usage && payload.usage.output_tokens) || null,
+    requestId: response.headers.get('request-id') || null,
+  };
+}
+
+async function callAnthropic(message, history) {
+  let attempt = await requestAnthropic(message, history, NORMAL_OUTPUT_TOKENS);
+  if (attempt.incomplete) {
+    logIncompleteResponse({
+      provider: 'anthropic',
+      stopReason: attempt.stopReason,
+      outputTokens: attempt.outputTokens,
+      requestId: attempt.requestId,
+      attempt: 1,
+    });
+    attempt = await requestAnthropic(message, history, RETRY_OUTPUT_TOKENS);
+    if (attempt.incomplete) {
+      logIncompleteResponse({
+        provider: 'anthropic',
+        stopReason: attempt.stopReason,
+        outputTokens: attempt.outputTokens,
+        requestId: attempt.requestId,
+        attempt: 2,
+      });
+      throw new Error('Anthropic response remained incomplete after retry');
+    }
+  }
+  return attempt.text;
 }
 
 function removeEmDashes(text) {
