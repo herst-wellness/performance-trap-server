@@ -513,7 +513,7 @@ function companionPage() {
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <style>
 :root{--cream:#F4EDE4;--paper:#FBF7F0;--ink:#352515;--gold:#8B6B1E;--line:#D7C7B3;--soft:#EFE6D8;--danger:#8E2F27;--shadow:0 20px 55px rgba(53,37,21,.10)}
-*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:'Cormorant Garamond',Georgia,serif;font-size:19px;line-height:1.55}.shell{width:min(920px,calc(100% - 28px));margin:0 auto;padding:30px 0 54px}.brand{display:flex;justify-content:center;margin-bottom:22px}.brand img{display:block;width:min(520px,100%);height:auto}.rule{height:1px;background:var(--gold);opacity:.65;margin:0 0 30px}.hero{text-align:center;margin:0 auto 28px;max-width:700px}.eyebrow{text-transform:uppercase;letter-spacing:.18em;color:var(--gold);font:600 12px/1.4 Arial,sans-serif}.hero h1{font-family:'Playfair Display',Georgia,serif;font-size:clamp(34px,6vw,54px);line-height:1.08;margin:10px 0 10px}.hero p{font-style:italic;color:#6F5438;margin:0}.card{background:rgba(251,247,240,.94);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:clamp(22px,4vw,38px);max-width:720px;margin:0 auto}.card h2{font-family:'Playfair Display',Georgia,serif;font-size:24px;margin:0 0 10px}.small{font:14px/1.5 Arial,sans-serif;color:#715D49}.notice{padding:17px 18px;background:var(--soft);border-left:3px solid var(--gold);font:14px/1.55 Arial,sans-serif;margin:18px 0}.field{margin:18px 0}.field label{display:block;font:600 13px/1.4 Arial,sans-serif;letter-spacing:.03em;margin-bottom:7px}.field input,.field select,.composer textarea{width:100%;border:1px solid #BCA88E;border-radius:10px;background:#FFFDF9;color:var(--ink);padding:13px 14px;font:16px/1.4 Arial,sans-serif}.field input:focus,.field select:focus,.composer textarea:focus{outline:2px solid rgba(139,107,30,.28);border-color:var(--gold)}.check{display:flex;gap:10px;align-items:flex-start;font:15px/1.45 Arial,sans-serif;margin:13px 0}.check input{margin-top:3px}.button{border:1px solid var(--gold);background:var(--gold);color:white;border-radius:999px;padding:12px 20px;font:600 14px/1 Arial,sans-serif;cursor:pointer}.button:hover{filter:brightness(.95)}.button:disabled{opacity:.5;cursor:not-allowed}.button.secondary{background:transparent;color:var(--gold)}.button.danger{border-color:var(--danger);color:var(--danger);background:transparent}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.hidden{display:none!important}.error{color:var(--danger);font:600 14px/1.4 Arial,sans-serif;margin-top:12px}.session{max-width:820px;margin:0 auto;background:var(--paper);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}.session-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 20px;border-bottom:1px solid var(--line);background:#F8F1E8}.session-title{font-family:'Playfair Display',Georgia,serif;font-size:18px}.mode{font:12px/1.3 Arial,sans-serif;color:#715D49}.messages{min-height:390px;max-height:58vh;overflow-y:auto;padding:22px}.message{max-width:84%;padding:13px 15px;border-radius:14px;margin:0 0 14px;white-space:pre-wrap}.message.assistant{background:var(--soft);border-bottom-left-radius:4px}.message.user{background:#DFD0BC;margin-left:auto;border-bottom-right-radius:4px}.speaker{font:700 10px/1.2 Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:5px}.composer{border-top:1px solid var(--line);padding:16px 18px;background:#F8F1E8}.composer textarea{min-height:100px;resize:vertical}.composer-actions{display:flex;justify-content:space-between;gap:12px;margin-top:10px;align-items:center}.thinking{font:italic 16px/1.3 Georgia,serif;color:#715D49}.locked{padding:14px 18px;background:#F1DDD7;color:#6E241E;font:14px/1.45 Arial,sans-serif}.footer{text-align:center;margin:24px auto 0;color:#78644F;font:13px/1.5 Arial,sans-serif;max-width:680px}@media(max-width:620px){.shell{padding-top:18px}.card{border-radius:14px}.message{max-width:94%}.session-head{align-items:flex-start;flex-direction:column}.composer-actions{align-items:stretch;flex-direction:column}.composer-actions .row{width:100%}.composer-actions .button{flex:1}}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:'Cormorant Garamond',Georgia,serif;font-size:19px;line-height:1.55}.shell{width:min(920px,calc(100% - 28px));margin:0 auto;padding:30px 0 54px}.brand{display:flex;justify-content:center;margin-bottom:22px}.brand img{display:block;width:min(520px,100%);height:auto}.rule{height:1px;background:var(--gold);opacity:.65;margin:0 0 30px}.hero{text-align:center;margin:0 auto 28px;max-width:700px}.eyebrow{text-transform:uppercase;letter-spacing:.18em;color:var(--gold);font:600 12px/1.4 Arial,sans-serif}.hero h1{font-family:'Playfair Display',Georgia,serif;font-size:clamp(34px,6vw,54px);line-height:1.08;margin:10px 0 10px}.hero p{font-style:italic;color:#6F5438;margin:0}.card{background:rgba(251,247,240,.94);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:clamp(22px,4vw,38px);max-width:720px;margin:0 auto}.card h2{font-family:'Playfair Display',Georgia,serif;font-size:24px;margin:0 0 10px}.small{font:14px/1.5 Arial,sans-serif;color:#715D49}.notice{padding:17px 18px;background:var(--soft);border-left:3px solid var(--gold);font:14px/1.55 Arial,sans-serif;margin:18px 0}.field{margin:18px 0}.field label{display:block;font:600 13px/1.4 Arial,sans-serif;letter-spacing:.03em;margin-bottom:7px}.field input,.field select,.composer textarea{width:100%;border:1px solid #BCA88E;border-radius:10px;background:#FFFDF9;color:var(--ink);padding:13px 14px;font:16px/1.4 Arial,sans-serif}.field input:focus,.field select:focus,.composer textarea:focus{outline:2px solid rgba(139,107,30,.28);border-color:var(--gold)}.check{display:flex;gap:10px;align-items:flex-start;font:15px/1.45 Arial,sans-serif;margin:13px 0}.check input{margin-top:3px}.button{border:1px solid var(--gold);background:var(--gold);color:white;border-radius:999px;padding:12px 20px;font:600 14px/1 Arial,sans-serif;cursor:pointer}.button:hover{filter:brightness(.95)}.button:disabled{opacity:.5;cursor:not-allowed}.button.secondary{background:transparent;color:var(--gold)}.button.danger{border-color:var(--danger);color:var(--danger);background:transparent}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.hidden{display:none!important}.error{color:var(--danger);font:600 14px/1.4 Arial,sans-serif;margin-top:12px}.session{max-width:820px;margin:0 auto;background:var(--paper);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}.session-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 20px;border-bottom:1px solid var(--line);background:#F8F1E8}.session-title{font-family:'Playfair Display',Georgia,serif;font-size:18px}.mode{font:12px/1.3 Arial,sans-serif;color:#715D49}.messages{min-height:390px;max-height:58vh;overflow-y:auto;padding:22px}.message{max-width:84%;padding:13px 15px;border-radius:14px;margin:0 0 14px;white-space:pre-wrap}.message.assistant{background:var(--soft);border-bottom-left-radius:4px}.message.user{background:#DFD0BC;margin-left:auto;border-bottom-right-radius:4px}.speaker{font:700 10px/1.2 Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:5px}.composer{border-top:1px solid var(--line);padding:16px 18px;background:#F8F1E8}.composer textarea{min-height:100px;resize:vertical}.composer-actions{display:flex;justify-content:space-between;gap:12px;margin-top:10px;align-items:center}.thinking{font:italic 16px/1.3 Georgia,serif;color:#715D49}.waiting-status{font:italic 15px/1.4 Georgia,serif;color:#715D49;text-align:center;margin:2px auto 12px}.breath-view{display:flex;flex-direction:column;align-items:center;gap:12px;padding:16px 0 4px}.breath-space{height:110px;display:flex;align-items:center;justify-content:center}.breath-dot{width:64px;height:64px;border-radius:50%;background:var(--gold);opacity:.85;transform:scale(.22);transform-origin:center}.breath-dot.still{transform:scale(.55)}.breath-phase{font-family:'Playfair Display',Georgia,serif;font-size:22px;min-height:28px}.breath-time{font:13px/1.4 Arial,sans-serif;color:#715D49;min-height:18px}.locked{padding:14px 18px;background:#F1DDD7;color:#6E241E;font:14px/1.45 Arial,sans-serif}.footer{text-align:center;margin:24px auto 0;color:#78644F;font:13px/1.5 Arial,sans-serif;max-width:680px}@media(max-width:620px){.shell{padding-top:18px}.card{border-radius:14px}.message{max-width:94%}.session-head{align-items:flex-start;flex-direction:column}.composer-actions{align-items:stretch;flex-direction:column}.composer-actions .row{width:100%}.composer-actions .button{flex:1}}
 </style>
 </head>
 <body>
@@ -550,6 +550,38 @@ function companionPage() {
     <div id="consentError" class="error hidden"></div>
   </section>
 
+  <section id="breathCard" class="card hidden">
+    <h2>A little time to breathe</h2>
+    <div id="breathOffer">
+      <p>Before we begin, would you like to spend a little time breathing together? It is completely optional. We can also simply begin.</p>
+      <div id="breathChoices" class="row">
+        <button type="button" class="button secondary" data-minutes="2">2 minutes</button>
+        <button type="button" class="button secondary" data-minutes="3">3 minutes</button>
+        <button type="button" class="button secondary" data-minutes="4">4 minutes</button>
+        <button type="button" class="button secondary" data-minutes="5">5 minutes</button>
+        <button type="button" id="breathSkip" class="button">No, I am ready to begin</button>
+      </div>
+    </div>
+    <div id="breathPractice" class="hidden">
+      <p class="small">In through the nose for about five. Out through pursed lips, like you are blowing through a straw, for about seven. You can pause or stop at any time.</p>
+      <div class="breath-view">
+        <div class="breath-space"><div id="breathDot" class="breath-dot" aria-hidden="true"></div></div>
+        <div id="breathStatus" role="status" aria-live="polite"><span id="breathPhase" class="breath-phase"></span></div>
+        <div id="breathTime" class="breath-time"></div>
+        <div class="row">
+          <button type="button" id="breathStart" class="button">Start</button>
+          <button type="button" id="breathPause" class="button secondary hidden">Pause</button>
+          <button type="button" id="breathContinue" class="button secondary hidden">Continue</button>
+          <button type="button" id="breathStop" class="button danger">Stop</button>
+        </div>
+      </div>
+    </div>
+    <div id="breathClosing" class="hidden">
+      <p id="breathClosingText"></p>
+      <button type="button" id="breathDone" class="button">Continue</button>
+    </div>
+  </section>
+
   <section id="session" class="session hidden">
     <div class="session-head">
       <div><div class="session-title">Kids on the Bus</div><div id="modeLabel" class="mode"></div></div>
@@ -564,7 +596,6 @@ function companionPage() {
     <form id="composer" class="composer">
       <textarea id="messageInput" maxlength="12000" placeholder="Write what happened..." aria-label="Your reflection"></textarea>
       <div class="composer-actions">
-        <span id="thinking" class="thinking hidden">Sitting with what you wrote...</span>
         <div class="row"><button id="stopButton" type="button" class="button danger">Stop</button><button id="sendButton" type="submit" class="button">Send</button></div>
       </div>
     </form>
@@ -581,6 +612,22 @@ function companionPage() {
   var el = function(id){ return document.getElementById(id); };
 
   function showError(target, text){ target.textContent = text; target.classList.toggle('hidden', !text); }
+  var pendingSeq = 0;
+  function showWaiting(){
+    if (document.getElementById('waitingStatus')) return;
+    var note = document.createElement('div');
+    note.id = 'waitingStatus';
+    note.className = 'waiting-status';
+    note.setAttribute('role', 'status');
+    note.setAttribute('aria-live', 'polite');
+    note.textContent = 'Waiting for the response.';
+    el('messages').appendChild(note);
+    el('messages').scrollTop = el('messages').scrollHeight;
+  }
+  function hideWaiting(){
+    var note = document.getElementById('waitingStatus');
+    if (note && note.parentNode) note.parentNode.removeChild(note);
+  }
   function headers(){ return {'Content-Type':'application/json','X-Companion-Access':accessCode}; }
   function providerLabel(value){ return value === 'offline' ? 'Structured practice mode' : 'AI response mode: ' + value; }
   function addMessage(role, content){
@@ -608,6 +655,10 @@ function companionPage() {
     el('stopButton').disabled = value;
   }
   function clearSession(){
+    pendingSeq++;
+    hideWaiting();
+    pauseBreathLoop();
+    el('breathCard').classList.add('hidden');
     messages = [];
     locked = false;
     accessCode = '';
@@ -650,9 +701,120 @@ function companionPage() {
     }
     country = el('country').value;
     el('consentCard').classList.add('hidden');
+    el('breathCard').classList.remove('hidden');
+    el('breathOffer').classList.remove('hidden');
+    el('breathPractice').classList.add('hidden');
+    el('breathClosing').classList.add('hidden');
+  });
+
+  function enterSession(){
+    el('breathCard').classList.add('hidden');
     el('session').classList.remove('hidden');
     addMessage('assistant', 'What has you reaching out today? Give me a sense of what is happening.');
     el('messageInput').focus();
+  }
+
+  el('breathSkip').addEventListener('click', enterSession);
+  el('breathDone').addEventListener('click', enterSession);
+
+  // Optional opening breath practice. Local timer only; no model call, no storage.
+  var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var INHALE_MS = 5000, EXHALE_MS = 7000, CYCLE_MS = INHALE_MS + EXHALE_MS;
+  var breath = { totalCycles: 0, cyclesDone: 0, phaseStart: 0, elapsedInPhase: 0, phase: 'inhale', raf: null, running: false };
+
+  function breathTimeLeftText(){
+    var cyclesLeft = breath.totalCycles - breath.cyclesDone;
+    var secondsLeft = Math.max(0, Math.round((cyclesLeft * CYCLE_MS - breath.elapsedInPhase) / 1000));
+    var m = Math.floor(secondsLeft / 60), s = secondsLeft % 60;
+    return m + ':' + (s < 10 ? '0' : '') + s + ' remaining';
+  }
+  function renderBreathFrame(msIntoPhase){
+    var phaseMs = breath.phase === 'inhale' ? INHALE_MS : EXHALE_MS;
+    var t = Math.min(1, msIntoPhase / phaseMs);
+    el('breathPhase').textContent = breath.phase === 'inhale' ? 'Inhale' : 'Exhale';
+    if (!reducedMotion) {
+      var scale = breath.phase === 'inhale' ? (0.22 + t * 0.78) : (1 - t * 0.78);
+      el('breathDot').style.transform = 'scale(' + scale.toFixed(3) + ')';
+    }
+    el('breathTime').textContent = breathTimeLeftText();
+  }
+  function breathTick(now){
+    if (!breath.running) return;
+    var msIntoPhase = now - breath.phaseStart + breath.elapsedInPhase;
+    var phaseMs = breath.phase === 'inhale' ? INHALE_MS : EXHALE_MS;
+    if (msIntoPhase >= phaseMs) {
+      if (breath.phase === 'inhale') {
+        breath.phase = 'exhale';
+      } else {
+        breath.phase = 'inhale';
+        breath.cyclesDone++;
+      }
+      breath.phaseStart = now;
+      breath.elapsedInPhase = 0;
+      if (breath.cyclesDone >= breath.totalCycles) { finishBreathPractice(); return; }
+      msIntoPhase = 0;
+    }
+    renderBreathFrame(msIntoPhase);
+    breath.raf = requestAnimationFrame(breathTick);
+  }
+  function startBreathLoop(){
+    breath.running = true;
+    breath.phaseStart = performance.now();
+    breath.raf = requestAnimationFrame(breathTick);
+  }
+  function pauseBreathLoop(){
+    if (!breath.running) return;
+    breath.running = false;
+    breath.elapsedInPhase += performance.now() - breath.phaseStart;
+    if (breath.raf) cancelAnimationFrame(breath.raf);
+  }
+  function resetBreathView(){
+    breath.phase = 'inhale'; breath.cyclesDone = 0; breath.elapsedInPhase = 0; breath.running = false;
+    el('breathDot').classList.toggle('still', !!reducedMotion);
+    el('breathDot').style.transform = reducedMotion ? '' : 'scale(0.22)';
+    el('breathPhase').textContent = '';
+    el('breathTime').textContent = '';
+    el('breathStart').classList.remove('hidden');
+    el('breathPause').classList.add('hidden');
+    el('breathContinue').classList.add('hidden');
+  }
+  function finishBreathPractice(){
+    pauseBreathLoop();
+    el('breathPractice').classList.add('hidden');
+    el('breathClosing').classList.remove('hidden');
+    // Draft closing language, transcript-grounded (Val 2025-12-11 line 23; Val/Lisa "not in a rush" pattern).
+    // Marked for Chad's case-by-case approval before this becomes canonical.
+    el('breathClosingText').textContent = 'Now letting the breath come back to its natural rhythm. There is really no rush. Whenever you are ready.';
+  }
+
+  document.querySelectorAll('#breathChoices button[data-minutes]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var minutes = parseInt(btn.getAttribute('data-minutes'), 10);
+      breath.totalCycles = minutes * 5; // 12-second cycles: 5 per minute
+      el('breathOffer').classList.add('hidden');
+      el('breathPractice').classList.remove('hidden');
+      resetBreathView();
+    });
+  });
+  el('breathStart').addEventListener('click', function(){
+    el('breathStart').classList.add('hidden');
+    el('breathPause').classList.remove('hidden');
+    startBreathLoop();
+  });
+  el('breathPause').addEventListener('click', function(){
+    pauseBreathLoop();
+    el('breathPause').classList.add('hidden');
+    el('breathContinue').classList.remove('hidden');
+  });
+  el('breathContinue').addEventListener('click', function(){
+    el('breathContinue').classList.add('hidden');
+    el('breathPause').classList.remove('hidden');
+    breath.phaseStart = performance.now();
+    startBreathLoop();
+  });
+  el('breathStop').addEventListener('click', function(){
+    pauseBreathLoop();
+    enterSession();
   });
 
   el('composer').addEventListener('submit', async function(event){
@@ -663,27 +825,30 @@ function companionPage() {
     var history = messages.slice();
     addMessage('user', message);
     el('messageInput').value = '';
+    var seq = ++pendingSeq;
     el('sendButton').disabled = true;
-    el('stopButton').disabled = true;
-    el('thinking').classList.remove('hidden');
+    showWaiting();
     try {
       var response = await fetch('/api/kids-on-the-bus', {
         method:'POST', headers:headers(), cache:'no-store',
         body:JSON.stringify({message:message, history:history, adultConfirmed:true, country:country})
       });
       var data = await response.json();
+      if (seq !== pendingSeq || locked) return;
       if (!response.ok) throw new Error(data.error || 'Unable to respond');
       addMessage('assistant', data.response);
       if (data.lockSession) setLocked(true);
     } catch (error) {
-      addMessage('assistant', 'I am having trouble responding right now. This application has not saved your entry. Please copy anything you want to keep and try again later.');
+      if (seq === pendingSeq && !locked) addMessage('assistant', 'I am having trouble responding right now. This application has not saved your entry. Please copy anything you want to keep and try again later.');
     } finally {
-      el('thinking').classList.add('hidden');
-      if (!locked) { el('sendButton').disabled = false; el('stopButton').disabled = false; el('messageInput').focus(); }
+      if (seq === pendingSeq) hideWaiting();
+      if (!locked) { el('sendButton').disabled = false; el('messageInput').focus(); }
     }
   });
 
   el('stopButton').addEventListener('click', function(){
+    pendingSeq++;
+    hideWaiting();
     addMessage('assistant', 'Yes. We will stop here. You do not need to explain or push through anything.');
     setLocked(true);
   });
