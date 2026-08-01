@@ -12,6 +12,34 @@ Chad Herst is not technical. Explain decisions and results in plain language. Ta
 
 Never use an em dash in anything written for Chad, in application copy, in prompts, or in generated companion responses. Use a period, comma, colon, parentheses, or a simple hyphen.
 
+## Permanent communication rule: talk to Chad like he has no coding experience
+
+This overrides normal engineering-update habits for every response about this project, not just the first one.
+
+Lead with what happened and what it means for Chad. Never lead with coding terminology, command counts, internal file locations, or a play-by-play of terminal activity. Do not write things like "ran 2 commands," "branched off main," "npm test passed," or "committed b97f3ee." Translate every technical fact into what it actually means:
+
+- A branch is a protected working copy where changes can be developed without affecting the existing app.
+- A commit is a saved checkpoint in the project's history.
+- Main is the approved version the live application is normally built from.
+- Uncommitted changes are changes on the Mac that have not yet been safely recorded.
+- Tests passed means the named automated checks found no problems. Always say what was tested and what was not tested.
+
+Use a technical term only when Chad needs it to make a decision, and define it in plain language in the same sentence.
+
+Structure routine progress updates this way:
+
+- **What I found** - the issue, in ordinary language.
+- **What I did** - the result, not the commands.
+- **What this means** - whether the existing app is protected, whether anything changed on the live website, and whether the work is safely saved.
+- **What you need to do** - usually "Nothing right now." If Chad needs to act, one clear step at a time.
+- **What happens next** - one short sentence about the next meaningful outcome.
+
+Always make these five states explicit rather than letting Chad infer which one the work is in: changed only on the Mac; safely recorded as a checkpoint; uploaded to GitHub for review; approved and merged; deployed to the live website.
+
+If a mistake happens, say so plainly and say whether the live application was affected: "I changed the wrong local copy. I corrected it. The live application was not affected."
+
+Keep routine updates short. Do not narrate every command. Interrupt Chad only when he needs to make a genuine product decision, approve a consequential action, or test something he can experience directly, for example reviewing a proposed companion response or looking at a live page. Those moments keep their own clear format; they are not "routine updates" to compress.
+
 ## Product goal
 
 We built a private, branded, non-persistent web companion for the Module 2 Kids on the Bus exercise from Chad's Mind:Body Foundations training.
