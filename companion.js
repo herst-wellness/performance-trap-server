@@ -378,13 +378,22 @@ function extractOpenAIText(payload) {
   return chunks.join('\n').trim() || null;
 }
 
-async function callOpenAI(message, history) {
+const NORMAL_OUTPUT_TOKENS = 2048;
+const RETRY_OUTPUT_TOKENS = 4096;
+
+function logIncompleteResponse(fields) {
+  // Content-free diagnostic only: never pass message or history text here.
+  console.error('[companion] incomplete response', fields);
+}
+
+async function requestOpenAI(message, history, maxOutputTokens) {
   const model = process.env.COMPANION_MODEL || process.env.OPENAI_MODEL;
   const input = [
     ...cleanHistory(history),
     { role: 'user', content: message },
   ];
-  const response = await fetch('https://api.openai.com/v1/responses', {
+  const openaiUrl = process.env.OPENAI_API_BASE_URL || 'https://api.openai.com/v1/responses';
+  const response = await fetch(openaiUrl, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
@@ -394,23 +403,56 @@ async function callOpenAI(message, history) {
       model,
       instructions: FULL_INSTRUCTIONS,
       input,
-      max_output_tokens: 500,
+      max_output_tokens: maxOutputTokens,
       store: false,
     }),
   });
   if (!response.ok) throw new Error('OpenAI request failed');
-  const text = extractOpenAIText(await response.json());
+  const payload = await response.json();
+  const text = extractOpenAIText(payload);
   if (!text) throw new Error('OpenAI returned no text');
-  return text;
+  const incomplete =
+    payload.status === 'incomplete' ||
+    Boolean(payload.incomplete_details && payload.incomplete_details.reason);
+  return {
+    text,
+    incomplete,
+    reason: incomplete ? (payload.incomplete_details && payload.incomplete_details.reason) || 'incomplete' : null,
+    requestId: response.headers.get('x-request-id') || null,
+  };
 }
 
-async function callAnthropic(message, history) {
+async function callOpenAI(message, history) {
+  let attempt = await requestOpenAI(message, history, NORMAL_OUTPUT_TOKENS);
+  if (attempt.incomplete) {
+    logIncompleteResponse({
+      provider: 'openai',
+      reason: attempt.reason,
+      requestId: attempt.requestId,
+      attempt: 1,
+    });
+    attempt = await requestOpenAI(message, history, RETRY_OUTPUT_TOKENS);
+    if (attempt.incomplete) {
+      logIncompleteResponse({
+        provider: 'openai',
+        reason: attempt.reason,
+        requestId: attempt.requestId,
+        attempt: 2,
+      });
+      throw new Error('OpenAI response remained incomplete after retry');
+    }
+  }
+  return attempt.text;
+}
+
+async function requestAnthropic(message, history, maxTokens) {
   const model = process.env.COMPANION_MODEL || process.env.ANTHROPIC_MODEL;
   const messages = [
     ...cleanHistory(history),
     { role: 'user', content: message },
   ];
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
+  const anthropicUrl = process.env.ANTHROPIC_API_BASE_URL || 'https://api.anthropic.com/v1/messages';
+  const response = await fetch(anthropicUrl, {
     method: 'POST',
     headers: {
       'x-api-key': process.env.ANTHROPIC_API_KEY || '',
@@ -421,7 +463,7 @@ async function callAnthropic(message, history) {
       model,
       system: FULL_INSTRUCTIONS,
       messages,
-      max_tokens: 500,
+      max_tokens: maxTokens,
     }),
   });
   if (!response.ok) throw new Error('Anthropic request failed');
@@ -434,7 +476,41 @@ async function callAnthropic(message, history) {
         .trim()
     : '';
   if (!text) throw new Error('Anthropic returned no text');
-  return text;
+  const incomplete =
+    payload.stop_reason === 'max_tokens' ||
+    payload.stop_reason === 'model_context_window_exceeded';
+  return {
+    text,
+    incomplete,
+    stopReason: payload.stop_reason || null,
+    outputTokens: (payload.usage && payload.usage.output_tokens) || null,
+    requestId: response.headers.get('request-id') || null,
+  };
+}
+
+async function callAnthropic(message, history) {
+  let attempt = await requestAnthropic(message, history, NORMAL_OUTPUT_TOKENS);
+  if (attempt.incomplete) {
+    logIncompleteResponse({
+      provider: 'anthropic',
+      stopReason: attempt.stopReason,
+      outputTokens: attempt.outputTokens,
+      requestId: attempt.requestId,
+      attempt: 1,
+    });
+    attempt = await requestAnthropic(message, history, RETRY_OUTPUT_TOKENS);
+    if (attempt.incomplete) {
+      logIncompleteResponse({
+        provider: 'anthropic',
+        stopReason: attempt.stopReason,
+        outputTokens: attempt.outputTokens,
+        requestId: attempt.requestId,
+        attempt: 2,
+      });
+      throw new Error('Anthropic response remained incomplete after retry');
+    }
+  }
+  return attempt.text;
 }
 
 function removeEmDashes(text) {
@@ -538,7 +614,18 @@ function companionPage() {
   </section>
 
   <section id="consentCard" class="card hidden">
-    <h2>Before you begin</h2>
+    <h2>Welcome to Kids on the Bus</h2>
+    <p>The heart of this practice is awareness. Awareness is the ability to step back, even if it is only enough to create a razor-thin space between you and what is happening in your mind and body.</p>
+    <p>Stepping back does not mean staying away. From that little bit of space, we turn toward what is happening. We do not just think about it. We begin to feel our way into the body of it. Where does it live? What does it feel like? What is it trying to tell us?</p>
+    <p>When anxiety, overwhelm, anger, or the critic gets stirred up, it can feel like it has become all of you. But it is not all of you. It is a part of you. When we lose awareness, we become identified with that part. We call this blending. The feeling takes the wheel, and for a moment, we disappear into it.</p>
+    <p>The image we use is kids on a bus. You are the driver, and the different parts of you are the kids. Every so often, one of them gets triggered and reaches for the steering wheel.</p>
+    <p>The aim is not to throw that kid off the bus. These parts are protectors. Each one is trying to keep you from experiencing something it fears might be painful, overwhelming, or unsafe. Our work is to notice when a kid has taken the wheel, get to know it, and begin to sense what it is trying to protect.</p>
+    <p>This companion will help you explore one recent moment when something became activated. We will begin with the story and stay with it long enough for the experience to become real. Then, when the time is right, you will be invited to notice how it lives in your body. From there, you may begin to recognize which kid is present and what it is afraid might happen.</p>
+    <p>One of the tools we use is labeling. You may have heard the phrase &ldquo;name it to tame it.&rdquo; But naming is more subtle than simply calling something anxiety or anger. Those words can contain an entire landscape. As you slow down and find more precise language, you begin to discover the architecture of the experience. Often, being seen and understood is exactly what the kid has been asking for.</p>
+    <p>You do not need to answer anything correctly. You may pause, skip a question, correct the companion, or stop whenever you choose.</p>
+    <p>If you would like, you can begin with a short breathing practice to help you arrive. You may also skip the breathing and begin with whatever is on your bus today.</p>
+    <div class="rule" style="margin:26px 0"></div>
+    <h2 style="font-size:20px">Before you begin</h2>
     <div id="privacyNotice" class="notice"></div>
     <label class="check"><input id="adultCheck" type="checkbox"><span>I confirm that I am at least 18 years old.</span></label>
     <label class="check"><input id="scopeCheck" type="checkbox"><span>I understand that this is a guided reflection, not therapy, medical care, diagnosis, or crisis support. I may pause or stop at any time.</span></label>
