@@ -5,6 +5,8 @@ const net = require('node:net');
 const path = require('node:path');
 const test = require('node:test');
 
+const VOICE_ON = { COMPANION_VOICE_ENABLED: 'true' };
+
 function getOpenPort() {
   return new Promise((resolve, reject) => {
     const server = net.createServer();
@@ -77,9 +79,34 @@ function startServer(port, extraEnv) {
   });
 }
 
-test('voice routes require the access code', { timeout: 20000 }, async (t) => {
+test('voice mode is off by default, even with a working key configured', { timeout: 20000 }, async (t) => {
   const port = await getOpenPort();
   const child = await startServer(port, {});
+  t.after(() => child.kill());
+  const baseUrl = 'http://127.0.0.1:' + port;
+
+  const transcribe = await fetch(baseUrl + '/api/kids-on-the-bus/transcribe', {
+    method: 'POST',
+    headers: { 'Content-Type': 'audio/webm', 'X-Companion-Access': 'test-access' },
+    body: Buffer.from('pretend audio'),
+  });
+  assert.equal(transcribe.status, 503);
+
+  const speech = await fetch(baseUrl + '/api/kids-on-the-bus/speech', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Companion-Access': 'test-access' },
+    body: JSON.stringify({ text: 'hello' }),
+  });
+  assert.equal(speech.status, 503);
+
+  const unlock = await fetch(baseUrl + '/api/kids-on-the-bus', { headers: { 'X-Companion-Access': 'test-access' } });
+  const unlockBody = await unlock.json();
+  assert.equal(unlockBody.voiceEnabled, false);
+});
+
+test('voice routes require the access code', { timeout: 20000 }, async (t) => {
+  const port = await getOpenPort();
+  const child = await startServer(port, VOICE_ON);
   t.after(() => child.kill());
   const baseUrl = 'http://127.0.0.1:' + port;
 
@@ -100,7 +127,7 @@ test('voice routes require the access code', { timeout: 20000 }, async (t) => {
 
 test('transcription: rejects unsupported audio type and oversized uploads, never leaks the key', { timeout: 20000 }, async (t) => {
   const port = await getOpenPort();
-  const child = await startServer(port, {});
+  const child = await startServer(port, VOICE_ON);
   t.after(() => child.kill());
   const baseUrl = 'http://127.0.0.1:' + port;
 
@@ -115,7 +142,7 @@ test('transcription: rejects unsupported audio type and oversized uploads, never
 
   const oversized = await fetch(baseUrl + '/api/kids-on-the-bus/transcribe', {
     method: 'POST',
-    headers: { 'Content-Type': 'audio/webm', 'X-Companion-Access': 'test-access' },
+    headers: { 'Content-Type': 'audio/webm', 'X-Companion-Access': 'test-access', 'X-Voice-Session': 'oversize-check' },
     body: Buffer.alloc(9 * 1024 * 1024, 1),
   });
   assert.equal(oversized.status, 413);
@@ -130,34 +157,78 @@ test('transcription: success round-trip reaches the transcript, failure falls ba
       return;
     }
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ text: 'I noticed my chest tighten during the meeting.' }));
+    res.end(JSON.stringify({ text: 'I noticed my chest tighten during the meeting.', duration: 4.2 }));
   });
   t.after(() => mock.server.close());
 
   const port = await getOpenPort();
-  const child = await startServer(port, { OPENAI_TRANSCRIBE_BASE_URL: mock.url });
+  const child = await startServer(port, { ...VOICE_ON, OPENAI_TRANSCRIBE_BASE_URL: mock.url });
   t.after(() => child.kill());
   const baseUrl = 'http://127.0.0.1:' + port;
 
   const ok = await fetch(baseUrl + '/api/kids-on-the-bus/transcribe', {
     method: 'POST',
-    headers: { 'Content-Type': 'audio/webm', 'X-Companion-Access': 'test-access' },
+    headers: { 'Content-Type': 'audio/webm', 'X-Companion-Access': 'test-access', 'X-Voice-Session': 'round-trip-session' },
     body: Buffer.from('pretend audio bytes'),
   });
   assert.equal(ok.status, 200);
   assert.match(ok.headers.get('cache-control') || '', /no-store/i);
   const okBody = await ok.json();
   assert.equal(okBody.transcript, 'I noticed my chest tighten during the meeting.');
+  assert.equal(okBody.voiceExchangeCount, 1);
 
   shouldFail = true;
   const fail = await fetch(baseUrl + '/api/kids-on-the-bus/transcribe', {
     method: 'POST',
-    headers: { 'Content-Type': 'audio/webm', 'X-Companion-Access': 'test-access' },
+    headers: { 'Content-Type': 'audio/webm', 'X-Companion-Access': 'test-access', 'X-Voice-Session': 'round-trip-session' },
     body: Buffer.from('pretend audio bytes'),
   });
   assert.equal(fail.status, 502);
   const failBody = await fail.json();
   assert.match(failBody.error, /try again|writing/i);
+});
+
+test('server enforces a 12 voice exchange limit per session', { timeout: 20000 }, async (t) => {
+  const mock = await startMockProvider((req, body, res) => {
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ text: 'a turn', duration: 3 }));
+  });
+  t.after(() => mock.server.close());
+
+  const port = await getOpenPort();
+  const child = await startServer(port, { ...VOICE_ON, OPENAI_TRANSCRIBE_BASE_URL: mock.url });
+  t.after(() => child.kill());
+  const baseUrl = 'http://127.0.0.1:' + port;
+  const session = 'limit-test-session';
+
+  for (let i = 1; i <= 12; i++) {
+    const res = await fetch(baseUrl + '/api/kids-on-the-bus/transcribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'audio/webm', 'X-Companion-Access': 'test-access', 'X-Voice-Session': session },
+      body: Buffer.from('turn ' + i),
+    });
+    assert.equal(res.status, 200, 'exchange ' + i + ' should succeed');
+    const body = await res.json();
+    assert.equal(body.voiceExchangeCount, i);
+  }
+
+  const thirteenth = await fetch(baseUrl + '/api/kids-on-the-bus/transcribe', {
+    method: 'POST',
+    headers: { 'Content-Type': 'audio/webm', 'X-Companion-Access': 'test-access', 'X-Voice-Session': session },
+    body: Buffer.from('turn 13'),
+  });
+  assert.equal(thirteenth.status, 429);
+  const thirteenthBody = await thirteenth.json();
+  assert.equal(thirteenthBody.limitReached, true);
+
+  // A different session token is a different sitting and is not capped by
+  // another session's usage.
+  const otherSession = await fetch(baseUrl + '/api/kids-on-the-bus/transcribe', {
+    method: 'POST',
+    headers: { 'Content-Type': 'audio/webm', 'X-Companion-Access': 'test-access', 'X-Voice-Session': 'a-different-session' },
+    body: Buffer.from('turn 1'),
+  });
+  assert.equal(otherSession.status, 200);
 });
 
 test('speech: returns playable audio with no-store, rejects overlong text, failure is a clean error', { timeout: 20000 }, async (t) => {
@@ -174,7 +245,7 @@ test('speech: returns playable audio with no-store, rejects overlong text, failu
   t.after(() => mock.server.close());
 
   const port = await getOpenPort();
-  const child = await startServer(port, { OPENAI_TTS_BASE_URL: mock.url });
+  const child = await startServer(port, { ...VOICE_ON, OPENAI_TTS_BASE_URL: mock.url });
   t.after(() => child.kill());
   const baseUrl = 'http://127.0.0.1:' + port;
 
@@ -203,6 +274,33 @@ test('speech: returns playable audio with no-store, rejects overlong text, failu
     body: JSON.stringify({ text: 'Good. Stay with that for a moment.' }),
   });
   assert.equal(fail.status, 502);
+});
+
+test('provider calls emit content-free usage records, never message or response text', { timeout: 20000 }, async (t) => {
+  const mockSpeech = await startMockProvider((req, body, res) => {
+    res.writeHead(200, { 'Content-Type': 'audio/mpeg' });
+    res.end(Buffer.from([0xff, 0xfb, 0x90, 0x00, 0x00, 0x00]));
+  });
+  t.after(() => mockSpeech.server.close());
+
+  const port = await getOpenPort();
+  const child = await startServer(port, { ...VOICE_ON, OPENAI_TTS_BASE_URL: mockSpeech.url });
+  let stdout = '';
+  child.stdout.on('data', (chunk) => { stdout += chunk.toString(); });
+  t.after(() => child.kill());
+  const baseUrl = 'http://127.0.0.1:' + port;
+
+  const secretLine = 'A secret feeling nobody else should see in a log file.';
+  await fetch(baseUrl + '/api/kids-on-the-bus/speech', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Companion-Access': 'test-access' },
+    body: JSON.stringify({ text: secretLine }),
+  });
+  await new Promise((resolve) => setTimeout(resolve, 200));
+
+  assert.doesNotMatch(stdout, new RegExp(secretLine.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  assert.match(stdout, /\[companion\] usage/);
+  assert.match(stdout, /"kind":"speech"/);
 });
 
 test('the inline browser script on the page is syntactically valid', { timeout: 20000 }, async (t) => {

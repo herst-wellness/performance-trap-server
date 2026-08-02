@@ -11,6 +11,27 @@ const MAX_MESSAGE_CHARS = 12000;
 // About two minutes of typical browser-recorded speech at ordinary compression.
 const MAX_AUDIO_BYTES = 8 * 1024 * 1024;
 const MAX_SPEECH_CHARS = 4000;
+const VOICE_SESSION_MAX_EXCHANGES = 12;
+const VOICE_SESSION_MAP_MAX_SIZE = 500;
+// In-memory only, never written to disk: a random session token mapped to a
+// count. No journal content, no identifying information, just a number that
+// resets whenever the server restarts.
+const voiceSessionCounts = new Map();
+
+function takeVoiceExchange(token) {
+  if (!token) return { ok: true, count: null };
+  const current = voiceSessionCounts.get(token) || 0;
+  if (current >= VOICE_SESSION_MAX_EXCHANGES) {
+    return { ok: false, count: current };
+  }
+  if (voiceSessionCounts.size >= VOICE_SESSION_MAP_MAX_SIZE && !voiceSessionCounts.has(token)) {
+    const oldestKey = voiceSessionCounts.keys().next().value;
+    voiceSessionCounts.delete(oldestKey);
+  }
+  const next = current + 1;
+  voiceSessionCounts.set(token, next);
+  return { ok: true, count: next };
+}
 const ALLOWED_AUDIO_MIME =
   /^audio\/(webm|ogg|mp4|mpeg|mp3|wav|x-wav|wave)(;.*)?$/i;
 
@@ -114,19 +135,30 @@ function result(route, response, lockSession) {
   };
 }
 
+// Dedicated companion credentials, so this app's spending is isolated from any
+// other project sharing the same Anthropic or OpenAI account. Falls back to the
+// general-purpose keys only when no dedicated companion key is configured,
+// which keeps local development simple without weakening production isolation.
+function anthropicApiKey() {
+  return process.env.COMPANION_ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY;
+}
+function openaiApiKey() {
+  return process.env.COMPANION_OPENAI_API_KEY || process.env.OPENAI_API_KEY;
+}
+
 function getActiveProvider() {
   const requested = String(process.env.COMPANION_PROVIDER || '').toLowerCase();
   const sharedModel = process.env.COMPANION_MODEL;
   if (
     requested === 'openai' &&
-    process.env.OPENAI_API_KEY &&
+    openaiApiKey() &&
     (sharedModel || process.env.OPENAI_MODEL)
   ) {
     return 'openai';
   }
   if (
     requested === 'anthropic' &&
-    process.env.ANTHROPIC_API_KEY &&
+    anthropicApiKey() &&
     (sharedModel || process.env.ANTHROPIC_MODEL)
   ) {
     return 'anthropic';
@@ -393,7 +425,13 @@ function logIncompleteResponse(fields) {
   console.error('[companion] incomplete response', fields);
 }
 
-async function requestOpenAI(message, history, maxOutputTokens) {
+// Content-free usage record for cost visibility. Never pass message, history,
+// transcript, or response text into this function, only numbers and labels.
+function logUsage(fields) {
+  console.log('[companion] usage', JSON.stringify({ at: new Date().toISOString(), ...fields }));
+}
+
+async function requestOpenAI(message, history, maxOutputTokens, interactionMode) {
   const model = process.env.COMPANION_MODEL || process.env.OPENAI_MODEL;
   const input = [
     ...cleanHistory(history),
@@ -403,7 +441,7 @@ async function requestOpenAI(message, history, maxOutputTokens) {
   const response = await fetch(openaiUrl, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      Authorization: `Bearer ${openaiApiKey()}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -421,6 +459,20 @@ async function requestOpenAI(message, history, maxOutputTokens) {
   const incomplete =
     payload.status === 'incomplete' ||
     Boolean(payload.incomplete_details && payload.incomplete_details.reason);
+  const usage = payload.usage || {};
+  logUsage({
+    provider: 'openai',
+    model: model || null,
+    mode: interactionMode || 'written',
+    inputTokens: usage.input_tokens ?? null,
+    outputTokens: usage.output_tokens ?? null,
+    cacheWriteTokens: null,
+    cacheReadTokens: usage.input_tokens_details && usage.input_tokens_details.cached_tokens != null
+      ? usage.input_tokens_details.cached_tokens
+      : null,
+    retried: false,
+    success: true,
+  });
   return {
     text,
     incomplete,
@@ -429,8 +481,8 @@ async function requestOpenAI(message, history, maxOutputTokens) {
   };
 }
 
-async function callOpenAI(message, history) {
-  let attempt = await requestOpenAI(message, history, NORMAL_OUTPUT_TOKENS);
+async function callOpenAI(message, history, interactionMode) {
+  let attempt = await requestOpenAI(message, history, NORMAL_OUTPUT_TOKENS, interactionMode);
   if (attempt.incomplete) {
     logIncompleteResponse({
       provider: 'openai',
@@ -438,7 +490,7 @@ async function callOpenAI(message, history) {
       requestId: attempt.requestId,
       attempt: 1,
     });
-    attempt = await requestOpenAI(message, history, RETRY_OUTPUT_TOKENS);
+    attempt = await requestOpenAI(message, history, RETRY_OUTPUT_TOKENS, interactionMode);
     if (attempt.incomplete) {
       logIncompleteResponse({
         provider: 'openai',
@@ -452,26 +504,46 @@ async function callOpenAI(message, history) {
   return attempt.text;
 }
 
-async function requestAnthropic(message, history, maxTokens) {
+// Extended thinking is on by default for this model family. Setting
+// COMPANION_THINKING=disabled turns it off, purely as a cost experiment; see
+// requestAnthropicThinkingConfig. Nothing about the coaching prompt changes.
+function thinkingDisabled() {
+  return String(process.env.COMPANION_THINKING || '').toLowerCase() === 'disabled';
+}
+
+async function requestAnthropic(message, history, maxTokens, interactionMode) {
   const model = process.env.COMPANION_MODEL || process.env.ANTHROPIC_MODEL;
   const messages = [
     ...cleanHistory(history),
     { role: 'user', content: message },
   ];
   const anthropicUrl = process.env.ANTHROPIC_API_BASE_URL || 'https://api.anthropic.com/v1/messages';
+  const body = {
+    model,
+    // Only the fixed instructions are cached. Journal content, conversation
+    // history, and the current message are never part of a cached block.
+    system: [
+      {
+        type: 'text',
+        text: FULL_INSTRUCTIONS,
+        cache_control: { type: 'ephemeral' },
+      },
+    ],
+    messages,
+    max_tokens: maxTokens,
+  };
+  if (thinkingDisabled()) {
+    body.thinking = { type: 'disabled' };
+  }
   const response = await fetch(anthropicUrl, {
     method: 'POST',
     headers: {
-      'x-api-key': process.env.ANTHROPIC_API_KEY || '',
+      'x-api-key': anthropicApiKey() || '',
       'anthropic-version': '2023-06-01',
+      'anthropic-beta': 'prompt-caching-2024-07-31',
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      model,
-      system: FULL_INSTRUCTIONS,
-      messages,
-      max_tokens: maxTokens,
-    }),
+    body: JSON.stringify(body),
   });
   if (!response.ok) throw new Error('Anthropic request failed');
   const payload = await response.json();
@@ -486,17 +558,29 @@ async function requestAnthropic(message, history, maxTokens) {
   const incomplete =
     payload.stop_reason === 'max_tokens' ||
     payload.stop_reason === 'model_context_window_exceeded';
+  const usage = payload.usage || {};
+  logUsage({
+    provider: 'anthropic',
+    model: model || null,
+    mode: interactionMode || 'written',
+    inputTokens: usage.input_tokens ?? null,
+    outputTokens: usage.output_tokens ?? null,
+    cacheWriteTokens: usage.cache_creation_input_tokens ?? null,
+    cacheReadTokens: usage.cache_read_input_tokens ?? null,
+    retried: false,
+    success: true,
+  });
   return {
     text,
     incomplete,
     stopReason: payload.stop_reason || null,
-    outputTokens: (payload.usage && payload.usage.output_tokens) || null,
+    outputTokens: usage.output_tokens ?? null,
     requestId: response.headers.get('request-id') || null,
   };
 }
 
-async function callAnthropic(message, history) {
-  let attempt = await requestAnthropic(message, history, NORMAL_OUTPUT_TOKENS);
+async function callAnthropic(message, history, interactionMode) {
+  let attempt = await requestAnthropic(message, history, NORMAL_OUTPUT_TOKENS, interactionMode);
   if (attempt.incomplete) {
     logIncompleteResponse({
       provider: 'anthropic',
@@ -505,7 +589,7 @@ async function callAnthropic(message, history) {
       requestId: attempt.requestId,
       attempt: 1,
     });
-    attempt = await requestAnthropic(message, history, RETRY_OUTPUT_TOKENS);
+    attempt = await requestAnthropic(message, history, RETRY_OUTPUT_TOKENS, interactionMode);
     if (attempt.incomplete) {
       logIncompleteResponse({
         provider: 'anthropic',
@@ -524,13 +608,13 @@ function removeEmDashes(text) {
   return String(text || '').replace(/\u2014/g, ',').trim();
 }
 
-async function generateReflection(message, history, provider) {
+async function generateReflection(message, history, provider, interactionMode) {
   try {
     if (provider === 'openai') {
-      return { response: removeEmDashes(await callOpenAI(message, history)), mode: 'openai' };
+      return { response: removeEmDashes(await callOpenAI(message, history, interactionMode)), mode: 'openai' };
     }
     if (provider === 'anthropic') {
-      return { response: removeEmDashes(await callAnthropic(message, history)), mode: 'anthropic' };
+      return { response: removeEmDashes(await callAnthropic(message, history, interactionMode)), mode: 'anthropic' };
     }
     return {
       response: offlineReflectionResponse(message, cleanHistory(history)),
@@ -549,8 +633,43 @@ async function generateReflection(message, history, provider) {
 // recording into text; that text then follows the exact same path as a typed message.
 // Speech only reads back a response the coaching flow already produced and approved.
 
+// One switch serves two purposes: it is off by default so Voice mode does not
+// appear in production until this is explicitly turned on (a rollout switch),
+// and once on, setting it back to anything else immediately stops all
+// transcription and speech generation without touching Written mode or
+// requiring a new deploy (an emergency kill switch). Written mode never
+// checks this flag.
+function voiceModeEnabled() {
+  return String(process.env.COMPANION_VOICE_ENABLED || '').toLowerCase() === 'true';
+}
 function voiceAudioEnabled() {
-  return Boolean(process.env.OPENAI_API_KEY);
+  return voiceModeEnabled() && Boolean(openaiApiKey());
+}
+
+// Neither gpt-4o-transcribe nor gpt-4o-mini-tts reports exact duration in
+// their response (verbose_json with a duration field is a Whisper-only
+// format; requesting it against gpt-4o-transcribe is rejected outright).
+// These are labeled estimates from file size for cost visibility only, never
+// presented as measured. Bitrate assumptions are for typical voice content,
+// not exact for any specific recording.
+const ASSUMED_BITRATE_BPS = {
+  webm: 32000, // typical browser Opus voice recording
+  ogg: 32000,
+  mp4: 64000, // typical AAC voice recording
+  wav: 256000, // rough floor for uncompressed 16-bit mono at a low sample rate
+  mp3: 128000,
+};
+function estimateAudioSeconds(byteLength, mimeType) {
+  const key = mimeType.includes('webm')
+    ? 'webm'
+    : mimeType.includes('ogg')
+      ? 'ogg'
+      : mimeType.includes('mp4')
+        ? 'mp4'
+        : mimeType.includes('wav')
+          ? 'wav'
+          : 'mp3';
+  return Math.round((byteLength * 8) / ASSUMED_BITRATE_BPS[key]);
 }
 
 async function transcribeAudio(buffer, mimeType) {
@@ -571,31 +690,53 @@ async function transcribeAudio(buffer, mimeType) {
   form.append('model', model);
   const response = await fetch(url, {
     method: 'POST',
-    headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
+    headers: { Authorization: `Bearer ${openaiApiKey()}` },
     body: form,
   });
-  if (!response.ok) throw new Error('Transcription request failed');
+  if (!response.ok) {
+    logUsage({ provider: 'openai', model, mode: 'voice', kind: 'transcription', success: false });
+    throw new Error('Transcription request failed');
+  }
   const payload = await response.json();
   const text = String(payload.text || '').trim();
+  logUsage({
+    provider: 'openai',
+    model,
+    mode: 'voice',
+    kind: 'transcription',
+    transcriptionSecondsEstimated: estimateAudioSeconds(buffer.length, mimeType),
+    success: Boolean(text),
+  });
   if (!text) throw new Error('Transcription returned no text');
   return text;
 }
 
 async function synthesizeSpeech(text) {
   const model = process.env.COMPANION_TTS_MODEL || 'gpt-4o-mini-tts';
-  const voice = process.env.COMPANION_TTS_VOICE || 'alloy';
+  const voice = process.env.COMPANION_TTS_VOICE || 'onyx';
   const url = process.env.OPENAI_TTS_BASE_URL || 'https://api.openai.com/v1/audio/speech';
   const response = await fetch(url, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      Authorization: `Bearer ${openaiApiKey()}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({ model, voice, input: text, response_format: 'mp3' }),
   });
-  if (!response.ok) throw new Error('Speech request failed');
+  if (!response.ok) {
+    logUsage({ provider: 'openai', model, mode: 'voice', kind: 'speech', success: false });
+    throw new Error('Speech request failed');
+  }
   const arrayBuffer = await response.arrayBuffer();
   const audio = Buffer.from(arrayBuffer);
+  logUsage({
+    provider: 'openai',
+    model,
+    mode: 'voice',
+    kind: 'speech',
+    generatedAudioSecondsEstimated: estimateAudioSeconds(audio.length, 'audio/mpeg'),
+    success: audio.length > 0,
+  });
   if (!audio.length) throw new Error('Speech request returned no audio');
   return audio;
 }
@@ -849,7 +990,19 @@ function companionPage() {
   var messages = [];
   var locked = false;
   var interactionMode = 'written';
+  var voiceEnabled = false;
+  var voiceSessionToken = null;
+  var voiceExchangesUsed = 0;
+  var VOICE_EXCHANGE_LIMIT = 12;
   var el = function(id){ return document.getElementById(id); };
+  function ensureVoiceSessionToken(){
+    if (!voiceSessionToken) {
+      voiceSessionToken = (window.crypto && window.crypto.randomUUID)
+        ? window.crypto.randomUUID()
+        : (Date.now() + '-' + Math.random());
+    }
+    return voiceSessionToken;
+  }
 
   function showError(target, text){ target.textContent = text; target.classList.toggle('hidden', !text); }
   var pendingSeq = 0;
@@ -904,6 +1057,8 @@ function companionPage() {
     el('modeCard').classList.add('hidden');
     el('voiceDisclosureCard').classList.add('hidden');
     interactionMode = 'written';
+    voiceSessionToken = null;
+    voiceExchangesUsed = 0;
     messages = [];
     locked = false;
     accessCode = '';
@@ -926,6 +1081,7 @@ function companionPage() {
       var data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Access denied');
       provider = data.provider;
+      voiceEnabled = Boolean(data.voiceEnabled);
       el('privacyNotice').textContent = data.notice;
       el('modeLabel').textContent = providerLabel(provider);
       el('accessCard').classList.add('hidden');
@@ -946,6 +1102,13 @@ function companionPage() {
     }
     country = el('country').value;
     el('consentCard').classList.add('hidden');
+    if (!voiceEnabled) {
+      // Voice mode is off. Behave exactly as this page did before Voice mode
+      // existed: no choice screen, straight to the optional breathing step.
+      interactionMode = 'written';
+      goToBreathStep();
+      return;
+    }
     el('modeCard').classList.remove('hidden');
   });
 
@@ -1113,7 +1276,7 @@ function companionPage() {
     try {
       var response = await fetch('/api/kids-on-the-bus', {
         method:'POST', headers:headers(), cache:'no-store',
-        body:JSON.stringify({message:message, history:history, adultConfirmed:true, country:country})
+        body:JSON.stringify({message:message, history:history, adultConfirmed:true, country:country, interactionMode:interactionMode})
       });
       var data = await response.json();
       if (seq !== pendingSeq || locked) return;
@@ -1207,11 +1370,14 @@ function companionPage() {
     el('heardText').classList.remove('hidden');
     document.getElementById('heardSend').parentElement.classList.remove('hidden');
     el('speakButton').classList.remove('hidden');
-    el('speakButton').disabled = false;
+    el('speakButton').disabled = voiceExchangesUsed >= VOICE_EXCHANGE_LIMIT;
     el('doneSpeakingButton').classList.add('hidden');
+    el('doneSpeakingButton').disabled = false;
     el('recordIndicator').classList.add('hidden');
     el('recordIndicator').classList.remove('live');
-    el('recordStatus').textContent = 'Press Speak when you are ready.';
+    el('recordStatus').textContent = voiceExchangesUsed >= VOICE_EXCHANGE_LIMIT
+      ? 'This sitting has reached its voice limit. You can continue in Written mode.'
+      : 'Press Speak when you are ready.';
     el('recordTime').textContent = '';
   }
 
@@ -1226,6 +1392,11 @@ function companionPage() {
   }
 
   el('speakButton').addEventListener('click', async function(){
+    if (el('speakButton').disabled) return;
+    if (voiceExchangesUsed >= VOICE_EXCHANGE_LIMIT) {
+      showError(el('voiceError'), 'This sitting has reached its voice limit. You can continue in Written mode.');
+      return;
+    }
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       fallbackToWritten('This browser cannot record audio here.');
       return;
@@ -1235,9 +1406,11 @@ function companionPage() {
       fallbackToWritten('This browser cannot record a supported audio format.');
       return;
     }
+    el('speakButton').disabled = true;
     try {
       mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
     } catch (error) {
+      el('speakButton').disabled = false;
       fallbackToWritten('Microphone access was not available.');
       return;
     }
@@ -1281,18 +1454,25 @@ function companionPage() {
 
   async function handleRecordingStopped(mimeType, mySeq){
     el('recordStatus').textContent = 'Transcribing what you said.';
+    el('doneSpeakingButton').disabled = true;
     var blob = new Blob(recordChunks, { type: mimeType });
     recordChunks = [];
     try {
       var response = await fetch('/api/kids-on-the-bus/transcribe', {
         method: 'POST',
-        headers: { 'Content-Type': mimeType, 'X-Companion-Access': accessCode },
+        headers: { 'Content-Type': mimeType, 'X-Companion-Access': accessCode, 'X-Voice-Session': ensureVoiceSessionToken() },
         cache: 'no-store',
         body: blob,
       });
       var data = await response.json();
       if (mySeq !== voiceSeq) return;
+      if (response.status === 429 || data.limitReached) {
+        showError(el('voiceError'), '');
+        fallbackToWritten('This sitting has reached its voice limit.');
+        return;
+      }
       if (!response.ok) throw new Error(data.error || 'Could not transcribe that recording.');
+      if (typeof data.voiceExchangeCount === 'number') voiceExchangesUsed = data.voiceExchangeCount;
       currentTranscript = data.transcript;
       el('heardText').textContent = currentTranscript;
       el('voiceRecordStage').classList.add('hidden');
@@ -1301,7 +1481,9 @@ function companionPage() {
       if (mySeq !== voiceSeq) return;
       showError(el('voiceError'), error.message || 'Could not transcribe that recording. You can try again or switch to writing.');
       el('speakButton').classList.remove('hidden');
+      el('speakButton').disabled = false;
       el('doneSpeakingButton').classList.add('hidden');
+      el('doneSpeakingButton').disabled = false;
       el('recordStatus').textContent = 'Press Speak when you are ready.';
       el('recordTime').textContent = '';
     }
@@ -1410,6 +1592,15 @@ async function handleCompanionRoute(req, res) {
       sendJson(res, 503, { error: 'Voice mode is not enabled on this deployment.' });
       return true;
     }
+    const voiceSessionToken = String(req.headers['x-voice-session'] || '') || null;
+    const exchangeCheck = takeVoiceExchange(voiceSessionToken);
+    if (!exchangeCheck.ok) {
+      sendJson(res, 429, {
+        error: 'This sitting has reached its voice limit. You can continue in Written mode.',
+        limitReached: true,
+      });
+      return true;
+    }
     const contentType = String(req.headers['content-type'] || '');
     if (!ALLOWED_AUDIO_MIME.test(contentType)) {
       sendJson(res, 415, { error: 'Unsupported audio format.' });
@@ -1422,7 +1613,7 @@ async function handleCompanionRoute(req, res) {
         return true;
       }
       const transcript = await transcribeAudio(audio, contentType);
-      sendJson(res, 200, { transcript });
+      sendJson(res, 200, { transcript, voiceExchangeCount: exchangeCheck.count });
     } catch (error) {
       console.error('[companion] transcription failed', {
         statusCode: error.statusCode || null,
@@ -1493,6 +1684,7 @@ async function handleCompanionRoute(req, res) {
     sendJson(res, 200, {
       provider,
       notice: getProviderNotice(provider),
+      voiceEnabled: voiceAudioEnabled(),
       persistentStorage: false,
       transcriptAccess: false,
       marketingUse: false,
@@ -1529,7 +1721,8 @@ async function handleCompanionRoute(req, res) {
       return true;
     }
 
-    const generated = await generateReflection(body.message, body.history, provider);
+    const interactionMode = body.interactionMode === 'voice' ? 'voice' : 'written';
+    const generated = await generateReflection(body.message, body.history, provider, interactionMode);
     sendJson(res, 200, {
       route: 'continue_reflection',
       response: generated.response,
