@@ -1,6 +1,6 @@
 # Performance Trap Companion: Claude Code project memory
 
-Last updated: July 31, 2026
+Last updated: August 2, 2026
 
 ## Purpose of this file
 
@@ -39,6 +39,51 @@ Always make these five states explicit rather than letting Chad infer which one 
 If a mistake happens, say so plainly and say whether the live application was affected: "I changed the wrong local copy. I corrected it. The live application was not affected."
 
 Keep routine updates short. Do not narrate every command. Interrupt Chad only when he needs to make a genuine product decision, approve a consequential action, or test something he can experience directly, for example reviewing a proposed companion response or looking at a live page. Those moments keep their own clear format; they are not "routine updates" to compress.
+
+## Current status, August 2, 2026 (read this section first)
+
+Written for whoever, or whichever fresh Claude Code conversation, picks this project up next. If anything below conflicts with an older section further down this file, this section is more current.
+
+### Live on the website right now
+
+All of this has been merged to `main`, deployed, and is what a real visitor to `/reflect/kids-on-the-bus` experiences today:
+
+- The response-truncation fix: the companion could not previously answer with more than about 500 tokens and would sometimes cut off mid-sentence. Fixed with a larger allowance, a detector for an incomplete response, one retry, and a plain error rather than ever showing a fragment.
+- The childhood-memory correction: a memory that surfaces on its own during a session is now received as part of the present moment and connected to the body, instead of being redirected to "see a therapist." The exercise also no longer rushes to close the conversation while new material, like a part just being named, is still emerging. Chad approved all five review cases for this, including a live run against the real model.
+- A false-positive bug where the plain word "stop" appearing anywhere in a sentence (for example, "I can't stop thinking about it") force-ended the whole session. Fixed to only match a genuine request to stop.
+- Pressing Return in the message box now sends, matching ordinary chat behavior.
+- A rule so the companion recognizes when the user's own account is already the live, present moment, rather than asking them to "bring a moment to mind" as if it were something to recall from elsewhere.
+- Chad's own welcome text on the consent screen, above the unchanged legal and safety notice.
+- An optional opening breathing practice: 2, 3, 4, or 5 minutes, five seconds in and seven out, entirely skippable.
+
+### Built, reviewed, and tested, but NOT merged or live
+
+**Branch `feature/module-2-parts-work-method`.** A pass adding pieces of Chad's real parts-work method that were missing from the Kids on the Bus prompt: never shaming a protector and reassuring one that gets defensive, a reflect-and-confirm pattern instead of direct interview questions, promoting the user's own landing word, naming a part with its age baked in for that sitting only, sentence completion, holding two parts in tension via a third position, and an opening paced-breathing option framed as evenness rather than calming down. All seven review cases were approved by Chad on August 1. This branch was never brought forward for merging; it is just sitting there, ready.
+
+**Branch `feature/voice-mode`, draft pull request #7 on GitHub.** A full optional Speak-and-listen mode alongside Written mode: press to talk, review the transcript before sending, hear the reply spoken back. Chad listened to all eleven available AI voices and chose Onyx. On top of the base feature, this branch also adds real cost controls, all requested directly by Chad on August 2:
+
+- Off by default in production (`COMPANION_VOICE_ENABLED`). The same switch doubles as an emergency kill switch: flipping it off in Render stops all transcription and speech immediately, no redeploy needed, and never touches Written mode either way.
+- Dedicated spending-isolation credentials (`COMPANION_ANTHROPIC_API_KEY`, `COMPANION_OPENAI_API_KEY`), falling back to the general keys only when no dedicated key is set.
+- Anthropic prompt caching on the fixed system instructions only. Journal content, conversation history, and the current message are never cached.
+- A content-free usage record logged for every provider call: tokens in and out, cache read and write tokens, estimated transcription and generated-audio duration (estimated from file size, clearly labeled as an estimate, since neither audio model reports exact duration), whether a retry happened, success or failure. A test proves this log line can never contain the actual message or response text.
+- A server-side cap of 12 voice exchanges per sitting, tracked in memory only by a random per-sitting token, never written to disk. A 13th recording is refused before it can even start, not after the cost has already been spent on it.
+- A cost-experiment toggle (`COMPANION_THINKING=disabled`) that turns off Claude's extended thinking. Built and tested for request-shape correctness, but its actual effect on coaching quality has never been checked against a real conversation. Not recommended yet.
+
+All 20 automated tests pass on this branch, including new ones specifically proving: the false-positive stop bug is fixed, the voice limit works at the exact boundary, no secret or message content ever reaches a log line, and the prompt-cache request is shaped correctly.
+
+### What is genuinely unfinished
+
+Chad asked for a real-dollar comparison of one written session versus one voice session, and for a real check of whether disabling extended thinking changes coaching quality. Neither happened. The attempt hit a real Anthropic key that came back "API key is invalid" directly from Anthropic (confirmed by testing outside the app entirely, so this is not a bug in the code), immediately followed by a DNS failure on the next connectivity check, which looks like a passing local network problem but was never confirmed. The session paused there.
+
+To finish this:
+
+1. Get a fresh Anthropic key and a fresh OpenAI key from Chad, using the safe one-time terminal paste, never through chat. See `tools/measure-real-cost.js` for the exact command.
+2. Run `node tools/measure-real-cost.js` from the repository root. It now checks both keys against the real APIs first and fails loudly and immediately if either is bad, before running a full session, specifically to avoid repeating the confusion from August 2.
+3. Turn the resulting usage numbers into a dollar figure using current provider pricing. Starting notes and sources are in the private folder `/Users/chadherst/Documents/Companion Move Library/2026-07-31/07-voice-cost-pricing-notes.md`, but that pricing was pulled from secondary sites, not Anthropic's or OpenAI's own pages, and should be reconfirmed before quoting Chad a final number.
+4. For the thinking-disabled check: run the same representative coaching scenario through the real model twice, once with `COMPANION_THINKING` unset and once set to `disabled`, and compare the two responses for fidelity, pacing, and voice, the same way earlier real-model reviews were done in this project. Only recommend disabling thinking if quality holds up and the existing 25 safety cases still pass, which they already do (they route deterministically and are unaffected either way).
+5. Delete both temporary key files immediately after, the same as every other real-model verification in this project.
+
+Nothing has been merged to `main` or deployed from either branch beyond what is already live, per Chad's explicit instruction to leave both as drafts until he says otherwise.
 
 ## Product goal
 

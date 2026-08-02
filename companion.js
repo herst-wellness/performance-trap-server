@@ -4,8 +4,36 @@ const path = require('path');
 
 const PAGE_PATH = '/reflect/kids-on-the-bus';
 const API_PATH = '/api/kids-on-the-bus';
+const TRANSCRIBE_PATH = '/api/kids-on-the-bus/transcribe';
+const SPEECH_PATH = '/api/kids-on-the-bus/speech';
 const MAX_BODY_BYTES = 100000;
 const MAX_MESSAGE_CHARS = 12000;
+// About two minutes of typical browser-recorded speech at ordinary compression.
+const MAX_AUDIO_BYTES = 8 * 1024 * 1024;
+const MAX_SPEECH_CHARS = 4000;
+const VOICE_SESSION_MAX_EXCHANGES = 12;
+const VOICE_SESSION_MAP_MAX_SIZE = 500;
+// In-memory only, never written to disk: a random session token mapped to a
+// count. No journal content, no identifying information, just a number that
+// resets whenever the server restarts.
+const voiceSessionCounts = new Map();
+
+function takeVoiceExchange(token) {
+  if (!token) return { ok: true, count: null };
+  const current = voiceSessionCounts.get(token) || 0;
+  if (current >= VOICE_SESSION_MAX_EXCHANGES) {
+    return { ok: false, count: current };
+  }
+  if (voiceSessionCounts.size >= VOICE_SESSION_MAP_MAX_SIZE && !voiceSessionCounts.has(token)) {
+    const oldestKey = voiceSessionCounts.keys().next().value;
+    voiceSessionCounts.delete(oldestKey);
+  }
+  const next = current + 1;
+  voiceSessionCounts.set(token, next);
+  return { ok: true, count: next };
+}
+const ALLOWED_AUDIO_MIME =
+  /^audio\/(webm|ogg|mp4|mpeg|mp3|wav|x-wav|wave)(;.*)?$/i;
 
 const companionPrompt = fs.readFileSync(
   path.join(__dirname, 'companion-prompt.txt'),
@@ -107,19 +135,30 @@ function result(route, response, lockSession) {
   };
 }
 
+// Dedicated companion credentials, so this app's spending is isolated from any
+// other project sharing the same Anthropic or OpenAI account. Falls back to the
+// general-purpose keys only when no dedicated companion key is configured,
+// which keeps local development simple without weakening production isolation.
+function anthropicApiKey() {
+  return process.env.COMPANION_ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY;
+}
+function openaiApiKey() {
+  return process.env.COMPANION_OPENAI_API_KEY || process.env.OPENAI_API_KEY;
+}
+
 function getActiveProvider() {
   const requested = String(process.env.COMPANION_PROVIDER || '').toLowerCase();
   const sharedModel = process.env.COMPANION_MODEL;
   if (
     requested === 'openai' &&
-    process.env.OPENAI_API_KEY &&
+    openaiApiKey() &&
     (sharedModel || process.env.OPENAI_MODEL)
   ) {
     return 'openai';
   }
   if (
     requested === 'anthropic' &&
-    process.env.ANTHROPIC_API_KEY &&
+    anthropicApiKey() &&
     (sharedModel || process.env.ANTHROPIC_MODEL)
   ) {
     return 'anthropic';
@@ -386,7 +425,13 @@ function logIncompleteResponse(fields) {
   console.error('[companion] incomplete response', fields);
 }
 
-async function requestOpenAI(message, history, maxOutputTokens) {
+// Content-free usage record for cost visibility. Never pass message, history,
+// transcript, or response text into this function, only numbers and labels.
+function logUsage(fields) {
+  console.log('[companion] usage', JSON.stringify({ at: new Date().toISOString(), ...fields }));
+}
+
+async function requestOpenAI(message, history, maxOutputTokens, interactionMode) {
   const model = process.env.COMPANION_MODEL || process.env.OPENAI_MODEL;
   const input = [
     ...cleanHistory(history),
@@ -396,7 +441,7 @@ async function requestOpenAI(message, history, maxOutputTokens) {
   const response = await fetch(openaiUrl, {
     method: 'POST',
     headers: {
-      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      Authorization: `Bearer ${openaiApiKey()}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
@@ -414,6 +459,20 @@ async function requestOpenAI(message, history, maxOutputTokens) {
   const incomplete =
     payload.status === 'incomplete' ||
     Boolean(payload.incomplete_details && payload.incomplete_details.reason);
+  const usage = payload.usage || {};
+  logUsage({
+    provider: 'openai',
+    model: model || null,
+    mode: interactionMode || 'written',
+    inputTokens: usage.input_tokens ?? null,
+    outputTokens: usage.output_tokens ?? null,
+    cacheWriteTokens: null,
+    cacheReadTokens: usage.input_tokens_details && usage.input_tokens_details.cached_tokens != null
+      ? usage.input_tokens_details.cached_tokens
+      : null,
+    retried: false,
+    success: true,
+  });
   return {
     text,
     incomplete,
@@ -422,8 +481,8 @@ async function requestOpenAI(message, history, maxOutputTokens) {
   };
 }
 
-async function callOpenAI(message, history) {
-  let attempt = await requestOpenAI(message, history, NORMAL_OUTPUT_TOKENS);
+async function callOpenAI(message, history, interactionMode) {
+  let attempt = await requestOpenAI(message, history, NORMAL_OUTPUT_TOKENS, interactionMode);
   if (attempt.incomplete) {
     logIncompleteResponse({
       provider: 'openai',
@@ -431,7 +490,7 @@ async function callOpenAI(message, history) {
       requestId: attempt.requestId,
       attempt: 1,
     });
-    attempt = await requestOpenAI(message, history, RETRY_OUTPUT_TOKENS);
+    attempt = await requestOpenAI(message, history, RETRY_OUTPUT_TOKENS, interactionMode);
     if (attempt.incomplete) {
       logIncompleteResponse({
         provider: 'openai',
@@ -445,26 +504,46 @@ async function callOpenAI(message, history) {
   return attempt.text;
 }
 
-async function requestAnthropic(message, history, maxTokens) {
+// Extended thinking is on by default for this model family. Setting
+// COMPANION_THINKING=disabled turns it off, purely as a cost experiment; see
+// requestAnthropicThinkingConfig. Nothing about the coaching prompt changes.
+function thinkingDisabled() {
+  return String(process.env.COMPANION_THINKING || '').toLowerCase() === 'disabled';
+}
+
+async function requestAnthropic(message, history, maxTokens, interactionMode) {
   const model = process.env.COMPANION_MODEL || process.env.ANTHROPIC_MODEL;
   const messages = [
     ...cleanHistory(history),
     { role: 'user', content: message },
   ];
   const anthropicUrl = process.env.ANTHROPIC_API_BASE_URL || 'https://api.anthropic.com/v1/messages';
+  const body = {
+    model,
+    // Only the fixed instructions are cached. Journal content, conversation
+    // history, and the current message are never part of a cached block.
+    system: [
+      {
+        type: 'text',
+        text: FULL_INSTRUCTIONS,
+        cache_control: { type: 'ephemeral' },
+      },
+    ],
+    messages,
+    max_tokens: maxTokens,
+  };
+  if (thinkingDisabled()) {
+    body.thinking = { type: 'disabled' };
+  }
   const response = await fetch(anthropicUrl, {
     method: 'POST',
     headers: {
-      'x-api-key': process.env.ANTHROPIC_API_KEY || '',
+      'x-api-key': anthropicApiKey() || '',
       'anthropic-version': '2023-06-01',
+      'anthropic-beta': 'prompt-caching-2024-07-31',
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      model,
-      system: FULL_INSTRUCTIONS,
-      messages,
-      max_tokens: maxTokens,
-    }),
+    body: JSON.stringify(body),
   });
   if (!response.ok) throw new Error('Anthropic request failed');
   const payload = await response.json();
@@ -479,17 +558,29 @@ async function requestAnthropic(message, history, maxTokens) {
   const incomplete =
     payload.stop_reason === 'max_tokens' ||
     payload.stop_reason === 'model_context_window_exceeded';
+  const usage = payload.usage || {};
+  logUsage({
+    provider: 'anthropic',
+    model: model || null,
+    mode: interactionMode || 'written',
+    inputTokens: usage.input_tokens ?? null,
+    outputTokens: usage.output_tokens ?? null,
+    cacheWriteTokens: usage.cache_creation_input_tokens ?? null,
+    cacheReadTokens: usage.cache_read_input_tokens ?? null,
+    retried: false,
+    success: true,
+  });
   return {
     text,
     incomplete,
     stopReason: payload.stop_reason || null,
-    outputTokens: (payload.usage && payload.usage.output_tokens) || null,
+    outputTokens: usage.output_tokens ?? null,
     requestId: response.headers.get('request-id') || null,
   };
 }
 
-async function callAnthropic(message, history) {
-  let attempt = await requestAnthropic(message, history, NORMAL_OUTPUT_TOKENS);
+async function callAnthropic(message, history, interactionMode) {
+  let attempt = await requestAnthropic(message, history, NORMAL_OUTPUT_TOKENS, interactionMode);
   if (attempt.incomplete) {
     logIncompleteResponse({
       provider: 'anthropic',
@@ -498,7 +589,7 @@ async function callAnthropic(message, history) {
       requestId: attempt.requestId,
       attempt: 1,
     });
-    attempt = await requestAnthropic(message, history, RETRY_OUTPUT_TOKENS);
+    attempt = await requestAnthropic(message, history, RETRY_OUTPUT_TOKENS, interactionMode);
     if (attempt.incomplete) {
       logIncompleteResponse({
         provider: 'anthropic',
@@ -517,13 +608,13 @@ function removeEmDashes(text) {
   return String(text || '').replace(/\u2014/g, ',').trim();
 }
 
-async function generateReflection(message, history, provider) {
+async function generateReflection(message, history, provider, interactionMode) {
   try {
     if (provider === 'openai') {
-      return { response: removeEmDashes(await callOpenAI(message, history)), mode: 'openai' };
+      return { response: removeEmDashes(await callOpenAI(message, history, interactionMode)), mode: 'openai' };
     }
     if (provider === 'anthropic') {
-      return { response: removeEmDashes(await callAnthropic(message, history)), mode: 'anthropic' };
+      return { response: removeEmDashes(await callAnthropic(message, history, interactionMode)), mode: 'anthropic' };
     }
     return {
       response: offlineReflectionResponse(message, cleanHistory(history)),
@@ -535,6 +626,145 @@ async function generateReflection(message, history, provider) {
       mode: provider,
     };
   }
+}
+
+// --- Voice mode: speech to text and text to speech around the existing coaching flow. ---
+// Neither function touches the coaching model. Transcription only turns a bounded
+// recording into text; that text then follows the exact same path as a typed message.
+// Speech only reads back a response the coaching flow already produced and approved.
+
+// One switch serves two purposes: it is off by default so Voice mode does not
+// appear in production until this is explicitly turned on (a rollout switch),
+// and once on, setting it back to anything else immediately stops all
+// transcription and speech generation without touching Written mode or
+// requiring a new deploy (an emergency kill switch). Written mode never
+// checks this flag.
+function voiceModeEnabled() {
+  return String(process.env.COMPANION_VOICE_ENABLED || '').toLowerCase() === 'true';
+}
+function voiceAudioEnabled() {
+  return voiceModeEnabled() && Boolean(openaiApiKey());
+}
+
+// Neither gpt-4o-transcribe nor gpt-4o-mini-tts reports exact duration in
+// their response (verbose_json with a duration field is a Whisper-only
+// format; requesting it against gpt-4o-transcribe is rejected outright).
+// These are labeled estimates from file size for cost visibility only, never
+// presented as measured. Bitrate assumptions are for typical voice content,
+// not exact for any specific recording.
+const ASSUMED_BITRATE_BPS = {
+  webm: 32000, // typical browser Opus voice recording
+  ogg: 32000,
+  mp4: 64000, // typical AAC voice recording
+  wav: 256000, // rough floor for uncompressed 16-bit mono at a low sample rate
+  mp3: 128000,
+};
+function estimateAudioSeconds(byteLength, mimeType) {
+  const key = mimeType.includes('webm')
+    ? 'webm'
+    : mimeType.includes('ogg')
+      ? 'ogg'
+      : mimeType.includes('mp4')
+        ? 'mp4'
+        : mimeType.includes('wav')
+          ? 'wav'
+          : 'mp3';
+  return Math.round((byteLength * 8) / ASSUMED_BITRATE_BPS[key]);
+}
+
+async function transcribeAudio(buffer, mimeType) {
+  const model = process.env.COMPANION_TRANSCRIPTION_MODEL || 'gpt-4o-transcribe';
+  const url =
+    process.env.OPENAI_TRANSCRIBE_BASE_URL || 'https://api.openai.com/v1/audio/transcriptions';
+  const form = new FormData();
+  const extension = mimeType.includes('webm')
+    ? 'webm'
+    : mimeType.includes('ogg')
+      ? 'ogg'
+      : mimeType.includes('mp4')
+        ? 'mp4'
+        : mimeType.includes('wav')
+          ? 'wav'
+          : 'mp3';
+  form.append('file', new Blob([buffer], { type: mimeType }), `turn.${extension}`);
+  form.append('model', model);
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${openaiApiKey()}` },
+    body: form,
+  });
+  if (!response.ok) {
+    logUsage({ provider: 'openai', model, mode: 'voice', kind: 'transcription', success: false });
+    throw new Error('Transcription request failed');
+  }
+  const payload = await response.json();
+  const text = String(payload.text || '').trim();
+  logUsage({
+    provider: 'openai',
+    model,
+    mode: 'voice',
+    kind: 'transcription',
+    transcriptionSecondsEstimated: estimateAudioSeconds(buffer.length, mimeType),
+    success: Boolean(text),
+  });
+  if (!text) throw new Error('Transcription returned no text');
+  return text;
+}
+
+async function synthesizeSpeech(text) {
+  const model = process.env.COMPANION_TTS_MODEL || 'gpt-4o-mini-tts';
+  const voice = process.env.COMPANION_TTS_VOICE || 'onyx';
+  const url = process.env.OPENAI_TTS_BASE_URL || 'https://api.openai.com/v1/audio/speech';
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${openaiApiKey()}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ model, voice, input: text, response_format: 'mp3' }),
+  });
+  if (!response.ok) {
+    logUsage({ provider: 'openai', model, mode: 'voice', kind: 'speech', success: false });
+    throw new Error('Speech request failed');
+  }
+  const arrayBuffer = await response.arrayBuffer();
+  const audio = Buffer.from(arrayBuffer);
+  logUsage({
+    provider: 'openai',
+    model,
+    mode: 'voice',
+    kind: 'speech',
+    generatedAudioSecondsEstimated: estimateAudioSeconds(audio.length, 'audio/mpeg'),
+    success: audio.length > 0,
+  });
+  if (!audio.length) throw new Error('Speech request returned no audio');
+  return audio;
+}
+
+function readRawBody(req, maxBytes) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    let bytes = 0;
+    let tooLarge = false;
+    req.on('data', (chunk) => {
+      if (tooLarge) return;
+      bytes += chunk.length;
+      if (bytes > maxBytes) {
+        tooLarge = true;
+        chunks.length = 0;
+        return;
+      }
+      chunks.push(chunk);
+    });
+    req.on('end', () => {
+      if (tooLarge) {
+        reject(Object.assign(new Error('Request too large'), { statusCode: 413 }));
+        return;
+      }
+      resolve(Buffer.concat(chunks));
+    });
+    req.on('error', reject);
+  });
 }
 
 function hasAccess(req) {
@@ -589,7 +819,7 @@ function companionPage() {
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <style>
 :root{--cream:#F4EDE4;--paper:#FBF7F0;--ink:#352515;--gold:#8B6B1E;--line:#D7C7B3;--soft:#EFE6D8;--danger:#8E2F27;--shadow:0 20px 55px rgba(53,37,21,.10)}
-*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:'Cormorant Garamond',Georgia,serif;font-size:19px;line-height:1.55}.shell{width:min(920px,calc(100% - 28px));margin:0 auto;padding:30px 0 54px}.brand{display:flex;justify-content:center;margin-bottom:22px}.brand img{display:block;width:min(520px,100%);height:auto}.rule{height:1px;background:var(--gold);opacity:.65;margin:0 0 30px}.hero{text-align:center;margin:0 auto 28px;max-width:700px}.eyebrow{text-transform:uppercase;letter-spacing:.18em;color:var(--gold);font:600 12px/1.4 Arial,sans-serif}.hero h1{font-family:'Playfair Display',Georgia,serif;font-size:clamp(34px,6vw,54px);line-height:1.08;margin:10px 0 10px}.hero p{font-style:italic;color:#6F5438;margin:0}.card{background:rgba(251,247,240,.94);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:clamp(22px,4vw,38px);max-width:720px;margin:0 auto}.card h2{font-family:'Playfair Display',Georgia,serif;font-size:24px;margin:0 0 10px}.small{font:14px/1.5 Arial,sans-serif;color:#715D49}.notice{padding:17px 18px;background:var(--soft);border-left:3px solid var(--gold);font:14px/1.55 Arial,sans-serif;margin:18px 0}.field{margin:18px 0}.field label{display:block;font:600 13px/1.4 Arial,sans-serif;letter-spacing:.03em;margin-bottom:7px}.field input,.field select,.composer textarea{width:100%;border:1px solid #BCA88E;border-radius:10px;background:#FFFDF9;color:var(--ink);padding:13px 14px;font:16px/1.4 Arial,sans-serif}.field input:focus,.field select:focus,.composer textarea:focus{outline:2px solid rgba(139,107,30,.28);border-color:var(--gold)}.check{display:flex;gap:10px;align-items:flex-start;font:15px/1.45 Arial,sans-serif;margin:13px 0}.check input{margin-top:3px}.button{border:1px solid var(--gold);background:var(--gold);color:white;border-radius:999px;padding:12px 20px;font:600 14px/1 Arial,sans-serif;cursor:pointer}.button:hover{filter:brightness(.95)}.button:disabled{opacity:.5;cursor:not-allowed}.button.secondary{background:transparent;color:var(--gold)}.button.danger{border-color:var(--danger);color:var(--danger);background:transparent}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.hidden{display:none!important}.error{color:var(--danger);font:600 14px/1.4 Arial,sans-serif;margin-top:12px}.session{max-width:820px;margin:0 auto;background:var(--paper);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}.session-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 20px;border-bottom:1px solid var(--line);background:#F8F1E8}.session-title{font-family:'Playfair Display',Georgia,serif;font-size:18px}.mode{font:12px/1.3 Arial,sans-serif;color:#715D49}.messages{min-height:390px;max-height:58vh;overflow-y:auto;padding:22px}.message{max-width:84%;padding:13px 15px;border-radius:14px;margin:0 0 14px;white-space:pre-wrap}.message.assistant{background:var(--soft);border-bottom-left-radius:4px}.message.user{background:#DFD0BC;margin-left:auto;border-bottom-right-radius:4px}.speaker{font:700 10px/1.2 Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:5px}.composer{border-top:1px solid var(--line);padding:16px 18px;background:#F8F1E8}.composer textarea{min-height:100px;resize:vertical}.composer-actions{display:flex;justify-content:space-between;gap:12px;margin-top:10px;align-items:center}.thinking{font:italic 16px/1.3 Georgia,serif;color:#715D49}.waiting-status{font:italic 15px/1.4 Georgia,serif;color:#715D49;text-align:center;margin:2px auto 12px}.breath-view{display:flex;flex-direction:column;align-items:center;gap:12px;padding:16px 0 4px}.breath-space{height:110px;display:flex;align-items:center;justify-content:center}.breath-dot{width:64px;height:64px;border-radius:50%;background:var(--gold);opacity:.85;transform:scale(.22);transform-origin:center}.breath-dot.still{transform:scale(.55)}.breath-phase{font-family:'Playfair Display',Georgia,serif;font-size:22px;min-height:28px}.breath-time{font:13px/1.4 Arial,sans-serif;color:#715D49;min-height:18px}.locked{padding:14px 18px;background:#F1DDD7;color:#6E241E;font:14px/1.45 Arial,sans-serif}.footer{text-align:center;margin:24px auto 0;color:#78644F;font:13px/1.5 Arial,sans-serif;max-width:680px}@media(max-width:620px){.shell{padding-top:18px}.card{border-radius:14px}.message{max-width:94%}.session-head{align-items:flex-start;flex-direction:column}.composer-actions{align-items:stretch;flex-direction:column}.composer-actions .row{width:100%}.composer-actions .button{flex:1}}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:'Cormorant Garamond',Georgia,serif;font-size:19px;line-height:1.55}.shell{width:min(920px,calc(100% - 28px));margin:0 auto;padding:30px 0 54px}.brand{display:flex;justify-content:center;margin-bottom:22px}.brand img{display:block;width:min(520px,100%);height:auto}.rule{height:1px;background:var(--gold);opacity:.65;margin:0 0 30px}.hero{text-align:center;margin:0 auto 28px;max-width:700px}.eyebrow{text-transform:uppercase;letter-spacing:.18em;color:var(--gold);font:600 12px/1.4 Arial,sans-serif}.hero h1{font-family:'Playfair Display',Georgia,serif;font-size:clamp(34px,6vw,54px);line-height:1.08;margin:10px 0 10px}.hero p{font-style:italic;color:#6F5438;margin:0}.card{background:rgba(251,247,240,.94);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:clamp(22px,4vw,38px);max-width:720px;margin:0 auto}.card h2{font-family:'Playfair Display',Georgia,serif;font-size:24px;margin:0 0 10px}.small{font:14px/1.5 Arial,sans-serif;color:#715D49}.notice{padding:17px 18px;background:var(--soft);border-left:3px solid var(--gold);font:14px/1.55 Arial,sans-serif;margin:18px 0}.field{margin:18px 0}.field label{display:block;font:600 13px/1.4 Arial,sans-serif;letter-spacing:.03em;margin-bottom:7px}.field input,.field select,.composer textarea{width:100%;border:1px solid #BCA88E;border-radius:10px;background:#FFFDF9;color:var(--ink);padding:13px 14px;font:16px/1.4 Arial,sans-serif}.field input:focus,.field select:focus,.composer textarea:focus{outline:2px solid rgba(139,107,30,.28);border-color:var(--gold)}.check{display:flex;gap:10px;align-items:flex-start;font:15px/1.45 Arial,sans-serif;margin:13px 0}.check input{margin-top:3px}.button{border:1px solid var(--gold);background:var(--gold);color:white;border-radius:999px;padding:12px 20px;font:600 14px/1 Arial,sans-serif;cursor:pointer}.button:hover{filter:brightness(.95)}.button:disabled{opacity:.5;cursor:not-allowed}.button.secondary{background:transparent;color:var(--gold)}.button.danger{border-color:var(--danger);color:var(--danger);background:transparent}.button:focus-visible,.mode-option:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid rgba(139,107,30,.55);outline-offset:2px}.mode-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0}.mode-option{border:1px solid var(--line);background:var(--paper);border-radius:14px;padding:20px;text-align:left;cursor:pointer;font-family:'Cormorant Garamond',Georgia,serif}.mode-option:hover{border-color:var(--gold)}.mode-option strong{display:block;font-family:'Playfair Display',Georgia,serif;font-size:20px;margin-bottom:6px}.mode-option span{font:14px/1.4 Arial,sans-serif;color:#715D49}.switch-mode{font:13px/1.3 Arial,sans-serif;color:var(--gold);background:none;border:none;text-decoration:underline;cursor:pointer;padding:4px 0}.record-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;padding:18px 0}.record-indicator{width:16px;height:16px;border-radius:50%;background:var(--danger)}.record-indicator.live{animation:record-pulse 1.4s ease-in-out infinite}@media(prefers-reduced-motion:reduce){.record-indicator.live{animation:none;opacity:.85}}@keyframes record-pulse{0%,100%{opacity:.4;transform:scale(.85)}50%{opacity:1;transform:scale(1.15)}}.record-time{font:14px/1.3 Arial,sans-serif;color:#715D49;font-variant-numeric:tabular-nums}.heard-box{background:var(--soft);border-radius:12px;padding:16px;margin:14px 0}.heard-box textarea{width:100%;min-height:80px;border:1px solid #BCA88E;border-radius:10px;background:#FFFDF9;color:var(--ink);padding:12px;font:16px/1.4 'Cormorant Garamond',Georgia,serif}.audio-controls{display:flex;gap:8px;margin-top:8px}.voice-note{font:13px/1.5 Arial,sans-serif;color:#715D49;margin-top:6px}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.hidden{display:none!important}.error{color:var(--danger);font:600 14px/1.4 Arial,sans-serif;margin-top:12px}.session{max-width:820px;margin:0 auto;background:var(--paper);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}.session-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 20px;border-bottom:1px solid var(--line);background:#F8F1E8}.session-title{font-family:'Playfair Display',Georgia,serif;font-size:18px}.mode{font:12px/1.3 Arial,sans-serif;color:#715D49}.messages{min-height:390px;max-height:58vh;overflow-y:auto;padding:22px}.message{max-width:84%;padding:13px 15px;border-radius:14px;margin:0 0 14px;white-space:pre-wrap}.message.assistant{background:var(--soft);border-bottom-left-radius:4px}.message.user{background:#DFD0BC;margin-left:auto;border-bottom-right-radius:4px}.speaker{font:700 10px/1.2 Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:5px}.composer{border-top:1px solid var(--line);padding:16px 18px;background:#F8F1E8}.composer textarea{min-height:100px;resize:vertical}.composer-actions{display:flex;justify-content:space-between;gap:12px;margin-top:10px;align-items:center}.thinking{font:italic 16px/1.3 Georgia,serif;color:#715D49}.waiting-status{font:italic 15px/1.4 Georgia,serif;color:#715D49;text-align:center;margin:2px auto 12px}.breath-view{display:flex;flex-direction:column;align-items:center;gap:12px;padding:16px 0 4px}.breath-space{height:110px;display:flex;align-items:center;justify-content:center}.breath-dot{width:64px;height:64px;border-radius:50%;background:var(--gold);opacity:.85;transform:scale(.22);transform-origin:center}.breath-dot.still{transform:scale(.55)}.breath-phase{font-family:'Playfair Display',Georgia,serif;font-size:22px;min-height:28px}.breath-time{font:13px/1.4 Arial,sans-serif;color:#715D49;min-height:18px}.locked{padding:14px 18px;background:#F1DDD7;color:#6E241E;font:14px/1.45 Arial,sans-serif}.footer{text-align:center;margin:24px auto 0;color:#78644F;font:13px/1.5 Arial,sans-serif;max-width:680px}@media(max-width:620px){.shell{padding-top:18px}.card{border-radius:14px}.message{max-width:94%}.session-head{align-items:flex-start;flex-direction:column}.composer-actions{align-items:stretch;flex-direction:column}.composer-actions .row{width:100%}.composer-actions .button{flex:1}}
 </style>
 </head>
 <body>
@@ -637,6 +867,29 @@ function companionPage() {
     <div id="consentError" class="error hidden"></div>
   </section>
 
+  <section id="modeCard" class="card hidden">
+    <h2>How would you like to use the companion?</h2>
+    <div class="mode-row">
+      <button type="button" class="mode-option" id="chooseWritten" aria-label="Write: type your responses and read the companion's replies">
+        <strong>Write</strong>
+        <span>Type your responses and read the companion's replies.</span>
+      </button>
+      <button type="button" class="mode-option" id="chooseVoice" aria-label="Speak and listen: speak your responses and hear the companion's replies aloud">
+        <strong>Speak and listen</strong>
+        <span>Speak your responses and hear the companion's replies aloud. The written conversation remains visible.</span>
+      </button>
+    </div>
+    <p class="small">You can switch at any time without losing the conversation.</p>
+  </section>
+
+  <section id="voiceDisclosureCard" class="card hidden">
+    <h2>Before you speak</h2>
+    <div id="voicePrivacyNotice" class="notice"></div>
+    <p class="small" style="font-style:italic">The voice you hear is AI-generated. It is not Chad speaking.</p>
+    <button type="button" id="voiceAcknowledge" class="button">I understand, continue</button>
+    <button type="button" id="voiceBack" class="switch-mode">Use Written mode instead</button>
+  </section>
+
   <section id="breathCard" class="card hidden">
     <h2>A little time to breathe</h2>
     <div id="breathOffer">
@@ -680,12 +933,52 @@ function companionPage() {
     </div>
     <div id="messages" class="messages" aria-live="polite"></div>
     <div id="lockedNotice" class="locked hidden">This reflection has stopped. You may copy or download what is visible, then end and clear the session here.</div>
-    <form id="composer" class="composer">
-      <textarea id="messageInput" maxlength="12000" placeholder="Write what happened..." aria-label="Your reflection"></textarea>
-      <div class="composer-actions">
-        <div class="row"><button id="stopButton" type="button" class="button danger">Stop</button><button id="sendButton" type="submit" class="button">Send</button></div>
+    <div id="writtenComposerWrap">
+      <form id="composer" class="composer">
+        <textarea id="messageInput" maxlength="12000" placeholder="Write what happened..." aria-label="Your reflection"></textarea>
+        <div class="composer-actions">
+          <button type="button" id="switchToVoice" class="switch-mode">Switch to speaking</button>
+          <div class="row"><button id="stopButton" type="button" class="button danger">Stop</button><button id="sendButton" type="submit" class="button">Send</button></div>
+        </div>
+      </form>
+    </div>
+    <div id="voiceComposerWrap" class="composer hidden">
+      <div id="voiceRecordStage">
+        <div class="record-wrap">
+          <div id="recordIndicator" class="record-indicator hidden" aria-hidden="true"></div>
+          <div id="recordStatus" role="status" aria-live="polite" class="small">Press Speak when you are ready.</div>
+          <div id="recordTime" class="record-time"></div>
+        </div>
+        <div class="row" style="justify-content:center">
+          <button type="button" id="speakButton" class="button" aria-label="Speak: start recording your response">Speak</button>
+          <button type="button" id="doneSpeakingButton" class="button danger hidden" aria-label="Done speaking: stop recording">Done speaking</button>
+        </div>
       </div>
-    </form>
+      <div id="heardStage" class="heard-box hidden">
+        <div class="small" style="font-weight:600;margin-bottom:6px">What I heard</div>
+        <div id="heardText"></div>
+        <textarea id="heardEdit" class="hidden" aria-label="Edit what was heard"></textarea>
+        <div class="row" style="margin-top:10px">
+          <button type="button" id="heardSend" class="button">Send</button>
+          <button type="button" id="heardEditButton" class="button secondary">Edit</button>
+          <button type="button" id="heardTryAgain" class="button secondary">Try again</button>
+        </div>
+        <div class="row hidden" id="heardEditActions" style="margin-top:10px">
+          <button type="button" id="heardSendEdited" class="button">Send edited</button>
+          <button type="button" id="heardCancelEdit" class="button secondary">Cancel</button>
+        </div>
+      </div>
+      <div id="audioPlayerControls" class="audio-controls hidden">
+        <button type="button" id="stopAudioButton" class="button secondary">Stop audio</button>
+        <button type="button" id="replayAudioButton" class="button secondary">Replay</button>
+        <audio id="voicePlayer" class="hidden"></audio>
+      </div>
+      <div id="voiceError" class="error hidden"></div>
+      <div class="composer-actions" style="margin-top:12px">
+        <button type="button" id="switchToWritten" class="switch-mode">Switch to writing</button>
+        <div class="row"><button id="voiceStopButton" type="button" class="button danger">Stop</button></div>
+      </div>
+    </div>
   </section>
   <div class="footer">Herst Wellness &middot; This private prototype does not connect to the transcript database, email, analytics, or marketing tools.</div>
 </main>
@@ -696,7 +989,20 @@ function companionPage() {
   var country = 'US';
   var messages = [];
   var locked = false;
+  var interactionMode = 'written';
+  var voiceEnabled = false;
+  var voiceSessionToken = null;
+  var voiceExchangesUsed = 0;
+  var VOICE_EXCHANGE_LIMIT = 12;
   var el = function(id){ return document.getElementById(id); };
+  function ensureVoiceSessionToken(){
+    if (!voiceSessionToken) {
+      voiceSessionToken = (window.crypto && window.crypto.randomUUID)
+        ? window.crypto.randomUUID()
+        : (Date.now() + '-' + Math.random());
+    }
+    return voiceSessionToken;
+  }
 
   function showError(target, text){ target.textContent = text; target.classList.toggle('hidden', !text); }
   var pendingSeq = 0;
@@ -745,7 +1051,14 @@ function companionPage() {
     pendingSeq++;
     hideWaiting();
     pauseBreathLoop();
+    stopRecordingIfActive();
+    stopAudioPlayback();
     el('breathCard').classList.add('hidden');
+    el('modeCard').classList.add('hidden');
+    el('voiceDisclosureCard').classList.add('hidden');
+    interactionMode = 'written';
+    voiceSessionToken = null;
+    voiceExchangesUsed = 0;
     messages = [];
     locked = false;
     accessCode = '';
@@ -768,6 +1081,7 @@ function companionPage() {
       var data = await response.json();
       if (!response.ok) throw new Error(data.error || 'Access denied');
       provider = data.provider;
+      voiceEnabled = Boolean(data.voiceEnabled);
       el('privacyNotice').textContent = data.notice;
       el('modeLabel').textContent = providerLabel(provider);
       el('accessCard').classList.add('hidden');
@@ -788,17 +1102,54 @@ function companionPage() {
     }
     country = el('country').value;
     el('consentCard').classList.add('hidden');
+    if (!voiceEnabled) {
+      // Voice mode is off. Behave exactly as this page did before Voice mode
+      // existed: no choice screen, straight to the optional breathing step.
+      interactionMode = 'written';
+      goToBreathStep();
+      return;
+    }
+    el('modeCard').classList.remove('hidden');
+  });
+
+  function goToBreathStep(){
+    el('modeCard').classList.add('hidden');
+    el('voiceDisclosureCard').classList.add('hidden');
     el('breathCard').classList.remove('hidden');
     el('breathOffer').classList.remove('hidden');
     el('breathPractice').classList.add('hidden');
     el('breathClosing').classList.add('hidden');
+  }
+
+  el('chooseWritten').addEventListener('click', function(){
+    interactionMode = 'written';
+    goToBreathStep();
   });
+  el('chooseVoice').addEventListener('click', function(){
+    interactionMode = 'voice';
+    el('voicePrivacyNotice').textContent = "In Voice mode, your recording is sent to OpenAI to turn it into text. That text is then handled through the same companion process described in the privacy notice. If the companion answers aloud, its written response is sent to OpenAI to create the AI-generated voice. Chad's application is designed not to save the recording, transcript, or spoken response after this session. Provider-side processing and retention depend on account settings and agreements that have not yet been independently verified. You can use Written mode instead at any time.";
+    el('modeCard').classList.add('hidden');
+    el('voiceDisclosureCard').classList.remove('hidden');
+  });
+  el('voiceAcknowledge').addEventListener('click', goToBreathStep);
+  el('voiceBack').addEventListener('click', function(){
+    interactionMode = 'written';
+    el('voiceDisclosureCard').classList.add('hidden');
+    goToBreathStep();
+  });
+
+  function setComposerForMode(){
+    var isVoice = interactionMode === 'voice';
+    el('writtenComposerWrap').classList.toggle('hidden', isVoice);
+    el('voiceComposerWrap').classList.toggle('hidden', !isVoice);
+    if (isVoice) resetVoiceStage(); else el('messageInput').focus();
+  }
 
   function enterSession(){
     el('breathCard').classList.add('hidden');
     el('session').classList.remove('hidden');
     addMessage('assistant', 'What has you reaching out today? Give me a sense of what is happening.');
-    el('messageInput').focus();
+    setComposerForMode();
   }
 
   el('messageInput').addEventListener('keydown', function(event){
@@ -915,34 +1266,51 @@ function companionPage() {
     enterSession();
   });
 
-  el('composer').addEventListener('submit', async function(event){
-    event.preventDefault();
-    if (locked) return;
-    var message = el('messageInput').value.trim();
-    if (!message) return;
+  async function submitMessage(message){
+    if (locked || !message) return;
     var history = messages.slice();
     addMessage('user', message);
-    el('messageInput').value = '';
     var seq = ++pendingSeq;
-    el('sendButton').disabled = true;
+    if (interactionMode === 'written') el('sendButton').disabled = true;
     showWaiting();
     try {
       var response = await fetch('/api/kids-on-the-bus', {
         method:'POST', headers:headers(), cache:'no-store',
-        body:JSON.stringify({message:message, history:history, adultConfirmed:true, country:country})
+        body:JSON.stringify({message:message, history:history, adultConfirmed:true, country:country, interactionMode:interactionMode})
       });
       var data = await response.json();
       if (seq !== pendingSeq || locked) return;
       if (!response.ok) throw new Error(data.error || 'Unable to respond');
       addMessage('assistant', data.response);
       if (data.lockSession) setLocked(true);
+      if (interactionMode === 'voice') speakResponse(data.response, seq);
     } catch (error) {
       if (seq === pendingSeq && !locked) addMessage('assistant', 'I am having trouble responding right now. This application has not saved your entry. Please copy anything you want to keep and try again later.');
     } finally {
       if (seq === pendingSeq) hideWaiting();
-      if (!locked) { el('sendButton').disabled = false; el('messageInput').focus(); }
+      if (!locked && interactionMode === 'written') { el('sendButton').disabled = false; el('messageInput').focus(); }
     }
+  }
+
+  el('composer').addEventListener('submit', function(event){
+    event.preventDefault();
+    var message = el('messageInput').value.trim();
+    if (!message) return;
+    el('messageInput').value = '';
+    submitMessage(message);
   });
+
+  el('switchToVoice').addEventListener('click', function(){
+    interactionMode = 'voice';
+    setComposerForMode();
+  });
+  el('switchToWritten').addEventListener('click', function(){
+    stopRecordingIfActive();
+    stopAudioPlayback();
+    interactionMode = 'written';
+    setComposerForMode();
+  });
+  el('voiceStopButton').addEventListener('click', function(){ el('stopButton').click(); });
 
   el('stopButton').addEventListener('click', function(){
     pendingSeq++;
@@ -961,6 +1329,239 @@ function companionPage() {
     URL.revokeObjectURL(url);
   });
   el('endButton').addEventListener('click', clearSession);
+
+  // --- Voice mode: bounded, turn-by-turn recording and playback. ---
+  // The microphone is opened only when Speak is pressed, never on page load.
+  // A recording is only sent for transcription after the user presses Done
+  // speaking, and the transcript only enters the coaching flow after the
+  // user presses Send. No silence detection: pauses are part of this work.
+  var MAX_RECORD_SECONDS = 120;
+  var mediaRecorder = null;
+  var mediaStream = null;
+  var recordChunks = [];
+  var recordTimer = null;
+  var recordStartedAt = 0;
+  var currentTranscript = '';
+  var voiceSeq = 0;
+
+  function pickAudioMimeType(){
+    var candidates = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/ogg', 'audio/mp4'];
+    for (var i = 0; i < candidates.length; i++) {
+      if (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(candidates[i])) {
+        return candidates[i];
+      }
+    }
+    return '';
+  }
+
+  function formatSeconds(total){
+    var m = Math.floor(total / 60), s = total % 60;
+    return m + ':' + (s < 10 ? '0' : '') + s;
+  }
+
+  function resetVoiceStage(){
+    voiceSeq++;
+    currentTranscript = '';
+    showError(el('voiceError'), '');
+    el('voiceRecordStage').classList.remove('hidden');
+    el('heardStage').classList.add('hidden');
+    el('heardEdit').classList.add('hidden');
+    el('heardEditActions').classList.add('hidden');
+    el('heardText').classList.remove('hidden');
+    document.getElementById('heardSend').parentElement.classList.remove('hidden');
+    el('speakButton').classList.remove('hidden');
+    el('speakButton').disabled = voiceExchangesUsed >= VOICE_EXCHANGE_LIMIT;
+    el('doneSpeakingButton').classList.add('hidden');
+    el('doneSpeakingButton').disabled = false;
+    el('recordIndicator').classList.add('hidden');
+    el('recordIndicator').classList.remove('live');
+    el('recordStatus').textContent = voiceExchangesUsed >= VOICE_EXCHANGE_LIMIT
+      ? 'This sitting has reached its voice limit. You can continue in Written mode.'
+      : 'Press Speak when you are ready.';
+    el('recordTime').textContent = '';
+  }
+
+  function stopRecordingIfActive(){
+    voiceSeq++;
+    if (recordTimer) { clearInterval(recordTimer); recordTimer = null; }
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+      try { mediaRecorder.onstop = null; mediaRecorder.stop(); } catch {}
+    }
+    if (mediaStream) { mediaStream.getTracks().forEach(function(t){ t.stop(); }); mediaStream = null; }
+    mediaRecorder = null;
+  }
+
+  el('speakButton').addEventListener('click', async function(){
+    if (el('speakButton').disabled) return;
+    if (voiceExchangesUsed >= VOICE_EXCHANGE_LIMIT) {
+      showError(el('voiceError'), 'This sitting has reached its voice limit. You can continue in Written mode.');
+      return;
+    }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      fallbackToWritten('This browser cannot record audio here.');
+      return;
+    }
+    var mimeType = pickAudioMimeType();
+    if (!mimeType) {
+      fallbackToWritten('This browser cannot record a supported audio format.');
+      return;
+    }
+    el('speakButton').disabled = true;
+    try {
+      mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (error) {
+      el('speakButton').disabled = false;
+      fallbackToWritten('Microphone access was not available.');
+      return;
+    }
+    var mySeq = ++voiceSeq;
+    recordChunks = [];
+    mediaRecorder = new MediaRecorder(mediaStream, { mimeType: mimeType });
+    mediaRecorder.addEventListener('dataavailable', function(event){
+      if (event.data && event.data.size > 0) recordChunks.push(event.data);
+    });
+    mediaRecorder.addEventListener('stop', function(){
+      if (mySeq !== voiceSeq) return;
+      handleRecordingStopped(mimeType, mySeq);
+    });
+    mediaRecorder.start();
+    recordStartedAt = Date.now();
+    el('speakButton').classList.add('hidden');
+    el('doneSpeakingButton').classList.remove('hidden');
+    el('recordIndicator').classList.remove('hidden');
+    el('recordIndicator').classList.add('live');
+    el('recordStatus').textContent = 'Listening. Press Done speaking when you are finished.';
+    recordTimer = setInterval(function(){
+      if (mySeq !== voiceSeq) { clearInterval(recordTimer); return; }
+      var elapsed = Math.floor((Date.now() - recordStartedAt) / 1000);
+      el('recordTime').textContent = formatSeconds(elapsed) + ' / ' + formatSeconds(MAX_RECORD_SECONDS);
+      if (elapsed >= MAX_RECORD_SECONDS) {
+        el('recordStatus').textContent = 'Reached the two minute limit for one turn, stopping now.';
+        finishRecording();
+      }
+    }, 500);
+  });
+
+  function finishRecording(){
+    if (recordTimer) { clearInterval(recordTimer); recordTimer = null; }
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+    if (mediaStream) { mediaStream.getTracks().forEach(function(t){ t.stop(); }); mediaStream = null; }
+    el('recordIndicator').classList.add('hidden');
+    el('recordIndicator').classList.remove('live');
+  }
+
+  el('doneSpeakingButton').addEventListener('click', finishRecording);
+
+  async function handleRecordingStopped(mimeType, mySeq){
+    el('recordStatus').textContent = 'Transcribing what you said.';
+    el('doneSpeakingButton').disabled = true;
+    var blob = new Blob(recordChunks, { type: mimeType });
+    recordChunks = [];
+    try {
+      var response = await fetch('/api/kids-on-the-bus/transcribe', {
+        method: 'POST',
+        headers: { 'Content-Type': mimeType, 'X-Companion-Access': accessCode, 'X-Voice-Session': ensureVoiceSessionToken() },
+        cache: 'no-store',
+        body: blob,
+      });
+      var data = await response.json();
+      if (mySeq !== voiceSeq) return;
+      if (response.status === 429 || data.limitReached) {
+        showError(el('voiceError'), '');
+        fallbackToWritten('This sitting has reached its voice limit.');
+        return;
+      }
+      if (!response.ok) throw new Error(data.error || 'Could not transcribe that recording.');
+      if (typeof data.voiceExchangeCount === 'number') voiceExchangesUsed = data.voiceExchangeCount;
+      currentTranscript = data.transcript;
+      el('heardText').textContent = currentTranscript;
+      el('voiceRecordStage').classList.add('hidden');
+      el('heardStage').classList.remove('hidden');
+    } catch (error) {
+      if (mySeq !== voiceSeq) return;
+      showError(el('voiceError'), error.message || 'Could not transcribe that recording. You can try again or switch to writing.');
+      el('speakButton').classList.remove('hidden');
+      el('speakButton').disabled = false;
+      el('doneSpeakingButton').classList.add('hidden');
+      el('doneSpeakingButton').disabled = false;
+      el('recordStatus').textContent = 'Press Speak when you are ready.';
+      el('recordTime').textContent = '';
+    }
+  }
+
+  el('heardSend').addEventListener('click', function(){
+    var text = currentTranscript.trim();
+    if (!text) return;
+    resetVoiceStage();
+    submitMessage(text);
+  });
+  el('heardTryAgain').addEventListener('click', function(){
+    resetVoiceStage();
+  });
+  el('heardEditButton').addEventListener('click', function(){
+    el('heardEdit').value = currentTranscript;
+    el('heardEdit').classList.remove('hidden');
+    el('heardText').classList.add('hidden');
+    document.getElementById('heardSend').parentElement.classList.add('hidden');
+    el('heardEditActions').classList.remove('hidden');
+    el('heardEdit').focus();
+  });
+  el('heardCancelEdit').addEventListener('click', function(){
+    el('heardEdit').classList.add('hidden');
+    el('heardText').classList.remove('hidden');
+    document.getElementById('heardSend').parentElement.classList.remove('hidden');
+    el('heardEditActions').classList.add('hidden');
+  });
+  el('heardSendEdited').addEventListener('click', function(){
+    var text = el('heardEdit').value.trim();
+    if (!text) return;
+    resetVoiceStage();
+    submitMessage(text);
+  });
+
+  function fallbackToWritten(reason){
+    stopRecordingIfActive();
+    interactionMode = 'written';
+    setComposerForMode();
+    showError(el('consentError'), '');
+    var note = document.createElement('div');
+    note.className = 'message assistant';
+    note.textContent = reason + ' Continuing in Written mode.';
+    el('messages').appendChild(note);
+  }
+
+  function stopAudioPlayback(){
+    var player = el('voicePlayer');
+    try { player.pause(); player.currentTime = 0; } catch {}
+  }
+
+  el('stopAudioButton').addEventListener('click', stopAudioPlayback);
+  el('replayAudioButton').addEventListener('click', function(){
+    var player = el('voicePlayer');
+    try { player.currentTime = 0; player.play(); } catch {}
+  });
+
+  async function speakResponse(text, seq){
+    try {
+      var response = await fetch('/api/kids-on-the-bus/speech', {
+        method: 'POST',
+        headers: headers(),
+        cache: 'no-store',
+        body: JSON.stringify({ text: text }),
+      });
+      if (seq !== pendingSeq) return;
+      if (!response.ok) return;
+      var blob = await response.blob();
+      if (seq !== pendingSeq) return;
+      var url = URL.createObjectURL(blob);
+      var player = el('voicePlayer');
+      player.src = url;
+      el('audioPlayerControls').classList.remove('hidden');
+      await player.play().catch(function(){});
+    } catch (error) {
+      // Audio is optional. The written response is already visible either way.
+    }
+  }
 })();
 </script>
 </body>
@@ -974,6 +1575,89 @@ async function handleCompanionRoute(req, res) {
       'Content-Security-Policy': "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'",
     });
     res.end(companionPage());
+    return true;
+  }
+
+  if (req.url === TRANSCRIBE_PATH) {
+    if (req.method !== 'POST') {
+      sendJson(res, 405, { error: 'Method not allowed' });
+      return true;
+    }
+    const access = hasAccess(req);
+    if (!access.ok) {
+      sendJson(res, access.status, { error: 'Access denied.' });
+      return true;
+    }
+    if (!voiceAudioEnabled()) {
+      sendJson(res, 503, { error: 'Voice mode is not enabled on this deployment.' });
+      return true;
+    }
+    const voiceSessionToken = String(req.headers['x-voice-session'] || '') || null;
+    const exchangeCheck = takeVoiceExchange(voiceSessionToken);
+    if (!exchangeCheck.ok) {
+      sendJson(res, 429, {
+        error: 'This sitting has reached its voice limit. You can continue in Written mode.',
+        limitReached: true,
+      });
+      return true;
+    }
+    const contentType = String(req.headers['content-type'] || '');
+    if (!ALLOWED_AUDIO_MIME.test(contentType)) {
+      sendJson(res, 415, { error: 'Unsupported audio format.' });
+      return true;
+    }
+    try {
+      const audio = await readRawBody(req, MAX_AUDIO_BYTES);
+      if (!audio.length) {
+        sendJson(res, 400, { error: 'No audio received.' });
+        return true;
+      }
+      const transcript = await transcribeAudio(audio, contentType);
+      sendJson(res, 200, { transcript, voiceExchangeCount: exchangeCheck.count });
+    } catch (error) {
+      console.error('[companion] transcription failed', {
+        statusCode: error.statusCode || null,
+        bytes: null,
+      });
+      sendJson(res, error.statusCode === 413 ? 413 : 502, {
+        error: 'Could not transcribe that recording. Please try again or switch to writing.',
+      });
+    }
+    return true;
+  }
+
+  if (req.url === SPEECH_PATH) {
+    if (req.method !== 'POST') {
+      sendJson(res, 405, { error: 'Method not allowed' });
+      return true;
+    }
+    const access = hasAccess(req);
+    if (!access.ok) {
+      sendJson(res, access.status, { error: 'Access denied.' });
+      return true;
+    }
+    if (!voiceAudioEnabled()) {
+      sendJson(res, 503, { error: 'Voice mode is not enabled on this deployment.' });
+      return true;
+    }
+    try {
+      const body = await readJsonBody(req);
+      const text = typeof body.text === 'string' ? body.text.trim() : '';
+      if (!text) {
+        sendJson(res, 400, { error: 'Text is required.' });
+        return true;
+      }
+      if (text.length > MAX_SPEECH_CHARS) {
+        sendJson(res, 413, { error: 'That response is too long to speak.' });
+        return true;
+      }
+      const audio = await synthesizeSpeech(text);
+      res.writeHead(200, noStoreHeaders('audio/mpeg'));
+      res.end(audio);
+    } catch (error) {
+      console.error('[companion] speech synthesis failed', {});
+      sendJson(res, 502, { error: 'Could not generate audio for that response.' });
+    }
     return true;
   }
 
@@ -1000,6 +1684,7 @@ async function handleCompanionRoute(req, res) {
     sendJson(res, 200, {
       provider,
       notice: getProviderNotice(provider),
+      voiceEnabled: voiceAudioEnabled(),
       persistentStorage: false,
       transcriptAccess: false,
       marketingUse: false,
@@ -1036,7 +1721,8 @@ async function handleCompanionRoute(req, res) {
       return true;
     }
 
-    const generated = await generateReflection(body.message, body.history, provider);
+    const interactionMode = body.interactionMode === 'voice' ? 'voice' : 'written';
+    const generated = await generateReflection(body.message, body.history, provider, interactionMode);
     sendJson(res, 200, {
       route: 'continue_reflection',
       response: generated.response,
@@ -1055,6 +1741,8 @@ async function handleCompanionRoute(req, res) {
 module.exports = {
   API_PATH,
   PAGE_PATH,
+  TRANSCRIBE_PATH,
+  SPEECH_PATH,
   evaluateDeterministicControls,
   getActiveProvider,
   handleCompanionRoute,
