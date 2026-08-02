@@ -35,7 +35,7 @@ const MEDICAL_EMERGENCY =
 const DISORIENTATION =
   /\b(cannot tell where i am|can't tell where i am|do not know where i am|don't know where i am|walls are speaking|voices are telling me|losing touch with reality)\b/i;
 const STOP_REQUEST =
-  /(^|\b)(stop|do not want to do this|don't want to do this|end this session|flooded)(\b|$)/i;
+  /(?<!bus )(?<!non-)\bstop\b(?=[.!?]|\s*$)|\bplease stop\b|\bstop (?:this|it|here|now|the reflection|the exercise|the session)\b|\b(?:want|need|like) to stop\b|\bcan we stop\b|\blet's stop\b|\bi'?m (?:done|stopping)\b(?=[.!?]|\s*$)|\bdo not want to do this\b|\bdon't want to do this\b|\bdo not want to continue\b|\bdon't want to continue\b|\bend this session\b|\bflooded\b/i;
 const MINOR_DISCLOSURE =
   /\b(?:i am|i'm|im)\s+(?:[0-9]|1[0-7])(?:\s+years? old)?\b/i;
 
@@ -800,6 +800,17 @@ function companionPage() {
     addMessage('assistant', 'What has you reaching out today? Give me a sense of what is happening.');
     el('messageInput').focus();
   }
+
+  el('messageInput').addEventListener('keydown', function(event){
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      if (typeof el('composer').requestSubmit === 'function') {
+        el('composer').requestSubmit();
+      } else {
+        el('sendButton').click();
+      }
+    }
+  });
 
   el('breathSkip').addEventListener('click', enterSession);
   el('breathDone').addEventListener('click', enterSession);
