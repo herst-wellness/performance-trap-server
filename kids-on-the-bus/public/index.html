@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Kids on the Bus | Private Voice Experiment</title>
+  <title>Kids on the Bus | Written Companion</title>
   <meta name="robots" content="noindex, nofollow, noarchive">
   <link rel="stylesheet" href="/kids-on-the-bus/styles.css">
 </head>
@@ -13,106 +13,64 @@
       <img src="/Herst-Wellness-Logo-cropped.jpg" alt="Herst Wellness" class="logo">
       <p class="eyebrow">Mind/Body Foundations, Module 2</p>
       <h1>Kids on the Bus</h1>
-      <p class="subtitle">A private native-voice experiment for noticing what takes the wheel.</p>
-      <span class="private-badge">Private proof of concept</span>
+      <p class="subtitle">A private written reflection for noticing what takes the wheel.</p>
+      <span class="private-badge">Private test</span>
     </header>
 
     <section id="setupCard" class="card setup-card">
       <h2>Before you begin</h2>
-      <p>This version tests whether Claude can preserve Chad's coaching approach while a continuous Realtime connection handles listening and natural speech.</p>
-
+      <p>This version is written only. Nothing is listening, and there is no voice that can interrupt you. Take whatever time you need before sending each response.</p>
       <div class="notice">
-        <p>This is an AI-guided reflection tool for adults, not therapy, medical care, or crisis support. Chad's prototype does not save the words in your session or use them for marketing. Your audio is sent to OpenAI for listening and speech. The written transcript and conversation are sent to Anthropic so Claude can prepare the coaching response. Provider-side retention may apply. Do not include identifying details you do not want processed. If you are in immediate danger, use local emergency or crisis services instead.</p>
+        <p>This is an AI-guided reflection tool for adults, not therapy, medical care, or crisis support. Chad's prototype does not save the words in your sitting or use them for marketing. Your written conversation is sent to Anthropic so Claude can prepare the coaching response. Provider-side retention may apply. Do not include identifying details you do not want processed. If you are in immediate danger, use local emergency or crisis services instead.</p>
       </div>
-
       <label class="field">
         <span>Private access code</span>
         <input id="accessCode" type="password" autocomplete="off" spellcheck="false">
       </label>
-
-      <fieldset class="voice-choice">
-        <legend>Voice</legend>
-        <label><input type="radio" name="voice" value="marin" checked> Marin</label>
-        <label><input type="radio" name="voice" value="cedar"> Cedar</label>
-      </fieldset>
-
       <label class="consent-row">
         <input id="adultConsent" type="checkbox">
-        <span>I am at least 18, I understand this is a private experiment, and I want to begin.</span>
+        <span>I am at least 18, I understand this is a private written test, and I want to begin.</span>
       </label>
-
-      <button id="beginButton" class="button primary" type="button">Begin voice session</button>
+      <button id="beginButton" class="button primary" type="button">Begin written reflection</button>
       <p id="setupMessage" class="message" role="status"></p>
     </section>
 
     <section id="sessionCard" class="card session-card hidden" aria-live="polite">
       <div class="session-heading">
-        <div>
-          <p class="eyebrow">Kids on the Bus</p>
-          <h2>Voice session</h2>
-        </div>
+        <div><p class="eyebrow">Kids on the Bus</p><h2>Written reflection</h2></div>
         <div class="session-meta">
-          <span id="exchangeCount">0 of 12 exchanges</span>
-          <span id="timeRemaining">20:00 remaining</span>
+          <span id="exchangeCount">0 of 30 exchanges</span>
+          <span id="timeRemaining">60:00 remaining</span>
         </div>
       </div>
-
-      <div class="status-panel">
+      <div class="status-panel written-status">
         <div id="breathDot" class="breath-dot" aria-hidden="true"></div>
         <div>
-          <p id="statusLabel" class="status-label">Connecting...</p>
-          <p id="statusDetail" class="status-detail">Your microphone will open after the companion's first question.</p>
+          <p id="statusLabel" class="status-label">Write when you are ready</p>
+          <p id="statusDetail" class="status-detail">Take as much time as you need.</p>
         </div>
       </div>
-
-      <div id="transcript" class="transcript" aria-label="Written transcript of this session"></div>
-
-      <div id="voiceControls" class="controls">
-        <button id="finishThoughtButton" class="button secondary" type="button" disabled>I'm finished</button>
-        <button id="correctButton" class="button link-button" type="button" disabled>Correct what it heard</button>
-        <button id="writingButton" class="button link-button" type="button">Use writing</button>
-        <button id="soundButton" class="button link-button hidden" type="button">Enable sound</button>
-      </div>
-
-      <form id="correctionForm" class="writing-panel hidden">
+      <div id="transcript" class="transcript" aria-label="Written transcript of this sitting"></div>
+      <form id="responseForm" class="writing-panel primary-writing-panel">
         <label class="field">
-          <span>Say what you meant</span>
-          <textarea id="correctionText" rows="3"></textarea>
+          <span>Your response</span>
+          <textarea id="responseText" rows="6" placeholder="Write what is happening..."></textarea>
         </label>
-        <div class="inline-controls">
-          <button class="button primary" type="submit">Send correction</button>
-          <button id="cancelCorrectionButton" class="button link-button" type="button">Cancel</button>
-        </div>
+        <button id="sendButton" class="button primary" type="submit">Send</button>
       </form>
-
-      <form id="writingForm" class="writing-panel hidden">
-        <label class="field">
-          <span>Write your next response</span>
-          <textarea id="writingText" rows="4"></textarea>
-        </label>
-        <div class="inline-controls">
-          <button class="button primary" type="submit">Send</button>
-          <button id="returnToSpeakingButton" class="button link-button" type="button">Return to speaking</button>
-        </div>
-      </form>
-
       <div class="session-footer">
-        <p id="costMessage" class="cost-message">Usage is measured with numbers only. Your words are not placed in the cost log.</p>
+        <p class="cost-message">The app does not save the words in this sitting. Its permanent usage record contains numbers only.</p>
         <button id="endButton" class="button danger" type="button">End and clear here</button>
       </div>
     </section>
 
     <section id="endedCard" class="card hidden">
-      <h2>Session ended</h2>
-      <p>The transcript was cleared from this page. This prototype does not create an account or save a journal.</p>
+      <h2>Sitting ended</h2>
+      <p>The written conversation was cleared from this page. This prototype does not create an account or save a journal.</p>
       <p id="finalCost"></p>
       <button id="startAgainButton" class="button secondary" type="button">Return to the beginning</button>
     </section>
   </main>
-
-  <audio id="remoteAudio" autoplay playsinline></audio>
-  <script src="/kids-on-the-bus/turn-coordinator.js"></script>
-  <script src="/kids-on-the-bus/relay-fidelity.js"></script>
-  <script src="/kids-on-the-bus/app.js"></script>
+  <script src="/kids-on-the-bus/written-app.js"></script>
 </body>
 </html>

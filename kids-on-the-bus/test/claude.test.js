@@ -23,16 +23,16 @@ test('Claude history keeps only recent user and assistant text without extra fie
   ]);
 });
 
-test('Claude preserves the entire authorized fifteen-exchange sitting', () => {
-  const history = Array.from({ length: 36 }, (_, index) => ({
+test('Claude preserves the entire longest authorized written sitting', () => {
+  const history = Array.from({ length: 72 }, (_, index) => ({
     role: index % 2 === 0 ? 'user' : 'assistant',
     content: `turn-${index + 1}`
   }));
   const cleaned = cleanHistory(history);
-  assert.equal(MAX_AUTHORIZED_HISTORY_MESSAGES, 30);
-  assert.equal(cleaned.length, 30);
-  assert.equal(cleaned[0].content, 'turn-7');
-  assert.equal(cleaned[29].content, 'turn-36');
+  assert.equal(MAX_AUTHORIZED_HISTORY_MESSAGES, 60);
+  assert.equal(cleaned.length, 60);
+  assert.equal(cleaned[0].content, 'turn-13');
+  assert.equal(cleaned[59].content, 'turn-72');
 });
 
 test('Claude text is returned faithfully except for the no-em-dash product rule', () => {
