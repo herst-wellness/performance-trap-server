@@ -1,37 +1,37 @@
-# Kids on the Bus replacement
+# Kids on the Bus written private test
 
-This folder contains the private native-voice Kids on the Bus companion that replaces the previous written and record-send-listen versions at `/reflect/kids-on-the-bus`.
+The live route at `/reflect/kids-on-the-bus` now offers a written-only reflection. Voice testing is paused because early tester feedback showed that automatic turn detection and audio flow interfered with reflective pauses.
 
-The rest of `performance-trap-server` remains unchanged. The existing astrology, book, audio, email, signup, health, and static-file routes continue to be handled by the main server.
+The former voice implementation has not been deleted. Its client code, relay checks, timing tools, and tests remain in this repository and in Git history so voice work can resume later without reconstructing it.
 
-## Runtime architecture
+The rest of `performance-trap-server` remains unchanged. The astrology, book, audio, email, signup, health, and static-file routes continue to be handled by the main server.
 
-- Claude Sonnet 5 at high effort is the coaching brain.
-- OpenAI Realtime listens, transcribes, and speaks Claude's exact response.
-- OpenAI Realtime has no coaching discretion.
-- The approved Module 2 prompt and safety overlay are fingerprinted under `canonical/module2/`.
+## Current runtime
+
+- Claude Sonnet 5 at high effort remains the coaching brain.
+- The approved Module 2 prompt and safety overlay remain fingerprinted under `canonical/module2/`.
+- No microphone, transcription, Realtime voice session, or spoken playback is started.
+- The written sitting allows 30 exchanges over 60 minutes by default.
+- The entire authorized sitting fits within the history sent to Claude.
 - The transcript RAG is not connected to the deployed application.
 
 ## Required Render settings
 
-The page can load without these settings, but a voice session cannot begin until all are present:
-
-- `OPENAI_API_KEY`
 - `ANTHROPIC_API_KEY`
 - `COMPANION_ACCESS_CODE`
 - `PRIVATE_TEST_BUDGET_USD`
 
-For Chad's current private test, the chosen access code is `kids`. The remaining authorized testing amount on August 6, 2026 is approximately `$1.92`. Confirm the current ledger before setting a new deployment budget. Do not silently reset the authorized total to `$5` on every deployment.
+`OPENAI_API_KEY` may remain in Render for the other existing Performance Trap features, but Kids on the Bus no longer uses it while voice is paused.
 
 Optional controls:
 
 - `ANTHROPIC_MODEL=claude-sonnet-5`
 - `ANTHROPIC_EFFORT=high`
-- `REALTIME_SESSION_MINUTES=20`
-- `REALTIME_MAX_EXCHANGES=12`
-- `REALTIME_DATA_DIR` for a persistent private ledger location
+- `WRITTEN_SESSION_MINUTES=60`
+- `WRITTEN_MAX_EXCHANGES=30`
+- `REALTIME_DATA_DIR` for the existing persistent private cost ledger
 
-The usage and latency ledgers contain numbers and random identifiers only. They never contain session speech, transcripts, coaching responses, memories, names, or email addresses.
+The cost ledger contains numbers and random identifiers only. It never contains written responses, coaching responses, memories, names, or email addresses.
 
 ## Verification
 
@@ -42,4 +42,4 @@ npm run check
 npm test
 ```
 
-Do not expose the page to another tester until the deployed route has passed a Chad-only smoke test.
+After deployment, verify that the page says `Written reflection`, does not request microphone permission, accepts the existing private access code, and clears the on-screen conversation when the sitting ends.

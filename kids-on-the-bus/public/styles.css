@@ -126,6 +126,9 @@ input:focus, textarea:focus, button:focus-visible { outline: 3px solid rgba(155,
 
 .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 18px 26px; border-top: 1px solid var(--line); }
 .writing-panel { padding: 4px 28px 24px; border-top: 1px solid var(--line); }
+.primary-writing-panel { padding-top: 18px; }
+.primary-writing-panel textarea { min-height: 150px; }
+.written-status { min-height: 112px; }
 .inline-controls { display: flex; gap: 10px; align-items: center; }
 .session-footer { display: flex; justify-content: space-between; gap: 20px; align-items: center; padding: 20px 28px 26px; border-top: 1px solid var(--line); }
 .cost-message { margin: 0; max-width: 560px; color: var(--muted); font-size: 0.86rem; line-height: 1.45; }

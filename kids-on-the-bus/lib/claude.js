@@ -2,7 +2,8 @@
 
 const NORMAL_OUTPUT_TOKENS = 2048;
 const RETRY_OUTPUT_TOKENS = 4096;
-const MAX_AUTHORIZED_HISTORY_MESSAGES = 30;
+// Enough to preserve the entire longest authorized written sitting.
+const MAX_AUTHORIZED_HISTORY_MESSAGES = 60;
 const ALLOWED_EFFORTS = new Set(['low', 'medium', 'high', 'xhigh', 'max']);
 
 function normalizeClaudeEffort(value, fallback = 'high') {
