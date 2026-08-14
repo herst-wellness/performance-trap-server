@@ -5,6 +5,7 @@ const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
+const vm = require('node:vm');
 const { loadClaudeInstructions } = require('../server');
 
 const root = path.join(__dirname, '..');
@@ -66,6 +67,90 @@ test('the companion is framed as Mind/Body Foundations with notice and optional 
   assert.match(html, /I give Herst Wellness permission to save this written sitting/);
   assert.doesNotMatch(html, /id="researchConsent"[^>]*checked/);
   assert.doesNotMatch(`${html}\n${app}`, /completely private|private written|private test/i);
+});
+
+test('browser submits the notice version supplied by the server configuration', async () => {
+  const listeners = new Map();
+  const elements = new Map();
+  const makeElement = () => ({
+    addEventListener(event, handler) { listeners.set(`${this.id}:${event}`, handler); },
+    append() {},
+    appendChild() {},
+    classList: { add() {}, remove() {} },
+    disabled: false,
+    focus() {},
+    id: '',
+    checked: false,
+    scrollHeight: 0,
+    scrollTop: 0,
+    textContent: '',
+    value: ''
+  });
+  const document = {
+    body: { appendChild() {} },
+    createElement() { return makeElement(); },
+    getElementById(id) {
+      if (!elements.has(id)) {
+        const element = makeElement();
+        element.id = id;
+        elements.set(id, element);
+      }
+      return elements.get(id);
+    },
+    querySelectorAll() { return []; },
+    referrer: ''
+  };
+  const requests = [];
+  const serverNoticeVersion = 'server-provided-test-version';
+  const fetch = async (url, options = {}) => {
+    requests.push({ url, options });
+    if (url.endsWith('/config')) {
+      return {
+        ok: true,
+        json: async () => ({
+          configured: true,
+          maxExchanges: 30,
+          noticeVersion: serverNoticeVersion,
+          sessionMinutes: 60
+        })
+      };
+    }
+    if (url.endsWith('/session')) {
+      return {
+        ok: true,
+        json: async () => ({ sessionId: 'session-id', sessionReference: 'MBF-TEST-TEST', opening: 'Opening' })
+      };
+    }
+    throw new Error(`Unexpected request: ${url}`);
+  };
+  const window = {
+    addEventListener() {},
+    clearInterval() {},
+    innerWidth: 1200,
+    localStorage: { getItem() { return null; }, setItem() {} },
+    location: { search: '' },
+    screen: { width: 1200 },
+    scrollTo() {},
+    setInterval() { return 1; }
+  };
+  vm.runInNewContext(app, {
+    AbortController,
+    Blob,
+    Date,
+    document,
+    fetch,
+    navigator: { clipboard: { writeText: async () => {} }, userAgent: 'test' },
+    URL,
+    URLSearchParams,
+    window
+  });
+  await new Promise((resolve) => setImmediate(resolve));
+  elements.get('noticeConsent').checked = true;
+  elements.get('accessCode').value = 'visitor-code';
+  await listeners.get('beginButton:click')();
+  const submitted = requests.find((request) => request.url.endsWith('/session'));
+  assert.equal(JSON.parse(submitted.options.body).noticeVersion, serverNoticeVersion);
+  assert.doesNotMatch(app, /const NOTICE_VERSION\s*=/);
 });
 
 test('dashboard copy separates estimated companion invitations from estimated participant evidence', () => {
