@@ -3,33 +3,51 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Kids on the Bus | Written Companion</title>
+  <title>Mind/Body Foundations Companion | Herst Wellness</title>
+  <meta name="description" content="An introductory written experience of the Mind/Body Foundations approach used by Chad Herst.">
   <meta name="robots" content="noindex, nofollow, noarchive">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&amp;family=Playfair+Display:wght@500;600&amp;display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/kids-on-the-bus/styles.css">
 </head>
 <body>
   <main class="page-shell">
+    <a class="back-link tracked-link" data-event="mindbodyPageClick" href="https://herstwellness.com/mind-body-foundations">Back to Mind/Body Foundations</a>
     <header class="masthead">
       <img src="/Herst-Wellness-Logo-cropped.jpg" alt="Herst Wellness" class="logo">
-      <p class="eyebrow">Mind/Body Foundations, Module 2</p>
-      <h1>Kids on the Bus</h1>
-      <p class="subtitle">A private written reflection for noticing what takes the wheel.</p>
-      <span class="private-badge">Private test</span>
+      <p class="eyebrow">An introductory written experience</p>
+      <h1>Mind/Body Foundations Companion</h1>
+      <p class="subtitle">Bring something real. See what happens when you turn toward it.</p>
+      <span class="access-badge">Early access</span>
     </header>
 
     <section id="setupCard" class="card setup-card">
       <h2>Before you begin</h2>
-      <p>This version is written only. Nothing is listening, and there is no voice that can interrupt you. Take whatever time you need before sending each response.</p>
-      <div class="notice">
-        <p>This is an AI-guided reflection tool for adults, not therapy, medical care, or crisis support. Chad's prototype does not save the words in your sitting or use them for marketing. Your written conversation is sent to Anthropic so Claude can prepare the coaching response. Provider-side retention may apply. Do not include identifying details you do not want processed. If you are in immediate danger, use local emergency or crisis services instead.</p>
-      </div>
-      <label class="field">
-        <span>Private access code</span>
-        <input id="accessCode" type="password" autocomplete="off" spellcheck="false">
+      <p>This companion offers an introductory experience of the Mind/Body Foundations approach Chad uses with clients. Begin with something alive in your life. You will spend time with what happened, notice what feels most difficult, and listen for what your mind and body are revealing.</p>
+      <p>This version is written only. Nothing is listening. Most sittings take 10 to 20 minutes, and you can stop at any time.</p>
+
+      <section class="information-notice" aria-labelledby="informationTitle">
+        <p class="notice-label">Information notice</p>
+        <h3 id="informationTitle">How your information is used</h3>
+        <p>Your entries are sent to an AI service so the companion can respond. Herst Wellness also records information about how the companion is used, including session length, response times, errors, automatically estimated topic categories, steps the companion invited, and steps the participant's response appeared to demonstrate. This information helps us improve the experience and understand what people find useful.</p>
+        <p>Herst Wellness keeps structured usage information, without the exact words of your sitting, for up to 12 months. If you choose to share your sitting or submit a written feedback comment, that material is kept separately for up to 90 days.</p>
+        <p>Your exact written conversation will not be saved for later review unless you separately choose to share it. Please do not enter names, identifying details, or anything you would not want processed by an AI service.</p>
+        <p>This is an AI-guided experience shaped by Chad's teaching and coaching method. It is not Chad, one-on-one coaching, psychotherapy, medical care, or crisis support.</p>
+      </section>
+
+      <label class="consent-row required-consent">
+        <input id="noticeConsent" type="checkbox" required>
+        <span>I am at least 18. I have read how my information is used, and I want to begin.</span>
       </label>
-      <label class="consent-row">
-        <input id="adultConsent" type="checkbox">
-        <span>I am at least 18, I understand this is a private written test, and I want to begin.</span>
+      <label class="consent-row optional-consent">
+        <input id="researchConsent" type="checkbox">
+        <span>I give Herst Wellness permission to save this written sitting for product research and improvement.</span>
+      </label>
+      <p class="consent-detail">Optional. This choice is off unless you select it. A shared sitting is kept separately for up to 90 days. It is not permission to use your words in advertising, a testimonial, or a public quotation.</p>
+      <label class="field access-field">
+        <span>Access code</span>
+        <input id="accessCode" type="password" autocomplete="off" spellcheck="false">
       </label>
       <button id="beginButton" class="button primary" type="button">Begin written reflection</button>
       <p id="setupMessage" class="message" role="status"></p>
@@ -37,8 +55,9 @@
 
     <section id="sessionCard" class="card session-card hidden" aria-live="polite">
       <div class="session-heading">
-        <div><p class="eyebrow">Kids on the Bus</p><h2>Written reflection</h2></div>
+        <div><p class="eyebrow">Mind/Body Foundations</p><h2>Written reflection</h2></div>
         <div class="session-meta">
+          <span id="sessionReference"></span>
           <span id="exchangeCount">0 of 30 exchanges</span>
           <span id="timeRemaining">60:00 remaining</span>
         </div>
@@ -58,17 +77,46 @@
         </label>
         <button id="sendButton" class="button primary" type="submit">Send</button>
       </form>
+      <div class="utility-controls">
+        <button id="copyButton" class="button secondary" type="button">Copy sitting</button>
+        <button id="downloadButton" class="button secondary" type="button">Download sitting</button>
+      </div>
       <div class="session-footer">
-        <p class="cost-message">The app does not save the words in this sitting. Its permanent usage record contains numbers only.</p>
+        <p id="retentionMessage" class="cost-message">Herst Wellness keeps structured usage information, not the exact words in this sitting, for up to 12 months.</p>
         <button id="endButton" class="button danger" type="button">End and clear here</button>
       </div>
     </section>
 
-    <section id="endedCard" class="card hidden">
-      <h2>Sitting ended</h2>
-      <p>The written conversation was cleared from this page. This prototype does not create an account or save a journal.</p>
+    <section id="endedCard" class="card ended-card hidden">
+      <p class="eyebrow">Sitting complete</p>
+      <h2>Your written sitting was cleared from this page.</h2>
+      <p>Your session reference is <strong id="endedReference"></strong>. You can use it with the additional feedback form without giving your name here.</p>
       <p id="finalCost"></p>
-      <button id="startAgainButton" class="button secondary" type="button">Return to the beginning</button>
+
+      <form id="feedbackForm" class="feedback-form">
+        <h3>A one-minute check-in</h3>
+        <p class="feedback-intro">Choose a number from 1, low, to 5, high.</p>
+        <label class="rating-row"><span>Did this help you notice something you had not seen clearly before?</span><select required><option value="">Choose</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
+        <label class="rating-row"><span>How supported or understood did you feel?</span><select required><option value="">Choose</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
+        <label class="rating-row"><span>How natural did the companion's responses feel?</span><select required><option value="">Choose</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
+        <label class="rating-row"><span>Would you use this again?</span><select required><option value="">Choose</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
+        <label class="rating-row"><span>Are you interested in learning more about Mind/Body Foundations or working with Chad?</span><select required><option value="">Choose</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
+        <label class="field"><span>Optional comment</span><textarea id="feedbackComment" rows="3" maxlength="1000" placeholder="Please do not include names or identifying details."></textarea></label>
+        <p class="consent-detail">If submitted, the comment is saved separately with this session reference for up to 90 days.</p>
+        <button class="button primary" type="submit">Submit check-in</button>
+        <p id="feedbackMessage" class="message" role="status"></p>
+      </form>
+
+      <div class="next-steps">
+        <a id="googleFeedbackLink" class="button secondary tracked-link" data-event="feedbackFormClicks" href="https://docs.google.com/forms/d/e/1FAIpQLSfXr_Y0YxeUwx0Ky3QNBdNf6kCZCtlFXY2eZfp5qDq7jX-XEg/viewform">Open the additional feedback form</a>
+        <p class="consent-detail">Enter session reference <strong id="feedbackReference"></strong> in the form.</p>
+        <a class="text-link tracked-link" data-event="mindbodyPageClick" href="https://herstwellness.com/mind-body-foundations">Explore Mind/Body Foundations</a>
+        <a class="text-link tracked-link" data-event="chapterClick" href="https://performance-trap-server.onrender.com/listen/chapter-one">Read or listen to a chapter</a>
+        <a class="text-link tracked-link" data-event="bookClick" href="https://herstwellness.com/">Learn about the book</a>
+        <a class="text-link tracked-link" data-event="conversationClick" href="https://herstwellness.com/consult">Book a conversation with Chad</a>
+        <a class="text-link tracked-link" data-event="emailListClick" href="https://performance-trap-server.onrender.com/listen/chapter-one">Join the email list</a>
+      </div>
+      <button id="startAgainButton" class="button link-button" type="button">Return to the beginning</button>
     </section>
   </main>
   <script src="/kids-on-the-bus/written-app.js"></script>

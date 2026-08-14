@@ -7,7 +7,7 @@ const os = require('node:os');
 const path = require('node:path');
 const { EventEmitter } = require('node:events');
 const { Readable } = require('node:stream');
-const { createApp, isCompanionPath, loadClaudeInstructions } = require('../server');
+const { NOTICE_VERSION, createApp, isCompanionPath, loadClaudeInstructions, loadSettings } = require('../server');
 
 test('the replacement owns only Kids on the Bus routes', () => {
   assert.equal(isCompanionPath('/reflect/kids-on-the-bus'), true);
@@ -18,12 +18,22 @@ test('the replacement owns only Kids on the Bus routes', () => {
   assert.equal(isCompanionPath('/reading'), false);
 });
 
+test('configured retention cannot exceed the disclosed maximums', () => {
+  const configured = loadSettings({
+    COMPANION_ANALYTICS_RETENTION_DAYS: '730',
+    COMPANION_SHARED_RETENTION_DAYS: '365'
+  });
+  assert.equal(configured.analyticsRetentionDays, 365);
+  assert.equal(configured.sharedRetentionDays, 90);
+});
+
 function settings(overrides = {}) {
   return {
     port: 0,
     apiKey: 'sk-server-only-secret',
     anthropicKey: 'sk-ant-server-only-secret',
     accessCode: 'private-code',
+    adminCode: 'admin-secret',
     budgetUsd: 5,
     sessionMinutes: 60,
     maxExchanges: 30,
@@ -44,13 +54,19 @@ function settings(overrides = {}) {
       claudeCacheRead: 0.3
     },
     dataDir: fs.mkdtempSync(path.join(os.tmpdir(), 'realtime-server-')),
+    analyticsRetentionDays: 365,
+    sharedRetentionDays: 90,
+    weeklyReport: { enabled: false },
     ...overrides
   };
 }
 
 function requestServer(server, options = {}) {
   return new Promise((resolve, reject) => {
-    const body = options.body == null ? '' : String(options.body);
+    const isSessionStart = options.method === 'POST' && options.url === '/api/kids-on-the-bus/session';
+    const body = options.body == null && isSessionStart
+      ? JSON.stringify({ acknowledged: true, noticeVersion: NOTICE_VERSION })
+      : options.body == null ? '' : String(options.body);
     const req = Readable.from(body ? [Buffer.from(body)] : []);
     req.method = options.method || 'GET';
     req.url = options.url || '/';
@@ -116,6 +132,7 @@ test('written session starts without calling the paused voice provider', async (
   assert.equal(response.status, 200);
   const body = JSON.parse(response.body);
   assert.ok(body.sessionId);
+  assert.match(body.sessionReference, /^MBF-[A-Z0-9]{4}-[A-Z0-9]{4}$/);
   assert.match(body.opening, /What has you reaching out today/);
   assert.equal(calls, 0);
   fs.rmSync(appSettings.dataDir, { recursive: true, force: true });
@@ -305,4 +322,111 @@ test('ending an obsolete browser request cancels the upstream Claude request', a
   } finally {
     fs.rmSync(appSettings.dataDir, { recursive: true, force: true });
   }
+});
+
+test('the current information notice must be acknowledged before a sitting begins', async () => {
+  const appSettings = settings();
+  const server = createApp({ settings: appSettings, fetchImpl: async () => { throw new Error('must not call'); } });
+  const response = await requestServer(server, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Companion-Code': 'private-code' },
+    url: '/api/kids-on-the-bus/session',
+    body: JSON.stringify({ acknowledged: false, noticeVersion: NOTICE_VERSION })
+  });
+  assert.equal(response.status, 400);
+  assert.match(response.body, /acknowledge/i);
+  fs.rmSync(appSettings.dataDir, { recursive: true, force: true });
+});
+
+test('the analytics dashboard requires the separate administrative code', async () => {
+  const appSettings = settings();
+  const server = createApp({ settings: appSettings });
+  const publicCode = await requestServer(server, {
+    method: 'POST',
+    headers: { 'X-Companion-Code': 'private-code' },
+    url: '/api/kids-on-the-bus/admin/insights',
+    body: '{}'
+  });
+  assert.equal(publicCode.status, 401);
+  const admin = await requestServer(server, {
+    method: 'POST',
+    headers: { 'X-Companion-Admin-Code': 'admin-secret' },
+    url: '/api/kids-on-the-bus/admin/insights',
+    body: '{}'
+  });
+  assert.equal(admin.status, 200);
+  assert.doesNotMatch(admin.body, /admin-secret|private-code|sk-ant-server-only-secret/);
+  fs.rmSync(appSettings.dataDir, { recursive: true, force: true });
+});
+
+test('server startup activates automatic shared-sitting retention pruning', () => {
+  const appSettings = settings();
+  let started = 0;
+  let stopped = 0;
+  const sharedStore = {
+    prune() {},
+    startAutomaticPruning() { started += 1; },
+    stopAutomaticPruning() { stopped += 1; }
+  };
+  const server = createApp({ settings: appSettings, sharedStore });
+  assert.equal(started, 1);
+  server.emit('close');
+  assert.equal(stopped, 1);
+  fs.rmSync(appSettings.dataDir, { recursive: true, force: true });
+});
+
+test('structured records survive a server process restart in the same persistent directory', async () => {
+  const appSettings = settings();
+  const firstProcess = createApp({ settings: appSettings });
+  const started = await requestServer(firstProcess, {
+    method: 'POST', headers: { 'X-Companion-Code': 'private-code' }, url: '/api/kids-on-the-bus/session'
+  });
+  const session = JSON.parse(started.body);
+  await requestServer(firstProcess, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Companion-Code': 'private-code' },
+    url: '/api/kids-on-the-bus/session/end',
+    body: JSON.stringify({ sessionId: session.sessionId, reason: 'completed' })
+  });
+
+  const restartedProcess = createApp({ settings: appSettings });
+  const dashboard = await requestServer(restartedProcess, {
+    method: 'POST', headers: { 'X-Companion-Admin-Code': 'admin-secret' }, url: '/api/kids-on-the-bus/admin/insights', body: '{}'
+  });
+  const saved = JSON.parse(dashboard.body).sessions;
+  assert.equal(saved[0].sessionReference, session.sessionReference);
+  assert.equal(saved[0].completed, true);
+  fs.rmSync(appSettings.dataDir, { recursive: true, force: true });
+});
+
+test('optional sitting permission saves exact text separately with consent metadata', async () => {
+  const appSettings = settings();
+  const fetchImpl = async () => new Response(JSON.stringify({
+    content: [{ type: 'text', text: 'Where does that land in your body?' }],
+    stop_reason: 'end_turn',
+    usage: { input_tokens: 10, output_tokens: 8 }
+  }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  const server = createApp({ settings: appSettings, fetchImpl });
+  const started = await requestServer(server, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Companion-Code': 'private-code' },
+    url: '/api/kids-on-the-bus/session',
+    body: JSON.stringify({ acknowledged: true, noticeVersion: NOTICE_VERSION, shareSitting: true })
+  });
+  const session = JSON.parse(started.body);
+  await requestServer(server, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Companion-Code': 'private-code' },
+    url: '/api/kids-on-the-bus/claude-response',
+    body: JSON.stringify({ sessionId: session.sessionId, message: 'This is my separately shared exact entry.' })
+  });
+  const sharedPath = path.join(appSettings.dataDir, 'shared-sittings', `${session.sessionReference}.json`);
+  const shared = JSON.parse(fs.readFileSync(sharedPath, 'utf8'));
+  const ledger = fs.readFileSync(path.join(appSettings.dataDir, 'usage-ledger.json'), 'utf8');
+  assert.equal(shared.noticeVersion, NOTICE_VERSION);
+  assert.equal(shared.retentionDays, 90);
+  assert.equal(shared.publicQuotationPermission, false);
+  assert.match(shared.turns[0].user, /separately shared exact entry/);
+  assert.doesNotMatch(ledger, /separately shared exact entry|Where does that land/);
+  fs.rmSync(appSettings.dataDir, { recursive: true, force: true });
 });
