@@ -7,7 +7,7 @@ const os = require('node:os');
 const path = require('node:path');
 const { EventEmitter } = require('node:events');
 const { Readable } = require('node:stream');
-const { NOTICE_VERSION, createApp, isCompanionPath, loadClaudeInstructions } = require('../server');
+const { NOTICE_VERSION, createApp, isCompanionPath, loadClaudeInstructions, loadSettings } = require('../server');
 
 test('the replacement owns only Kids on the Bus routes', () => {
   assert.equal(isCompanionPath('/reflect/kids-on-the-bus'), true);
@@ -16,6 +16,15 @@ test('the replacement owns only Kids on the Bus routes', () => {
   assert.equal(isCompanionPath('/health'), false);
   assert.equal(isCompanionPath('/book'), false);
   assert.equal(isCompanionPath('/reading'), false);
+});
+
+test('configured retention cannot exceed the disclosed maximums', () => {
+  const configured = loadSettings({
+    COMPANION_ANALYTICS_RETENTION_DAYS: '730',
+    COMPANION_SHARED_RETENTION_DAYS: '365'
+  });
+  assert.equal(configured.analyticsRetentionDays, 365);
+  assert.equal(configured.sharedRetentionDays, 90);
 });
 
 function settings(overrides = {}) {
@@ -347,6 +356,22 @@ test('the analytics dashboard requires the separate administrative code', async 
   });
   assert.equal(admin.status, 200);
   assert.doesNotMatch(admin.body, /admin-secret|private-code|sk-ant-server-only-secret/);
+  fs.rmSync(appSettings.dataDir, { recursive: true, force: true });
+});
+
+test('server startup activates automatic shared-sitting retention pruning', () => {
+  const appSettings = settings();
+  let started = 0;
+  let stopped = 0;
+  const sharedStore = {
+    prune() {},
+    startAutomaticPruning() { started += 1; },
+    stopAutomaticPruning() { stopped += 1; }
+  };
+  const server = createApp({ settings: appSettings, sharedStore });
+  assert.equal(started, 1);
+  server.emit('close');
+  assert.equal(stopped, 1);
   fs.rmSync(appSettings.dataDir, { recursive: true, force: true });
 });
 

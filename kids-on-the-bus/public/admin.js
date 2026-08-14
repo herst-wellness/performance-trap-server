@@ -4,7 +4,8 @@
   const el = (id) => document.getElementById(id);
   const ui = {
     login: el('adminLogin'), dashboard: el('dashboard'), code: el('adminCode'), open: el('openDashboard'),
-    message: el('adminMessage'), metrics: el('metrics'), topicBars: el('topicBars'), processBars: el('processBars'),
+    message: el('adminMessage'), metrics: el('metrics'), topicBars: el('topicBars'),
+    invitationBars: el('invitationBars'), evidenceBars: el('evidenceBars'),
     referralBars: el('referralBars'), deviceBars: el('deviceBars'), rows: el('sessionRows'), weekly: el('weeklyPreview'),
     topicFilter: el('topicFilter'), referralFilter: el('referralFilter'), deviceFilter: el('deviceFilter'),
     statusFilter: el('statusFilter'), feedbackFilter: el('feedbackFilter'), errorFilter: el('errorFilter'),
@@ -38,7 +39,7 @@
     unique(sessions.flatMap((row) => [row.primaryTopic, ...(row.secondaryTopics || [])])).forEach((value) => option(ui.topicFilter, value));
     unique(sessions.map((row) => row.referral?.utmSource || row.referral?.referringPage || 'Direct or unknown')).forEach((value) => option(ui.referralFilter, value));
     unique(sessions.map((row) => row.device?.category || 'Unknown')).forEach((value) => option(ui.deviceFilter, value));
-    Object.entries(state.data.processLabels).forEach(([key, label]) => {
+    Object.entries(state.data.processEvidenceLabels).forEach(([key, label]) => {
       const item = document.createElement('option'); item.value = key; item.textContent = label; ui.stageFilter.appendChild(item);
     });
   }
@@ -71,7 +72,7 @@
       if (/^[3-5]$/.test(ui.feedbackFilter.value) && (feedback == null || feedback < Number(ui.feedbackFilter.value))) return false;
       if (ui.errorFilter.value === 'yes' && !hasErrors(row)) return false;
       if (ui.errorFilter.value === 'no' && hasErrors(row)) return false;
-      if (ui.stageFilter.value && Number(row.process?.[ui.stageFilter.value] || 0) === 0) return false;
+      if (ui.stageFilter.value && Number(row.processEvidence?.[ui.stageFilter.value] || 0) === 0) return false;
       return true;
     });
   }
@@ -117,7 +118,7 @@
       ['Feedback average', feedback.length ? (feedback.reduce((a, b) => a + b, 0) / feedback.length).toFixed(1) : 'No responses'],
       ['Estimated cost', `$${cost.toFixed(3)}`], ['Conversion clicks', conversions],
       ['Returning browsers', rows.filter((row) => row.returningBrowser).length], ['Active now', rows.filter((row) => !row.endedAt).length],
-      ['Common abandonment point', (() => { const pairs = countBy(rows.filter((row) => row.abandoned), (row) => { const keys = Object.keys(state.data.processLabels).filter((key) => Number(row.process?.[key] || 0) > 0); return [keys.length ? state.data.processLabels[keys[keys.length - 1]] : 'Before a specific situation']; }); return pairs[0]?.[0] || 'Not enough data'; })()]
+      ['Estimated abandonment point', (() => { const pairs = countBy(rows.filter((row) => row.abandoned), (row) => { const keys = Object.keys(state.data.processEvidenceLabels).filter((key) => Number(row.processEvidence?.[key] || 0) > 0); return [keys.length ? state.data.processEvidenceLabels[keys[keys.length - 1]] : 'Before participant evidence of a specific situation']; }); return pairs[0]?.[0] || 'Not enough data'; })()]
     ];
     ui.metrics.replaceChildren(...cards.map(([label, value]) => metric(label, value)));
   }
@@ -151,7 +152,8 @@
     const rows = filteredSessions();
     renderMetrics(rows);
     renderBars(ui.topicBars, countBy(rows, (row) => [row.primaryTopic, ...(row.secondaryTopics || [])]), rows.length);
-    renderBars(ui.processBars, countBy(rows, (row) => Object.entries(row.process || {}).filter((pair) => Number(pair[1]) > 0).map(([key]) => state.data.processLabels[key] || key)), rows.length);
+    renderBars(ui.invitationBars, countBy(rows, (row) => Object.entries(row.processInvitations || {}).filter((pair) => Number(pair[1]) > 0).map(([key]) => state.data.processInvitationLabels[key] || key)), rows.length);
+    renderBars(ui.evidenceBars, countBy(rows, (row) => Object.entries(row.processEvidence || {}).filter((pair) => Number(pair[1]) > 0).map(([key]) => state.data.processEvidenceLabels[key] || key)), rows.length);
     renderBars(ui.referralBars, countBy(rows, (row) => [row.referral?.utmSource || row.referral?.referringPage || 'Direct or unknown']), rows.length);
     renderBars(ui.deviceBars, countBy(rows, (row) => [row.device?.category || 'Unknown']), rows.length);
     renderRows(rows);
@@ -217,7 +219,7 @@
     if (!response.ok) return;
     const blob = await response.blob();
     const url = URL.createObjectURL(blob); const link = document.createElement('a');
-    link.href = url; link.download = 'mindbody-companion-structured-usage.csv'; document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
+    link.href = url; link.download = 'mind-body-foundations-companion-structured-usage.csv'; document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
   }
 
   ui.open.addEventListener('click', openDashboard);

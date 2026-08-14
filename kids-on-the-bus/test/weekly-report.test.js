@@ -14,7 +14,8 @@ test('the weekly report contains structured summaries and no conversation conten
     companionResponses: 4,
     primaryTopic: 'Work',
     secondaryTopics: [],
-    process: { specificSituation: 1 },
+    processInvitations: { bodySensation: 1 },
+    processEvidence: { specificSituation: 1 },
     responseTimesMs: [1200],
     estimatedCostUsd: 0.03,
     feedback: { ratings: [5, 4, 4, 5, 3] },
@@ -23,6 +24,9 @@ test('the weekly report contains structured summaries and no conversation conten
   }], now);
   assert.match(report.html, /Sittings/);
   assert.match(report.html, /Work \(1\)/);
+  assert.match(report.html, /Body awareness invited \(1\)/);
+  assert.match(report.html, /Specific situation described \(1\)/);
+  assert.match(report.html, /automatically estimated and potentially imperfect/i);
   assert.match(report.html, /structured usage information only/i);
   assert.doesNotMatch(report.html, /Melissa|identifiable|MBF-ABCD-2345/);
 });

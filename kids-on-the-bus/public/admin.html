@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Mind/Body Companion Insights | Herst Wellness</title>
+  <title>Mind/Body Foundations Companion Insights | Herst Wellness</title>
   <meta name="robots" content="noindex, nofollow, noarchive">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -15,7 +15,7 @@
   <main class="admin-shell">
     <header class="admin-header">
       <img src="/Herst-Wellness-Logo-cropped.jpg" alt="Herst Wellness" class="logo">
-      <div><p class="eyebrow">Chad's protected view</p><h1>Mind/Body Companion Insights</h1></div>
+      <div><p class="eyebrow">Chad's protected view</p><h1>Mind/Body Foundations Companion Insights</h1></div>
     </header>
 
     <section id="adminLogin" class="card admin-login">
@@ -38,15 +38,16 @@
           <label><span>Status</span><select id="statusFilter"><option value="">All statuses</option><option value="completed">Completed</option><option value="abandoned">Abandoned</option><option value="active">Active</option></select></label>
           <label><span>Feedback</span><select id="feedbackFilter"><option value="">Any feedback</option><option value="5">Average 5</option><option value="4">Average 4 or higher</option><option value="3">Average 3 or higher</option><option value="none">No feedback</option></select></label>
           <label><span>Technical error</span><select id="errorFilter"><option value="">All</option><option value="yes">With error</option><option value="no">Without error</option></select></label>
-          <label><span>Process stage</span><select id="stageFilter"><option value="">All stages</option></select></label>
+          <label><span>Participant evidence</span><select id="stageFilter"><option value="">All estimated stages</option></select></label>
         </div>
       </div>
 
       <div id="metrics" class="metric-grid" aria-live="polite"></div>
 
       <div class="insight-grid">
-        <section class="card insight-card"><h2>Most common topics</h2><div id="topicBars" class="bar-list"></div></section>
-        <section class="card insight-card"><h2>Process stages reached</h2><div id="processBars" class="bar-list"></div></section>
+        <section class="card insight-card"><h2>Most common topics</h2><p>Automatically estimated and potentially imperfect.</p><div id="topicBars" class="bar-list"></div></section>
+        <section class="card insight-card"><h2>Companion invited this step</h2><p>Automatically estimated from companion responses and potentially imperfect.</p><div id="invitationBars" class="bar-list"></div></section>
+        <section class="card insight-card"><h2>Participant demonstrated this step</h2><p>Automatically estimated from participant responses and potentially imperfect.</p><div id="evidenceBars" class="bar-list"></div></section>
         <section class="card insight-card"><h2>Referrals</h2><div id="referralBars" class="bar-list"></div></section>
         <section class="card insight-card"><h2>Devices</h2><div id="deviceBars" class="bar-list"></div></section>
       </div>
@@ -54,7 +55,7 @@
       <section class="card table-card">
         <h2>Structured sitting records</h2>
         <p>No names, exact entries, quotations, or companion responses appear in this table.</p>
-        <div class="table-wrap"><table><thead><tr><th>Reference</th><th>Started</th><th>Status</th><th>Duration</th><th>Exchanges</th><th>Primary topic</th><th>Device</th><th>Errors</th><th>Feedback</th></tr></thead><tbody id="sessionRows"></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>Reference</th><th>Started</th><th>Status</th><th>Duration</th><th>Exchanges</th><th>Estimated primary topic</th><th>Device</th><th>Errors</th><th>Feedback</th></tr></thead><tbody id="sessionRows"></tbody></table></div>
       </section>
 
       <section class="card insight-card weekly-card">

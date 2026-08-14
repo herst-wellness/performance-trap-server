@@ -123,6 +123,23 @@ function normalizeReferral(referral = {}) {
   };
 }
 
+function normalizeProcess(value = {}) {
+  const normalized = emptyProcess();
+  for (const key of Object.keys(normalized)) normalized[key] = wholeNonNegative(value?.[key]);
+  return normalized;
+}
+
+function normalizeSessionProcess(session) {
+  const hadSeparateTracking = Boolean(session.processInvitations || session.processEvidence);
+  session.processInvitations = normalizeProcess(session.processInvitations);
+  session.processEvidence = normalizeProcess(session.processEvidence);
+  if (!hadSeparateTracking && session.process && typeof session.process === 'object') {
+    session.legacyCombinedProcessEstimates = normalizeProcess(session.process);
+  }
+  delete session.process;
+  return session;
+}
+
 function newSession(record) {
   return {
     sessionReference: sanitizeText(record.sessionReference, 40),
@@ -177,7 +194,8 @@ function newSession(record) {
     topicCounts: {},
     primaryTopic: 'Other',
     secondaryTopics: [],
-    process: emptyProcess(),
+    processInvitations: emptyProcess(),
+    processEvidence: emptyProcess(),
     feedback: null,
     sharedSittingPermission: Boolean(record.sharedSittingPermission),
     consentDate: record.consentDate || '',
@@ -240,6 +258,7 @@ class UsageLedger {
     const staleCutoff = now - this.staleSessionMinutes * 60 * 1000;
     store.sessions = store.sessions.filter((session) => Date.parse(session.startedAt) >= analyticsCutoff);
     for (const session of store.sessions) {
+      normalizeSessionProcess(session);
       if (!session.endedAt && Date.parse(session.startedAt) < staleCutoff) {
         session.endedAt = new Date(Math.max(Date.parse(session.startedAt), staleCutoff)).toISOString();
         session.durationSeconds = Math.max(0, Math.round((Date.parse(session.endedAt) - Date.parse(session.startedAt)) / 1000));
@@ -356,8 +375,11 @@ class UsageLedger {
       for (const topic of [record.topics?.primary, ...(record.topics?.secondary || [])].filter(Boolean)) {
         session.topicCounts[topic] = (session.topicCounts[topic] || 0) + 1;
       }
-      for (const [key, value] of Object.entries(record.process || {})) {
-        if (Object.hasOwn(session.process, key)) session.process[key] += wholeNonNegative(value);
+      for (const [key, value] of Object.entries(record.processInvitations || {})) {
+        if (Object.hasOwn(session.processInvitations, key)) session.processInvitations[key] += wholeNonNegative(value);
+      }
+      for (const [key, value] of Object.entries(record.processEvidence || {})) {
+        if (Object.hasOwn(session.processEvidence, key)) session.processEvidence[key] += wholeNonNegative(value);
       }
       if (record.diagnosisBoundary) session.diagnosisBoundaryActivations += 1;
       if (record.safetyActivation) session.safetyActivations += 1;
@@ -383,11 +405,8 @@ class UsageLedger {
       session.exchangeLimitReached = reason === 'exchange_limit';
       session.limitReached = session.timeLimitReached || session.exchangeLimitReached;
       session.abandoned = reason === 'page_exit' || reason === 'abandoned';
-      if ((reason === 'time_limit' || reason === 'exchange_limit') && session.process.appropriateClosing > 0) {
+      if ((reason === 'time_limit' || reason === 'exchange_limit') && session.processEvidence.appropriateClosing > 0) {
         session.completed = true;
-      }
-      if (!session.completed && !session.abandoned && !session.process.appropriateClosing && session.beganWriting) {
-        session.process.unresolvedEnding += 1;
       }
     });
   }

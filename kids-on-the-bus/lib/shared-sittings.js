@@ -3,6 +3,8 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
+const DAILY_PRUNE_INTERVAL_MS = 24 * 60 * 60 * 1000;
+
 function safeReference(value) {
   const reference = String(value || '');
   if (!/^MBF-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(reference)) throw new Error('Invalid session reference.');
@@ -30,6 +32,7 @@ class SharedSittingStore {
     this.transcriptDir = path.join(dataDir, 'shared-sittings');
     this.feedbackDir = path.join(dataDir, 'feedback-comments');
     this.retentionDays = options.retentionDays || 90;
+    this.pruneTimer = null;
   }
 
   transcriptPath(reference) {
@@ -130,6 +133,7 @@ class SharedSittingStore {
   }
 
   prune(now = Date.now()) {
+    const deleted = { sharedSittings: 0, feedbackComments: 0, total: 0 };
     for (const directory of [this.transcriptDir, this.feedbackDir]) {
       let names = [];
       try {
@@ -142,10 +146,38 @@ class SharedSittingStore {
         if (!name.endsWith('.json')) continue;
         const filePath = path.join(directory, name);
         const record = readJson(filePath);
-        if (record && Date.parse(record.deleteAfter) <= now) fs.unlinkSync(filePath);
+        if (record && Date.parse(record.deleteAfter) <= now) {
+          try {
+            fs.unlinkSync(filePath);
+            if (directory === this.transcriptDir) deleted.sharedSittings += 1;
+            else deleted.feedbackComments += 1;
+            deleted.total += 1;
+          } catch (error) {
+            if (error.code !== 'ENOENT') throw error;
+          }
+        }
       }
     }
+    return deleted;
+  }
+
+  startAutomaticPruning(options = {}) {
+    this.stopAutomaticPruning({ clearIntervalFn: options.clearIntervalFn });
+    const intervalMs = options.intervalMs || DAILY_PRUNE_INTERVAL_MS;
+    const now = options.now || (() => Date.now());
+    const setIntervalFn = options.setIntervalFn || setInterval;
+    this.prune(now());
+    this.pruneTimer = setIntervalFn(() => this.prune(now()), intervalMs);
+    if (options.unref !== false && typeof this.pruneTimer?.unref === 'function') this.pruneTimer.unref();
+    return this.pruneTimer;
+  }
+
+  stopAutomaticPruning(options = {}) {
+    if (!this.pruneTimer) return;
+    const clearIntervalFn = options.clearIntervalFn || clearInterval;
+    clearIntervalFn(this.pruneTimer);
+    this.pruneTimer = null;
   }
 }
 
-module.exports = { SharedSittingStore, safeReference };
+module.exports = { DAILY_PRUNE_INTERVAL_MS, SharedSittingStore, safeReference };

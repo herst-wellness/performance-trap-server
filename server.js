@@ -2,7 +2,7 @@ const https = require('https');
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const { handleCompanionRoute } = require('./companion');
+const { handleCompanionRoute, initializeCompanion } = require('./companion');
 
 const PORT = process.env.PORT || 3000;
 const MAILCHIMP_KEY = process.env.MAILCHIMP_API_KEY;
@@ -15,6 +15,8 @@ const AUDIO_BASE_URL = 'https://pub-3e45b3813f2d4b1b81f913aad060a3b8.r2.dev/audi
 const LOGO_URL = BASE_URL + '/Herst-Wellness-Logo-cropped.jpg';
 const CHAPTER_ONE_AUDIO_URL = BASE_URL + '/audio/chapter-one.mp3';
 const LISTEN_PAGE_URL = BASE_URL + '/listen/chapter-one';
+
+initializeCompanion();
 
 function cors(res) {
   res.setHeader('Access-Control-Allow-Origin', '*');

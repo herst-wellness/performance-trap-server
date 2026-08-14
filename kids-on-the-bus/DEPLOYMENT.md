@@ -4,6 +4,8 @@ The route at `/reflect/kids-on-the-bus` remains in place so existing links conti
 
 The application remains written only. The approved Module 2 coaching prompt, pacing, safety responses, 30-exchange limit, 60-minute limit, and Claude Sonnet 5 effort setting are unchanged.
 
+The approved Squarespace heading is `EXPERIENCE MIND/BODY FOUNDATIONS`. Use Mind/Body Foundations consistently in the website section, companion, dashboard, reports, and metadata.
+
 ## Required Render settings
 
 - `ANTHROPIC_API_KEY`
@@ -23,6 +25,8 @@ The existing `usage-ledger.json` is upgraded in place. It keeps cost entries and
 - Optional feedback comments: 90 days by default
 - Existing detailed cost and latency entries: 30 days
 
+Shared sittings and written feedback comments are pruned when the server starts, every 24 hours while it remains running, and immediately before shared material is listed or opened. The running service does not wait for a visitor sitting or an administrator dashboard action.
+
 Optional controls:
 
 - `COMPANION_ANALYTICS_RETENTION_DAYS=365`
@@ -41,7 +45,7 @@ Set all of these values to enable the weekly report:
 - `COMPANION_REPORT_TO`, Chad's receiving address
 - `COMPANION_REPORT_FROM`, a verified Resend sender
 
-The running service checks once per hour and sends no more than one report in seven days. The send date is recorded in the persistent ledger so an application restart does not cause a duplicate report. The protected endpoint `/api/kids-on-the-bus/admin/send-weekly-report` can also send a report deliberately with the separate administrative code.
+The running service checks once per hour and sends no more than one report in seven days. Topic and process classifications in the dashboard and report are automatically estimated and potentially imperfect. Companion invitations are tracked separately from participant-response evidence. The send date is recorded in the persistent ledger so an application restart does not cause a duplicate report. The protected endpoint `/api/kids-on-the-bus/admin/send-weekly-report` can also send a report deliberately with the separate administrative code.
 
 ## Persistence verification before deployment
 

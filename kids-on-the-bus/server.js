@@ -6,7 +6,13 @@ const http = require('node:http');
 const path = require('node:path');
 const { URL } = require('node:url');
 const { generateClaudeResponse } = require('./lib/claude');
-const { PROCESS_LABELS, aggregateInsights, classifyTurn, sessionsToCsv } = require('./lib/analytics');
+const {
+  PROCESS_EVIDENCE_LABELS,
+  PROCESS_INVITATION_LABELS,
+  aggregateInsights,
+  classifyTurn,
+  sessionsToCsv
+} = require('./lib/analytics');
 const { LatencyLedger } = require('./lib/latency');
 const { routeSafety } = require('./lib/safety');
 const { SharedSittingStore } = require('./lib/shared-sittings');
@@ -28,7 +34,7 @@ const PAGE_PATH = '/reflect/kids-on-the-bus';
 const ADMIN_PATH = '/admin/mindbody-insights';
 const STATIC_PREFIX = '/kids-on-the-bus';
 const API_PREFIX = '/api/kids-on-the-bus';
-const NOTICE_VERSION = '2026-08-13-v1';
+const NOTICE_VERSION = '2026-08-13-v2';
 const DEFAULT_SHARED_RETENTION_DAYS = 90;
 const DEFAULT_ANALYTICS_RETENTION_DAYS = 365;
 
@@ -99,8 +105,8 @@ function loadSettings(env = process.env) {
     },
     dataDir: explicitDataDir || path.join(ROOT, 'data'),
     persistentDataDirConfigured: Boolean(explicitDataDir),
-    analyticsRetentionDays: boundedInteger(env.COMPANION_ANALYTICS_RETENTION_DAYS, DEFAULT_ANALYTICS_RETENTION_DAYS, 30, 730),
-    sharedRetentionDays: boundedInteger(env.COMPANION_SHARED_RETENTION_DAYS, DEFAULT_SHARED_RETENTION_DAYS, 7, 365),
+    analyticsRetentionDays: boundedInteger(env.COMPANION_ANALYTICS_RETENTION_DAYS, DEFAULT_ANALYTICS_RETENTION_DAYS, 30, 365),
+    sharedRetentionDays: boundedInteger(env.COMPANION_SHARED_RETENTION_DAYS, DEFAULT_SHARED_RETENTION_DAYS, 7, 90),
     weeklyReport: {
       enabled: String(env.COMPANION_WEEKLY_REPORT_ENABLED || '').toLowerCase() === 'true',
       apiKey: env.RESEND_API_KEY || '',
@@ -534,7 +540,8 @@ function createApp(options = {}) {
         sendJson(res, 200, {
           insights: aggregateInsights(sessions),
           sessions,
-          processLabels: PROCESS_LABELS,
+          processInvitationLabels: PROCESS_INVITATION_LABELS,
+          processEvidenceLabels: PROCESS_EVIDENCE_LABELS,
           sharedSittings: sharedStore.listMetadata(),
           weeklyReportHtml: buildWeeklyReport(sessions).html
         });
@@ -547,7 +554,7 @@ function createApp(options = {}) {
           return;
         }
         sendText(res, 200, sessionsToCsv(ledger.sessions()), 'text/csv; charset=utf-8', {
-          'Content-Disposition': 'attachment; filename="mindbody-companion-structured-usage.csv"'
+          'Content-Disposition': 'attachment; filename="mind-body-foundations-companion-structured-usage.csv"'
         });
         return;
       }
@@ -614,10 +621,17 @@ function createApp(options = {}) {
     setImmediate(() => weeklyReporter.sendIfDue(false).catch(() => {}));
     app.once('close', () => clearInterval(weeklyTimer));
   }
+  sharedStore.startAutomaticPruning();
+  app.once('close', () => sharedStore.stopAutomaticPruning());
   return app;
 }
 
 let defaultApp;
+
+function initializeCompanion(options = {}) {
+  if (!defaultApp) defaultApp = createApp(options);
+  return defaultApp;
+}
 
 function isCompanionPath(pathname) {
   return pathname === PAGE_PATH || pathname === ADMIN_PATH || pathname.startsWith(`${STATIC_PREFIX}/`) || pathname.startsWith(`${API_PREFIX}/`);
@@ -626,8 +640,7 @@ function isCompanionPath(pathname) {
 async function handleCompanionRoute(req, res) {
   const pathname = new URL(req.url, 'http://localhost').pathname;
   if (!isCompanionPath(pathname)) return false;
-  if (!defaultApp) defaultApp = createApp();
-  defaultApp.emit('request', req, res);
+  initializeCompanion().emit('request', req, res);
   return true;
 }
 
@@ -647,6 +660,7 @@ module.exports = {
   STATIC_PREFIX,
   createApp,
   handleCompanionRoute,
+  initializeCompanion,
   isCompanionPath,
   loadSettings,
   loadClaudeInstructions

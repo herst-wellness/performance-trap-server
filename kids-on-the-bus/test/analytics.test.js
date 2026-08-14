@@ -13,23 +13,40 @@ test('topic classification returns controlled tags without copying names or iden
   const raw = JSON.stringify(classification);
   assert.equal(classification.topics.primary, 'Work');
   assert.ok(classification.topics.secondary.includes('Shame'));
-  assert.ok(classification.process.specificSituation > 0);
-  assert.ok(classification.process.uTurnToExperience > 0);
+  assert.ok(classification.processEvidence.specificSituation > 0);
+  assert.ok(classification.processInvitations.uTurnToExperience > 0);
   assert.doesNotMatch(raw, /Melissa|Acme|failed/i);
 });
 
-test('process classification tracks embodiment and parts as structured indicators', () => {
+test('process classification separates companion invitations from participant evidence', () => {
   const classification = classifyTurn({
-    message: 'A part of me feels a tight pressure moving from my throat into my chest. Another part is afraid I will be left.',
+    message: 'A part of me feels a tight pressure moving from my throat into my chest. Another part protects me so I will not be left.',
     response: 'Stay with that tightness. What is this part trying to protect you from?',
     route: 'continue_reflection'
   });
-  assert.equal(classification.process.bodySensation, 1);
-  assert.equal(classification.process.sensationLocation, 1);
-  assert.equal(classification.process.sensationMovement, 1);
-  assert.equal(classification.process.partRecognized, 1);
-  assert.equal(classification.process.multipleParts, 1);
-  assert.equal(classification.process.partProtectionExplored, 1);
+  assert.equal(classification.processInvitations.stayedWithSensation, 1);
+  assert.equal(classification.processInvitations.partProtectionExplored, 1);
+  assert.equal(classification.processEvidence.bodySensation, 1);
+  assert.equal(classification.processEvidence.sensationLocation, 1);
+  assert.equal(classification.processEvidence.sensationMovement, 1);
+  assert.equal(classification.processEvidence.partRecognized, 1);
+  assert.equal(classification.processEvidence.multipleParts, 1);
+  assert.equal(classification.processEvidence.partProtectionExplored, 1);
+});
+
+test('a companion question never becomes participant evidence by itself', () => {
+  const classification = classifyTurn({
+    message: 'I am not sure yet.',
+    response: 'Where does that land in your body? Is there a part of you trying to protect you?',
+    route: 'continue_reflection'
+  });
+  assert.equal(classification.processInvitations.bodySensation, 1);
+  assert.equal(classification.processInvitations.partRecognized, 1);
+  assert.equal(classification.processInvitations.partProtectionExplored, 1);
+  assert.equal(classification.processEvidence.bodySensation, 0);
+  assert.equal(classification.processEvidence.partRecognized, 0);
+  assert.equal(classification.processEvidence.partProtectionExplored, 0);
+  assert.equal(classification.processEvidence.unresolvedEnding, 0);
 });
 
 test('dashboard aggregation and CSV contain structured information only', () => {
@@ -48,7 +65,8 @@ test('dashboard aggregation and CSV contain structured information only', () => 
     longestUserEntryLength: 150,
     primaryTopic: 'Work',
     secondaryTopics: ['Performance pressure'],
-    process: { specificSituation: 2, bodySensation: 1 },
+    processInvitations: { bodySensation: 1 },
+    processEvidence: { specificSituation: 2, bodySensation: 1 },
     responseTimesMs: [1000, 2000],
     estimatedCostUsd: 0.12,
     device: { category: 'Computer' },
@@ -59,8 +77,12 @@ test('dashboard aggregation and CSV contain structured information only', () => 
   assert.equal(insights.totalSittings, 1);
   assert.equal(insights.completionRate, 100);
   assert.equal(insights.medianResponseTimeMs, 1500);
+  assert.deepEqual(insights.processInvitations[0], ['Body awareness invited', 1]);
+  assert.ok(insights.processEvidence.some(([label]) => label === 'Body sensation identified'));
   const csv = sessionsToCsv(sessions);
   assert.match(csv, /MBF-ABCD-2345/);
   assert.match(csv, /Performance pressure/);
+  assert.match(csv, /Body awareness invited/);
+  assert.match(csv, /Body sensation identified/);
   assert.doesNotMatch(csv, /exactEntry|transcript|Melissa/i);
 });

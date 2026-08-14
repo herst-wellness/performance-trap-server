@@ -88,7 +88,8 @@ test('the extended ledger preserves structured sessions across a process restart
     hasCompanionResponse: true,
     responseTimeMs: 1200,
     topics: { primary: 'Work', secondary: ['Performance pressure'] },
-    process: { specificSituation: 1 }
+    processInvitations: { bodySensation: 1 },
+    processEvidence: { specificSituation: 1 }
   });
   firstProcess.endSession('MBF-ABCD-2345', 'completed');
 
@@ -98,6 +99,8 @@ test('the extended ledger preserves structured sessions across a process restart
   assert.equal(saved.completed, true);
   assert.equal(saved.primaryTopic, 'Performance pressure');
   assert.equal(saved.userEntries, 1);
+  assert.equal(saved.processInvitations.bodySensation, 1);
+  assert.equal(saved.processEvidence.specificSituation, 1);
   assert.equal(saved.referral.referringPage, 'https://herstwellness.com/mind-body-foundations');
   fs.rmSync(directory, { recursive: true, force: true });
 });
@@ -112,5 +115,29 @@ test('the extended ledger upgrades the existing array without losing cost record
   const upgraded = JSON.parse(fs.readFileSync(file, 'utf8'));
   assert.equal(upgraded.version, 2);
   assert.equal(upgraded.usageEntries[0].costUsd, 1.25);
+  fs.rmSync(directory, { recursive: true, force: true });
+});
+
+test('legacy combined process estimates are not relabeled as participant evidence', () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'mindbody-ledger-'));
+  const file = path.join(directory, 'usage-ledger.json');
+  fs.writeFileSync(file, JSON.stringify({
+    version: 2,
+    usageEntries: [],
+    reportState: {},
+    sessions: [{
+      sessionReference: 'MBF-JKLM-2345',
+      startedAt: new Date().toISOString(),
+      endedAt: new Date().toISOString(),
+      topicCounts: {},
+      process: { bodySensation: 2, partRecognized: 1 }
+    }]
+  }));
+  const ledger = new UsageLedger(file, { budgetUsd: 100 });
+  const saved = ledger.sessions()[0];
+  assert.equal(saved.processEvidence.bodySensation, 0);
+  assert.equal(saved.processInvitations.partRecognized, 0);
+  assert.equal(saved.legacyCombinedProcessEstimates.bodySensation, 2);
+  assert.equal('process' in saved, false);
   fs.rmSync(directory, { recursive: true, force: true });
 });

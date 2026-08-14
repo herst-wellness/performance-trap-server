@@ -46,25 +46,46 @@ const PROCESS_KEYS = Object.freeze([
   'unresolvedEnding'
 ]);
 
-const PROCESS_LABELS = Object.freeze({
+const PROCESS_INVITATION_LABELS = Object.freeze({
+  specificSituation: 'Specific situation invited',
+  storyEmotionallyAlive: 'Emotional aliveness invited',
+  worstExplored: 'Most difficult aspect invited',
+  uTurnToExperience: 'Direct experience invited',
+  bodySensation: 'Body awareness invited',
+  sensationLocation: 'Sensation location invited',
+  sensationQuality: 'Sensation quality invited',
+  sensationMovement: 'Sensation movement invited',
+  partRecognized: 'Parts awareness invited',
+  multipleParts: 'Multiple parts awareness invited',
+  partProtectionExplored: 'Protection explored by companion',
+  fearedConsequence: 'Feared consequence invited',
+  returnedToBody: 'Return to body invited',
+  stayedWithSensation: 'Staying with sensation invited',
+  sensationChanged: 'Sensation change check invited',
+  newUnderstanding: 'New understanding invited',
+  appropriateClosing: 'Closing invited',
+  unresolvedEnding: 'Unresolved ending named by companion'
+});
+
+const PROCESS_EVIDENCE_LABELS = Object.freeze({
   specificSituation: 'Specific situation described',
-  storyEmotionallyAlive: 'Story became emotionally alive',
-  worstExplored: 'What is the worst of it explored',
-  uTurnToExperience: 'U-turn toward direct experience',
+  storyEmotionallyAlive: 'Emotional response described',
+  worstExplored: 'Most difficult aspect identified',
+  uTurnToExperience: 'Direct experience described',
   bodySensation: 'Body sensation identified',
   sensationLocation: 'Sensation location identified',
-  sensationQuality: 'Sensation quality explored',
-  sensationMovement: 'Sensation movement or geography explored',
-  partRecognized: 'A part recognized',
-  multipleParts: 'More than one part recognized',
-  partProtectionExplored: 'What a part protects explored',
-  fearedConsequence: 'Feared consequence explored',
-  returnedToBody: 'Attention returned to the body',
-  stayedWithSensation: 'Stayed with a sensation',
+  sensationQuality: 'Sensation quality identified',
+  sensationMovement: 'Sensation movement described',
+  partRecognized: 'Part recognized',
+  multipleParts: 'Multiple parts recognized',
+  partProtectionExplored: 'Protective purpose identified',
+  fearedConsequence: 'Feared consequence identified',
+  returnedToBody: 'Return to body demonstrated',
+  stayedWithSensation: 'Staying with sensation demonstrated',
   sensationChanged: 'Change in sensation reported',
-  newUnderstanding: 'New understanding reached',
-  appropriateClosing: 'Appropriate closing reached',
-  unresolvedEnding: 'Ended with something unresolved'
+  newUnderstanding: 'New understanding expressed',
+  appropriateClosing: 'Closing readiness expressed',
+  unresolvedEnding: 'Unresolved ending expressed'
 });
 
 function occurrences(text, pattern) {
@@ -91,35 +112,57 @@ function emptyProcess() {
 function classifyProcess(message, response, route = 'continue_reflection') {
   const user = String(message || '').toLowerCase();
   const companion = String(response || '').toLowerCase();
-  const combined = `${user}\n${companion}`;
-  const process = emptyProcess();
-  const mark = (key, matched) => { if (matched) process[key] = 1; };
+  const invitations = emptyProcess();
+  const evidence = emptyProcess();
+  const markInvitation = (key, matched) => { if (matched) invitations[key] = 1; };
+  const markEvidence = (key, matched) => { if (matched) evidence[key] = 1; };
 
-  mark('specificSituation', /\b(when|yesterday|today|last night|this morning|in the meeting|during|said|happened|moment)\b/.test(user));
-  mark('storyEmotionallyAlive', /\b(feel|felt|impact|worst|angry|afraid|ashamed|hurt|sad|tight|heavy|hot|numb)\b/.test(user));
-  mark('worstExplored', /what(?:'s| is) the worst|worst of it|most difficult|hardest part/.test(combined));
-  mark('uTurnToExperience', /\b(where does that land|notice(?:\s+\w+){0,4}\s+in your body|body (?:notice|feel|respond)|direct experience|inside you)\b/.test(companion));
-  mark('bodySensation', /\b(tight|tightness|heavy|heaviness|pressure|tingl|warm|hot|cold|numb|ache|clench|flutter|butterflies|sensation|body|breath|breathing)\b/.test(user));
-  mark('sensationLocation', /\b(chest|throat|jaw|belly|stomach|gut|shoulder|back|neck|head|face|arms?|legs?|hands?|feet|heart)\b/.test(user));
-  mark('sensationQuality', /\b(sharp|dull|tight|heavy|hard|soft|warm|hot|cold|numb|dense|light|buzz|tingl|pressure|hollow)\b/.test(user));
-  mark('sensationMovement', /\b(move|moving|shift|spread|expand|contract|rise|fall|travel|edge|center|shape|geography)\b/.test(combined));
-  mark('partRecognized', /\b(part of me|something in me|this part|that part|protector|kid on the bus)\b/.test(combined));
-  mark('multipleParts', /\b(parts of me|two parts|another part|different parts|both parts)\b/.test(combined));
-  mark('partProtectionExplored', /\b(protect|protecting|keep you safe|trying to keep|what it needs)\b/.test(combined));
-  mark('fearedConsequence', /\b(afraid might happen|fear would happen|then .* would|worst for (?:this|that) part|what would happen)\b/.test(combined));
-  mark('returnedToBody', /\b(let that land|back to (?:your|the) body|body responding|what do you notice now)\b/.test(companion));
-  mark('stayedWithSensation', /\b(stay with|keep .* company|give .* attention|still with|as you notice)\b/.test(companion));
-  mark('sensationChanged', /\b(changed|changing|shifted|softened|eased|stronger|weaker|moved|less tight|more open)\b/.test(user));
-  mark('newUnderstanding', /\b(i realize|i realised|i see now|i had not seen|i hadn't seen|that makes sense|i understand|what i notice is)\b/.test(user));
-  mark('appropriateClosing', /\b(good place to pause|let's stop here|we'll stop here|take that with you|enough for now)\b/.test(companion));
-  mark('unresolvedEnding', route !== 'continue_reflection' && !process.appropriateClosing);
-  return process;
+  markInvitation('specificSituation', /\b(what happened|specific (?:situation|moment)|bring me to|when did|what did .* say|where were you)\b/.test(companion));
+  markInvitation('storyEmotionallyAlive', /\b(what was that like|how did that feel|impact on you|feel most alive|stay with the story)\b/.test(companion));
+  markInvitation('worstExplored', /what(?:'s| is) the worst|worst of it|most difficult|hardest part/.test(companion));
+  markInvitation('uTurnToExperience', /\b(where does that land|notice(?:\s+\w+){0,4}\s+in your body|body (?:notice|feel|respond)|direct experience|inside you)\b/.test(companion));
+  markInvitation('bodySensation', /\b(where does that land|in your body|body (?:notice|feel|respond)|physical sensation|what do you notice)\b/.test(companion));
+  markInvitation('sensationLocation', /\b(where (?:do you feel|is that|in your body)|location|where does that land)\b/.test(companion));
+  markInvitation('sensationQuality', /\b(what (?:is|does) (?:it|that) (?:like|feel like)|quality|sharp|dull|tight|heavy|warm|cold|pressure)\b/.test(companion));
+  markInvitation('sensationMovement', /\b(does (?:it|that) move|movement|moving|spread|shift|edge|center|shape|geography)\b/.test(companion));
+  markInvitation('partRecognized', /\b(part of you|part of me|something in you|this part|that part|protector|kid on the bus)\b/.test(companion));
+  markInvitation('multipleParts', /\b(parts of you|two parts|another part|different parts|both parts)\b/.test(companion));
+  markInvitation('partProtectionExplored', /\b(what .* protect|trying to protect|protecting you|keep you safe|trying to keep|what (?:does|would) .* need)\b/.test(companion));
+  markInvitation('fearedConsequence', /\b(afraid might happen|fear would happen|what would happen|worst for (?:this|that) part)\b/.test(companion));
+  markInvitation('returnedToBody', /\b(let that land|back to (?:your|the) body|body responding|what do you notice now)\b/.test(companion));
+  markInvitation('stayedWithSensation', /\b(stay with|keep .* company|give .* attention|still with|as you notice)\b/.test(companion));
+  markInvitation('sensationChanged', /\b(has .* changed|anything chang|shift now|same or different|what do you notice now)\b/.test(companion));
+  markInvitation('newUnderstanding', /\b(what do you (?:see|understand|realize|notice) now|anything new|what becomes clear)\b/.test(companion));
+  markInvitation('appropriateClosing', /\b(good place to pause|let's stop here|we'll stop here|take that with you|enough for now|ready to pause)\b/.test(companion));
+  markInvitation('unresolvedEnding', route !== 'continue_reflection' && /\b(unresolved|unfinished|still open)\b/.test(companion));
+
+  markEvidence('specificSituation', /\b(when|yesterday|today|last night|this morning|in the meeting|during|said|happened|moment)\b/.test(user));
+  markEvidence('storyEmotionallyAlive', /\b(feel|felt|impact|worst|angry|afraid|ashamed|hurt|sad|tight|heavy|hot|numb)\b/.test(user));
+  markEvidence('worstExplored', /\b(the worst|worst part|most difficult|hardest part|what hurts most)\b/.test(user));
+  markEvidence('uTurnToExperience', /\b(i notice|inside me|inside my|in my body|right now i feel|as i feel)\b/.test(user));
+  markEvidence('bodySensation', /\b(tight|tightness|heavy|heaviness|pressure|tingl|warm|hot|cold|numb|ache|clench|flutter|butterflies|sensation|breath|breathing)\b/.test(user));
+  markEvidence('sensationLocation', /\b(chest|throat|jaw|belly|stomach|gut|shoulder|back|neck|head|face|arms?|legs?|hands?|feet|heart)\b/.test(user));
+  markEvidence('sensationQuality', /\b(sharp|dull|tight|heavy|hard|soft|warm|hot|cold|numb|dense|light|buzz|tingl|pressure|hollow)\b/.test(user));
+  markEvidence('sensationMovement', /\b(move|moving|shift|spread|expand|contract|rise|fall|travel|edge|center|shape|geography)\b/.test(user));
+  markEvidence('partRecognized', /\b(part of me|something in me|this part|that part|my protector|kid on the bus)\b/.test(user));
+  markEvidence('multipleParts', /\b(parts of me|two parts|another part|different parts|both parts)\b/.test(user));
+  markEvidence('partProtectionExplored', /\b(protects? me|protecting me|keeps? me safe|trying to keep me|so (?:i|it) (?:do not|don't|won't)|its purpose|what it needs)\b/.test(user));
+  markEvidence('fearedConsequence', /\b(i(?:'m| am) afraid .* (?:will|would|might)|my fear is|then .* would|what would happen is|worst for (?:this|that) part)\b/.test(user));
+  markEvidence('returnedToBody', /\b(back in my body|when i return to my body|my body now|i notice .* (?:chest|throat|jaw|belly|stomach|gut|shoulder|back|neck|head|face|arms?|legs?|hands?|feet))\b/.test(user));
+  markEvidence('stayedWithSensation', /\b(as i stay with|staying with|sitting with|still with|as i notice|giving .* attention)\b/.test(user));
+  markEvidence('sensationChanged', /\b(changed|changing|shifted|softened|eased|stronger|weaker|moved|less tight|more open)\b/.test(user));
+  markEvidence('newUnderstanding', /\b(i realize|i realised|i see now|i had not seen|i hadn't seen|that makes sense|i understand|what i notice is)\b/.test(user));
+  markEvidence('appropriateClosing', /\b(i(?:'m| am) ready to (?:pause|stop)|good place to pause|enough for now|i want to stop|let's stop)\b/.test(user));
+  markEvidence('unresolvedEnding', route !== 'continue_reflection' && /\b(still unresolved|not resolved|still unfinished|i do not know|i don't know|not sure|still confused|still stuck|no change)\b/.test(user));
+  return { invitations, evidence };
 }
 
 function classifyTurn({ message, response, route }) {
+  const process = classifyProcess(message, response, route);
   return {
     topics: classifyTopics(message),
-    process: classifyProcess(message, response, route),
+    processInvitations: process.invitations,
+    processEvidence: process.evidence,
     diagnosisBoundary: /\b(do i have|am i|is this|could this be).{0,32}\b(depress|anxiety disorder|bipolar|adhd|ptsd|diagnos|mental illness)\b/i.test(String(message || ''))
   };
 }
@@ -144,7 +187,8 @@ function aggregateInsights(sessions) {
   const responseTimes = rows.flatMap((row) => Array.isArray(row.responseTimesMs) ? row.responseTimesMs : []);
   const topicCounts = {};
   const topicCombinations = {};
-  const processCounts = Object.fromEntries(PROCESS_KEYS.map((key) => [key, 0]));
+  const invitationCounts = Object.fromEntries(PROCESS_KEYS.map((key) => [key, 0]));
+  const evidenceCounts = Object.fromEntries(PROCESS_KEYS.map((key) => [key, 0]));
   const abandonmentPoints = {};
   const referralCounts = {};
   const deviceCounts = {};
@@ -162,10 +206,13 @@ function aggregateInsights(sessions) {
       const key = topics.slice().sort().join(' + ');
       topicCombinations[key] = (topicCombinations[key] || 0) + 1;
     }
-    for (const key of PROCESS_KEYS) if (Number(row.process?.[key] || 0) > 0) processCounts[key] += 1;
+    for (const key of PROCESS_KEYS) {
+      if (Number(row.processInvitations?.[key] || 0) > 0) invitationCounts[key] += 1;
+      if (Number(row.processEvidence?.[key] || 0) > 0) evidenceCounts[key] += 1;
+    }
     if (row.abandoned) {
-      const reached = PROCESS_KEYS.filter((key) => Number(row.process?.[key] || 0) > 0);
-      const point = reached.length ? PROCESS_LABELS[reached[reached.length - 1]] : 'Before a specific situation';
+      const demonstrated = PROCESS_KEYS.filter((key) => Number(row.processEvidence?.[key] || 0) > 0);
+      const point = demonstrated.length ? PROCESS_EVIDENCE_LABELS[demonstrated[demonstrated.length - 1]] : 'Before participant evidence of a specific situation';
       abandonmentPoints[point] = (abandonmentPoints[point] || 0) + 1;
     }
     const referral = row.referral?.utmSource || row.referral?.referringPage || 'Direct or unknown';
@@ -199,7 +246,8 @@ function aggregateInsights(sessions) {
     topics: ranked(topicCounts),
     topicCombinations: ranked(topicCombinations),
     commonAbandonmentPoint: ranked(abandonmentPoints)[0]?.[0] || 'Not enough data yet',
-    processStages: ranked(Object.fromEntries(Object.entries(processCounts).map(([key, value]) => [PROCESS_LABELS[key], value]))),
+    processInvitations: ranked(Object.fromEntries(Object.entries(invitationCounts).map(([key, value]) => [PROCESS_INVITATION_LABELS[key], value]))).filter(([, value]) => value > 0),
+    processEvidence: ranked(Object.fromEntries(Object.entries(evidenceCounts).map(([key, value]) => [PROCESS_EVIDENCE_LABELS[key], value]))).filter(([, value]) => value > 0),
     referrals: ranked(referralCounts),
     devices: ranked(deviceCounts),
     feedbackAverages: feedback.map((values) => values.length ? Math.round(values.reduce((sum, value) => sum + value, 0) / values.length * 10) / 10 : null),
@@ -220,8 +268,8 @@ function sessionsToCsv(sessions) {
   const headers = [
     'sessionReference', 'startedAt', 'endedAt', 'durationSeconds', 'accessCompleted', 'beganWriting',
     'completed', 'endedIntentionally', 'expired', 'limitReached', 'abandoned', 'userEntries',
-    'companionResponses', 'averageUserEntryLength', 'longestUserEntryLength', 'primaryTopic',
-    'secondaryTopics', 'deviceCategory', 'browserFamily', 'operatingSystemFamily', 'screenSizeCategory',
+    'companionResponses', 'averageUserEntryLength', 'longestUserEntryLength', 'estimatedPrimaryTopic',
+    'estimatedSecondaryTopics', 'estimatedCompanionInvitations', 'estimatedParticipantEvidence', 'deviceCategory', 'browserFamily', 'operatingSystemFamily', 'screenSizeCategory',
     'referringPage', 'utmSource', 'utmMedium', 'utmCampaign', 'utmContent', 'estimatedCostUsd',
     'medianResponseTimeMs', 'slowestResponseMs', 'serverErrors', 'browserErrors', 'safetyActivations',
     'diagnosisBoundaryActivations', 'crisisActivations', 'feedbackRatings', 'sharedSittingPermission'
@@ -232,7 +280,10 @@ function sessionsToCsv(sessions) {
       row.sessionReference, row.startedAt, row.endedAt, row.durationSeconds, row.accessCompleted, row.beganWriting,
       row.completed, row.endedIntentionally, row.expired, row.limitReached, row.abandoned, row.userEntries,
       row.companionResponses, row.averageUserEntryLength, row.longestUserEntryLength, row.primaryTopic,
-      (row.secondaryTopics || []).join('|'), row.device?.category, row.device?.browserFamily, row.device?.operatingSystemFamily,
+      (row.secondaryTopics || []).join('|'),
+      PROCESS_KEYS.filter((key) => Number(row.processInvitations?.[key] || 0) > 0).map((key) => PROCESS_INVITATION_LABELS[key]).join('|'),
+      PROCESS_KEYS.filter((key) => Number(row.processEvidence?.[key] || 0) > 0).map((key) => PROCESS_EVIDENCE_LABELS[key]).join('|'),
+      row.device?.category, row.device?.browserFamily, row.device?.operatingSystemFamily,
       row.device?.screenSizeCategory, row.referral?.referringPage, row.referral?.utmSource, row.referral?.utmMedium,
       row.referral?.utmCampaign, row.referral?.utmContent, row.estimatedCostUsd, row.medianResponseTimeMs,
       row.slowestResponseMs, row.serverErrors, row.browserErrors, row.safetyActivations,
@@ -245,8 +296,9 @@ function sessionsToCsv(sessions) {
 }
 
 module.exports = {
+  PROCESS_EVIDENCE_LABELS,
+  PROCESS_INVITATION_LABELS,
   PROCESS_KEYS,
-  PROCESS_LABELS,
   TOPIC_RULES,
   aggregateInsights,
   classifyProcess,

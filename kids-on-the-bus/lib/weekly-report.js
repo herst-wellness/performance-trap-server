@@ -40,6 +40,8 @@ function buildWeeklyReport(sessions, now = Date.now()) {
     changeLine(current.errors, prior.errors, 'Errors')
   ].filter(Boolean);
   const topTopics = current.topics.slice(0, 3).map(([topic, count]) => `${topic} (${count})`).join(', ') || 'No topic data yet';
+  const topInvitations = current.processInvitations.slice(0, 3).map(([stage, count]) => `${stage} (${count})`).join(', ') || 'No companion invitation data yet';
+  const topEvidence = current.processEvidence.slice(0, 3).map(([stage, count]) => `${stage} (${count})`).join(', ') || 'No participant evidence data yet';
   const commonAbandonment = current.commonAbandonmentPoint;
   const feedback = current.feedbackAverages.map((value) => value == null ? 'n/a' : value.toFixed(1)).join(', ');
   const dateLabel = `${new Date(currentStart).toLocaleDateString('en-US')} to ${new Date(currentEnd).toLocaleDateString('en-US')}`;
@@ -51,8 +53,10 @@ function buildWeeklyReport(sessions, now = Date.now()) {
 <table cellpadding="8" cellspacing="0" style="border-collapse:collapse">
 <tr><td>Sittings</td><td><strong>${current.totalSittings}</strong></td></tr>
 <tr><td>Completion rate</td><td><strong>${current.completionRate}%</strong></td></tr>
-<tr><td>Most common topics</td><td><strong>${escapeHtml(topTopics)}</strong></td></tr>
-<tr><td>Common abandonment point</td><td><strong>${escapeHtml(commonAbandonment)}</strong></td></tr>
+<tr><td>Most common topics, automatically estimated</td><td><strong>${escapeHtml(topTopics)}</strong></td></tr>
+<tr><td>Companion process invitations, automatically estimated</td><td><strong>${escapeHtml(topInvitations)}</strong></td></tr>
+<tr><td>Participant process evidence, automatically estimated</td><td><strong>${escapeHtml(topEvidence)}</strong></td></tr>
+<tr><td>Common abandonment point, estimated from participant evidence</td><td><strong>${escapeHtml(commonAbandonment)}</strong></td></tr>
 <tr><td>Average response time</td><td><strong>${(current.averageResponseTimeMs / 1000).toFixed(1)} seconds</strong></td></tr>
 <tr><td>Errors</td><td><strong>${current.errors}</strong></td></tr>
 <tr><td>Estimated cost</td><td><strong>$${current.estimatedCostUsd.toFixed(3)}</strong></td></tr>
@@ -61,6 +65,7 @@ function buildWeeklyReport(sessions, now = Date.now()) {
 </table>
 <h2 style="font-family:Georgia,serif">Changes from the prior week</h2>
 <p>${significant.length ? escapeHtml(significant.join(' ')) : 'No significant change was detected.'}</p>
+<p style="color:#5C4A38;font-size:13px">Topic and process classifications are automatically estimated and potentially imperfect. A companion invitation is tracked separately from evidence in the participant's response.</p>
 <p style="color:#5C4A38;font-size:13px">This report contains structured usage information only. It does not include names, exact entries, quotations, memories, or companion responses.</p>
 </body></html>`;
   return { subject, html, summary: current, currentStart, currentEnd };

@@ -34,6 +34,7 @@ test('canonical coaching assets are self-contained and retain their approved fin
 
 test('the main server preserves every existing feature and delegates the namespaced companion before removing its voice query', () => {
   assert.match(companionEntry, /require\('\.\/kids-on-the-bus\/server'\)/);
+  assert.ok(mainServerSource.indexOf('initializeCompanion()') < mainServerSource.indexOf('http.createServer'));
   assert.ok(mainServerSource.indexOf('handleCompanionRoute(req, res)') < mainServerSource.indexOf("req.url = req.url.split('?')[0]"));
   assert.match(mainServerSource, /req\.url === '\/book'/);
   assert.match(mainServerSource, /req\.url === '\/health'/);
@@ -56,14 +57,24 @@ test('browser offers a written-only sitting while preserving the former voice im
   assert.match(preservedVoiceApp, /RTCPeerConnection/);
 });
 
-test('the companion is framed as Mind Body Foundations with notice and optional sharing off by default', () => {
+test('the companion is framed as Mind/Body Foundations with notice and optional sharing off by default', () => {
   assert.match(html, /Mind\/Body Foundations Companion/);
   assert.match(html, /How your information is used/i);
   assert.match(html, /Your exact written conversation will not be saved/);
+  assert.match(html, /structured usage information, without the exact words of your sitting, for up to 12 months/);
   assert.match(html, /Back to Mind\/Body Foundations/);
   assert.match(html, /I give Herst Wellness permission to save this written sitting/);
   assert.doesNotMatch(html, /id="researchConsent"[^>]*checked/);
   assert.doesNotMatch(`${html}\n${app}`, /completely private|private written|private test/i);
+});
+
+test('dashboard copy separates estimated companion invitations from estimated participant evidence', () => {
+  assert.match(adminHtml, /Companion invited this step/);
+  assert.match(adminHtml, /Participant demonstrated this step/);
+  assert.match(adminHtml, /Automatically estimated from participant responses and potentially imperfect/);
+  assert.doesNotMatch(adminHtml, /Process stages reached/);
+  assert.match(adminApp, /processInvitations/);
+  assert.match(adminApp, /processEvidence/);
 });
 
 test('administrative secrets are not present in browser source', () => {
