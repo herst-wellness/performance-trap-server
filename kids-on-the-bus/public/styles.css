@@ -31,6 +31,10 @@ body {
 }
 
 .back-link, .text-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  max-width: 100%;
   color: var(--muted-brown);
   font-family: "Proxima Nova", Arial, sans-serif;
   font-size: 0.76rem;
@@ -125,8 +129,8 @@ input:focus, textarea:focus, select:focus, button:focus-visible, a:focus-visible
   outline-offset: 2px;
 }
 
-.consent-row { display: flex; align-items: flex-start; gap: 12px; margin: 22px 0 8px; line-height: 1.42; }
-.consent-row input { width: 18px; height: 18px; margin-top: 5px; accent-color: var(--gold-dark); }
+.consent-row { display: flex; align-items: flex-start; gap: 12px; min-height: 44px; margin: 22px 0 8px; line-height: 1.42; }
+.consent-row input { width: 20px; height: 20px; flex: 0 0 20px; margin-top: 4px; accent-color: var(--gold-dark); }
 .optional-consent { padding-top: 18px; border-top: 1px solid var(--line); }
 .consent-detail { margin: 7px 0 18px; color: var(--muted-brown); font-size: 0.82rem; line-height: 1.45; }
 .access-field { max-width: 420px; }
@@ -135,6 +139,8 @@ input:focus, textarea:focus, select:focus, button:focus-visible, a:focus-visible
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  min-height: 44px;
+  max-width: 100%;
   border: 0;
   border-radius: 2px;
   padding: 14px 22px;
@@ -143,8 +149,11 @@ input:focus, textarea:focus, select:focus, button:focus-visible, a:focus-visible
   font-weight: 800;
   letter-spacing: 0.08em;
   line-height: 1.2;
+  overflow-wrap: anywhere;
+  text-align: center;
   text-decoration: none;
   text-transform: uppercase;
+  white-space: normal;
   cursor: pointer;
 }
 
@@ -201,5 +210,5 @@ input:focus, textarea:focus, select:focus, button:focus-visible, a:focus-visible
   .utility-controls { align-items: stretch; flex-direction: column; }
   .utility-controls .button, .session-footer .button { width: 100%; }
   .rating-row { grid-template-columns: 1fr; gap: 8px; }
-  .rating-row select { max-width: 130px; }
+  .rating-row select { min-height: 44px; max-width: 130px; font-size: 1rem; }
 }
