@@ -1,7 +1,6 @@
 'use strict';
 
 (function () {
-  const NOTICE_VERSION = '2026-08-13-v1';
   const el = (id) => document.getElementById(id);
   const ui = {
     setupCard: el('setupCard'),
@@ -176,7 +175,7 @@
         headers: { 'Content-Type': 'application/json', 'X-Companion-Code': state.accessCode },
         body: JSON.stringify({
           acknowledged: true,
-          noticeVersion: NOTICE_VERSION,
+          noticeVersion: state.config.noticeVersion,
           shareSitting: state.sharedSitting,
           referral: referralContext(),
           device: deviceContext(),
