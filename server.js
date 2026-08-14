@@ -3,6 +3,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const { handleCompanionRoute } = require('./companion');
+const { handleOnrampRoute } = require('./onramp');
 
 const PORT = process.env.PORT || 3000;
 const MAILCHIMP_KEY = process.env.MAILCHIMP_API_KEY;
@@ -1208,6 +1209,7 @@ async function sendNurtureSequence(email) {
 const server = http.createServer(async (req, res) => {
   req.url = req.url.split('?')[0];
   if (await handleCompanionRoute(req, res)) { return; }
+  if (await handleOnrampRoute(req, res)) { return; }
   // ── STATIC FILES (logo, etc.) ────────────────────────────────
   if (req.method === 'GET' && serveStatic(req, res)) { return; }
 
