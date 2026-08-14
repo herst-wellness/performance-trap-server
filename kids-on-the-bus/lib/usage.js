@@ -2,6 +2,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+const { emptyProcess, median } = require('./analytics');
 
 const DEFAULT_RATES = Object.freeze({
   inputText: 4,
@@ -16,9 +17,20 @@ const DEFAULT_RATES = Object.freeze({
   claudeCacheRead: 0.3
 });
 
+const SESSION_COUNTERS = new Set([
+  'copyButtonUse', 'downloadButtonUse', 'endAndClearButtonUse', 'feedbackFormClicks',
+  'conversionClicks', 'browserErrors', 'serverErrors', 'truncatedResponses', 'emptyResponses',
+  'safetyActivations', 'diagnosisBoundaryActivations', 'crisisActivations', 'userStopRequests',
+  'mindbodyPageClick', 'chapterClick', 'bookClick', 'conversationClick', 'emailListClick'
+]);
+
 function finiteNonNegative(value) {
   const number = Number(value);
   return Number.isFinite(number) && number >= 0 ? number : 0;
+}
+
+function wholeNonNegative(value) {
+  return Math.round(finiteNonNegative(value));
 }
 
 function normalizeUsage(raw = {}) {
@@ -68,36 +80,192 @@ function pruneEntries(entries, now = Date.now(), retentionDays = 30) {
   return entries.filter((entry) => Date.parse(entry.at) >= cutoff);
 }
 
+function initialStore(usageEntries = []) {
+  return { version: 2, usageEntries, sessions: [], reportState: {} };
+}
+
+function sanitizeText(value, maximum = 200) {
+  return String(value || '').replace(/[\r\n\t]/g, ' ').trim().slice(0, maximum);
+}
+
+function sanitizePath(value) {
+  const raw = sanitizeText(value, 500);
+  if (!raw) return '';
+  try {
+    const url = new URL(raw);
+    if (!/^https?:$/.test(url.protocol)) return '';
+    return `${url.origin}${url.pathname}`.slice(0, 300);
+  } catch {
+    return '';
+  }
+}
+
+function normalizeDevice(device = {}) {
+  const allowedCategories = new Set(['Phone', 'Tablet', 'Computer', 'Unknown']);
+  const allowedScreens = new Set(['Small', 'Medium', 'Large', 'Unknown']);
+  const category = sanitizeText(device.category, 20);
+  const screenSizeCategory = sanitizeText(device.screenSizeCategory, 20);
+  return {
+    category: allowedCategories.has(category) ? category : 'Unknown',
+    browserFamily: sanitizeText(device.browserFamily, 40) || 'Unknown',
+    operatingSystemFamily: sanitizeText(device.operatingSystemFamily, 40) || 'Unknown',
+    screenSizeCategory: allowedScreens.has(screenSizeCategory) ? screenSizeCategory : 'Unknown'
+  };
+}
+
+function normalizeReferral(referral = {}) {
+  return {
+    referringPage: sanitizePath(referral.referringPage),
+    utmSource: sanitizeText(referral.utmSource, 100),
+    utmMedium: sanitizeText(referral.utmMedium, 100),
+    utmCampaign: sanitizeText(referral.utmCampaign, 100),
+    utmContent: sanitizeText(referral.utmContent, 100)
+  };
+}
+
+function newSession(record) {
+  return {
+    sessionReference: sanitizeText(record.sessionReference, 40),
+    startedAt: record.startedAt || new Date().toISOString(),
+    endedAt: '',
+    durationSeconds: 0,
+    accessCompleted: true,
+    beganWriting: false,
+    completed: false,
+    endedIntentionally: false,
+    expired: false,
+    exchangeLimitReached: false,
+    timeLimitReached: false,
+    limitReached: false,
+    abandoned: false,
+    userEntries: 0,
+    companionResponses: 0,
+    totalUserEntryLength: 0,
+    averageUserEntryLength: 0,
+    longestUserEntryLength: 0,
+    copyButtonUse: 0,
+    downloadButtonUse: 0,
+    endAndClearButtonUse: 0,
+    feedbackFormClicks: 0,
+    conversionClicks: 0,
+    mindbodyPageClick: 0,
+    chapterClick: 0,
+    bookClick: 0,
+    conversationClick: 0,
+    emailListClick: 0,
+    claudeModel: sanitizeText(record.claudeModel, 80),
+    claudeEffort: sanitizeText(record.claudeEffort, 20),
+    inputTokens: 0,
+    cachedInputTokens: 0,
+    outputTokens: 0,
+    chargeableRetries: 0,
+    estimatedCostUsd: 0,
+    responseTimesMs: [],
+    medianResponseTimeMs: 0,
+    slowestResponseMs: 0,
+    truncatedResponses: 0,
+    emptyResponses: 0,
+    serverErrors: 0,
+    browserErrors: 0,
+    safetyActivations: 0,
+    diagnosisBoundaryActivations: 0,
+    crisisActivations: 0,
+    userStopRequests: 0,
+    referral: normalizeReferral(record.referral),
+    device: normalizeDevice(record.device),
+    returningBrowser: Boolean(record.returningBrowser),
+    topicCounts: {},
+    primaryTopic: 'Other',
+    secondaryTopics: [],
+    process: emptyProcess(),
+    feedback: null,
+    sharedSittingPermission: Boolean(record.sharedSittingPermission),
+    consentDate: record.consentDate || '',
+    noticeVersion: sanitizeText(record.noticeVersion, 40),
+    sharedSittingRetentionDays: wholeNonNegative(record.sharedSittingRetentionDays)
+  };
+}
+
+function finalizeSessionMetrics(session) {
+  session.averageUserEntryLength = session.userEntries > 0
+    ? Math.round(session.totalUserEntryLength / session.userEntries)
+    : 0;
+  session.medianResponseTimeMs = Math.round(median(session.responseTimesMs || []));
+  session.slowestResponseMs = session.responseTimesMs?.length ? Math.max(...session.responseTimesMs) : 0;
+  const rankedTopics = Object.entries(session.topicCounts || {})
+    .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))
+    .slice(0, 4)
+    .map(([topic]) => topic);
+  session.primaryTopic = rankedTopics[0] || 'Other';
+  session.secondaryTopics = rankedTopics.slice(1, 4);
+  return session;
+}
+
 class UsageLedger {
   constructor(filePath, options = {}) {
     this.filePath = filePath;
     this.budgetUsd = finiteNonNegative(options.budgetUsd);
     this.rates = { ...DEFAULT_RATES, ...(options.rates || {}) };
     this.retentionDays = options.retentionDays || 30;
+    this.analyticsRetentionDays = options.analyticsRetentionDays || 365;
+    this.staleSessionMinutes = options.staleSessionMinutes || 65;
   }
 
-  read() {
+  readStore() {
     try {
       const parsed = JSON.parse(fs.readFileSync(this.filePath, 'utf8'));
-      return Array.isArray(parsed) ? parsed : [];
+      if (Array.isArray(parsed)) return initialStore(parsed);
+      return {
+        version: 2,
+        usageEntries: Array.isArray(parsed.usageEntries) ? parsed.usageEntries : [],
+        sessions: Array.isArray(parsed.sessions) ? parsed.sessions : [],
+        reportState: parsed.reportState && typeof parsed.reportState === 'object' ? parsed.reportState : {}
+      };
     } catch (error) {
-      if (error.code === 'ENOENT') return [];
+      if (error.code === 'ENOENT') return initialStore();
       throw error;
     }
   }
 
-  write(entries) {
+  writeStore(store) {
     fs.mkdirSync(path.dirname(this.filePath), { recursive: true });
     const temporary = `${this.filePath}.${process.pid}.tmp`;
-    fs.writeFileSync(temporary, `${JSON.stringify(entries, null, 2)}\n`, { mode: 0o600 });
+    fs.writeFileSync(temporary, `${JSON.stringify(store, null, 2)}\n`, { mode: 0o600 });
     fs.renameSync(temporary, this.filePath);
   }
 
+  pruneStore(store, now = Date.now()) {
+    store.usageEntries = pruneEntries(store.usageEntries, now, this.retentionDays);
+    const analyticsCutoff = now - this.analyticsRetentionDays * 24 * 60 * 60 * 1000;
+    const staleCutoff = now - this.staleSessionMinutes * 60 * 1000;
+    store.sessions = store.sessions.filter((session) => Date.parse(session.startedAt) >= analyticsCutoff);
+    for (const session of store.sessions) {
+      if (!session.endedAt && Date.parse(session.startedAt) < staleCutoff) {
+        session.endedAt = new Date(Math.max(Date.parse(session.startedAt), staleCutoff)).toISOString();
+        session.durationSeconds = Math.max(0, Math.round((Date.parse(session.endedAt) - Date.parse(session.startedAt)) / 1000));
+        session.abandoned = true;
+        session.completed = false;
+        session.endedIntentionally = false;
+      }
+      finalizeSessionMetrics(session);
+    }
+    return store;
+  }
+
   entries() {
-    const current = this.read();
-    const pruned = pruneEntries(current, Date.now(), this.retentionDays);
-    if (pruned.length !== current.length) this.write(pruned);
-    return pruned;
+    const current = this.readStore();
+    const before = JSON.stringify(current);
+    this.pruneStore(current);
+    if (JSON.stringify(current) !== before) this.writeStore(current);
+    return current.usageEntries;
+  }
+
+  sessions() {
+    const current = this.readStore();
+    const before = JSON.stringify(current);
+    this.pruneStore(current);
+    if (JSON.stringify(current) !== before) this.writeStore(current);
+    return current.sessions.map((session) => finalizeSessionMetrics({ ...session }));
   }
 
   total() {
@@ -117,8 +285,8 @@ class UsageLedger {
   }
 
   add(record) {
-    const entries = this.entries();
-    const duplicate = entries.find((entry) => entry.usageId === record.usageId);
+    const store = this.pruneStore(this.readStore());
+    const duplicate = store.usageEntries.find((entry) => entry.usageId === record.usageId);
     if (duplicate) return { duplicate: true, entry: duplicate, status: this.status() };
 
     const usage = normalizeUsage(record.usage);
@@ -126,15 +294,123 @@ class UsageLedger {
     const entry = {
       at: new Date().toISOString(),
       sessionId: String(record.sessionId || ''),
+      sessionReference: sanitizeText(record.sessionReference, 40),
       usageId: String(record.usageId || ''),
       model: String(record.model || 'gpt-realtime-2.1'),
       usage,
       costBreakdown,
       costUsd: costBreakdown.totalUsd
     };
-    entries.push(entry);
-    this.write(entries);
-    return { duplicate: false, entry, status: this.status() };
+    store.usageEntries.push(entry);
+    const session = store.sessions.find((item) => item.sessionReference === entry.sessionReference);
+    if (session) {
+      session.inputTokens += usage.claudeInputTokens;
+      session.cachedInputTokens += usage.claudeCacheReadTokens;
+      session.outputTokens += usage.claudeOutputTokens;
+      session.estimatedCostUsd += entry.costUsd;
+      session.chargeableRetries += record.retried ? 1 : 0;
+      session.truncatedResponses += record.retried ? 1 : 0;
+    }
+    this.writeStore(store);
+    const usedUsd = store.usageEntries.reduce((sum, item) => sum + finiteNonNegative(item.costUsd), 0);
+    return {
+      duplicate: false,
+      entry,
+      status: {
+        budgetUsd: this.budgetUsd,
+        usedUsd,
+        remainingUsd: Math.max(0, this.budgetUsd - usedUsd),
+        percentUsed: this.budgetUsd > 0 ? Math.min(100, usedUsd / this.budgetUsd * 100) : 100,
+        exhausted: this.budgetUsd <= 0 || usedUsd >= this.budgetUsd
+      }
+    };
+  }
+
+  startSession(record) {
+    const store = this.pruneStore(this.readStore());
+    if (!store.sessions.some((session) => session.sessionReference === record.sessionReference)) {
+      store.sessions.push(newSession(record));
+      this.writeStore(store);
+    }
+    return store.sessions.find((session) => session.sessionReference === record.sessionReference);
+  }
+
+  updateSession(sessionReference, updater) {
+    const store = this.pruneStore(this.readStore());
+    const session = store.sessions.find((item) => item.sessionReference === sessionReference);
+    if (!session) return null;
+    updater(session);
+    finalizeSessionMetrics(session);
+    this.writeStore(store);
+    return session;
+  }
+
+  recordTurn(sessionReference, record = {}) {
+    return this.updateSession(sessionReference, (session) => {
+      session.beganWriting = true;
+      session.userEntries += 1;
+      session.totalUserEntryLength += wholeNonNegative(record.userEntryLength);
+      session.longestUserEntryLength = Math.max(session.longestUserEntryLength, wholeNonNegative(record.userEntryLength));
+      if (record.hasCompanionResponse) session.companionResponses += 1;
+      if (finiteNonNegative(record.responseTimeMs) > 0) session.responseTimesMs.push(wholeNonNegative(record.responseTimeMs));
+      for (const topic of [record.topics?.primary, ...(record.topics?.secondary || [])].filter(Boolean)) {
+        session.topicCounts[topic] = (session.topicCounts[topic] || 0) + 1;
+      }
+      for (const [key, value] of Object.entries(record.process || {})) {
+        if (Object.hasOwn(session.process, key)) session.process[key] += wholeNonNegative(value);
+      }
+      if (record.diagnosisBoundary) session.diagnosisBoundaryActivations += 1;
+      if (record.safetyActivation) session.safetyActivations += 1;
+      if (record.crisisActivation) session.crisisActivations += 1;
+      if (record.userStopRequest) session.userStopRequests += 1;
+      if (record.emptyResponse) session.emptyResponses += 1;
+    });
+  }
+
+  recordEvent(sessionReference, eventName) {
+    if (!SESSION_COUNTERS.has(eventName)) return null;
+    return this.updateSession(sessionReference, (session) => { session[eventName] = wholeNonNegative(session[eventName]) + 1; });
+  }
+
+  endSession(sessionReference, reason) {
+    return this.updateSession(sessionReference, (session) => {
+      if (!session.endedAt) session.endedAt = new Date().toISOString();
+      session.durationSeconds = Math.max(0, Math.round((Date.parse(session.endedAt) - Date.parse(session.startedAt)) / 1000));
+      session.completed = reason === 'completed';
+      session.endedIntentionally = reason === 'completed' || reason === 'intentional';
+      session.expired = reason === 'time_limit';
+      session.timeLimitReached = reason === 'time_limit';
+      session.exchangeLimitReached = reason === 'exchange_limit';
+      session.limitReached = session.timeLimitReached || session.exchangeLimitReached;
+      session.abandoned = reason === 'page_exit' || reason === 'abandoned';
+      if ((reason === 'time_limit' || reason === 'exchange_limit') && session.process.appropriateClosing > 0) {
+        session.completed = true;
+      }
+      if (!session.completed && !session.abandoned && !session.process.appropriateClosing && session.beganWriting) {
+        session.process.unresolvedEnding += 1;
+      }
+    });
+  }
+
+  recordFeedback(sessionReference, ratings, hasComment) {
+    return this.updateSession(sessionReference, (session) => {
+      session.feedback = {
+        submittedAt: new Date().toISOString(),
+        ratings: Array.isArray(ratings) ? ratings.slice(0, 5).map((value) => Math.max(1, Math.min(5, wholeNonNegative(value)))) : [],
+        hasComment: Boolean(hasComment)
+      };
+    });
+  }
+
+  getReportState() {
+    return this.readStore().reportState;
+  }
+
+  setReportState(patch) {
+    const store = this.pruneStore(this.readStore());
+    store.reportState = { ...store.reportState, ...patch };
+    this.writeStore(store);
+    return store.reportState;
   }
 }
 
@@ -143,6 +419,8 @@ module.exports = {
   UsageLedger,
   calculateBreakdown,
   calculateCost,
+  normalizeDevice,
+  normalizeReferral,
   normalizeUsage,
   pruneEntries
 };

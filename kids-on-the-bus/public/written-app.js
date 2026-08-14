@@ -1,16 +1,21 @@
 'use strict';
 
 (function () {
+  const NOTICE_VERSION = '2026-08-13-v1';
   const el = (id) => document.getElementById(id);
   const ui = {
     setupCard: el('setupCard'),
     sessionCard: el('sessionCard'),
     endedCard: el('endedCard'),
     accessCode: el('accessCode'),
-    adultConsent: el('adultConsent'),
+    noticeConsent: el('noticeConsent'),
+    researchConsent: el('researchConsent'),
     beginButton: el('beginButton'),
     setupMessage: el('setupMessage'),
     transcript: el('transcript'),
+    sessionReference: el('sessionReference'),
+    endedReference: el('endedReference'),
+    feedbackReference: el('feedbackReference'),
     exchangeCount: el('exchangeCount'),
     timeRemaining: el('timeRemaining'),
     responseForm: el('responseForm'),
@@ -19,8 +24,14 @@
     statusLabel: el('statusLabel'),
     statusDetail: el('statusDetail'),
     breathDot: el('breathDot'),
+    copyButton: el('copyButton'),
+    downloadButton: el('downloadButton'),
     endButton: el('endButton'),
+    retentionMessage: el('retentionMessage'),
     finalCost: el('finalCost'),
+    feedbackForm: el('feedbackForm'),
+    feedbackComment: el('feedbackComment'),
+    feedbackMessage: el('feedbackMessage'),
     startAgainButton: el('startAgainButton')
   };
 
@@ -28,13 +39,17 @@
     config: null,
     accessCode: '',
     sessionId: '',
+    sessionReference: '',
     history: [],
+    exportTurns: [],
     exchangeCount: 0,
     costUsd: 0,
     ended: false,
+    endReported: false,
     deadline: 0,
     timer: null,
-    controller: null
+    controller: null,
+    sharedSitting: false
   };
 
   function setStatus(label, detail, waiting) {
@@ -55,10 +70,65 @@
     turn.append(speaker, content);
     ui.transcript.appendChild(turn);
     ui.transcript.scrollTop = ui.transcript.scrollHeight;
+    state.exportTurns.push({ role: speaker.textContent, text });
   }
 
   function updateExchangeDisplay() {
     ui.exchangeCount.textContent = `${state.exchangeCount} of ${state.config.maxExchanges} exchanges`;
+  }
+
+  function screenCategory() {
+    const width = Number(window.screen?.width || window.innerWidth || 0);
+    if (!width) return 'Unknown';
+    if (width < 640) return 'Small';
+    if (width < 1200) return 'Medium';
+    return 'Large';
+  }
+
+  function deviceContext() {
+    const ua = navigator.userAgent || '';
+    const tablet = /iPad|Tablet|PlayBook|Silk/i.test(ua) || (/Android/i.test(ua) && !/Mobile/i.test(ua));
+    const phone = !tablet && /Mobi|iPhone|Android/i.test(ua);
+    let browserFamily = 'Other';
+    if (/Edg\//.test(ua)) browserFamily = 'Edge';
+    else if (/OPR\//.test(ua)) browserFamily = 'Opera';
+    else if (/Chrome\//.test(ua)) browserFamily = 'Chrome';
+    else if (/Firefox\//.test(ua)) browserFamily = 'Firefox';
+    else if (/Safari\//.test(ua)) browserFamily = 'Safari';
+    let operatingSystemFamily = 'Other';
+    if (/Windows/i.test(ua)) operatingSystemFamily = 'Windows';
+    else if (/Android/i.test(ua)) operatingSystemFamily = 'Android';
+    else if (/iPhone|iPad|iPod/i.test(ua)) operatingSystemFamily = 'iOS or iPadOS';
+    else if (/Mac OS X|Macintosh/i.test(ua)) operatingSystemFamily = 'macOS';
+    else if (/Linux/i.test(ua)) operatingSystemFamily = 'Linux';
+    return {
+      category: tablet ? 'Tablet' : phone ? 'Phone' : 'Computer',
+      browserFamily,
+      operatingSystemFamily,
+      screenSizeCategory: screenCategory()
+    };
+  }
+
+  function referralContext() {
+    const params = new URLSearchParams(window.location.search);
+    return {
+      referringPage: document.referrer,
+      utmSource: params.get('utm_source') || '',
+      utmMedium: params.get('utm_medium') || '',
+      utmCampaign: params.get('utm_campaign') || '',
+      utmContent: params.get('utm_content') || ''
+    };
+  }
+
+  function returningBrowser() {
+    try {
+      const key = 'herst_mbf_companion_visited';
+      const returning = window.localStorage.getItem(key) === '1';
+      window.localStorage.setItem(key, '1');
+      return returning;
+    } catch {
+      return false;
+    }
   }
 
   function startClock() {
@@ -69,7 +139,7 @@
       const minutes = Math.floor(secondsLeft / 60);
       const seconds = String(secondsLeft % 60).padStart(2, '0');
       ui.timeRemaining.textContent = `${minutes}:${seconds} remaining`;
-      if (remaining <= 0) endSession(false, 'This sitting has reached its time limit.');
+      if (remaining <= 0) endSession(false, 'time_limit', 'This sitting has reached its time limit.');
     }
     tick();
     state.timer = window.setInterval(tick, 1000);
@@ -79,9 +149,9 @@
     try {
       const response = await fetch('/api/kids-on-the-bus/config', { cache: 'no-store' });
       state.config = await response.json();
-      if (!state.config.configured) ui.setupMessage.textContent = 'The private companion is not ready yet.';
+      if (!state.config.configured) ui.setupMessage.textContent = 'The written companion is not ready yet.';
     } catch {
-      ui.setupMessage.textContent = 'The private companion is not responding.';
+      ui.setupMessage.textContent = 'The written companion is not responding.';
     }
   }
 
@@ -89,29 +159,45 @@
     ui.setupMessage.textContent = '';
     if (!state.config) await loadConfig();
     if (!state.config || !state.config.configured) return;
-    if (!ui.adultConsent.checked) {
-      ui.setupMessage.textContent = 'Please confirm the notice before beginning.';
+    if (!ui.noticeConsent.checked) {
+      ui.setupMessage.textContent = 'Please read and acknowledge the information notice before beginning.';
       return;
     }
     if (!ui.accessCode.value.trim()) {
-      ui.setupMessage.textContent = 'Enter the private access code.';
+      ui.setupMessage.textContent = 'Enter the access code.';
       return;
     }
     state.accessCode = ui.accessCode.value.trim();
+    state.sharedSitting = ui.researchConsent.checked;
     ui.beginButton.disabled = true;
     try {
       const response = await fetch('/api/kids-on-the-bus/session', {
         method: 'POST',
-        headers: { 'X-Companion-Code': state.accessCode }
+        headers: { 'Content-Type': 'application/json', 'X-Companion-Code': state.accessCode },
+        body: JSON.stringify({
+          acknowledged: true,
+          noticeVersion: NOTICE_VERSION,
+          shareSitting: state.sharedSitting,
+          referral: referralContext(),
+          device: deviceContext(),
+          returningBrowser: returningBrowser()
+        })
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || 'The sitting could not begin.');
       state.sessionId = data.sessionId;
+      state.sessionReference = data.sessionReference;
       state.history = [];
+      state.exportTurns = [];
       state.exchangeCount = 0;
       state.costUsd = 0;
       state.ended = false;
+      state.endReported = false;
       updateExchangeDisplay();
+      ui.sessionReference.textContent = `Reference ${state.sessionReference}`;
+      ui.retentionMessage.textContent = state.sharedSitting
+        ? 'You chose to share this sitting for research. It is stored separately for up to 90 days.'
+        : 'Herst Wellness keeps structured usage information, not the exact words in this sitting.';
       addTurn('companion', data.opening);
       ui.setupCard.classList.add('hidden');
       ui.sessionCard.classList.remove('hidden');
@@ -156,11 +242,12 @@
       state.costUsd += Number(data.responseCostUsd || 0);
       updateExchangeDisplay();
       if (data.route !== 'continue_reflection') {
-        endSession(false, 'This reflection has paused here.');
+        const reason = data.route === 'stop_requested' ? 'stop_requested' : 'safety';
+        endSession(false, reason, 'This reflection has paused here. You can copy or download it before clearing the page.');
         return;
       }
       if (state.exchangeCount >= state.config.maxExchanges) {
-        endSession(false, 'This sitting has reached its extended exchange limit.');
+        endSession(false, 'exchange_limit', 'This sitting has reached its exchange limit. You can copy or download it before clearing the page.');
         return;
       }
       setStatus('Your turn', 'Write when you are ready.', false);
@@ -176,21 +263,28 @@
     }
   }
 
-  function reportEnd() {
-    if (!state.sessionId) return;
-    fetch('/api/kids-on-the-bus/session/end', {
+  function authenticatedFetch(path, body, keepalive) {
+    if (!state.sessionId || !state.accessCode) return Promise.resolve();
+    return fetch(path, {
       method: 'POST',
-      keepalive: true,
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Companion-Code': state.accessCode
-      },
-      body: JSON.stringify({ sessionId: state.sessionId })
+      keepalive: Boolean(keepalive),
+      headers: { 'Content-Type': 'application/json', 'X-Companion-Code': state.accessCode },
+      body: JSON.stringify({ sessionId: state.sessionId, ...body })
     }).catch(function () {});
   }
 
-  function endSession(clear, reason) {
-    if (!state.ended) reportEnd();
+  function trackEvent(eventName, keepalive) {
+    return authenticatedFetch('/api/kids-on-the-bus/event', { eventName }, keepalive);
+  }
+
+  function reportEnd(reason, keepalive) {
+    if (!state.sessionId || state.endReported) return;
+    state.endReported = true;
+    authenticatedFetch('/api/kids-on-the-bus/session/end', { reason }, keepalive);
+  }
+
+  function endSession(clear, reason, message) {
+    if (!state.endReported) reportEnd(reason || 'intentional', true);
     state.ended = true;
     if (state.controller) state.controller.abort();
     if (state.timer) window.clearInterval(state.timer);
@@ -198,19 +292,99 @@
     ui.responseText.disabled = true;
     ui.sendButton.disabled = true;
     if (!clear) {
-      setStatus('Sitting ended', reason || 'No more responses will be sent.', false);
+      setStatus('Sitting ended', message || 'No more responses will be sent.', false);
       return;
     }
     ui.transcript.replaceChildren();
+    state.history = [];
+    state.exportTurns = [];
     ui.sessionCard.classList.add('hidden');
     ui.endedCard.classList.remove('hidden');
-    ui.finalCost.textContent = `Calculated cost for this sitting: approximately $${state.costUsd.toFixed(3)}. The cost record contains usage numbers only.`;
+    ui.endedReference.textContent = state.sessionReference;
+    ui.feedbackReference.textContent = state.sessionReference;
+    ui.finalCost.textContent = `Estimated AI cost for this sitting: $${state.costUsd.toFixed(3)}.`;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function formattedSitting() {
+    const lines = [
+      'Mind/Body Foundations Companion',
+      `Session reference: ${state.sessionReference}`,
+      '',
+      ...state.exportTurns.flatMap((turn) => [`${turn.role}:`, turn.text, ''])
+    ];
+    return lines.join('\n').trim();
+  }
+
+  async function copySitting() {
+    const text = formattedSitting();
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+      setStatus('Copied', 'The sitting is on your clipboard.', false);
+      trackEvent('copyButtonUse');
+    } catch {
+      setStatus('Copy was not available', 'Use Download sitting instead.', false);
+    }
+  }
+
+  function downloadSitting() {
+    const text = formattedSitting();
+    if (!text) return;
+    const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `mindbody-foundations-${state.sessionReference}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    trackEvent('downloadButtonUse');
+  }
+
+  async function submitFeedback(event) {
+    event.preventDefault();
+    ui.feedbackMessage.textContent = '';
+    const ratings = Array.from(ui.feedbackForm.querySelectorAll('select')).map((select) => Number(select.value));
+    if (ratings.some((value) => !Number.isInteger(value) || value < 1 || value > 5)) {
+      ui.feedbackMessage.textContent = 'Please choose a rating for each question.';
+      return;
+    }
+    const response = await fetch('/api/kids-on-the-bus/feedback', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Companion-Code': state.accessCode },
+      body: JSON.stringify({ sessionId: state.sessionId, ratings, comment: ui.feedbackComment.value })
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      ui.feedbackMessage.textContent = data.error || 'The check-in could not be saved.';
+      return;
+    }
+    ui.feedbackMessage.textContent = 'Thank you. Your check-in was saved.';
+    Array.from(ui.feedbackForm.elements).forEach((control) => { control.disabled = true; });
+  }
+
+  function clearFromButton() {
+    trackEvent('endAndClearButtonUse', true);
+    const reason = state.exchangeCount > 0 ? 'completed' : 'intentional';
+    endSession(true, reason);
   }
 
   ui.beginButton.addEventListener('click', beginSession);
   ui.responseForm.addEventListener('submit', submitResponse);
-  ui.endButton.addEventListener('click', () => endSession(true));
+  ui.copyButton.addEventListener('click', copySitting);
+  ui.downloadButton.addEventListener('click', downloadSitting);
+  ui.endButton.addEventListener('click', clearFromButton);
+  ui.feedbackForm.addEventListener('submit', submitFeedback);
   ui.startAgainButton.addEventListener('click', () => window.location.reload());
-  window.addEventListener('beforeunload', reportEnd);
+  document.querySelectorAll('.tracked-link').forEach((link) => {
+    link.addEventListener('click', () => trackEvent(link.dataset.event || 'conversionClicks', true));
+  });
+  window.addEventListener('error', () => trackEvent('browserErrors', true));
+  window.addEventListener('unhandledrejection', () => trackEvent('browserErrors', true));
+  window.addEventListener('beforeunload', () => {
+    if (state.sessionId && !state.endReported) reportEnd('page_exit', true);
+  });
   loadConfig();
 })();

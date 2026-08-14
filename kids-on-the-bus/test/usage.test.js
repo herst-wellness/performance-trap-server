@@ -71,3 +71,46 @@ test('live transcription is calculated and identified separately', () => {
   assert.equal(result.entry.costUsd, 0.0085);
   fs.rmSync(directory, { recursive: true, force: true });
 });
+
+test('the extended ledger preserves structured sessions across a process restart', () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'mindbody-ledger-'));
+  const file = path.join(directory, 'usage-ledger.json');
+  const firstProcess = new UsageLedger(file, { budgetUsd: 100, analyticsRetentionDays: 365 });
+  firstProcess.startSession({
+    sessionReference: 'MBF-ABCD-2345',
+    claudeModel: 'claude-sonnet-5',
+    claudeEffort: 'high',
+    referral: { referringPage: 'https://herstwellness.com/mind-body-foundations?secret=no' },
+    device: { category: 'Computer', browserFamily: 'Safari', operatingSystemFamily: 'macOS', screenSizeCategory: 'Large' }
+  });
+  firstProcess.recordTurn('MBF-ABCD-2345', {
+    userEntryLength: 42,
+    hasCompanionResponse: true,
+    responseTimeMs: 1200,
+    topics: { primary: 'Work', secondary: ['Performance pressure'] },
+    process: { specificSituation: 1 }
+  });
+  firstProcess.endSession('MBF-ABCD-2345', 'completed');
+
+  const restartedProcess = new UsageLedger(file, { budgetUsd: 100, analyticsRetentionDays: 365 });
+  const saved = restartedProcess.sessions()[0];
+  assert.equal(saved.sessionReference, 'MBF-ABCD-2345');
+  assert.equal(saved.completed, true);
+  assert.equal(saved.primaryTopic, 'Performance pressure');
+  assert.equal(saved.userEntries, 1);
+  assert.equal(saved.referral.referringPage, 'https://herstwellness.com/mind-body-foundations');
+  fs.rmSync(directory, { recursive: true, force: true });
+});
+
+test('the extended ledger upgrades the existing array without losing cost records', () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'mindbody-ledger-'));
+  const file = path.join(directory, 'usage-ledger.json');
+  fs.writeFileSync(file, JSON.stringify([{ at: new Date().toISOString(), usageId: 'old', costUsd: 1.25 }]));
+  const ledger = new UsageLedger(file, { budgetUsd: 100 });
+  assert.equal(ledger.entries()[0].usageId, 'old');
+  ledger.startSession({ sessionReference: 'MBF-EFGH-6789' });
+  const upgraded = JSON.parse(fs.readFileSync(file, 'utf8'));
+  assert.equal(upgraded.version, 2);
+  assert.equal(upgraded.usageEntries[0].costUsd, 1.25);
+  fs.rmSync(directory, { recursive: true, force: true });
+});

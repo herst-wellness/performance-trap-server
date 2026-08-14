@@ -6,9 +6,12 @@ const http = require('node:http');
 const path = require('node:path');
 const { URL } = require('node:url');
 const { generateClaudeResponse } = require('./lib/claude');
+const { PROCESS_LABELS, aggregateInsights, classifyTurn, sessionsToCsv } = require('./lib/analytics');
 const { LatencyLedger } = require('./lib/latency');
 const { routeSafety } = require('./lib/safety');
+const { SharedSittingStore } = require('./lib/shared-sittings');
 const { DEFAULT_RATES, UsageLedger } = require('./lib/usage');
+const { WeeklyReporter, buildWeeklyReport } = require('./lib/weekly-report');
 
 const ROOT = __dirname;
 const PUBLIC_DIR = path.join(ROOT, 'public');
@@ -22,8 +25,12 @@ const OPENING = 'What has you reaching out today? Give me a sense of what is hap
 const DEFAULT_WRITTEN_SESSION_MINUTES = 60;
 const DEFAULT_WRITTEN_MAX_EXCHANGES = 30;
 const PAGE_PATH = '/reflect/kids-on-the-bus';
+const ADMIN_PATH = '/admin/mindbody-insights';
 const STATIC_PREFIX = '/kids-on-the-bus';
 const API_PREFIX = '/api/kids-on-the-bus';
+const NOTICE_VERSION = '2026-08-13-v1';
+const DEFAULT_SHARED_RETENTION_DAYS = 90;
+const DEFAULT_ANALYTICS_RETENTION_DAYS = 365;
 
 function boundedInteger(value, fallback, minimum, maximum) {
   const parsed = Number.parseInt(value, 10);
@@ -40,7 +47,7 @@ function readVerifiedFile(filePath, expectedHash, label) {
   const contents = fs.readFileSync(filePath, 'utf8');
   const actualHash = crypto.createHash('sha256').update(contents).digest('hex');
   if (!safeEqual(actualHash, expectedHash)) {
-    throw new Error(`${label} has changed and must be reviewed before this private companion starts: ${filePath}`);
+    throw new Error(`${label} has changed and must be reviewed before this companion starts: ${filePath}`);
   }
   return contents;
 }
@@ -67,10 +74,15 @@ function loadClaudeInstructions(env = process.env) {
 
 function loadSettings(env = process.env) {
   const budgetUsd = money(env.PRIVATE_TEST_BUDGET_USD, 0);
+  const explicitDataDir = env.RENDER_DISK_PATH || env.REALTIME_DATA_DIR || '';
+  if (env.RENDER && !explicitDataDir) {
+    throw new Error('Render requires REALTIME_DATA_DIR or RENDER_DISK_PATH to point to the mounted persistent disk.');
+  }
   return {
     port: boundedInteger(env.PORT, 5933, 1, 65535),
     anthropicKey: env.ANTHROPIC_API_KEY || '',
     accessCode: env.COMPANION_ACCESS_CODE || '',
+    adminCode: env.COMPANION_ADMIN_CODE || '',
     budgetUsd,
     sessionMinutes: boundedInteger(env.WRITTEN_SESSION_MINUTES, DEFAULT_WRITTEN_SESSION_MINUTES, 1, 60),
     maxExchanges: boundedInteger(env.WRITTEN_MAX_EXCHANGES, DEFAULT_WRITTEN_MAX_EXCHANGES, 1, 30),
@@ -85,7 +97,16 @@ function loadSettings(env = process.env) {
       claudeCacheWrite: money(env.CLAUDE_CACHE_WRITE_PER_MILLION, DEFAULT_RATES.claudeCacheWrite),
       claudeCacheRead: money(env.CLAUDE_CACHE_READ_PER_MILLION, DEFAULT_RATES.claudeCacheRead)
     },
-    dataDir: env.REALTIME_DATA_DIR || path.join(ROOT, 'data')
+    dataDir: explicitDataDir || path.join(ROOT, 'data'),
+    persistentDataDirConfigured: Boolean(explicitDataDir),
+    analyticsRetentionDays: boundedInteger(env.COMPANION_ANALYTICS_RETENTION_DAYS, DEFAULT_ANALYTICS_RETENTION_DAYS, 30, 730),
+    sharedRetentionDays: boundedInteger(env.COMPANION_SHARED_RETENTION_DAYS, DEFAULT_SHARED_RETENTION_DAYS, 7, 365),
+    weeklyReport: {
+      enabled: String(env.COMPANION_WEEKLY_REPORT_ENABLED || '').toLowerCase() === 'true',
+      apiKey: env.RESEND_API_KEY || '',
+      to: env.COMPANION_REPORT_TO || '',
+      from: env.COMPANION_REPORT_FROM || ''
+    }
   };
 }
 
@@ -105,6 +126,17 @@ function sendJson(res, status, value, extraHeaders = {}) {
     ...extraHeaders
   });
   res.end(body);
+}
+
+function sendText(res, status, body, contentType, extraHeaders = {}) {
+  const value = Buffer.from(String(body));
+  res.writeHead(status, {
+    'Content-Type': contentType,
+    'Content-Length': value.length,
+    'Cache-Control': 'no-store',
+    ...extraHeaders
+  });
+  res.end(value);
 }
 
 function readBody(req, maximumBytes = 64 * 1024) {
@@ -138,7 +170,7 @@ function securityHeaders(contentType) {
   return {
     'Content-Type': contentType,
     'Cache-Control': 'no-store',
-    'Content-Security-Policy': "default-src 'self'; connect-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'",
+    'Content-Security-Policy': "default-src 'self'; connect-src 'self'; font-src 'self' https://fonts.gstatic.com; frame-src 'self'; img-src 'self' data:; style-src 'self' https://fonts.googleapis.com; script-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'",
     'Permissions-Policy': 'camera=(), geolocation=(), microphone=()',
     'Referrer-Policy': 'no-referrer',
     'X-Content-Type-Options': 'nosniff',
@@ -149,8 +181,11 @@ function securityHeaders(contentType) {
 function serveStatic(req, res, pathname) {
   const routes = {
     [PAGE_PATH]: ['index.html', 'text/html; charset=utf-8'],
+    [ADMIN_PATH]: ['admin.html', 'text/html; charset=utf-8'],
     [`${STATIC_PREFIX}/written-app.js`]: ['written-app.js', 'text/javascript; charset=utf-8'],
-    [`${STATIC_PREFIX}/styles.css`]: ['styles.css', 'text/css; charset=utf-8']
+    [`${STATIC_PREFIX}/admin.js`]: ['admin.js', 'text/javascript; charset=utf-8'],
+    [`${STATIC_PREFIX}/styles.css`]: ['styles.css', 'text/css; charset=utf-8'],
+    [`${STATIC_PREFIX}/admin.css`]: ['admin.css', 'text/css; charset=utf-8']
   };
   const match = routes[pathname];
   if (!match) return false;
@@ -168,46 +203,75 @@ function authorized(req, settings) {
   return safeEqual(req.headers['x-companion-code'], settings.accessCode);
 }
 
+function adminAuthorized(req, settings) {
+  return safeEqual(req.headers['x-companion-admin-code'], settings.adminCode);
+}
+
+function sessionReference() {
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const bytes = crypto.randomBytes(8);
+  const group = (offset) => Array.from(bytes.subarray(offset, offset + 4), (value) => alphabet[value % alphabet.length]).join('');
+  return `MBF-${group(0)}-${group(4)}`;
+}
+
 function createApp(options = {}) {
   const settings = options.settings || loadSettings(options.env);
   const fetchImpl = options.fetchImpl || fetch;
   const ledger = options.ledger || new UsageLedger(
     path.join(settings.dataDir, 'usage-ledger.json'),
-    { budgetUsd: settings.budgetUsd, rates: settings.rates, retentionDays: 30 }
+    {
+      budgetUsd: settings.budgetUsd,
+      rates: settings.rates,
+      retentionDays: 30,
+      analyticsRetentionDays: settings.analyticsRetentionDays || DEFAULT_ANALYTICS_RETENTION_DAYS,
+      staleSessionMinutes: (settings.sessionMinutes || DEFAULT_WRITTEN_SESSION_MINUTES) + 5
+    }
   );
   const latencyLedger = options.latencyLedger || new LatencyLedger(
     path.join(settings.dataDir, 'latency-ledger.json'),
     { retentionDays: 30 }
   );
+  const sharedStore = options.sharedStore || new SharedSittingStore(settings.dataDir, {
+    retentionDays: settings.sharedRetentionDays || DEFAULT_SHARED_RETENTION_DAYS
+  });
+  const weeklyReporter = options.weeklyReporter || new WeeklyReporter(ledger, settings.weeklyReport || {}, fetchImpl);
   const activeSessions = new Map();
 
   function pruneSessions() {
     const cutoff = Date.now() - (settings.sessionMinutes + 5) * 60 * 1000;
     for (const [id, record] of activeSessions) {
-      if (record.startedAt < cutoff) activeSessions.delete(id);
+      if (record.startedAt < cutoff) {
+        if (!record.ended) ledger.endSession(record.sessionReference, 'abandoned');
+        activeSessions.delete(id);
+      }
     }
+    sharedStore.prune();
   }
 
-  return http.createServer(async (req, res) => {
+  const app = http.createServer(async (req, res) => {
     const url = new URL(req.url, 'http://localhost');
     const pathname = url.pathname;
+    let currentSessionReference = '';
 
     try {
+      if (weeklyReporter.configured()) weeklyReporter.sendIfDue(false).catch(() => {});
       if ((req.method === 'GET' || req.method === 'HEAD') && serveStatic(req, res, pathname)) return;
 
       if (req.method === 'GET' && pathname === `${API_PREFIX}/config`) {
         const budget = ledger.status();
         sendJson(res, 200, {
-          privatePrototype: true,
+          earlyAccess: true,
           configured: Boolean(settings.anthropicKey && settings.accessCode && settings.budgetUsd > 0),
           mode: 'writing',
           coachingModel: settings.claudeModel,
           coachingEffort: settings.claudeEffort,
           opening: OPENING,
+          noticeVersion: NOTICE_VERSION,
           sessionMinutes: settings.sessionMinutes,
           absoluteMaximumMinutes: 60,
           maxExchanges: settings.maxExchanges,
           absoluteMaximumExchanges: 30,
+          sharedSittingRetentionDays: settings.sharedRetentionDays || DEFAULT_SHARED_RETENTION_DAYS,
           budget
         });
         return;
@@ -215,27 +279,55 @@ function createApp(options = {}) {
 
       if (req.method === 'POST' && pathname === `${API_PREFIX}/session`) {
         if (!settings.anthropicKey || !settings.accessCode || settings.budgetUsd <= 0) {
-          sendJson(res, 503, { error: 'Private written testing has not been configured yet.' });
+          sendJson(res, 503, { error: 'The written companion has not been configured yet.' });
           return;
         }
         if (!authorized(req, settings)) {
-          sendJson(res, 401, { error: 'That private access code was not accepted.' });
+          sendJson(res, 401, { error: 'That access code was not accepted.' });
+          return;
+        }
+        const body = await readJson(req, 24 * 1024);
+        if (body.acknowledged !== true || String(body.noticeVersion || '') !== NOTICE_VERSION) {
+          sendJson(res, 400, { error: 'Please acknowledge the current information notice before beginning.' });
           return;
         }
         pruneSessions();
         if (ledger.status().exhausted) {
-          sendJson(res, 402, { error: 'The private testing budget has been reached.' });
+          sendJson(res, 402, { error: 'The authorized testing budget has been reached.' });
           return;
         }
         const sessionId = crypto.randomUUID();
-        activeSessions.set(sessionId, { startedAt: Date.now() });
-        sendJson(res, 200, { sessionId, opening: OPENING, budget: ledger.status() });
+        const reference = sessionReference();
+        const consentDate = body.shareSitting === true ? new Date().toISOString() : '';
+        activeSessions.set(sessionId, {
+          startedAt: Date.now(),
+          sessionReference: reference,
+          shareSitting: body.shareSitting === true,
+          ended: false
+        });
+        ledger.startSession({
+          sessionReference: reference,
+          startedAt: new Date().toISOString(),
+          claudeModel: settings.claudeModel,
+          claudeEffort: settings.claudeEffort,
+          referral: body.referral,
+          device: body.device,
+          returningBrowser: body.returningBrowser,
+          sharedSittingPermission: body.shareSitting === true,
+          consentDate,
+          noticeVersion: NOTICE_VERSION,
+          sharedSittingRetentionDays: settings.sharedRetentionDays || DEFAULT_SHARED_RETENTION_DAYS
+        });
+        if (body.shareSitting === true) {
+          sharedStore.begin({ sessionReference: reference, consentDate, noticeVersion: NOTICE_VERSION });
+        }
+        sendJson(res, 200, { sessionId, sessionReference: reference, opening: OPENING, budget: ledger.status() });
         return;
       }
 
       if (req.method === 'POST' && pathname === `${API_PREFIX}/safety-check`) {
         if (!authorized(req, settings)) {
-          sendJson(res, 401, { error: 'Private access required.' });
+          sendJson(res, 401, { error: 'Access required.' });
           return;
         }
         const body = await readJson(req, 24 * 1024);
@@ -246,27 +338,39 @@ function createApp(options = {}) {
 
       if (req.method === 'POST' && pathname === `${API_PREFIX}/claude-response`) {
         if (!authorized(req, settings)) {
-          sendJson(res, 401, { error: 'Private access required.' });
+          sendJson(res, 401, { error: 'Access required.' });
           return;
         }
         const body = await readJson(req, 128 * 1024);
         const sessionId = String(body.sessionId || '');
         const message = String(body.message || '').trim();
-        if (!activeSessions.has(sessionId)) {
-          sendJson(res, 400, { error: 'Unknown private session.' });
+        const active = activeSessions.get(sessionId);
+        if (!active || active.ended) {
+          sendJson(res, 400, { error: 'This sitting is no longer active.' });
           return;
         }
+        currentSessionReference = active.sessionReference;
         if (!message || message.length > 12000) {
           sendJson(res, 400, { error: 'A shorter written reflection is required.' });
           return;
         }
         const safety = routeSafety(message);
         if (safety.route !== 'continue_reflection') {
+          const classification = classifyTurn({ message, response: safety.response, route: safety.route });
+          ledger.recordTurn(active.sessionReference, {
+            userEntryLength: message.length,
+            hasCompanionResponse: true,
+            ...classification,
+            safetyActivation: true,
+            crisisActivation: safety.route.startsWith('urgent_') || safety.route === 'pause_and_support',
+            userStopRequest: safety.route === 'stop_requested'
+          });
+          if (active.shareSitting) sharedStore.appendTurn(active.sessionReference, message, safety.response);
           sendJson(res, 200, { ...safety, handledBy: 'fixed-safety', budget: ledger.status() });
           return;
         }
         if (ledger.status().exhausted) {
-          sendJson(res, 402, { error: 'The private testing budget has been reached.' });
+          sendJson(res, 402, { error: 'The authorized testing budget has been reached.' });
           return;
         }
         const controller = new AbortController();
@@ -295,10 +399,20 @@ function createApp(options = {}) {
         const usageId = `claude_${crypto.randomUUID().replace(/-/g, '')}`;
         const recorded = ledger.add({
           sessionId,
+          sessionReference: active.sessionReference,
           usageId,
           model: settings.claudeModel,
-          usage: generated.usage
+          usage: generated.usage,
+          retried: generated.retried
         });
+        const classification = classifyTurn({ message, response: generated.text, route: 'continue_reflection' });
+        ledger.recordTurn(active.sessionReference, {
+          userEntryLength: message.length,
+          hasCompanionResponse: true,
+          responseTimeMs: generated.latency.completeMs,
+          ...classification
+        });
+        if (active.shareSitting) sharedStore.appendTurn(active.sessionReference, message, generated.text);
         sendJson(res, 200, {
           route: 'continue_reflection',
           response: generated.text,
@@ -315,15 +429,17 @@ function createApp(options = {}) {
 
       if (req.method === 'POST' && pathname === `${API_PREFIX}/latency`) {
         if (!authorized(req, settings)) {
-          sendJson(res, 401, { error: 'Private access required.' });
+          sendJson(res, 401, { error: 'Access required.' });
           return;
         }
         const body = await readJson(req, 16 * 1024);
         const sessionId = String(body.sessionId || '');
-        if (!activeSessions.has(sessionId)) {
-          sendJson(res, 400, { error: 'Unknown private session.' });
+        const active = activeSessions.get(sessionId);
+        if (!active) {
+          sendJson(res, 400, { error: 'Unknown sitting.' });
           return;
         }
+        currentSessionReference = active.sessionReference;
         if (!/^turn_[A-Za-z0-9_-]+$/.test(String(body.turnId || ''))) {
           sendJson(res, 400, { error: 'Invalid timing identifier.' });
           return;
@@ -339,12 +455,143 @@ function createApp(options = {}) {
 
       if (req.method === 'POST' && pathname === `${API_PREFIX}/session/end`) {
         if (!authorized(req, settings)) {
-          sendJson(res, 401, { error: 'Private access required.' });
+          sendJson(res, 401, { error: 'Access required.' });
           return;
         }
         const body = await readJson(req, 4 * 1024);
-        activeSessions.delete(String(body.sessionId || ''));
+        const active = activeSessions.get(String(body.sessionId || ''));
+        if (!active) {
+          sendJson(res, 400, { error: 'Unknown sitting.' });
+          return;
+        }
+        currentSessionReference = active.sessionReference;
+        const allowedReasons = new Set(['completed', 'intentional', 'time_limit', 'exchange_limit', 'safety', 'stop_requested', 'page_exit', 'abandoned']);
+        const reason = allowedReasons.has(body.reason) ? body.reason : 'intentional';
+        ledger.endSession(active.sessionReference, reason);
+        active.ended = true;
         sendJson(res, 200, { ended: true, budget: ledger.status() });
+        return;
+      }
+
+      if (req.method === 'POST' && pathname === `${API_PREFIX}/event`) {
+        if (!authorized(req, settings)) {
+          sendJson(res, 401, { error: 'Access required.' });
+          return;
+        }
+        const body = await readJson(req, 8 * 1024);
+        const active = activeSessions.get(String(body.sessionId || ''));
+        if (!active) {
+          sendJson(res, 400, { error: 'Unknown sitting.' });
+          return;
+        }
+        currentSessionReference = active.sessionReference;
+        const directEvents = new Set(['copyButtonUse', 'downloadButtonUse', 'endAndClearButtonUse', 'browserErrors']);
+        const conversionEvents = new Set(['mindbodyPageClick', 'chapterClick', 'bookClick', 'conversationClick', 'emailListClick', 'feedbackFormClicks']);
+        const eventName = String(body.eventName || '');
+        if (directEvents.has(eventName)) ledger.recordEvent(active.sessionReference, eventName);
+        else if (conversionEvents.has(eventName)) {
+          ledger.recordEvent(active.sessionReference, eventName);
+          ledger.recordEvent(active.sessionReference, 'conversionClicks');
+        } else {
+          sendJson(res, 400, { error: 'Unknown usage event.' });
+          return;
+        }
+        sendJson(res, 200, { recorded: true });
+        return;
+      }
+
+      if (req.method === 'POST' && pathname === `${API_PREFIX}/feedback`) {
+        if (!authorized(req, settings)) {
+          sendJson(res, 401, { error: 'Access required.' });
+          return;
+        }
+        const body = await readJson(req, 16 * 1024);
+        const active = activeSessions.get(String(body.sessionId || ''));
+        if (!active) {
+          sendJson(res, 400, { error: 'Unknown sitting.' });
+          return;
+        }
+        currentSessionReference = active.sessionReference;
+        const ratings = Array.isArray(body.ratings) ? body.ratings.map(Number) : [];
+        if (ratings.length !== 5 || ratings.some((value) => !Number.isInteger(value) || value < 1 || value > 5)) {
+          sendJson(res, 400, { error: 'Five ratings from 1 to 5 are required.' });
+          return;
+        }
+        const comment = String(body.comment || '').trim().slice(0, 1000);
+        ledger.recordFeedback(active.sessionReference, ratings, Boolean(comment));
+        ledger.recordEvent(active.sessionReference, 'feedbackFormClicks');
+        if (comment) sharedStore.saveFeedbackComment(active.sessionReference, comment);
+        sendJson(res, 200, { recorded: true, sessionReference: active.sessionReference });
+        return;
+      }
+
+      if (req.method === 'POST' && pathname === `${API_PREFIX}/admin/insights`) {
+        if (!adminAuthorized(req, settings)) {
+          sendJson(res, 401, { error: 'That administrative code was not accepted.' });
+          return;
+        }
+        const sessions = ledger.sessions();
+        sendJson(res, 200, {
+          insights: aggregateInsights(sessions),
+          sessions,
+          processLabels: PROCESS_LABELS,
+          sharedSittings: sharedStore.listMetadata(),
+          weeklyReportHtml: buildWeeklyReport(sessions).html
+        });
+        return;
+      }
+
+      if (req.method === 'POST' && pathname === `${API_PREFIX}/admin/export.csv`) {
+        if (!adminAuthorized(req, settings)) {
+          sendJson(res, 401, { error: 'That administrative code was not accepted.' });
+          return;
+        }
+        sendText(res, 200, sessionsToCsv(ledger.sessions()), 'text/csv; charset=utf-8', {
+          'Content-Disposition': 'attachment; filename="mindbody-companion-structured-usage.csv"'
+        });
+        return;
+      }
+
+      if (req.method === 'POST' && pathname === `${API_PREFIX}/admin/shared-sitting`) {
+        if (!adminAuthorized(req, settings)) {
+          sendJson(res, 401, { error: 'That administrative code was not accepted.' });
+          return;
+        }
+        const body = await readJson(req, 8 * 1024);
+        if (body.deliberateReview !== true) {
+          sendJson(res, 400, { error: 'A deliberate research review action is required.' });
+          return;
+        }
+        const sitting = sharedStore.read(body.sessionReference);
+        if (!sitting) {
+          sendJson(res, 404, { error: 'That shared sitting was not found.' });
+          return;
+        }
+        sendJson(res, 200, { sitting });
+        return;
+      }
+
+      if (req.method === 'POST' && pathname === `${API_PREFIX}/admin/shared-sitting/delete`) {
+        if (!adminAuthorized(req, settings)) {
+          sendJson(res, 401, { error: 'That administrative code was not accepted.' });
+          return;
+        }
+        const body = await readJson(req, 8 * 1024);
+        sendJson(res, 200, { deleted: sharedStore.delete(body.sessionReference) });
+        return;
+      }
+
+      if (req.method === 'POST' && pathname === `${API_PREFIX}/admin/send-weekly-report`) {
+        if (!adminAuthorized(req, settings)) {
+          sendJson(res, 401, { error: 'That administrative code was not accepted.' });
+          return;
+        }
+        if (!weeklyReporter.configured()) {
+          sendJson(res, 503, { error: 'The weekly report has not been configured.' });
+          return;
+        }
+        const result = await weeklyReporter.sendIfDue(true);
+        sendJson(res, 200, result);
         return;
       }
 
@@ -352,17 +599,28 @@ function createApp(options = {}) {
     } catch (error) {
       if (error && error.name === 'AbortError') return;
       const status = error.statusCode || 500;
-      if (status >= 500) console.warn('Private written companion error:', error.code || error.name || 'Error');
-      if (!res.headersSent) sendJson(res, status, { error: status >= 500 ? 'The private written companion hit an error.' : error.message });
+      if (status >= 500 && currentSessionReference) {
+        ledger.recordEvent(currentSessionReference, 'serverErrors');
+        if (/no coaching response|returned no/i.test(error.message || '')) ledger.recordEvent(currentSessionReference, 'emptyResponses');
+      }
+      if (status >= 500) console.warn('Written companion error:', error.code || error.name || 'Error');
+      if (!res.headersSent) sendJson(res, status, { error: status >= 500 ? 'The written companion hit an error.' : error.message });
       else res.end();
     }
   });
+  if (weeklyReporter.configured()) {
+    const weeklyTimer = setInterval(() => weeklyReporter.sendIfDue(false).catch(() => {}), 60 * 60 * 1000);
+    weeklyTimer.unref();
+    setImmediate(() => weeklyReporter.sendIfDue(false).catch(() => {}));
+    app.once('close', () => clearInterval(weeklyTimer));
+  }
+  return app;
 }
 
 let defaultApp;
 
 function isCompanionPath(pathname) {
-  return pathname === PAGE_PATH || pathname.startsWith(`${STATIC_PREFIX}/`) || pathname.startsWith(`${API_PREFIX}/`);
+  return pathname === PAGE_PATH || pathname === ADMIN_PATH || pathname.startsWith(`${STATIC_PREFIX}/`) || pathname.startsWith(`${API_PREFIX}/`);
 }
 
 async function handleCompanionRoute(req, res) {
@@ -376,12 +634,14 @@ async function handleCompanionRoute(req, res) {
 if (require.main === module) {
   const settings = loadSettings();
   createApp({ settings }).listen(settings.port, '127.0.0.1', () => {
-    console.log(`Private written companion: http://127.0.0.1:${settings.port}${PAGE_PATH}`);
+    console.log(`Mind/Body Foundations Companion: http://127.0.0.1:${settings.port}${PAGE_PATH}`);
   });
 }
 
 module.exports = {
+  ADMIN_PATH,
   API_PREFIX,
+  NOTICE_VERSION,
   OPENING,
   PAGE_PATH,
   STATIC_PREFIX,

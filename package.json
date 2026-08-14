@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "check": "node --check server.js && node --check companion.js && node --check kids-on-the-bus/server.js && node --check kids-on-the-bus/lib/claude.js && node --check kids-on-the-bus/lib/latency.js && node --check kids-on-the-bus/lib/safety.js && node --check kids-on-the-bus/lib/usage.js && node --check kids-on-the-bus/public/written-app.js",
+    "check": "node --check server.js && node --check companion.js && node --check kids-on-the-bus/server.js && node --check kids-on-the-bus/lib/analytics.js && node --check kids-on-the-bus/lib/claude.js && node --check kids-on-the-bus/lib/latency.js && node --check kids-on-the-bus/lib/safety.js && node --check kids-on-the-bus/lib/shared-sittings.js && node --check kids-on-the-bus/lib/usage.js && node --check kids-on-the-bus/lib/weekly-report.js && node --check kids-on-the-bus/public/admin.js && node --check kids-on-the-bus/public/written-app.js",
     "test": "node --test kids-on-the-bus/test/*.test.js"
   },
   "engines": {

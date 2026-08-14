@@ -9,8 +9,10 @@ const { loadClaudeInstructions } = require('../server');
 
 const root = path.join(__dirname, '..');
 const app = fs.readFileSync(path.join(root, 'public', 'written-app.js'), 'utf8');
+const adminApp = fs.readFileSync(path.join(root, 'public', 'admin.js'), 'utf8');
 const preservedVoiceApp = fs.readFileSync(path.join(root, 'public', 'app.js'), 'utf8');
 const html = fs.readFileSync(path.join(root, 'public', 'index.html'), 'utf8');
+const adminHtml = fs.readFileSync(path.join(root, 'public', 'admin.html'), 'utf8');
 const prompt = loadClaudeInstructions();
 const serverSource = fs.readFileSync(path.join(root, 'server.js'), 'utf8');
 const mainServerSource = fs.readFileSync(path.join(root, '..', 'server.js'), 'utf8');
@@ -44,12 +46,29 @@ test('browser offers a written-only sitting while preserving the former voice im
   assert.doesNotMatch(html, /Begin voice session|Voice session|microphone|remoteAudio/);
   assert.match(html, /written-app\.js/);
   assert.match(html, /End and clear here/);
+  assert.match(html, /Copy sitting/);
+  assert.match(html, /Download sitting/);
   assert.match(app, /replaceChildren/);
   assert.match(app, /\/api\/kids-on-the-bus\/claude-response/);
   assert.match(app, /new AbortController/);
   assert.doesNotMatch(app, /getUserMedia|RTCPeerConnection|speechSynthesis|remoteAudio|realtime\/session/);
   assert.match(preservedVoiceApp, /getUserMedia/);
   assert.match(preservedVoiceApp, /RTCPeerConnection/);
+});
+
+test('the companion is framed as Mind Body Foundations with notice and optional sharing off by default', () => {
+  assert.match(html, /Mind\/Body Foundations Companion/);
+  assert.match(html, /How your information is used/i);
+  assert.match(html, /Your exact written conversation will not be saved/);
+  assert.match(html, /Back to Mind\/Body Foundations/);
+  assert.match(html, /I give Herst Wellness permission to save this written sitting/);
+  assert.doesNotMatch(html, /id="researchConsent"[^>]*checked/);
+  assert.doesNotMatch(`${html}\n${app}`, /completely private|private written|private test/i);
+});
+
+test('administrative secrets are not present in browser source', () => {
+  assert.match(adminHtml, /separate administrative code/i);
+  assert.doesNotMatch(`${adminHtml}\n${adminApp}`, /COMPANION_ADMIN_CODE|private-code|admin-secret|RESEND_API_KEY/);
 });
 
 test('the main API key is absent from every browser asset', () => {
@@ -68,5 +87,5 @@ test('coaching prompt starts with story, earns embodiment, welcomes memory, and 
 });
 
 test('user-facing written copy contains no em dash', () => {
-  assert.doesNotMatch(`${html}\n${app}\n${prompt}`, /—/);
+  assert.doesNotMatch(`${html}\n${app}\n${adminHtml}\n${adminApp}\n${prompt}`, /—/);
 });
