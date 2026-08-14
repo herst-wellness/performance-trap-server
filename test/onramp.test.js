@@ -1,9 +1,12 @@
-// The On-Ramp companion shares the Kids on the Bus deterministic safety
-// layer, so the identical 25-case product-safety suite must pass against
-// its own route, plus On-Ramp-specific checks: the route is entirely
-// disabled until its own access code is configured, its page carries the
-// On-Ramp copy, and the raised token ceilings and empty-response retry
-// (findings from the 28-case fidelity evaluation) are actually configured.
+// The four On-Ramp weekly companions share the Kids on the Bus
+// deterministic safety layer, so the identical 25-case product-safety
+// suite must pass against every weekly route. Plus On-Ramp specifics: all
+// routes disabled until ONRAMP_ACCESS_CODE is set (and never unlocked by
+// the Kids on the Bus code), each week's page carries its own copy and
+// talks to its OWN API path (a real bug in the first build: the page still
+// pointed at the Kids on the Bus API), week prompts are scoped to their
+// week's moves, and the raised ceilings + empty-response retry from the
+// 28-case evaluation are configured.
 const assert = require('node:assert/strict');
 const { spawn } = require('node:child_process');
 const fs = require('node:fs/promises');
@@ -13,6 +16,7 @@ const path = require('node:path');
 const test = require('node:test');
 
 const suitePath = path.join(__dirname, 'module-2-product-safety-evaluation-set.jsonl');
+const { WEEKS, INDEX_PATH } = require('../onramp.js');
 
 function getOpenPort() {
   return new Promise((resolve, reject) => {
@@ -72,107 +76,144 @@ function startServer(port, extraEnv) {
   });
 }
 
-test('the On-Ramp route stays fully disabled until its own access code is configured, and never falls back to the Kids on the Bus code', { timeout: 30000 }, async (t) => {
+test('every weekly route stays disabled until ONRAMP_ACCESS_CODE is set, and the Kids on the Bus code never unlocks it', { timeout: 30000 }, async (t) => {
   const port = await getOpenPort();
-  // Deliberately no ONRAMP_ACCESS_CODE here.
-  const child = await startServer(port, {});
+  const child = await startServer(port, {}); // no ONRAMP_ACCESS_CODE
   t.after(() => child.kill());
   const baseUrl = 'http://127.0.0.1:' + port;
 
-  // The Kids on the Bus code must not unlock the On-Ramp API.
-  const withKotbCode = await fetch(baseUrl + '/api/on-ramp', {
-    headers: { 'X-Companion-Access': 'test-access' },
-  });
-  assert.equal(withKotbCode.status, 503);
-  const body = await withKotbCode.json();
-  assert.match(body.error, /not enabled/i);
+  for (const week of Object.values(WEEKS)) {
+    const res = await fetch(baseUrl + week.apiPath, {
+      headers: { 'X-Companion-Access': 'test-access' },
+    });
+    assert.equal(res.status, 503, week.apiPath);
+    const body = await res.json();
+    assert.match(body.error, /not enabled/i);
+  }
 
-  // And the existing Kids on the Bus route keeps working exactly as before.
   const kotb = await fetch(baseUrl + '/api/kids-on-the-bus', {
     headers: { 'X-Companion-Access': 'test-access' },
   });
-  assert.equal(kotb.status, 200);
+  assert.equal(kotb.status, 200, 'the existing Kids on the Bus route must keep working');
 });
 
-test('serves the On-Ramp practice page and passes all 25 safety cases on its own route', { timeout: 60000 }, async (t) => {
+test('the index and all four weekly pages serve their own copy, and each page talks to its own API path', { timeout: 30000 }, async (t) => {
+  const port = await getOpenPort();
+  const child = await startServer(port, { ONRAMP_ACCESS_CODE: 'onramp-test-access' });
+  t.after(() => child.kill());
+  const baseUrl = 'http://127.0.0.1:' + port;
+
+  const index = await fetch(baseUrl + INDEX_PATH);
+  assert.equal(index.status, 200);
+  const indexHtml = await index.text();
+  for (const week of Object.values(WEEKS)) {
+    assert.match(indexHtml, new RegExp(week.pagePath.replace(/[/-]/g, '\\$&')));
+  }
+
+  for (const week of Object.values(WEEKS)) {
+    const page = await fetch(baseUrl + week.pagePath);
+    assert.equal(page.status, 200, week.pagePath);
+    assert.match(page.headers.get('cache-control') || '', /no-store/i);
+    const html = await page.text();
+    assert.ok(html.includes(week.title), week.pagePath + ' title');
+    assert.ok(html.includes(week.opening), week.pagePath + ' opening question');
+    assert.ok(html.includes(week.apiPath), week.pagePath + ' must call its own API');
+    assert.ok(!html.includes('/api/kids-on-the-bus'), week.pagePath + ' must not call the Kids on the Bus API');
+    assert.ok(!html.includes('/api/on-ramp\''), week.pagePath + ' must not call the retired single-app API');
+    assert.match(html, /Private prototype/);
+    assert.doesNotMatch(html, /googletagmanager|google-analytics/i);
+    assert.doesNotMatch(html, /—/);
+  }
+});
+
+test('all four weekly routes pass the full 25-case product-safety suite', { timeout: 120000 }, async (t) => {
   const suite = (await fs.readFile(suitePath, 'utf8'))
     .split('\n')
     .filter(Boolean)
     .map((line) => JSON.parse(line));
   assert.equal(suite.length, 25);
 
-  const requiredPatterns = require('./companion-safety-patterns.js').requiredPatterns;
-  const forbiddenPatterns = require('./companion-safety-patterns.js').forbiddenPatterns;
-  const globalForbidden = require('./companion-safety-patterns.js').globalForbidden;
+  const { requiredPatterns, forbiddenPatterns, globalForbidden } = require('./companion-safety-patterns.js');
 
   const port = await getOpenPort();
   const child = await startServer(port, { ONRAMP_ACCESS_CODE: 'onramp-test-access' });
   t.after(() => child.kill());
   const baseUrl = 'http://127.0.0.1:' + port;
 
-  const page = await fetch(baseUrl + '/practice/on-ramp');
-  assert.equal(page.status, 200);
-  assert.match(page.headers.get('cache-control') || '', /no-store/i);
-  const html = await page.text();
-  assert.match(html, /The Daily Rep/);
-  assert.match(html, /On-Ramp/);
-  assert.match(html, /Private prototype/);
-  assert.match(html, /closing session/);
-  assert.doesNotMatch(html, /Kids on the Bus/);
-  assert.doesNotMatch(html, /googletagmanager|google-analytics/i);
-  assert.doesNotMatch(html, /—/);
-
-  const denied = await fetch(baseUrl + '/api/on-ramp', {
-    headers: { 'X-Companion-Access': 'wrong-code' },
-  });
-  assert.equal(denied.status, 401);
-
-  for (const testCase of suite) {
-    const response = await fetch(baseUrl + '/api/on-ramp', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Companion-Access': 'onramp-test-access',
-      },
-      body: JSON.stringify({
-        message: testCase.user_message,
-        adultConfirmed: testCase.id !== 'PS-C08',
-        country: testCase.user_context && testCase.user_context.country,
-        history: [],
-      }),
+  for (const week of Object.values(WEEKS)) {
+    const denied = await fetch(baseUrl + week.apiPath, {
+      headers: { 'X-Companion-Access': 'wrong-code' },
     });
+    assert.equal(denied.status, 401, week.apiPath + ' wrong code');
 
-    assert.equal(response.status, 200, testCase.id + ' status');
-    const body = await response.json();
-    assert.equal(body.route, testCase.expected_route, testCase.id + ' route');
-    assert.equal(body.handledBy, 'deterministic-control', testCase.id + ' control');
-    assert.equal(typeof body.response, 'string');
-    assert.ok(body.response.length > 20, testCase.id + ' response length');
+    for (const testCase of suite) {
+      const response = await fetch(baseUrl + week.apiPath, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Companion-Access': 'onramp-test-access',
+        },
+        body: JSON.stringify({
+          message: testCase.user_message,
+          adultConfirmed: testCase.id !== 'PS-C08',
+          country: testCase.user_context && testCase.user_context.country,
+          history: [],
+        }),
+      });
 
-    for (const pattern of requiredPatterns[testCase.id] || []) {
-      assert.match(body.response, pattern, testCase.id + ' missing ' + pattern);
-    }
-    for (const pattern of forbiddenPatterns[testCase.id] || []) {
-      assert.doesNotMatch(body.response, pattern, testCase.id + ' included ' + pattern);
-    }
-    for (const pattern of globalForbidden) {
-      assert.doesNotMatch(body.response, pattern, testCase.id + ' included ' + pattern);
+      const label = week.apiPath + ' ' + testCase.id;
+      assert.equal(response.status, 200, label + ' status');
+      const body = await response.json();
+      assert.equal(body.route, testCase.expected_route, label + ' route');
+      assert.equal(body.handledBy, 'deterministic-control', label + ' control');
+      assert.ok(body.response.length > 20, label + ' response length');
+
+      for (const pattern of requiredPatterns[testCase.id] || []) {
+        assert.match(body.response, pattern, label + ' missing ' + pattern);
+      }
+      for (const pattern of forbiddenPatterns[testCase.id] || []) {
+        assert.doesNotMatch(body.response, pattern, label + ' included ' + pattern);
+      }
+      for (const pattern of globalForbidden) {
+        assert.doesNotMatch(body.response, pattern, label + ' included ' + pattern);
+      }
     }
   }
 });
 
-test('On-Ramp config carries the evaluation findings: raised ceilings, empty-response retry, its own prompt', () => {
+test('week prompts are scoped to their week and share the core, safety overlay, and evaluation-driven config', () => {
+  const w = (n) => WEEKS[n].instructions;
+
+  // Shared spine in all four
+  for (const n of [1, 2, 3, 4]) {
+    assert.match(w(n), /On-Ramp Daily Practice Companion/, 'week ' + n + ' identity');
+    assert.match(w(n), /PRODUCT-SAFETY OVERLAY/, 'week ' + n + ' overlay');
+    assert.match(w(n), /straightaways/, 'week ' + n + ' straightaways rule');
+    assert.doesNotMatch(w(n), /—/, 'week ' + n + ' no em dashes');
+  }
+
+  // Week 1: first half of SENSE only, no titration mechanics, no STEP method
+  assert.match(w(1), /first half of SENSE/);
+  assert.doesNotMatch(w(1), /## The method: STEP/);
+  assert.doesNotMatch(w(1), /Dosing down/);
+
+  // Week 2: full SENSE, still no STEP method section
+  assert.match(w(2), /Dosing down/);
+  assert.doesNotMatch(w(2), /## The method: STEP/);
+
+  // Weeks 3 and 4: full toolkit
+  assert.match(w(3), /## The method: STEP/);
+  assert.match(w(4), /## The method: STEP/);
+  assert.match(w(4), /Gathering for the closing session/);
+
+  // Gating language: meet later-week material, never refuse it
+  assert.match(w(1), /never refuse or defer/i);
+  assert.match(w(2), /never imply the material was wrong to bring/);
+
+  // Evaluation-driven config
   const source = fsSync.readFileSync(path.join(__dirname, '..', 'onramp.js'), 'utf8');
   assert.match(source, /const NORMAL_OUTPUT_TOKENS = 4096;/);
   assert.match(source, /const RETRY_OUTPUT_TOKENS = 12288;/);
   assert.match(source, /empty_text/, 'the empty-response retry must be present');
-  assert.match(source, /onramp-prompt\.txt/);
   assert.match(source, /ONRAMP_ACCESS_CODE/);
-
-  const prompt = fsSync.readFileSync(path.join(__dirname, '..', 'onramp-prompt.txt'), 'utf8');
-  assert.match(prompt, /On-Ramp Daily Practice Companion/);
-  assert.match(prompt, /SENSE/);
-  assert.match(prompt, /STEP/);
-  assert.doesNotMatch(prompt, /—/, 'no em dashes in the prompt');
-  assert.doesNotMatch(prompt, /^# On-Ramp Daily Practice Companion - prototype system prompt/m, 'the version-history header must be stripped from the deployed prompt');
 });
