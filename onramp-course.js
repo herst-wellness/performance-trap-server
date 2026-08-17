@@ -515,6 +515,9 @@ function overviewPage() {
 <p><strong>In four weeks, learn to catch the performance reflex in your body before it drives the next text, agreement, withdrawal, or overreaction, and practice one response that keeps you connected without abandoning yourself.</strong></p>
 <p>You read the book, so you have the maps: SENSE for coming back to yourself when the pressure hits, STEP for bringing that back into the room with other people. This is where the maps become practice: about ten minutes a day, one real moment a day, four weeks, and a private Integration and Next-Step Session with Chad at the end. You leave that session holding four things, whether or not you ever work with him further: your primary performance loop, the first body signal that announces it, the trade you habitually make, and one next experiment.</p>
 ${selfServeEnabled() ? enrollSection() : '<p>Enrollment is personal: Chad sets you up directly and sends your access code. If you don\'t have one yet, reach out through <a href="https://herstwellness.com">herstwellness.com</a>.</p>'}
+<h2 style="font-size:19px;margin-top:26px">If it turns out not to be for you</h2>
+<p>Within the first 14 days, <a href="https://herstwellness.com/contact">write to me</a>, and I'll refund the whole thing. You don't need a reason, and there's no form to fill out. All I ask is that you stop using the course and the companion once the refund goes through.</p>
+<p>After two weeks, I cannot provide a refund.</p>
 </div>
 <h2 style="font-size:20px">The four weeks</h2>
 <ul>
