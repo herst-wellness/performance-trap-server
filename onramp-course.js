@@ -32,6 +32,18 @@ function selfServeEnabled() {
   return Boolean(p.clientId && p.clientSecret && p.priceUsd && process.env.ONRAMP_CODE_SECRET);
 }
 
+// Summarizes a PayPal error response as name/issue/debug_id only; never
+// any buyer information.
+async function paypalErrorSummary(res) {
+  try {
+    const body = await res.json();
+    const issue = body.details && body.details[0] && body.details[0].issue;
+    return 'HTTP ' + res.status + ' ' + (body.name || '') + (issue ? ' ' + issue : '') + (body.debug_id ? ' debug_id=' + body.debug_id : '');
+  } catch {
+    return 'HTTP ' + res.status;
+  }
+}
+
 async function paypalToken() {
   const p = paypalConfig();
   const res = await fetch(p.baseUrl + '/v1/oauth2/token', {
@@ -42,7 +54,7 @@ async function paypalToken() {
     },
     body: 'grant_type=client_credentials',
   });
-  if (!res.ok) throw new Error('PayPal auth failed');
+  if (!res.ok) throw new Error('PayPal auth failed: HTTP ' + res.status);
   return (await res.json()).access_token;
 }
 
@@ -62,7 +74,7 @@ async function paypalCreateOrder() {
       ],
     }),
   });
-  if (!res.ok) throw new Error('PayPal order creation failed');
+  if (!res.ok) throw new Error('PayPal order creation failed: ' + (await paypalErrorSummary(res)));
   return (await res.json()).id;
 }
 
@@ -73,7 +85,7 @@ async function paypalCaptureOrder(orderId) {
     method: 'POST',
     headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
   });
-  if (!res.ok) throw new Error('PayPal capture failed');
+  if (!res.ok) throw new Error('PayPal capture failed: ' + (await paypalErrorSummary(res)));
   const payload = await res.json();
   const unit = payload.purchase_units && payload.purchase_units[0];
   const capture = unit && unit.payments && unit.payments.captures && unit.payments.captures[0];
@@ -511,7 +523,8 @@ async function handleCourseRoute(req, res) {
     if (!selfServeEnabled()) { sendJson(res, 503, { error: 'Self-serve enrollment is not enabled.' }); return true; }
     try {
       sendJson(res, 200, { orderId: await paypalCreateOrder() });
-    } catch {
+    } catch (error) {
+      console.error('On-Ramp checkout create-order:', error.message);
       sendJson(res, 502, { error: 'Could not start checkout.' });
     }
     return true;
@@ -522,9 +535,14 @@ async function handleCourseRoute(req, res) {
       const body = await readJsonBody(req);
       if (!body.orderId || typeof body.orderId !== 'string') { sendJson(res, 400, { error: 'Missing order.' }); return true; }
       const result = await paypalCaptureOrder(body.orderId);
-      if (!result.completed) { sendJson(res, 402, { error: 'Payment was not completed.' }); return true; }
+      if (!result.completed) {
+        console.error('On-Ramp checkout capture: order not completed (status/amount mismatch)');
+        sendJson(res, 402, { error: 'Payment was not completed.' });
+        return true;
+      }
       sendJson(res, 200, { accessCode: issueSignedCode() });
-    } catch {
+    } catch (error) {
+      console.error('On-Ramp checkout capture:', error.message);
       sendJson(res, 502, { error: 'Payment could not be confirmed.' });
     }
     return true;
