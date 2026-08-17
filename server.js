@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { handleCompanionRoute } = require('./companion');
 const { handleOnrampRoute } = require('./onramp');
+const { handleCourseRoute } = require('./onramp-course');
 
 const PORT = process.env.PORT || 3000;
 const MAILCHIMP_KEY = process.env.MAILCHIMP_API_KEY;
@@ -1210,6 +1211,7 @@ const server = http.createServer(async (req, res) => {
   req.url = req.url.split('?')[0];
   if (await handleCompanionRoute(req, res)) { return; }
   if (await handleOnrampRoute(req, res)) { return; }
+  if (await handleCourseRoute(req, res)) { return; }
   // ── STATIC FILES (logo, etc.) ────────────────────────────────
   if (req.method === 'GET' && serveStatic(req, res)) { return; }
 

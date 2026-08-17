@@ -227,3 +227,54 @@ test('week prompts are scoped to their week and share the core, safety overlay, 
   assert.match(source, /empty_text/, 'the empty-response retry must be present');
   assert.match(source, /ONRAMP_ACCESS_CODE/);
 });
+
+test('course pages: public overview, gated lesson content, companion links, and the multi-code enrollment list', { timeout: 30000 }, async (t) => {
+  const port = await getOpenPort();
+  // Two personal codes via the list, none via the singular variable.
+  const child = await startServer(port, { ONRAMP_ACCESS_CODES: 'amber-fox-12, quiet-river-8' });
+  t.after(() => child.kill());
+  const baseUrl = 'http://127.0.0.1:' + port;
+
+  const overview = await fetch(baseUrl + '/course/on-ramp');
+  assert.equal(overview.status, 200);
+  const overviewHtml = await overview.text();
+  assert.match(overviewHtml, /On-Ramp/);
+  assert.match(overviewHtml, /week-1/);
+  assert.doesNotMatch(overviewHtml, /straw breath/i, 'lesson content must not leak into the public overview');
+
+  for (const n of [1, 2, 3, 4]) {
+    const page = await fetch(baseUrl + '/course/on-ramp/week-' + n);
+    assert.equal(page.status, 200, 'week ' + n + ' page');
+    const html = await page.text();
+    assert.match(html, /Enrolled\?/, 'week ' + n + ' page must show the unlock card');
+    assert.doesNotMatch(html, /keep the signal silent|straw breath/i, 'lesson content must not be embedded in the page source');
+    assert.doesNotMatch(html, /—/);
+
+    const denied = await fetch(baseUrl + '/course/on-ramp/api/week-' + n, {
+      headers: { 'X-Companion-Access': 'wrong-code' },
+    });
+    assert.equal(denied.status, 401, 'week ' + n + ' content denied without a valid code');
+
+    for (const code of ['amber-fox-12', 'quiet-river-8']) {
+      const content = await fetch(baseUrl + '/course/on-ramp/api/week-' + n, {
+        headers: { 'X-Companion-Access': code },
+      });
+      assert.equal(content.status, 200, 'week ' + n + ' content with code ' + code);
+      const payload = await content.json();
+      assert.ok(payload.contentHtml.includes('/practice/on-ramp/week-' + n), 'week ' + n + ' must link its companion');
+      assert.ok(!payload.contentHtml.includes('—'), 'week ' + n + ' content must not contain an em dash');
+    }
+
+    // The same personal code must unlock the companion too.
+    const companion = await fetch(baseUrl + '/api/on-ramp/week-' + n, {
+      headers: { 'X-Companion-Access': 'amber-fox-12' },
+    });
+    assert.equal(companion.status, 200, 'week ' + n + ' companion with a list code');
+  }
+
+  // Week 1 content carries the recorded sit; week 4 carries the closing section.
+  const w1 = await (await fetch(baseUrl + '/course/on-ramp/api/week-1', { headers: { 'X-Companion-Access': 'amber-fox-12' } })).json();
+  assert.ok(w1.contentHtml.includes('/audio/onramp-breath-12min.mp3'));
+  const w4 = await (await fetch(baseUrl + '/course/on-ramp/api/week-4', { headers: { 'X-Companion-Access': 'amber-fox-12' } })).json();
+  assert.match(w4.contentHtml, /closing session|Let's Talk/);
+});

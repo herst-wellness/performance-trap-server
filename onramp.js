@@ -595,19 +595,31 @@ async function generateReflection(instructions, message, history, provider) {
   }
 }
 
-function hasAccess(req) {
-  const expected = String(process.env.ONRAMP_ACCESS_CODE || '');
-  const supplied = String(req.headers['x-companion-access'] || '');
-  if (!expected) return { ok: false, status: 503 };
+// Enrollment is manual: Chad gives each person one code. Valid codes live
+// in ONRAMP_ACCESS_CODES (comma-separated, editable in Render without any
+// code change); the older singular ONRAMP_ACCESS_CODE also still counts.
+function validAccessCodes() {
+  const list = String(process.env.ONRAMP_ACCESS_CODES || '')
+    .split(',')
+    .map((c) => c.trim())
+    .filter(Boolean);
+  const single = String(process.env.ONRAMP_ACCESS_CODE || '').trim();
+  if (single) list.push(single);
+  return list;
+}
+
+function codeMatches(expected, supplied) {
   const expectedBytes = Buffer.from(expected);
   const suppliedBytes = Buffer.from(supplied);
-  if (expectedBytes.length !== suppliedBytes.length) {
-    return { ok: false, status: 401 };
-  }
-  return {
-    ok: crypto.timingSafeEqual(expectedBytes, suppliedBytes),
-    status: 401,
-  };
+  if (expectedBytes.length !== suppliedBytes.length) return false;
+  return crypto.timingSafeEqual(expectedBytes, suppliedBytes);
+}
+
+function hasAccess(req) {
+  const codes = validAccessCodes();
+  const supplied = String(req.headers['x-companion-access'] || '');
+  if (codes.length === 0) return { ok: false, status: 503 };
+  return { ok: codes.some((c) => codeMatches(c, supplied)), status: 401 };
 }
 
 function readJsonBody(req) {
@@ -727,6 +739,7 @@ function companionPage(week) {
 <script>
 (function(){
   var accessCode = '';
+  try { accessCode = window.sessionStorage.getItem('onrampCode') || ''; } catch (e) {}
   var provider = 'offline';
   var country = 'US';
   var messages = [];
@@ -807,13 +820,22 @@ function companionPage(week) {
       el('modeLabel').textContent = providerLabel(provider);
       el('accessCard').classList.add('hidden');
       el('consentCard').classList.remove('hidden');
+      try { window.sessionStorage.setItem('onrampCode', accessCode); } catch (e) {}
     } catch (error) {
       accessCode = '';
+      try { window.sessionStorage.removeItem('onrampCode'); } catch (e) {}
       showError(el('accessError'), error.message || 'Access denied');
     } finally {
       el('unlockButton').disabled = false;
     }
   });
+
+  // Arriving from a lesson page that already unlocked this browser session:
+  // try the stored code silently, so the person is not asked twice.
+  if (accessCode) {
+    el('accessCode').value = accessCode;
+    el('unlockButton').click();
+  }
 
   el('beginButton').addEventListener('click', function(){
     el('consentCard').classList.add('hidden');
@@ -1030,6 +1052,7 @@ async function handleOnrampRoute(req, res) {
 
 module.exports = {
   INDEX_PATH,
+  hasAccess,
   WEEKS,
   evaluateDeterministicControls,
   getActiveProvider,
