@@ -123,7 +123,7 @@ test('the index and all four weekly pages serve their own copy, and each page ta
     assert.ok(html.includes(week.apiPath), week.pagePath + ' must call its own API');
     assert.ok(!html.includes('/api/kids-on-the-bus'), week.pagePath + ' must not call the Kids on the Bus API');
     assert.ok(!html.includes('/api/on-ramp\''), week.pagePath + ' must not call the retired single-app API');
-    assert.match(html, /Private prototype/);
+    assert.match(html, /Your access code/);
     assert.doesNotMatch(html, /googletagmanager|google-analytics/i);
     assert.doesNotMatch(html, /—/);
     // Chad removed the consent checkboxes and country selector on 8/16;

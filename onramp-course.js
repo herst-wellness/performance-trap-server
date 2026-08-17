@@ -68,7 +68,7 @@ async function paypalCreateOrder() {
       intent: 'CAPTURE',
       purchase_units: [
         {
-          description: 'Mind/Body Foundations On-Ramp (four-week course)',
+          description: 'The Performance Trap Practice (four-week course)',
           amount: { currency_code: 'USD', value: p.priceUsd },
         },
       ],
@@ -154,13 +154,13 @@ const COURSE_WEEKS = {
 <p>You can't do any of this work from inside fight-or-flight. The mind that's braced for the next thing can't also feel what's here. So we start where the body actually gives you a lever: the breath.</p>
 <h4>S. Slow the Breath</h4>
 <p>The practice is called the straw breath. Inhale slowly through the nose for a count of five. Then purse your lips, as if you were breathing out through a straw, and exhale slowly for a count of seven. The longer exhale is the whole point. It isn't about big, deep breaths. It's about a slow, smooth, continuous flow, no strain, no holding.</p>
-<p>You aren't trying to relax. You're sending a physiological signal that it's safe to slow down. The long exhale moves the diaphragm in a steady rhythm, which tells the brainstem, through the vagus nerve, that you aren't under attack. Over five to ten minutes, the biology actually shifts. Heart rate eases. The system downshifts. And the parts of you that only come online in a settled state, the curiosity, the ability to feel, come back within reach.</p>
+<p>You aren't trying to relax. You're sending the body a signal that it's safe to slow down. The long exhale helps activate the vagus nerve, which signals the system to downshift. Heart rate eases. And the parts of you that only come online in a settled state, the curiosity, the ability to feel, come back within reach.</p>
 <p>That's why this is first. Not because calm is the goal, but because contact isn't possible without it.</p>
 <h4>E. Enter the Body</h4>
 <p>Once you've settled, the second move is a U-turn. When you're caught in a story about a feeling, the mind wants to keep talking about it. Entering the body is turning around and going to where the feeling actually lives. Not analyzing why it's there. Just locating it. Throat, chest, belly. Then noticing its quality: tight, hot, heavy, hollow, buzzing, dull.</p>
 <p>The story is your mind's interpretation. The body is what's actually happening. Going to the body is how you get underneath the commentary to the thing itself.</p>
 <h4>The small rephrase</h4>
-<p>There's a linguistic version of the same move, and it's the one to carry into your day. Take the sentence <em>I am anxious</em> and turn it into <em>there's anxiety here</em>. <em>I'm a failure</em> becomes <em>there's self-doubt here</em>. Say both out loud and notice what changes in your body. The first is a verdict. The second is an observation. One says the feeling is you. The other says the feeling is something you're noticing. That small gap, between being the feeling and noticing the feeling, is the whole foundation. Everything we build sits on it.</p>
+<p>There's a linguistic version of the same move, and it's the one to carry into your day. Take the sentence <em>I am anxious</em> and turn it into <em>there's anxiety here</em>. <em>I'm a failure</em> becomes <em>there's a part here that says I'm failing</em>. Say both out loud and notice what changes in your body. The first is a verdict. The second is an observation. One says the feeling is you. The other says the feeling is something you're noticing. That small gap, between being the feeling and noticing the feeling, is the whole foundation. Everything we build sits on it.</p>
 <p class="note">This week you're practicing three letters of SENSE already: S, E, and the start of N. That's plenty. Stay with it.</p>`,
     meditation: meditationPlayer('/audio/onramp-breath-12min.mp3', 'The breathing practice, recorded by Chad. About twelve minutes. Sit with it most days this week.'),
     practiceCard: `
@@ -237,12 +237,12 @@ const COURSE_WEEKS = {
 <li>What happened as you stayed? Did it shift, soften, get louder, stay the same? All of those are fine answers.</li>
 <li>What was harder, the staying, or the letting go and coming back? What did you notice about the return?</li>
 </ol>
-<p class="note">A few paragraphs is plenty. This is practice, not excavation. If something deeper opens and wants more room than a straightaway can hold, that's exactly what your Integration and Next-Step Session is for.</p>`,
+<p class="note">A few paragraphs is plenty. This is practice, not excavation. If something deeper opens and wants more room than this practice can hold, that's exactly what your Integration and Next-Step Session is for.</p>`,
   },
   3: {
     title: 'Week 3: Turning Contact Into Choice',
     sub: 'Still, Tune in to the Trade, Expand Options, Practice. This is STEP.',
-    intro: `The first two weeks were inner work: coming back to the body and staying there. This week it goes outward, into your actual conversations. This is the week you feel it change something in real life.`,
+    intro: `The first two weeks were inner work: coming back to the body and staying there. This week it goes outward, into your actual conversations. This is the week you take it into real life.`,
     video: videoPlaceholder('The third option'),
     teaching: `
 <h3>Still, Tune in to the Trade, Expand Options, Practice</h3>
@@ -250,11 +250,11 @@ const COURSE_WEEKS = {
 <h4>S. Still</h4>
 <p>Under pressure you either push harder or abandon yourself. Still is the pause before either one. It's a short version of everything from the first two weeks: a few breaths, a quick check of what's happening in your body, enough to stop the reflex from driving. You're not stepping away from the person in front of you. You're stepping out of the reflex. A quiet sentence that helps: <em>I don't have to decide this right now.</em></p>
 <h4>T. Tune in to the Trade</h4>
-<p>This is where the old bind shows up. Part of you wants to stay connected. Another part knows you're about to lose yourself to do it. Name the trade. Ask: <em>what am I about to give up to stay safe or approved of right now? My honesty? My need? My time? My self-respect?</em> Just naming it takes it out of the automatic.</p>
+<p>This is where the old bind shows up. Part of you wants to stay connected. Another part knows you're about to lose yourself to do it. Name the trade. Ask: <em>what am I about to give up to stay safe or approved of right now? My honesty? My time? My need? My dignity? My rest?</em> Just naming it takes it out of the automatic.</p>
 <h4>E. Expand Options</h4>
-<p>Stress tells you it's fight or fold. When you've made contact, the view widens and you find it was never only those two. Look for the move that doesn't attack and doesn't abandon you. You can pause. You can ask a question. You can name what's true without escalating. That's the third option: staying connected without selling yourself out.</p>
+<p>Stress tells you it's attack or cave. When you've made contact, the view widens and you find it was never only those two. Look for the move that doesn't attack and doesn't abandon you. You can pause. You can ask a question. You can name what's true without escalating. That's the third option: staying connected without selling yourself out.</p>
 <h4>P. Practice</h4>
-<p>The old contract taught you to keep the signal silent to keep the bond. Practice reverses it. You put into words what your body has been telling you all along. One honest sentence. One boundary. One request. "I'm not ready to agree yet, I need a minute." "I'd rather name this than dance around it." Small and true beats big and strategic.</p>
+<p>The old contract taught you to keep the signal silent to keep the bond. Practice reverses it. You put into words what your body has been telling you all along. One honest sentence. One boundary. One request. "I'm not ready to agree yet, I need a minute." "I'd rather name this than dance around it." One action that is true rather than strategic.</p>
 <p>And you will miss it. Often you'll notice only after you've already reacted. That still counts. These aren't rules to get right. They're a rough map you get better at reading with reps.</p>
 <p class="note">You now have both halves: SENSE to come home to yourself, STEP to bring that home into the room. Practiced on ordinary moments. That's the whole toolkit.</p>`,
     meditation: meditationPlaceholder('Rehearsing the Third Option', 11),
@@ -281,7 +281,7 @@ const COURSE_WEEKS = {
 <p>Pick one real interaction from this week, one where the old pull was there. Walk it through:</p>
 <ol>
 <li>The moment, in a few plain sentences. Who, and what got triggered.</li>
-<li>The two options the trap offered you. Fight or fold, in your own words.</li>
+<li>The two options the trap offered you. Attack or cave, in your own words.</li>
 <li>The trade. What would the easy door have cost you?</li>
 <li>The third option, even if you only see it now, in hindsight. What could staying-with-yourself-and-them have looked like?</li>
 <li>The one small honest thing you did, or could still do. Write the actual sentence.</li>
@@ -300,7 +300,7 @@ const COURSE_WEEKS = {
 <p>STEP is the outer half. Still, so the reflex doesn't drive. Tune in to the trade, so you see what you were about to give away. Expand the options, so it's not just fight or fold. Practice, one honest step. That's how you bring the home you found into your relationships.</p>
 <h4>What you've been brushing against</h4>
 <p>When you stay with a sensation and it softens into something more tender, you're meeting the edge of what the book calls the sacred wound. It's the imprint of all the times you contorted yourself to belong. The reflex to perform, the tightness, the inner critic, those are protectors. They formed around that tender place to keep it safe. They are not your defects. They were your survival, and often they became your gifts.</p>
-<p>The deeper work is turning toward that wound with the kindness it never got, so the protectors don't have to work so hard. That's not a straightaway. It's not something to do alone at your kitchen table, and this course didn't ask you to. But it's the real doorway, and you've been standing near it all month. As the book puts it: the ache you've been running from isn't the problem. It's the signal, and it's the way back.</p>
+<p>The deeper work is turning toward that wound with the kindness it never got, so the protectors don't have to work so hard. That's not a straightaway. It goes better with company, and this course didn't ask you to do it alone. But it's the real doorway, and you've been standing near it all month. As the book puts it: the ache you've been running from isn't the problem. It's the signal, and it's the way back.</p>
 <p class="note">This week, just live the arc. Notice the protectors with a little more kindness. That's the whole assignment.</p>`,
     meditation: meditationPlaceholder('A Kindness Toward the One Who Carried It', 12),
     practiceCard: `
@@ -312,7 +312,7 @@ const COURSE_WEEKS = {
 <h4>After the four weeks</h4>
 <p>You don't need an app or a course to keep this. Three straw breaths and one honest sentence is the whole practice, portable, any time. Come back to the audios whenever you want. They're yours.</p>
 <h4>How you'll know it's time for the deeper work</h4>
-<p>When the same tender thing keeps showing up under the protector and staying with it alone starts to feel like more than a straightaway. When you want company for it. That's not a setback. That's the doorway, and it's what your Integration and Next-Step Session is for.</p>
+<p>When the same tender thing keeps showing up under the protector and staying with it alone starts to feel like more than the daily rep can hold. When you want company for it. That's not a setback. That's the doorway, and it's what your Integration and Next-Step Session is for.</p>
 <h4>Your daily log</h4>
 <p>One line a day: <em>where did I meet a protector today, and could I be a little kinder to it?</em> No streak, no shame.</p>`,
     journal: `
@@ -330,8 +330,8 @@ const COURSE_WEEKS = {
     closing: `
 <h3>Your Integration and Next-Step Session</h3>
 <p>You made it through. However much of it you did, whatever stuck and whatever didn't, you spent four weeks turning toward yourself instead of away.</p>
-<p>The course ends with one private conversation with Chad. You leave it holding four things: your primary performance loop, the first body signal that announces it, the trade you habitually make, and one next experiment to run. That's yours to keep either way.</p>
-<p>Chad will also tell you honestly whether deeper one-on-one work fits where you are, and what it looks like if it does. If it's not the right time, he'll say that too. And if you do continue within 30 days, what you paid for this course is credited toward the coaching.</p>
+<p>The course ends with one private conversation with me. That session is where the month gets named: the pattern you keep running, where it shows up in your body first, the trade you keep making, and one small next step. It's yours whether or not we ever work together again.</p>
+<p>I'll also tell you whether deeper one-on-one work fits where you are, and what it looks like if it does. If it's not the right time, I'll say that too. And if you do continue within 30 days, what you paid for this course is credited toward the coaching.</p>
 <div class="placeholder">Booking link for the Integration and Next-Step Session goes here (Chad's scheduling page). Bring your notes from the reflection above.</div>`,
   },
 };
@@ -455,7 +455,7 @@ function enrollSection() {
     : '$' + p.priceUsd;
   return `<div id="enroll">
 <p><strong>Enroll yourself:</strong> ${priceLine}, once, via PayPal or card. Your personal access code appears the moment payment completes. Save it somewhere safe; it is your key to all four weeks and the practice companion.</p>
-<p class="small">And if you go on to coaching with Chad within 30 days of your Integration and Next-Step Session, the full amount you paid here is credited toward it.</p>
+<p class="small">And if you go on to coaching with me within 30 days of your Integration and Next-Step Session, the full amount you paid here is credited toward it.</p>
 <div id="paypalButtons"></div>
 <div id="enrollDone" style="display:none;background:#EFE6D8;border-left:3px solid #8B6B1E;padding:16px 18px;margin-top:14px">
 <p style="margin:0 0 8px"><strong>You're in.</strong> Your access code:</p>
@@ -510,10 +510,10 @@ function overviewPage() {
 </head>
 <body>
 <h1>The Performance Trap Practice</h1>
-<p class="sub">From insight to choice, in four weeks.</p>
+<p class="sub">The four-week practice that goes with the book.</p>
 <div class="card">
-<p><strong>In four weeks, learn to catch the performance reflex in your body before it drives the next text, agreement, withdrawal, or overreaction, and practice one response that keeps you connected without abandoning yourself.</strong></p>
-<p>You read the book, so you have the maps: SENSE for coming back to yourself when the pressure hits, STEP for bringing that back into the room with other people. This is where the maps become practice: about ten minutes a day, one real moment a day, four weeks, and a private Integration and Next-Step Session with Chad at the end. You leave that session holding four things, whether or not you ever work with him further: your primary performance loop, the first body signal that announces it, the trade you habitually make, and one next experiment.</p>
+<p><strong>You already know the pattern. The text you fired back, the yes you didn't mean, the meeting where you went quiet. This is four weeks of practice, about ten minutes a day, so you can catch it in your body a little earlier each time and have a different response available when the pressure is real.</strong></p>
+<p>You read the book, so you have the maps: SENSE for coming back to yourself when the pressure hits, STEP for bringing that back into the room with other people. This is where the maps become practice: about ten minutes a day, one real moment a day, four weeks, and a private Integration and Next-Step Session with me at the end. That session is where the month gets named: the pattern you keep running, where it shows up in your body first, the trade you keep making, and what you might try next. It's yours whether or not we ever work together again.</p>
 ${selfServeEnabled() ? enrollSection() : '<p>Enrollment is personal: Chad sets you up directly and sends your access code. If you don\'t have one yet, reach out through <a href="https://herstwellness.com">herstwellness.com</a>.</p>'}
 <h2 style="font-size:19px;margin-top:26px">If it turns out not to be for you</h2>
 <p>Within the first 14 days, <a href="https://herstwellness.com/contact">write to me</a>, and I'll refund the whole thing. You don't need a reason, and there's no form to fill out. All I ask is that you stop using the course and the companion once the refund goes through.</p>

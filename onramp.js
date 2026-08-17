@@ -695,8 +695,8 @@ function companionPage(week) {
   </header>
 
   <section id="accessCard" class="card">
-    <h2>Private prototype</h2>
-    <p>This On-Ramp practice companion is for Chad and invited private testers. Enter the access code to continue.</p>
+    <h2>Your access code</h2>
+    <p>Enter the access code from your enrollment. The same code opens the weekly lessons and this companion.</p>
     <div class="field">
       <label for="accessCode">Access code</label>
       <input id="accessCode" type="password" autocomplete="off" spellcheck="false">
@@ -708,9 +708,9 @@ function companionPage(week) {
   <section id="consentCard" class="card hidden">
     <h2>Welcome to the daily rep</h2>
     <p>If you are here, you have the maps: SENSE for coming back to yourself when the pressure hits, STEP for bringing that back into the room with other people. This is where you get the reps. You bring one real moment from your day, and we run the practice on it together.</p>
-    <p>The moment does not have to be big. The email that tightened your chest. The meeting where you shrank. The text you almost fired back. Small is what you can actually keep, and small is the point.</p>
-    <p>You will write, and the companion will write back. It tracks what you say and helps you make the next move: back into the body, staying with what you find, noticing the trade you were about to make, shaping the one honest sentence. It is not me, and it is not therapy. It is practice, on the straightaways.</p>
-    <p>The deeper material, the old wound underneath the protectors, is real work, and it is done with another person. That is what your Integration and Next-Step Session with me is for. When something big stirs here, the companion will help you note it for that conversation rather than digging into it alone.</p>
+    <p>The moment does not have to be big: the email that tightened your chest, the meeting where you shrank, the text you almost fired back. Small is the point.</p>
+    <p>You will write, and the companion will write back, responding to what you write and helping you make the next move: back into the body, staying with what you find, noticing the trade you were about to make, shaping the one honest sentence. It keeps nothing after you end. It is not me, and it is not therapy. It is practice, on the straightaways.</p>
+    <p>The deeper material, the old wound underneath the protectors, is real work, and it goes better with company. That is what your Integration and Next-Step Session with me is for. When something big stirs here, the companion will help you note it for that conversation rather than digging into it alone.</p>
     <p>Missing a day is not failure. There is no streak to protect here. If a day got away from you, you just begin again the next one.</p>
     <div class="rule" style="margin:26px 0"></div>
     <h2 style="font-size:20px">Before you begin</h2>
@@ -942,7 +942,7 @@ function companionPage(week) {
     var blob = new Blob([transcriptText()], {type:'text/plain;charset=utf-8'});
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
-    a.href = url; a.download = 'kids-on-the-bus-reflection.txt'; a.click();
+    a.href = url; a.download = 'performance-trap-practice-notes.txt'; a.click();
     URL.revokeObjectURL(url);
   });
   el('endButton').addEventListener('click', clearSession);
@@ -971,7 +971,7 @@ function indexPage() {
 <ul>
       ${links}
 </ul>
-<p style="font-size:14px;color:#78644F">Herst Wellness. Private prototype; each page asks for the access code.</p>
+<p style="font-size:14px;color:#78644F">Herst Wellness. Each page asks for your access code.</p>
 </body>
 </html>`;
 }
