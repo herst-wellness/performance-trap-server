@@ -214,7 +214,7 @@ test('week prompts are scoped to their week and share the core, safety overlay, 
   // Weeks 3 and 4: full toolkit
   assert.match(w(3), /## The method: STEP/);
   assert.match(w(4), /## The method: STEP/);
-  assert.match(w(4), /Gathering for the closing session/);
+  assert.match(w(4), /Gathering for the Integration and Next-Step Session/);
 
   // Gating language: meet later-week material, never refuse it
   assert.match(w(1), /never refuse or defer/i);
@@ -238,7 +238,7 @@ test('course pages: public overview, gated lesson content, companion links, and 
   const overview = await fetch(baseUrl + '/course/on-ramp');
   assert.equal(overview.status, 200);
   const overviewHtml = await overview.text();
-  assert.match(overviewHtml, /On-Ramp/);
+  assert.match(overviewHtml, /Performance Trap Practice/);
   assert.match(overviewHtml, /week-1/);
   assert.doesNotMatch(overviewHtml, /straw breath/i, 'lesson content must not leak into the public overview');
 
@@ -276,7 +276,7 @@ test('course pages: public overview, gated lesson content, companion links, and 
   const w1 = await (await fetch(baseUrl + '/course/on-ramp/api/week-1', { headers: { 'X-Companion-Access': 'amber-fox-12' } })).json();
   assert.ok(w1.contentHtml.includes('/audio/onramp-breath-12min.mp3'));
   const w4 = await (await fetch(baseUrl + '/course/on-ramp/api/week-4', { headers: { 'X-Companion-Access': 'amber-fox-12' } })).json();
-  assert.match(w4.contentHtml, /closing session|Let's Talk/);
+  assert.match(w4.contentHtml, /Integration and Next-Step Session/);
 });
 
 test('PayPal self-serve enrollment: off by default, and a mocked full checkout issues a working signed code', { timeout: 30000 }, async (t) => {

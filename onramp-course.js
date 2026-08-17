@@ -23,6 +23,7 @@ function paypalConfig() {
       (env === 'live' ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com'),
     sdkBase: 'https://www.paypal.com/sdk/js',
     priceUsd: String(process.env.ONRAMP_PRICE_USD || ''),
+    regularPriceUsd: String(process.env.ONRAMP_REGULAR_PRICE_USD || ''),
   };
 }
 
@@ -115,7 +116,7 @@ function sendJson(res, status, payload) {
 }
 
 const videoPlaceholder = (label) =>
-  `<div class="placeholder">A short welcome video from Chad goes here: <em>${label}</em>. Coming soon; the written lesson below carries this week in the meantime.</div>`;
+  `<div class="placeholder">A short video from Chad goes here: <em>${label}</em>. Its job is to guide the week's experience in his company, not repeat the written lesson. Coming soon; the written lesson below carries this week in the meantime.</div>`;
 
 const meditationPlayer = (src, note) =>
   `<p class="small">${note}</p><audio controls preload="none" src="${src}" style="width:100%"></audio>`;
@@ -169,7 +170,7 @@ const COURSE_WEEKS = {
 <li>What did you automatically do, or want to do? The old move.</li>
 <li>Now write the verdict you told yourself: <em>I am ___.</em> Then rewrite it as an observation: <em>There's ___ here.</em> Read both out loud. Note what shifts.</li>
 </ol>
-<p class="note">Keep it to a few paragraphs. This is practice, not excavation. If something bigger surfaces and wants more room, that's exactly the work we'll talk about in your closing session.</p>`,
+<p class="note">Keep it to a few paragraphs. This is practice, not excavation. If something bigger surfaces and wants more room, that's exactly the work we'll talk about in your Integration and Next-Step Session.</p>`,
   },
   2: {
     title: 'Week 2: Staying With It',
@@ -217,7 +218,7 @@ const COURSE_WEEKS = {
 <li>What happened as you stayed? Did it shift, soften, get louder, stay the same? All of those are fine answers.</li>
 <li>What was harder, the staying, or the letting go and coming back? What did you notice about the return?</li>
 </ol>
-<p class="note">A few paragraphs is plenty. This is practice, not excavation. If something deeper opens and wants more room than a straightaway can hold, that's exactly what your closing session is for.</p>`,
+<p class="note">A few paragraphs is plenty. This is practice, not excavation. If something deeper opens and wants more room than a straightaway can hold, that's exactly what your Integration and Next-Step Session is for.</p>`,
   },
   3: {
     title: 'Week 3: Turning Contact Into Choice',
@@ -266,7 +267,7 @@ const COURSE_WEEKS = {
 <li>The third option, even if you only see it now, in hindsight. What could staying-with-yourself-and-them have looked like?</li>
 <li>The one small honest thing you did, or could still do. Write the actual sentence.</li>
 </ol>
-<p class="note">A few paragraphs is plenty. You're getting reps, not writing an essay. If a situation feels too loaded to work alone, that's a good thing to bring to your closing session.</p>`,
+<p class="note">A few paragraphs is plenty. You're getting reps, not writing an essay. If a situation feels too loaded to work alone, that's a good thing to bring to your Integration and Next-Step Session.</p>`,
   },
   4: {
     title: 'Week 4: Integration and the Doorway',
@@ -292,7 +293,7 @@ const COURSE_WEEKS = {
 <h4>After the four weeks</h4>
 <p>You don't need an app or a course to keep this. Three straw breaths and one honest sentence is the whole practice, portable, any time. Come back to the audios whenever you want. They're yours.</p>
 <h4>How you'll know it's time for the deeper work</h4>
-<p>When the same tender thing keeps showing up under the protector and staying with it alone starts to feel like more than a straightaway. When you want company for it. That's not a setback. That's the doorway, and it's what your closing session is for.</p>
+<p>When the same tender thing keeps showing up under the protector and staying with it alone starts to feel like more than a straightaway. When you want company for it. That's not a setback. That's the doorway, and it's what your Integration and Next-Step Session is for.</p>
 <h4>Your daily log</h4>
 <p>One line a day: <em>where did I meet a protector today, and could I be a little kinder to it?</em> No streak, no shame.</p>`,
     journal: `
@@ -306,12 +307,13 @@ const COURSE_WEEKS = {
 <li>When you stayed with something this month, did you ever feel the edge of something more tender underneath? You don't have to describe it. Just note that it's there.</li>
 <li>What do you most want from a conversation with me? What would make it worth the time?</li>
 </ol>
-<p class="note">Bring this to your closing session. You don't have to write it up neatly. A few honest notes are exactly right.</p>`,
+<p class="note">Bring this to your Integration and Next-Step Session. You don't have to write it up neatly. A few honest notes are exactly right.</p>`,
     closing: `
-<h3>Let's Talk</h3>
+<h3>Your Integration and Next-Step Session</h3>
 <p>You made it through. However much of it you did, whatever stuck and whatever didn't, you spent four weeks turning toward yourself instead of away.</p>
-<p>Now Chad would like to talk with you. One conversation, just the two of you: what this month stirred up, what got easier, and what you touched that might be asking for more room. If it seems right, he'll tell you honestly what it looks like to keep going deeper together. If it's not the right time, he'll tell you that too. There's no pitch. It's a real conversation about where you are.</p>
-<div class="placeholder">Booking link for the closing session goes here (Chad's scheduling page). Bring your notes from the reflection above.</div>`,
+<p>The course ends with one private conversation with Chad. You leave it holding four things: your primary performance loop, the first body signal that announces it, the trade you habitually make, and one next experiment to run. That's yours to keep either way.</p>
+<p>Chad will also tell you honestly whether deeper one-on-one work fits where you are, and what it looks like if it does. If it's not the right time, he'll say that too. And if you do continue within 30 days, what you paid for this course is credited toward the coaching.</p>
+<div class="placeholder">Booking link for the Integration and Next-Step Session goes here (Chad's scheduling page). Bring your notes from the reflection above.</div>`,
   },
 };
 
@@ -325,7 +327,7 @@ function lessonPageShell(weekNum) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow, noarchive">
-<title>${c.title} | Mind/Body Foundations On-Ramp</title>
+<title>${c.title} | The Performance Trap Practice</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
@@ -357,8 +359,8 @@ ol li{margin-bottom:8px}
 </head>
 <body>
 <main class="shell">
-  <nav class="crumbs"><a href="${COURSE_PATH}">On-Ramp</a> &rsaquo; <span>Week ${weekNum}</span></nav>
-  <div class="eyebrow">Mind/Body Foundations On-Ramp</div>
+  <nav class="crumbs"><a href="${COURSE_PATH}">The Practice</a> &rsaquo; <span>Week ${weekNum}</span></nav>
+  <div class="eyebrow">The Performance Trap Practice</div>
   <h1>${c.title}</h1>
   <p class="sub">${c.sub}</p>
 
@@ -419,7 +421,7 @@ function lessonContentHtml(weekNum) {
   <section class="card"><div class="eyebrow" style="text-align:left">The guided sit</div><h3>Most days, about ten minutes</h3>${c.meditation}</section>
   <section class="card"><div class="eyebrow" style="text-align:left">The daily rep</div>
     <h3>Practice with the companion</h3>
-    <p>Once a day, bring one real moment to the practice companion. It writes back, tracks what you say, and walks the week's moves with you. Your access code works there too.</p>
+    <p>Once a day, bring one real moment to the practice companion. It writes back and walks the week's moves with you, responding to what you write during the sitting. It keeps nothing after you end: no transcript is saved anywhere, and your notes are yours alone to download. Your access code works there too.</p>
     <p><a class="button" href="${companion.pagePath}">Open this week's companion</a></p>
   </section>
   <section class="card"><div class="eyebrow" style="text-align:left">Practice card</div>${c.practiceCard}</section>
@@ -429,8 +431,12 @@ function lessonContentHtml(weekNum) {
 
 function enrollSection() {
   const p = paypalConfig();
+  const priceLine = p.regularPriceUsd
+    ? 'founding price $' + p.priceUsd + ' (the regular price will be $' + p.regularPriceUsd + '), for the first small group while the recordings are being finished, in exchange for honest feedback'
+    : '$' + p.priceUsd;
   return `<div id="enroll">
-<p><strong>Enroll yourself:</strong> $${p.priceUsd} once, via PayPal or card. Your personal access code appears the moment payment completes. Save it somewhere safe; it is your key to all four weeks and the practice companion.</p>
+<p><strong>Enroll yourself:</strong> ${priceLine}, once, via PayPal or card. Your personal access code appears the moment payment completes. Save it somewhere safe; it is your key to all four weeks and the practice companion.</p>
+<p class="small">And if you go on to coaching with Chad within 30 days of your Integration and Next-Step Session, the full amount you paid here is credited toward it.</p>
 <div id="paypalButtons"></div>
 <div id="enrollDone" style="display:none;background:#EFE6D8;border-left:3px solid #8B6B1E;padding:16px 18px;margin-top:14px">
 <p style="margin:0 0 8px"><strong>You're in.</strong> Your access code:</p>
@@ -480,14 +486,15 @@ function overviewPage() {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow, noarchive">
-<title>Mind/Body Foundations On-Ramp | Herst Wellness</title>
+<title>The Performance Trap Practice | Herst Wellness</title>
 <style>body{margin:0 auto;max-width:700px;padding:44px 24px 80px;background:#F4EDE4;color:#352515;font-family:Georgia,serif;font-size:19px;line-height:1.6}h1{font-size:32px;margin-bottom:4px}.sub{font-style:italic;color:#6F5438}a{color:#8B6B1E}li{margin-bottom:16px}.small{font-size:14px;color:#715D49;font-family:Arial,sans-serif}.card{background:#FBF7F0;border:1px solid #D7C7B3;border-radius:14px;padding:22px 24px;margin:20px 0}</style>
 </head>
 <body>
-<h1>The Mind/Body Foundations On-Ramp</h1>
-<p class="sub">Four weeks that turn the maps from The Performance Trap into muscle memory.</p>
+<h1>The Performance Trap Practice</h1>
+<p class="sub">From insight to choice, in four weeks.</p>
 <div class="card">
-<p>You read the book, so you have the maps: SENSE for coming back to yourself when the pressure hits, STEP for bringing that back into the room with other people. This course is where the maps become practice. About ten minutes a day, one real moment a day, four weeks, and a closing conversation with Chad at the end.</p>
+<p><strong>In four weeks, learn to catch the performance reflex in your body before it drives the next text, agreement, withdrawal, or overreaction, and practice one response that keeps you connected without abandoning yourself.</strong></p>
+<p>You read the book, so you have the maps: SENSE for coming back to yourself when the pressure hits, STEP for bringing that back into the room with other people. This is where the maps become practice: about ten minutes a day, one real moment a day, four weeks, and a private Integration and Next-Step Session with Chad at the end. You leave that session holding four things, whether or not you ever work with him further: your primary performance loop, the first body signal that announces it, the trade you habitually make, and one next experiment.</p>
 ${selfServeEnabled() ? enrollSection() : '<p>Enrollment is personal: Chad sets you up directly and sends your access code. If you don\'t have one yet, reach out through <a href="https://herstwellness.com">herstwellness.com</a>.</p>'}
 </div>
 <h2 style="font-size:20px">The four weeks</h2>

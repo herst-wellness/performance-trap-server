@@ -686,10 +686,10 @@ function companionPage(week) {
 <body>
 <main class="shell">
   <div class="brand"><img src="/Herst-Wellness-Logo-cropped.jpg" alt="Herst Wellness"></div>
-  <nav style="font:13px/1.4 Arial,sans-serif;color:#78644F;margin:-8px 0 14px;text-align:center"><a style="color:var(--gold);text-decoration:none" href="/course/on-ramp">On-Ramp</a> &rsaquo; <a style="color:var(--gold);text-decoration:none" href="/course/on-ramp/week-${week.pagePath.slice(-1)}">Week ${week.pagePath.slice(-1)} lesson</a> &rsaquo; <span>The daily rep</span></nav>
+  <nav style="font:13px/1.4 Arial,sans-serif;color:#78644F;margin:-8px 0 14px;text-align:center"><a style="color:var(--gold);text-decoration:none" href="/course/on-ramp">The Practice</a> &rsaquo; <a style="color:var(--gold);text-decoration:none" href="/course/on-ramp/week-${week.pagePath.slice(-1)}">Week ${week.pagePath.slice(-1)} lesson</a> &rsaquo; <span>The daily rep</span></nav>
   <div class="rule"></div>
   <header class="hero">
-    <div class="eyebrow">Mind/Body Foundations On-Ramp</div>
+    <div class="eyebrow">The Performance Trap Practice</div>
     <h1>${week.title}</h1>
     <p>${week.sub}</p>
   </header>
@@ -710,7 +710,7 @@ function companionPage(week) {
     <p>If you are here, you have the maps: SENSE for coming back to yourself when the pressure hits, STEP for bringing that back into the room with other people. This is where you get the reps. You bring one real moment from your day, and we run the practice on it together.</p>
     <p>The moment does not have to be big. The email that tightened your chest. The meeting where you shrank. The text you almost fired back. Small is what you can actually keep, and small is the point.</p>
     <p>You will write, and the companion will write back. It tracks what you say and helps you make the next move: back into the body, staying with what you find, noticing the trade you were about to make, shaping the one honest sentence. It is not me, and it is not therapy. It is practice, on the straightaways.</p>
-    <p>The deeper material, the old wound underneath the protectors, is real work, and it is done with another person. That is what your closing session with me is for. When something big stirs here, the companion will help you note it for that conversation rather than digging into it alone.</p>
+    <p>The deeper material, the old wound underneath the protectors, is real work, and it is done with another person. That is what your Integration and Next-Step Session with me is for. When something big stirs here, the companion will help you note it for that conversation rather than digging into it alone.</p>
     <p>Missing a day is not failure. There is no streak to protect here. If a day got away from you, you just begin again the next one.</p>
     <div class="rule" style="margin:26px 0"></div>
     <h2 style="font-size:20px">Before you begin</h2>
