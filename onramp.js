@@ -681,45 +681,26 @@ function companionPage(week) {
     <div class="rule" style="margin:26px 0"></div>
     <h2 style="font-size:20px">Before you begin</h2>
     <div id="privacyNotice" class="notice"></div>
-    <label class="check"><input id="adultCheck" type="checkbox"><span>I confirm that I am at least 18 years old.</span></label>
-    <label class="check"><input id="scopeCheck" type="checkbox"><span>I understand that this is a guided practice, not therapy, medical care, diagnosis, or crisis support. I may pause or stop at any time.</span></label>
-    <div class="field">
-      <label for="country">For crisis guidance, where are you?</label>
-      <select id="country"><option value="US">United States</option><option value="unknown">Outside the United States or prefer not to say</option></select>
-    </div>
-    <button id="beginButton" class="button">Begin the reflection</button>
+    <p class="small">This is a guided practice for adults, not therapy, medical care, diagnosis, or crisis support. You may pause or stop at any time.</p>
+    <button id="beginButton" class="button">Begin</button>
     <div id="consentError" class="error hidden"></div>
   </section>
 
   <section id="breathCard" class="card hidden">
     <h2>A little time to breathe</h2>
     <div id="breathOffer">
-      <p>Before we begin, would you like to spend a little time breathing together? It is completely optional. We can also simply begin.</p>
-      <div id="breathChoices" class="row">
-        <button type="button" class="button secondary" data-minutes="2">2 minutes</button>
-        <button type="button" class="button secondary" data-minutes="3">3 minutes</button>
-        <button type="button" class="button secondary" data-minutes="4">4 minutes</button>
-        <button type="button" class="button secondary" data-minutes="5">5 minutes</button>
+      <p>Before we begin, would you like to breathe together first? This is Chad's twelve-minute guided breathing practice. It is completely optional. We can also simply begin.</p>
+      <div class="row">
+        <button type="button" id="breathListen" class="button secondary">Breathe first, about 12 minutes</button>
         <button type="button" id="breathSkip" class="button">No, I am ready to begin</button>
       </div>
     </div>
-    <div id="breathPractice" class="hidden">
-      <p class="small">In through the nose for about five. Out through pursed lips, like you are blowing through a straw, for about seven. You can pause or stop at any time.</p>
-      <div class="breath-view">
-        <div class="breath-space"><div id="breathDot" class="breath-dot" aria-hidden="true"></div></div>
-        <div id="breathStatus" role="status" aria-live="polite"><span id="breathPhase" class="breath-phase"></span></div>
-        <div id="breathTime" class="breath-time"></div>
-        <div class="row">
-          <button type="button" id="breathStart" class="button">Start</button>
-          <button type="button" id="breathPause" class="button secondary hidden">Pause</button>
-          <button type="button" id="breathContinue" class="button secondary hidden">Continue</button>
-          <button type="button" id="breathStop" class="button danger">Stop</button>
-        </div>
+    <div id="breathPlayer" class="hidden">
+      <p class="small">Settle in. When the recording finishes, or whenever you are ready, continue to the practice.</p>
+      <audio id="breathAudio" controls preload="none" src="/audio/onramp-breath-12min.mp3" style="width:100%"></audio>
+      <div class="row" style="margin-top:14px">
+        <button type="button" id="breathDone" class="button">Continue to the practice</button>
       </div>
-    </div>
-    <div id="breathClosing" class="hidden">
-      <p id="breathClosingText"></p>
-      <button type="button" id="breathDone" class="button">Continue</button>
     </div>
   </section>
 
@@ -835,20 +816,14 @@ function companionPage(week) {
   });
 
   el('beginButton').addEventListener('click', function(){
-    showError(el('consentError'), '');
-    if (!el('adultCheck').checked || !el('scopeCheck').checked) {
-      showError(el('consentError'), 'Please confirm both statements before beginning.');
-      return;
-    }
-    country = el('country').value;
     el('consentCard').classList.add('hidden');
     el('breathCard').classList.remove('hidden');
     el('breathOffer').classList.remove('hidden');
-    el('breathPractice').classList.add('hidden');
-    el('breathClosing').classList.add('hidden');
+    el('breathPlayer').classList.add('hidden');
   });
 
   function enterSession(){
+    try { el('breathAudio').pause(); } catch (e) {}
     el('breathCard').classList.add('hidden');
     el('session').classList.remove('hidden');
     addMessage('assistant', ${JSON.stringify(week.opening)});
@@ -869,103 +844,15 @@ function companionPage(week) {
   el('breathSkip').addEventListener('click', enterSession);
   el('breathDone').addEventListener('click', enterSession);
 
-  // Optional opening breath practice. Local timer only; no model call, no storage.
-  var reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var INHALE_MS = 5000, EXHALE_MS = 7000, CYCLE_MS = INHALE_MS + EXHALE_MS;
-  var breath = { totalCycles: 0, cyclesDone: 0, phaseStart: 0, elapsedInPhase: 0, phase: 'inhale', raf: null, running: false };
-
-  function breathTimeLeftText(){
-    var cyclesLeft = breath.totalCycles - breath.cyclesDone;
-    var secondsLeft = Math.max(0, Math.round((cyclesLeft * CYCLE_MS - breath.elapsedInPhase) / 1000));
-    var m = Math.floor(secondsLeft / 60), s = secondsLeft % 60;
-    return m + ':' + (s < 10 ? '0' : '') + s + ' remaining';
-  }
-  function renderBreathFrame(msIntoPhase){
-    var phaseMs = breath.phase === 'inhale' ? INHALE_MS : EXHALE_MS;
-    var t = Math.min(1, msIntoPhase / phaseMs);
-    el('breathPhase').textContent = breath.phase === 'inhale' ? 'Inhale' : 'Exhale';
-    if (!reducedMotion) {
-      var scale = breath.phase === 'inhale' ? (0.22 + t * 0.78) : (1 - t * 0.78);
-      el('breathDot').style.transform = 'scale(' + scale.toFixed(3) + ')';
-    }
-    el('breathTime').textContent = breathTimeLeftText();
-  }
-  function breathTick(now){
-    if (!breath.running) return;
-    var msIntoPhase = now - breath.phaseStart + breath.elapsedInPhase;
-    var phaseMs = breath.phase === 'inhale' ? INHALE_MS : EXHALE_MS;
-    if (msIntoPhase >= phaseMs) {
-      if (breath.phase === 'inhale') {
-        breath.phase = 'exhale';
-      } else {
-        breath.phase = 'inhale';
-        breath.cyclesDone++;
-      }
-      breath.phaseStart = now;
-      breath.elapsedInPhase = 0;
-      if (breath.cyclesDone >= breath.totalCycles) { finishBreathPractice(); return; }
-      msIntoPhase = 0;
-    }
-    renderBreathFrame(msIntoPhase);
-    breath.raf = requestAnimationFrame(breathTick);
-  }
-  function startBreathLoop(){
-    breath.running = true;
-    breath.phaseStart = performance.now();
-    breath.raf = requestAnimationFrame(breathTick);
-  }
-  function pauseBreathLoop(){
-    if (!breath.running) return;
-    breath.running = false;
-    breath.elapsedInPhase += performance.now() - breath.phaseStart;
-    if (breath.raf) cancelAnimationFrame(breath.raf);
-  }
-  function resetBreathView(){
-    breath.phase = 'inhale'; breath.cyclesDone = 0; breath.elapsedInPhase = 0; breath.running = false;
-    el('breathDot').classList.toggle('still', !!reducedMotion);
-    el('breathDot').style.transform = reducedMotion ? '' : 'scale(0.22)';
-    el('breathPhase').textContent = '';
-    el('breathTime').textContent = '';
-    el('breathStart').classList.remove('hidden');
-    el('breathPause').classList.add('hidden');
-    el('breathContinue').classList.add('hidden');
-  }
-  function finishBreathPractice(){
-    pauseBreathLoop();
-    el('breathPractice').classList.add('hidden');
-    el('breathClosing').classList.remove('hidden');
-    // Draft closing language, transcript-grounded (Val 2025-12-11 line 23; Val/Lisa "not in a rush" pattern).
-    // Marked for Chad's case-by-case approval before this becomes canonical.
-    el('breathClosingText').textContent = 'Now letting the breath come back to its natural rhythm. There is really no rush. Whenever you are ready.';
-  }
-
-  document.querySelectorAll('#breathChoices button[data-minutes]').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      var minutes = parseInt(btn.getAttribute('data-minutes'), 10);
-      breath.totalCycles = minutes * 5; // 12-second cycles: 5 per minute
-      el('breathOffer').classList.add('hidden');
-      el('breathPractice').classList.remove('hidden');
-      resetBreathView();
-    });
+  // Optional opening breath: Chad's recorded 12-minute practice. Played
+  // locally; no model call, no storage. Pausing the audio when the person
+  // moves on prevents it playing under the session.
+  el('breathListen').addEventListener('click', function(){
+    el('breathOffer').classList.add('hidden');
+    el('breathPlayer').classList.remove('hidden');
+    try { el('breathAudio').play(); } catch (e) {}
   });
-  el('breathStart').addEventListener('click', function(){
-    el('breathStart').classList.add('hidden');
-    el('breathPause').classList.remove('hidden');
-    startBreathLoop();
-  });
-  el('breathPause').addEventListener('click', function(){
-    pauseBreathLoop();
-    el('breathPause').classList.add('hidden');
-    el('breathContinue').classList.remove('hidden');
-  });
-  el('breathContinue').addEventListener('click', function(){
-    el('breathContinue').classList.add('hidden');
-    el('breathPause').classList.remove('hidden');
-    breath.phaseStart = performance.now();
-    startBreathLoop();
-  });
-  el('breathStop').addEventListener('click', function(){
-    pauseBreathLoop();
+  el('breathAudio').addEventListener('ended', function(){
     enterSession();
   });
 

@@ -103,6 +103,11 @@ test('the index and all four weekly pages serve their own copy, and each page ta
   t.after(() => child.kill());
   const baseUrl = 'http://127.0.0.1:' + port;
 
+  const audio = await fetch(baseUrl + '/audio/onramp-breath-12min.mp3', { method: 'GET' });
+  assert.equal(audio.status, 200, 'the breathing recording must be served');
+  assert.match(audio.headers.get('content-type') || '', /audio\/mpeg/);
+  audio.body && audio.body.cancel && audio.body.cancel();
+
   const index = await fetch(baseUrl + INDEX_PATH);
   assert.equal(index.status, 200);
   const indexHtml = await index.text();
@@ -123,6 +128,11 @@ test('the index and all four weekly pages serve their own copy, and each page ta
     assert.match(html, /Private prototype/);
     assert.doesNotMatch(html, /googletagmanager|google-analytics/i);
     assert.doesNotMatch(html, /—/);
+    // Chad removed the consent checkboxes and country selector on 8/16;
+    // the informational scope line and the breath recording replace them.
+    assert.doesNotMatch(html, /adultCheck|scopeCheck|id="country"/, week.pagePath + ' must not carry the removed consent controls');
+    assert.ok(html.includes('/audio/onramp-breath-12min.mp3'), week.pagePath + ' must offer the 12-minute breathing recording');
+    assert.match(html, /not therapy, medical care, diagnosis, or crisis support/);
   }
 });
 
