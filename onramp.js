@@ -615,10 +615,31 @@ function codeMatches(expected, supplied) {
   return crypto.timingSafeEqual(expectedBytes, suppliedBytes);
 }
 
+function codeSecret() {
+  return String(process.env.ONRAMP_CODE_SECRET || '');
+}
+
+function signPayload(payload) {
+  return crypto.createHmac('sha256', codeSecret()).update(payload).digest('hex').slice(0, 10);
+}
+
+function issueSignedCode() {
+  const payload = crypto.randomBytes(4).toString('hex');
+  return 'mb-' + payload + '-' + signPayload(payload);
+}
+
+function verifySignedCode(supplied) {
+  if (!codeSecret()) return false;
+  const match = /^mb-([a-f0-9]{8})-([a-f0-9]{10})$/.exec(String(supplied || '').trim());
+  if (!match) return false;
+  return codeMatches(signPayload(match[1]), match[2]);
+}
+
 function hasAccess(req) {
   const codes = validAccessCodes();
   const supplied = String(req.headers['x-companion-access'] || '');
-  if (codes.length === 0) return { ok: false, status: 503 };
+  if (codes.length === 0 && !codeSecret()) return { ok: false, status: 503 };
+  if (verifySignedCode(supplied)) return { ok: true, status: 401 };
   return { ok: codes.some((c) => codeMatches(c, supplied)), status: 401 };
 }
 
@@ -665,6 +686,7 @@ function companionPage(week) {
 <body>
 <main class="shell">
   <div class="brand"><img src="/Herst-Wellness-Logo-cropped.jpg" alt="Herst Wellness"></div>
+  <nav style="font:13px/1.4 Arial,sans-serif;color:#78644F;margin:-8px 0 14px;text-align:center"><a style="color:var(--gold);text-decoration:none" href="/course/on-ramp">On-Ramp</a> &rsaquo; <a style="color:var(--gold);text-decoration:none" href="/course/on-ramp/week-${week.pagePath.slice(-1)}">Week ${week.pagePath.slice(-1)} lesson</a> &rsaquo; <span>The daily rep</span></nav>
   <div class="rule"></div>
   <header class="hero">
     <div class="eyebrow">Mind/Body Foundations On-Ramp</div>
@@ -1053,6 +1075,8 @@ async function handleOnrampRoute(req, res) {
 module.exports = {
   INDEX_PATH,
   hasAccess,
+  issueSignedCode,
+  verifySignedCode,
   WEEKS,
   evaluateDeterministicControls,
   getActiveProvider,

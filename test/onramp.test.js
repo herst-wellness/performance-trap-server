@@ -278,3 +278,86 @@ test('course pages: public overview, gated lesson content, companion links, and 
   const w4 = await (await fetch(baseUrl + '/course/on-ramp/api/week-4', { headers: { 'X-Companion-Access': 'amber-fox-12' } })).json();
   assert.match(w4.contentHtml, /closing session|Let's Talk/);
 });
+
+test('PayPal self-serve enrollment: off by default, and a mocked full checkout issues a working signed code', { timeout: 30000 }, async (t) => {
+  const http = require('node:http');
+
+  // A tiny stand-in for PayPal: token, create order, capture as COMPLETED
+  // at the configured price.
+  const paypalMock = http.createServer((req, res) => {
+    let raw = '';
+    req.on('data', (c) => { raw += c; });
+    req.on('end', () => {
+      res.setHeader('Content-Type', 'application/json');
+      if (req.url === '/v1/oauth2/token') {
+        res.end(JSON.stringify({ access_token: 'mock-token' }));
+      } else if (req.url === '/v2/checkout/orders') {
+        res.end(JSON.stringify({ id: 'ORDER-123' }));
+      } else if (req.url === '/v2/checkout/orders/ORDER-123/capture') {
+        res.end(JSON.stringify({
+          status: 'COMPLETED',
+          purchase_units: [{ payments: { captures: [{ status: 'COMPLETED', amount: { currency_code: 'USD', value: '299' } }] } }],
+        }));
+      } else {
+        res.statusCode = 404;
+        res.end('{}');
+      }
+    });
+  });
+  await new Promise((resolve) => paypalMock.listen(0, '127.0.0.1', resolve));
+  t.after(() => paypalMock.close());
+  const paypalUrl = 'http://127.0.0.1:' + paypalMock.address().port;
+
+  // Without PayPal config: endpoints refuse, overview shows the personal-enrollment text.
+  const portOff = await getOpenPort();
+  const childOff = await startServer(portOff, { ONRAMP_ACCESS_CODES: 'x-1' });
+  t.after(() => childOff.kill());
+  const offBase = 'http://127.0.0.1:' + portOff;
+  const offCreate = await fetch(offBase + '/course/on-ramp/api/paypal/create-order', { method: 'POST' });
+  assert.equal(offCreate.status, 503);
+  const offHtml = await (await fetch(offBase + '/course/on-ramp')).text();
+  assert.match(offHtml, /Chad sets you up directly/);
+  assert.doesNotMatch(offHtml, /paypalButtons/);
+
+  // With full config: the overview offers checkout, and the flow issues a code.
+  const portOn = await getOpenPort();
+  const childOn = await startServer(portOn, {
+    ONRAMP_CODE_SECRET: 'test-code-secret',
+    ONRAMP_PRICE_USD: '299',
+    PAYPAL_CLIENT_ID: 'mock-client',
+    PAYPAL_CLIENT_SECRET: 'mock-secret',
+    PAYPAL_BASE_URL: paypalUrl,
+  });
+  t.after(() => childOn.kill());
+  const onBase = 'http://127.0.0.1:' + portOn;
+
+  const onHtml = await (await fetch(onBase + '/course/on-ramp')).text();
+  assert.match(onHtml, /Enroll yourself/);
+  assert.match(onHtml, /\$299/);
+  assert.match(onHtml, /paypalButtons/);
+  assert.match(onHtml, /shown only once/);
+
+  const created = await (await fetch(onBase + '/course/on-ramp/api/paypal/create-order', { method: 'POST' })).json();
+  assert.equal(created.orderId, 'ORDER-123');
+
+  const captured = await fetch(onBase + '/course/on-ramp/api/paypal/capture', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ orderId: 'ORDER-123' }),
+  });
+  assert.equal(captured.status, 200);
+  const { accessCode } = await captured.json();
+  assert.match(accessCode, /^mb-[a-f0-9]{8}-[a-f0-9]{10}$/);
+
+  // The issued code opens lesson content and the companion, without being
+  // in any enrollment list.
+  const lesson = await fetch(onBase + '/course/on-ramp/api/week-2', { headers: { 'X-Companion-Access': accessCode } });
+  assert.equal(lesson.status, 200);
+  const companion = await fetch(onBase + '/api/on-ramp/week-2', { headers: { 'X-Companion-Access': accessCode } });
+  assert.equal(companion.status, 200);
+
+  // A tampered code does not.
+  const tampered = accessCode.slice(0, -1) + (accessCode.endsWith('0') ? '1' : '0');
+  const denied = await fetch(onBase + '/course/on-ramp/api/week-2', { headers: { 'X-Companion-Access': tampered } });
+  assert.equal(denied.status, 401);
+});

@@ -6,9 +6,95 @@
 // the public page source. Video and most meditation slots are placeholders
 // until Chad records them; Week 1's slot carries the recorded 12-minute
 // breathing practice.
-const { hasAccess, WEEKS } = require('./onramp');
+const { hasAccess, WEEKS, issueSignedCode } = require('./onramp');
 
 const COURSE_PATH = '/course/on-ramp';
+
+// PayPal configuration, all via environment; PAYPAL_BASE_URL exists for
+// tests to point at a mock. Self-serve enrollment is enabled only when
+// every piece is present.
+function paypalConfig() {
+  const env = String(process.env.PAYPAL_ENV || 'sandbox');
+  return {
+    clientId: String(process.env.PAYPAL_CLIENT_ID || ''),
+    clientSecret: String(process.env.PAYPAL_CLIENT_SECRET || ''),
+    baseUrl:
+      process.env.PAYPAL_BASE_URL ||
+      (env === 'live' ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com'),
+    sdkBase: 'https://www.paypal.com/sdk/js',
+    priceUsd: String(process.env.ONRAMP_PRICE_USD || ''),
+  };
+}
+
+function selfServeEnabled() {
+  const p = paypalConfig();
+  return Boolean(p.clientId && p.clientSecret && p.priceUsd && process.env.ONRAMP_CODE_SECRET);
+}
+
+async function paypalToken() {
+  const p = paypalConfig();
+  const res = await fetch(p.baseUrl + '/v1/oauth2/token', {
+    method: 'POST',
+    headers: {
+      Authorization: 'Basic ' + Buffer.from(p.clientId + ':' + p.clientSecret).toString('base64'),
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: 'grant_type=client_credentials',
+  });
+  if (!res.ok) throw new Error('PayPal auth failed');
+  return (await res.json()).access_token;
+}
+
+async function paypalCreateOrder() {
+  const p = paypalConfig();
+  const token = await paypalToken();
+  const res = await fetch(p.baseUrl + '/v2/checkout/orders', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      intent: 'CAPTURE',
+      purchase_units: [
+        {
+          description: 'Mind/Body Foundations On-Ramp (four-week course)',
+          amount: { currency_code: 'USD', value: p.priceUsd },
+        },
+      ],
+    }),
+  });
+  if (!res.ok) throw new Error('PayPal order creation failed');
+  return (await res.json()).id;
+}
+
+async function paypalCaptureOrder(orderId) {
+  const p = paypalConfig();
+  const token = await paypalToken();
+  const res = await fetch(p.baseUrl + '/v2/checkout/orders/' + encodeURIComponent(orderId) + '/capture', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+  });
+  if (!res.ok) throw new Error('PayPal capture failed');
+  const payload = await res.json();
+  const unit = payload.purchase_units && payload.purchase_units[0];
+  const capture = unit && unit.payments && unit.payments.captures && unit.payments.captures[0];
+  const amount = capture && capture.amount;
+  const completed = payload.status === 'COMPLETED' && capture && capture.status === 'COMPLETED';
+  const amountOk = amount && amount.currency_code === 'USD' && amount.value === p.priceUsd;
+  return { completed: Boolean(completed && amountOk) };
+}
+
+function readJsonBody(req) {
+  return new Promise((resolve, reject) => {
+    let raw = '';
+    req.on('data', (chunk) => {
+      raw += chunk;
+      if (raw.length > 10000) { reject(new Error('Request too large')); req.destroy(); }
+    });
+    req.on('end', () => {
+      try { resolve(JSON.parse(raw || '{}')); } catch { reject(new Error('Invalid JSON')); }
+    });
+    req.on('error', reject);
+  });
+}
 
 function noStoreHeaders(contentType) {
   return {
@@ -263,12 +349,15 @@ h4{font:600 15px/1.4 Arial,sans-serif;color:var(--gold);margin:20px 0 6px}
 .hidden{display:none!important}
 .nav{display:flex;justify-content:space-between;font:14px/1.4 Arial,sans-serif;margin:18px 0}
 .nav a{color:var(--gold)}
+.crumbs{font:13px/1.4 Arial,sans-serif;color:#78644F;margin:0 0 16px}
+.crumbs a{color:var(--gold);text-decoration:none}
 .footer{text-align:center;margin:26px auto 0;color:#78644F;font:13px/1.5 Arial,sans-serif}
 ol li{margin-bottom:8px}
 </style>
 </head>
 <body>
 <main class="shell">
+  <nav class="crumbs"><a href="${COURSE_PATH}">On-Ramp</a> &rsaquo; <span>Week ${weekNum}</span></nav>
   <div class="eyebrow">Mind/Body Foundations On-Ramp</div>
   <h1>${c.title}</h1>
   <p class="sub">${c.sub}</p>
@@ -338,6 +427,49 @@ function lessonContentHtml(weekNum) {
   ${closing}`;
 }
 
+function enrollSection() {
+  const p = paypalConfig();
+  return `<div id="enroll">
+<p><strong>Enroll yourself:</strong> $${p.priceUsd} once, via PayPal or card. Your personal access code appears the moment payment completes. Save it somewhere safe; it is your key to all four weeks and the practice companion.</p>
+<div id="paypalButtons"></div>
+<div id="enrollDone" style="display:none;background:#EFE6D8;border-left:3px solid #8B6B1E;padding:16px 18px;margin-top:14px">
+<p style="margin:0 0 8px"><strong>You're in.</strong> Your access code:</p>
+<p id="issuedCode" style="font-size:24px;font-family:monospace;margin:0 0 8px"></p>
+<p style="margin:0" class="small">Write it down or screenshot it now; it is shown only once and cannot be looked up later. Then open <a href="${COURSE_PATH}/week-1">Week 1</a>.</p>
+</div>
+<div id="enrollError" class="small" style="display:none;color:#8E2F27"></div>
+<script src="${p.sdkBase}?client-id=${encodeURIComponent(p.clientId)}&currency=USD"></script>
+<script>
+paypal.Buttons({
+  createOrder: function(){
+    return fetch('${COURSE_PATH}/api/paypal/create-order', {method:'POST'}).then(function(r){
+      if (!r.ok) throw new Error('Could not start checkout');
+      return r.json();
+    }).then(function(d){ return d.orderId; });
+  },
+  onApprove: function(data){
+    return fetch('${COURSE_PATH}/api/paypal/capture', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({orderId: data.orderID})
+    }).then(function(r){ return r.json().then(function(d){ return {ok: r.ok, d: d}; }); })
+    .then(function(res){
+      if (!res.ok || !res.d.accessCode) throw new Error(res.d.error || 'Payment could not be confirmed');
+      document.getElementById('issuedCode').textContent = res.d.accessCode;
+      document.getElementById('enrollDone').style.display = 'block';
+      document.getElementById('paypalButtons').style.display = 'none';
+      try { window.sessionStorage.setItem('onrampCode', res.d.accessCode); } catch (e) {}
+    });
+  },
+  onError: function(){
+    var n = document.getElementById('enrollError');
+    n.textContent = 'Something went wrong with checkout. You were not charged unless PayPal shows a completed payment. Try again, or reach out through herstwellness.com.';
+    n.style.display = 'block';
+  }
+}).render('#paypalButtons');
+</script>
+</div>`;
+}
+
 function overviewPage() {
   const rows = [1, 2, 3, 4]
     .map((n) => `<li><a href="${COURSE_PATH}/week-${n}">${COURSE_WEEKS[n].title}</a><br><span class="small">${COURSE_WEEKS[n].sub}</span></li>`)
@@ -356,7 +488,7 @@ function overviewPage() {
 <p class="sub">Four weeks that turn the maps from The Performance Trap into muscle memory.</p>
 <div class="card">
 <p>You read the book, so you have the maps: SENSE for coming back to yourself when the pressure hits, STEP for bringing that back into the room with other people. This course is where the maps become practice. About ten minutes a day, one real moment a day, four weeks, and a closing conversation with Chad at the end.</p>
-<p>Enrollment is personal: Chad sets you up directly and sends your access code. If you don't have one yet, reach out through <a href="https://herstwellness.com">herstwellness.com</a>.</p>
+${selfServeEnabled() ? enrollSection() : '<p>Enrollment is personal: Chad sets you up directly and sends your access code. If you don\'t have one yet, reach out through <a href="https://herstwellness.com">herstwellness.com</a>.</p>'}
 </div>
 <h2 style="font-size:20px">The four weeks</h2>
 <ul>
@@ -368,6 +500,29 @@ function overviewPage() {
 }
 
 async function handleCourseRoute(req, res) {
+  if (req.method === 'POST' && req.url === COURSE_PATH + '/api/paypal/create-order') {
+    if (!selfServeEnabled()) { sendJson(res, 503, { error: 'Self-serve enrollment is not enabled.' }); return true; }
+    try {
+      sendJson(res, 200, { orderId: await paypalCreateOrder() });
+    } catch {
+      sendJson(res, 502, { error: 'Could not start checkout.' });
+    }
+    return true;
+  }
+  if (req.method === 'POST' && req.url === COURSE_PATH + '/api/paypal/capture') {
+    if (!selfServeEnabled()) { sendJson(res, 503, { error: 'Self-serve enrollment is not enabled.' }); return true; }
+    try {
+      const body = await readJsonBody(req);
+      if (!body.orderId || typeof body.orderId !== 'string') { sendJson(res, 400, { error: 'Missing order.' }); return true; }
+      const result = await paypalCaptureOrder(body.orderId);
+      if (!result.completed) { sendJson(res, 402, { error: 'Payment was not completed.' }); return true; }
+      sendJson(res, 200, { accessCode: issueSignedCode() });
+    } catch {
+      sendJson(res, 502, { error: 'Payment could not be confirmed.' });
+    }
+    return true;
+  }
+
   if (req.method !== 'GET') return false;
 
   if (req.url === COURSE_PATH) {
