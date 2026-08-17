@@ -91,7 +91,14 @@ async function paypalCaptureOrder(orderId) {
   const capture = unit && unit.payments && unit.payments.captures && unit.payments.captures[0];
   const amount = capture && capture.amount;
   const completed = payload.status === 'COMPLETED' && capture && capture.status === 'COMPLETED';
-  const amountOk = amount && amount.currency_code === 'USD' && amount.value === p.priceUsd;
+  // PayPal reports the captured value with decimals ("295.00") while the
+  // configured price may be "295"; compare as numbers, never as text. A
+  // text comparison here once declared a real captured payment incomplete.
+  const amountOk =
+    amount &&
+    amount.currency_code === 'USD' &&
+    Number.isFinite(Number(amount.value)) &&
+    Number(amount.value) === Number(p.priceUsd);
   return { completed: Boolean(completed && amountOk) };
 }
 

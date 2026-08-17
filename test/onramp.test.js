@@ -294,7 +294,11 @@ test('PayPal self-serve enrollment: off by default, and a mocked full checkout i
       } else if (req.url === '/v2/checkout/orders/ORDER-123/capture') {
         res.end(JSON.stringify({
           status: 'COMPLETED',
-          purchase_units: [{ payments: { captures: [{ status: 'COMPLETED', amount: { currency_code: 'USD', value: '299' } }] } }],
+          // PayPal returns the amount WITH decimals even when the order was
+          // created without them; the mock must mimic that, because a
+          // text-equality check against this exact shape once let a real
+          // captured payment go uncredited.
+          purchase_units: [{ payments: { captures: [{ status: 'COMPLETED', amount: { currency_code: 'USD', value: '299.00' } }] } }],
         }));
       } else {
         res.statusCode = 404;
