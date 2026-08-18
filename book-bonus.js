@@ -6,8 +6,10 @@
 // not a gate.
 const https = require('https');
 const crypto = require('crypto');
+const { ONE_PAGERS, ONE_PAGER_BY_SLUG, onePagerPageHtml } = require('./book-onepagers.js');
 
 const BONUS_PATH = '/book-bonus';
+const ONE_PAGER_PREFIX = '/book-bonus/one-pagers/';
 
 function noStoreHeaders(contentType) {
   return {
@@ -68,7 +70,9 @@ ul li{margin-bottom:8px}
   <div class="card">
     <h2 style="margin-top:0">The one-pagers</h2>
     <p>Each Part Two practice on a single page. Where it fits, when it hits, and the steps. These are for the moment itself, not for study.</p>
-    <div class="soon">Being made now. They'll appear here alongside the audios.</div>
+    <ul>
+      ${ONE_PAGERS.map((p) => `<li><a href="${ONE_PAGER_PREFIX}${p.slug}">${p.title}</a></li>`).join('\n      ')}
+    </ul>
   </div>
 
   <div class="card">
@@ -113,6 +117,19 @@ function handleBonusRoute(req, res, helpers) {
   if (req.method === 'GET' && req.url === BONUS_PATH) {
     res.writeHead(200, noStoreHeaders('text/html; charset=utf-8'));
     res.end(bonusPage());
+    return true;
+  }
+
+  if (req.method === 'GET' && req.url.startsWith(ONE_PAGER_PREFIX)) {
+    const slug = req.url.slice(ONE_PAGER_PREFIX.length);
+    const page = ONE_PAGER_BY_SLUG[slug];
+    if (!page) {
+      res.writeHead(404, noStoreHeaders('text/plain; charset=utf-8'));
+      res.end('Not found');
+      return true;
+    }
+    res.writeHead(200, noStoreHeaders('text/html; charset=utf-8'));
+    res.end(onePagerPageHtml(page));
     return true;
   }
 

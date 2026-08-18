@@ -17,6 +17,7 @@ const test = require('node:test');
 
 const suitePath = path.join(__dirname, 'module-2-product-safety-evaluation-set.jsonl');
 const { WEEKS, INDEX_PATH } = require('../onramp.js');
+const { ONE_PAGERS } = require('../book-onepagers.js');
 
 function getOpenPort() {
   return new Promise((resolve, reject) => {
@@ -378,9 +379,13 @@ test('the book-bonus page serves its promises: field-guide PDF, breath audio, co
   assert.ok(html.includes('/downloads/practices-in-one-place.pdf'));
   assert.ok(html.includes('/audio/onramp-breath-12min.mp3'));
   assert.ok(html.includes('/course/on-ramp'), 'the course must be the featured next step');
-  assert.match(html, /being recorded/i, 'unrecorded audios must be named honestly');
+  assert.match(html, /being recorded/i, 'unrecorded audios must still be named honestly');
   assert.doesNotMatch(html, /—/);
   assert.doesNotMatch(html, /googletagmanager|google-analytics/i);
+  assert.doesNotMatch(html, /Being made now/, 'the one-pagers are live, not a placeholder anymore');
+  for (const p of ONE_PAGERS) {
+    assert.ok(html.includes(`/book-bonus/one-pagers/${p.slug}`), `bonus page must link to the ${p.slug} one-pager`);
+  }
 
   const pdf = await fetch(baseUrl + '/downloads/practices-in-one-place.pdf');
   assert.equal(pdf.status, 200);
@@ -393,4 +398,31 @@ test('the book-bonus page serves its promises: field-guide PDF, breath audio, co
     body: JSON.stringify({ email: 'not-an-email' }),
   });
   assert.equal(badSignup.status, 400);
+});
+
+test('the five book-bonus one-pagers serve verbatim Try This content, no gating', { timeout: 30000 }, async (t) => {
+  const port = await getOpenPort();
+  const child = await startServer(port, {});
+  t.after(() => child.kill());
+  const baseUrl = 'http://127.0.0.1:' + port;
+
+  assert.equal(ONE_PAGERS.length, 5, 'one per Part Two chapter');
+
+  for (const p of ONE_PAGERS) {
+    const res = await fetch(baseUrl + '/book-bonus/one-pagers/' + p.slug);
+    assert.equal(res.status, 200);
+    const html = await res.text();
+    assert.ok(html.includes(p.title));
+    assert.match(html, /Where this fits:/);
+    assert.match(html, /When it shows up:/);
+    assert.match(html, /Try it now:/);
+    assert.ok(html.includes('/book-bonus'), 'must link back to the bonus page');
+    assert.doesNotMatch(html, /—/);
+    for (const step of p.steps) {
+      assert.ok(html.includes(step.body), `${p.slug} must carry ${step.name} verbatim`);
+    }
+  }
+
+  const missing = await fetch(baseUrl + '/book-bonus/one-pagers/not-a-real-chapter');
+  assert.equal(missing.status, 404);
 });
