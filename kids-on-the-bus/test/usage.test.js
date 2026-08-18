@@ -105,6 +105,31 @@ test('the extended ledger preserves structured sessions across a process restart
   fs.rmSync(directory, { recursive: true, force: true });
 });
 
+test('the ledger preserves content-free public funnel records across a process restart', () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'mindbody-ledger-'));
+  const file = path.join(directory, 'usage-ledger.json');
+  const firstProcess = new UsageLedger(file, { budgetUsd: 100, analyticsRetentionDays: 365 });
+  firstProcess.startVisit({
+    visitId: '624c4cde-99af-427b-965d-c7429d7f1350',
+    configuredAtOpen: true,
+    referral: { referringPage: 'https://herstwellness.com/mind-body-foundations?discard=yes' },
+    device: { category: 'Phone', browserFamily: 'Safari', operatingSystemFamily: 'iOS or iPadOS', screenSizeCategory: 'Small' },
+    returningBrowser: false,
+    exactEntry: 'Never store this text.'
+  });
+  firstProcess.recordVisitEvent('624c4cde-99af-427b-965d-c7429d7f1350', 'beginAttempts');
+  firstProcess.linkVisitToSession('624c4cde-99af-427b-965d-c7429d7f1350', 'MBF-VST1-2345');
+
+  const restartedProcess = new UsageLedger(file, { budgetUsd: 100, analyticsRetentionDays: 365 });
+  const saved = restartedProcess.visits()[0];
+  assert.equal(saved.beginAttempts, 1);
+  assert.equal(saved.sessionStarted, true);
+  assert.equal(saved.sessionReference, 'MBF-VST1-2345');
+  assert.equal(saved.referral.referringPage, 'https://herstwellness.com/mind-body-foundations');
+  assert.doesNotMatch(fs.readFileSync(file, 'utf8'), /Never store|discard=yes/);
+  fs.rmSync(directory, { recursive: true, force: true });
+});
+
 test('the extended ledger upgrades the existing array without losing cost records', () => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'mindbody-ledger-'));
   const file = path.join(directory, 'usage-ledger.json');
@@ -113,7 +138,8 @@ test('the extended ledger upgrades the existing array without losing cost record
   assert.equal(ledger.entries()[0].usageId, 'old');
   ledger.startSession({ sessionReference: 'MBF-EFGH-6789' });
   const upgraded = JSON.parse(fs.readFileSync(file, 'utf8'));
-  assert.equal(upgraded.version, 2);
+  assert.equal(upgraded.version, 3);
+  assert.deepEqual(upgraded.visits, []);
   assert.equal(upgraded.usageEntries[0].costUsd, 1.25);
   fs.rmSync(directory, { recursive: true, force: true });
 });

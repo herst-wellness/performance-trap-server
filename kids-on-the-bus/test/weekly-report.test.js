@@ -21,7 +21,15 @@ test('the weekly report contains structured summaries and no conversation conten
     feedback: { ratings: [5, 4, 4, 5, 3] },
     conversionClicks: 1,
     exactEntry: 'Melissa said something identifiable.'
-  }], now);
+  }], now, [{
+    openedAt: '2026-08-12T17:30:00.000Z',
+    beginAttempts: 1,
+    sessionStarted: true,
+    sessionReference: 'MBF-ABCD-2345',
+    pageExitsBeforeStart: 0
+  }]);
+  assert.match(report.html, /Public page visits<\/td><td><strong>1/);
+  assert.match(report.html, /Visit-to-start rate<\/td><td><strong>100%/);
   assert.match(report.html, /Sittings/);
   assert.match(report.html, /Work \(1\)/);
   assert.match(report.html, /Body awareness invited \(1\)/);

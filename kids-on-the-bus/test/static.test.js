@@ -67,6 +67,17 @@ test('the companion is framed as Mind/Body Foundations with notice and optional 
   assert.match(html, /I give Herst Wellness permission to save this written sitting/);
   assert.doesNotMatch(html, /id="researchConsent"[^>]*checked/);
   assert.doesNotMatch(`${html}\n${app}`, /completely private|private written|private test/i);
+  assert.doesNotMatch(`${html}\n${app}`, /access code|X-Companion-Code|Early access/i);
+});
+
+test('completion offers three intentional next steps with clear newsletter disclosure', () => {
+  assert.ok(html.indexOf('Book a consultation') < html.indexOf('Get Chapter One'));
+  assert.ok(html.indexOf('Get Chapter One') < html.indexOf('Explore Foundations'));
+  assert.match(html, /When you enter your email, you will also receive Chad's newsletter\. Unsubscribe at any time\./);
+  assert.match(html, /data-event="conversationClick" href="https:\/\/herstwellness\.com\/consult"/);
+  assert.match(html, /data-event="chapterClick" href="https:\/\/performance-trap-server\.onrender\.com\/listen\/chapter-one"/);
+  assert.match(html, /data-event="mindbodyPageClick" href="https:\/\/herstwellness\.com\/mind-body-foundations"/);
+  assert.doesNotMatch(html, /data-event="emailListClick"/);
 });
 
 test('browser submits the notice version supplied by the server configuration', async () => {
@@ -115,6 +126,9 @@ test('browser submits the notice version supplied by the server configuration', 
         })
       };
     }
+    if (url.endsWith('/visit')) {
+      return { ok: true, json: async () => ({ visitId: 'visit-id' }) };
+    }
     if (url.endsWith('/session')) {
       return {
         ok: true,
@@ -146,10 +160,11 @@ test('browser submits the notice version supplied by the server configuration', 
   });
   await new Promise((resolve) => setImmediate(resolve));
   elements.get('noticeConsent').checked = true;
-  elements.get('accessCode').value = 'visitor-code';
   await listeners.get('beginButton:click')();
   const submitted = requests.find((request) => request.url.endsWith('/session'));
   assert.equal(JSON.parse(submitted.options.body).noticeVersion, serverNoticeVersion);
+  assert.equal(JSON.parse(submitted.options.body).visitId, 'visit-id');
+  assert.equal('X-Companion-Code' in submitted.options.headers, false);
   assert.doesNotMatch(app, /const NOTICE_VERSION\s*=/);
 });
 

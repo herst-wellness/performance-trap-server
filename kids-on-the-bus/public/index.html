@@ -19,7 +19,6 @@
       <p class="eyebrow">An introductory written experience</p>
       <h1>Mind/Body Foundations Companion</h1>
       <p class="subtitle">Bring something real. See what happens when you turn toward it.</p>
-      <span class="access-badge">Early access</span>
     </header>
 
     <section id="setupCard" class="card setup-card">
@@ -30,7 +29,7 @@
       <section class="information-notice" aria-labelledby="informationTitle">
         <p class="notice-label">Information notice</p>
         <h3 id="informationTitle">How your information is used</h3>
-        <p>Your entries are sent to an AI service so the companion can respond. Herst Wellness also records information about how the companion is used, including session length, response times, errors, automatically estimated topic categories, steps the companion invited, and steps the participant's response appeared to demonstrate. This information helps us improve the experience and understand what people find useful.</p>
+        <p>Your entries are sent to an AI service so the companion can respond. Herst Wellness also records information about how the companion is used, including page visits, start attempts, session length, response times, errors, automatically estimated topic categories, steps the companion invited, and steps the participant's response appeared to demonstrate. This information helps us improve the experience and understand what people find useful.</p>
         <p>Herst Wellness keeps structured usage information, without the exact words of your sitting, for up to 12 months. If you choose to share your sitting or submit a written feedback comment, that material is kept separately for up to 90 days.</p>
         <p>Your exact written conversation will not be saved for later review unless you separately choose to share it. Please do not enter names, identifying details, or anything you would not want processed by an AI service.</p>
         <p>This is an AI-guided experience shaped by Chad's teaching and coaching method. It is not Chad, one-on-one coaching, psychotherapy, medical care, or crisis support.</p>
@@ -45,10 +44,6 @@
         <span>I give Herst Wellness permission to save this written sitting for product research and improvement.</span>
       </label>
       <p class="consent-detail">Optional. This choice is off unless you select it. A shared sitting is kept separately for up to 90 days. It is not permission to use your words in advertising, a testimonial, or a public quotation.</p>
-      <label class="field access-field">
-        <span>Access code</span>
-        <input id="accessCode" type="password" autocomplete="off" spellcheck="false">
-      </label>
       <button id="beginButton" class="button primary" type="button">Begin written reflection</button>
       <p id="setupMessage" class="message" role="status"></p>
     </section>
@@ -107,15 +102,36 @@
         <p id="feedbackMessage" class="message" role="status"></p>
       </form>
 
-      <div class="next-steps">
-        <a id="googleFeedbackLink" class="button secondary tracked-link" data-event="feedbackFormClicks" href="https://docs.google.com/forms/d/e/1FAIpQLSfXr_Y0YxeUwx0Ky3QNBdNf6kCZCtlFXY2eZfp5qDq7jX-XEg/viewform">Open the additional feedback form</a>
-        <p class="consent-detail">Enter session reference <strong id="feedbackReference"></strong> in the form.</p>
-        <a class="text-link tracked-link" data-event="mindbodyPageClick" href="https://herstwellness.com/mind-body-foundations">Explore Mind/Body Foundations</a>
-        <a class="text-link tracked-link" data-event="chapterClick" href="https://performance-trap-server.onrender.com/listen/chapter-one">Read or listen to a chapter</a>
-        <a class="text-link tracked-link" data-event="bookClick" href="https://herstwellness.com/">Learn about the book</a>
-        <a class="text-link tracked-link" data-event="conversationClick" href="https://herstwellness.com/consult">Book a conversation with Chad</a>
-        <a class="text-link tracked-link" data-event="emailListClick" href="https://performance-trap-server.onrender.com/listen/chapter-one">Join the email list</a>
-      </div>
+      <section class="next-steps" aria-labelledby="nextStepsTitle">
+        <p class="eyebrow">Where to go from here</p>
+        <h3 id="nextStepsTitle">Choose what feels useful now.</h3>
+        <p class="next-steps-intro">You can talk with Chad, stay connected through the book and newsletter, or return to the Foundations page.</p>
+        <div class="pathway-grid">
+          <article class="pathway-card featured-pathway">
+            <p class="pathway-label">Work with Chad</p>
+            <h4>Book a consultation</h4>
+            <p>Talk with Chad about what surfaced and whether working together would be useful.</p>
+            <a class="button primary tracked-link" data-event="conversationClick" href="https://herstwellness.com/consult">Book a consultation</a>
+          </article>
+          <article class="pathway-card">
+            <p class="pathway-label">Stay connected</p>
+            <h4>Chapter One and the newsletter</h4>
+            <p>Read or listen to Chapter One. When you enter your email, you will also receive Chad's newsletter. Unsubscribe at any time.</p>
+            <a class="button secondary tracked-link" data-event="chapterClick" href="https://performance-trap-server.onrender.com/listen/chapter-one">Get Chapter One</a>
+          </article>
+          <article class="pathway-card">
+            <p class="pathway-label">Keep exploring</p>
+            <h4>Mind/Body Foundations</h4>
+            <p>Return to the Foundations page for the larger context around this written experience.</p>
+            <a class="button secondary tracked-link" data-event="mindbodyPageClick" href="https://herstwellness.com/mind-body-foundations">Explore Foundations</a>
+          </article>
+        </div>
+        <div class="additional-feedback">
+          <p><strong>Want to tell us more?</strong> The additional feedback form uses your anonymous session reference.</p>
+          <a id="googleFeedbackLink" class="button secondary tracked-link" data-event="feedbackFormClicks" href="https://docs.google.com/forms/d/e/1FAIpQLSfXr_Y0YxeUwx0Ky3QNBdNf6kCZCtlFXY2eZfp5qDq7jX-XEg/viewform">Open the additional feedback form</a>
+          <p class="consent-detail">Enter session reference <strong id="feedbackReference"></strong> in the form.</p>
+        </div>
+      </section>
       <button id="startAgainButton" class="button link-button" type="button">Return to the beginning</button>
     </section>
   </main>

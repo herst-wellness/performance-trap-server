@@ -20,8 +20,14 @@ const DEFAULT_RATES = Object.freeze({
 const SESSION_COUNTERS = new Set([
   'copyButtonUse', 'downloadButtonUse', 'endAndClearButtonUse', 'feedbackFormClicks',
   'conversionClicks', 'browserErrors', 'serverErrors', 'truncatedResponses', 'emptyResponses',
+  'responseFailures',
   'safetyActivations', 'diagnosisBoundaryActivations', 'crisisActivations', 'userStopRequests',
   'mindbodyPageClick', 'chapterClick', 'bookClick', 'conversationClick', 'emailListClick'
+]);
+
+const VISIT_COUNTERS = new Set([
+  'beginAttempts', 'noticeBlocks', 'configurationBlocks', 'sessionStartErrors',
+  'browserErrors', 'pageExitsBeforeStart'
 ]);
 
 function finiteNonNegative(value) {
@@ -81,7 +87,7 @@ function pruneEntries(entries, now = Date.now(), retentionDays = 30) {
 }
 
 function initialStore(usageEntries = []) {
-  return { version: 2, usageEntries, sessions: [], reportState: {} };
+  return { version: 3, usageEntries, sessions: [], visits: [], reportState: {} };
 }
 
 function sanitizeText(value, maximum = 200) {
@@ -146,7 +152,7 @@ function newSession(record) {
     startedAt: record.startedAt || new Date().toISOString(),
     endedAt: '',
     durationSeconds: 0,
-    accessCompleted: true,
+    noticeAcknowledged: true,
     beganWriting: false,
     completed: false,
     endedIntentionally: false,
@@ -184,6 +190,7 @@ function newSession(record) {
     emptyResponses: 0,
     serverErrors: 0,
     browserErrors: 0,
+    responseFailures: 0,
     safetyActivations: 0,
     diagnosisBoundaryActivations: 0,
     crisisActivations: 0,
@@ -201,6 +208,26 @@ function newSession(record) {
     consentDate: record.consentDate || '',
     noticeVersion: sanitizeText(record.noticeVersion, 40),
     sharedSittingRetentionDays: wholeNonNegative(record.sharedSittingRetentionDays)
+  };
+}
+
+function newVisit(record) {
+  return {
+    visitId: sanitizeText(record.visitId, 50),
+    openedAt: record.openedAt || new Date().toISOString(),
+    lastEventAt: record.openedAt || new Date().toISOString(),
+    configuredAtOpen: Boolean(record.configuredAtOpen),
+    beginAttempts: 0,
+    noticeBlocks: 0,
+    configurationBlocks: 0,
+    sessionStartErrors: 0,
+    browserErrors: 0,
+    pageExitsBeforeStart: 0,
+    sessionStarted: false,
+    sessionReference: '',
+    referral: normalizeReferral(record.referral),
+    device: normalizeDevice(record.device),
+    returningBrowser: Boolean(record.returningBrowser)
   };
 }
 
@@ -234,9 +261,10 @@ class UsageLedger {
       const parsed = JSON.parse(fs.readFileSync(this.filePath, 'utf8'));
       if (Array.isArray(parsed)) return initialStore(parsed);
       return {
-        version: 2,
+        version: 3,
         usageEntries: Array.isArray(parsed.usageEntries) ? parsed.usageEntries : [],
         sessions: Array.isArray(parsed.sessions) ? parsed.sessions : [],
+        visits: Array.isArray(parsed.visits) ? parsed.visits : [],
         reportState: parsed.reportState && typeof parsed.reportState === 'object' ? parsed.reportState : {}
       };
     } catch (error) {
@@ -257,6 +285,7 @@ class UsageLedger {
     const analyticsCutoff = now - this.analyticsRetentionDays * 24 * 60 * 60 * 1000;
     const staleCutoff = now - this.staleSessionMinutes * 60 * 1000;
     store.sessions = store.sessions.filter((session) => Date.parse(session.startedAt) >= analyticsCutoff);
+    store.visits = (store.visits || []).filter((visit) => Date.parse(visit.openedAt) >= analyticsCutoff).slice(-100000);
     for (const session of store.sessions) {
       normalizeSessionProcess(session);
       if (!session.endedAt && Date.parse(session.startedAt) < staleCutoff) {
@@ -285,6 +314,14 @@ class UsageLedger {
     this.pruneStore(current);
     if (JSON.stringify(current) !== before) this.writeStore(current);
     return current.sessions.map((session) => finalizeSessionMetrics({ ...session }));
+  }
+
+  visits() {
+    const current = this.readStore();
+    const before = JSON.stringify(current);
+    this.pruneStore(current);
+    if (JSON.stringify(current) !== before) this.writeStore(current);
+    return current.visits.map((visit) => ({ ...visit }));
   }
 
   total() {
@@ -352,6 +389,38 @@ class UsageLedger {
       this.writeStore(store);
     }
     return store.sessions.find((session) => session.sessionReference === record.sessionReference);
+  }
+
+  startVisit(record) {
+    const store = this.pruneStore(this.readStore());
+    if (!store.visits.some((visit) => visit.visitId === record.visitId)) {
+      store.visits.push(newVisit(record));
+      this.writeStore(store);
+    }
+    return store.visits.find((visit) => visit.visitId === record.visitId);
+  }
+
+  recordVisitEvent(visitId, eventName) {
+    if (!VISIT_COUNTERS.has(eventName)) return null;
+    const store = this.pruneStore(this.readStore());
+    const visit = store.visits.find((item) => item.visitId === visitId);
+    if (!visit) return null;
+    visit[eventName] = wholeNonNegative(visit[eventName]) + 1;
+    visit.lastEventAt = new Date().toISOString();
+    this.writeStore(store);
+    return visit;
+  }
+
+  linkVisitToSession(visitId, sessionReference) {
+    if (!visitId) return null;
+    const store = this.pruneStore(this.readStore());
+    const visit = store.visits.find((item) => item.visitId === visitId);
+    if (!visit) return null;
+    visit.sessionStarted = true;
+    visit.sessionReference = sanitizeText(sessionReference, 40);
+    visit.lastEventAt = new Date().toISOString();
+    this.writeStore(store);
+    return visit;
   }
 
   updateSession(sessionReference, updater) {

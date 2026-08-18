@@ -37,5 +37,6 @@ test('interactive controls retain comfortable touch targets without overflowing 
   assert.match(consentInput, /height:\s*20px/);
 
   assert.match(css, /\.rating-row select\s*\{[^}]*min-height:\s*44px[^}]*font-size:\s*1rem/);
+  assert.match(css, /@media \(max-width: 640px\)[\s\S]*\.pathway-grid\s*\{[^}]*grid-template-columns:\s*1fr/);
   assert.match(html, /<meta name="viewport" content="width=device-width, initial-scale=1">/);
 });

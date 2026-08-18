@@ -9,18 +9,20 @@ The approved Squarespace heading is `EXPERIENCE MIND/BODY FOUNDATIONS`. Use Mind
 ## Required Render settings
 
 - `ANTHROPIC_API_KEY`
-- `COMPANION_ACCESS_CODE`
 - `COMPANION_ADMIN_CODE`, a separate code used only for `/admin/mindbody-insights`
 - `PRIVATE_TEST_BUDGET_USD=100`
 - `REALTIME_DATA_DIR=/var/data/mindbody-companion`, or an equivalent path beneath the Render persistent disk mount
 
 Attach a Render persistent disk at `/var/data` before deployment. The application refuses to start on Render without `REALTIME_DATA_DIR` or `RENDER_DISK_PATH`. This prevents analytics from silently falling back to temporary deployment storage.
 
-The existing `usage-ledger.json` is upgraded in place. It keeps cost entries and structured sitting records together. An older array-shaped ledger is read automatically and converted the next time it is written.
+The public companion does not require a visitor access code. `COMPANION_ADMIN_CODE` still protects the reporting dashboard and exports.
+
+The existing `usage-ledger.json` is upgraded in place. It keeps content-free page visits, funnel events, cost entries, and structured sitting records together. An older array-shaped ledger is read automatically and converted the next time it is written.
 
 ## Retention
 
 - Structured usage records: 365 days by default
+- Content-free page visit and start-funnel records: 365 days by default
 - Optionally shared written sittings: 90 days by default
 - Optional feedback comments: 90 days by default
 - Existing detailed cost and latency entries: 30 days
@@ -45,7 +47,7 @@ Set all of these values to enable the weekly report:
 - `COMPANION_REPORT_TO`, Chad's receiving address
 - `COMPANION_REPORT_FROM`, a verified Resend sender
 
-The running service checks once per hour and sends no more than one report in seven days. Topic and process classifications in the dashboard and report are automatically estimated and potentially imperfect. Companion invitations are tracked separately from participant-response evidence. The send date is recorded in the persistent ledger so an application restart does not cause a duplicate report. The protected endpoint `/api/kids-on-the-bus/admin/send-weekly-report` can also send a report deliberately with the separate administrative code.
+The running service checks once per hour and sends no more than one report in seven days. The report includes page visits, begin attempts, tracked starts, pre-start exits, startup problems, sitting outcomes, reliability, and feedback. Topic and process classifications in the dashboard and report are automatically estimated and potentially imperfect. Companion invitations are tracked separately from participant-response evidence. The send date is recorded in the persistent ledger so an application restart does not cause a duplicate report. The protected endpoint `/api/kids-on-the-bus/admin/send-weekly-report` can also send a report deliberately with the separate administrative code.
 
 ## Persistence verification before deployment
 
@@ -68,4 +70,4 @@ npm run check
 npm test
 ```
 
-Then verify desktop and mobile layouts, required notice acknowledgment, optional sharing off by default, copy and download, end and clear, feedback, referral tracking, protected dashboard access, structured CSV export, optional sitting deletion, and the absence of microphone or voice controls.
+Then verify desktop and mobile layouts, no visitor code field or request header, required notice acknowledgment, optional sharing off by default, copy and download, end and clear, feedback, page-visit and funnel tracking, referral tracking, protected dashboard access, both CSV exports, optional sitting deletion, and the absence of microphone or voice controls.

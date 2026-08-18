@@ -4,12 +4,12 @@
   const el = (id) => document.getElementById(id);
   const ui = {
     login: el('adminLogin'), dashboard: el('dashboard'), code: el('adminCode'), open: el('openDashboard'),
-    message: el('adminMessage'), metrics: el('metrics'), topicBars: el('topicBars'),
+    message: el('adminMessage'), metrics: el('metrics'), funnelMetrics: el('funnelMetrics'), topicBars: el('topicBars'),
     invitationBars: el('invitationBars'), evidenceBars: el('evidenceBars'),
     referralBars: el('referralBars'), deviceBars: el('deviceBars'), rows: el('sessionRows'), weekly: el('weeklyPreview'),
     topicFilter: el('topicFilter'), referralFilter: el('referralFilter'), deviceFilter: el('deviceFilter'),
     statusFilter: el('statusFilter'), feedbackFilter: el('feedbackFilter'), errorFilter: el('errorFilter'),
-    stageFilter: el('stageFilter'), startDate: el('startDate'), endDate: el('endDate'), csv: el('downloadCsv'),
+    stageFilter: el('stageFilter'), startDate: el('startDate'), endDate: el('endDate'), csv: el('downloadCsv'), funnelCsv: el('downloadFunnelCsv'),
     sharedList: el('sharedList'), sharedReview: el('sharedReview'), sharedTitle: el('sharedTitle'),
     sharedTurns: el('sharedTurns'), deleteShared: el('deleteShared')
   };
@@ -50,7 +50,7 @@
   }
 
   function hasErrors(row) {
-    return Number(row.serverErrors || 0) + Number(row.browserErrors || 0) + Number(row.emptyResponses || 0) > 0;
+    return Number(row.serverErrors || 0) + Number(row.browserErrors || 0) + Number(row.emptyResponses || 0) + Number(row.responseFailures || 0) > 0;
   }
 
   function filteredSessions() {
@@ -121,6 +121,23 @@
       ['Estimated abandonment point', (() => { const pairs = countBy(rows.filter((row) => row.abandoned), (row) => { const keys = Object.keys(state.data.processEvidenceLabels).filter((key) => Number(row.processEvidence?.[key] || 0) > 0); return [keys.length ? state.data.processEvidenceLabels[keys[keys.length - 1]] : 'Before participant evidence of a specific situation']; }); return pairs[0]?.[0] || 'Not enough data'; })()]
     ];
     ui.metrics.replaceChildren(...cards.map(([label, value]) => metric(label, value)));
+  }
+
+  function renderFunnel() {
+    const funnel = state.data.funnel || {};
+    const startupProblems = Number(funnel.configurationBlocks || 0) + Number(funnel.sessionStartErrors || 0) + Number(funnel.browserErrorsBeforeStart || 0);
+    const cards = [
+      ['Page visits', funnel.pageVisits || 0],
+      ['Begin attempts', funnel.beginAttempts || 0],
+      ['Sessions started', funnel.trackedStarts || 0],
+      ['Began writing', funnel.beganWriting || 0],
+      ['Completed', funnel.completed || 0],
+      ['Visit to start', `${Number(funnel.visitToStartRate || 0).toFixed(1)}%`],
+      ['Start to writing', `${Number(funnel.startToWritingRate || 0).toFixed(1)}%`],
+      ['Left before starting', funnel.pageExitsBeforeStart || 0],
+      ['Startup problems', startupProblems]
+    ];
+    ui.funnelMetrics.replaceChildren(...cards.map(([label, value]) => metric(label, value)));
   }
 
   function renderBars(container, pairs, total) {
@@ -207,7 +224,7 @@
       state.data = await api('/api/kids-on-the-bus/admin/insights');
       ui.login.classList.add('hidden'); ui.dashboard.classList.remove('hidden');
       ui.weekly.srcdoc = state.data.weeklyReportHtml;
-      fillFilters(); renderSharedList(); render();
+      fillFilters(); renderSharedList(); renderFunnel(); render();
     } catch (error) {
       ui.message.textContent = error.message;
       ui.open.disabled = false;
@@ -222,9 +239,18 @@
     link.href = url; link.download = 'mind-body-foundations-companion-structured-usage.csv'; document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
   }
 
+  async function downloadFunnelCsv() {
+    const response = await fetch('/api/kids-on-the-bus/admin/export-visits.csv', { method: 'POST', headers: authHeaders(), body: '{}' });
+    if (!response.ok) return;
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob); const link = document.createElement('a');
+    link.href = url; link.download = 'mind-body-foundations-companion-funnel.csv'; document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
+  }
+
   ui.open.addEventListener('click', openDashboard);
   ui.code.addEventListener('keydown', (event) => { if (event.key === 'Enter') openDashboard(); });
   [ui.topicFilter, ui.referralFilter, ui.deviceFilter, ui.statusFilter, ui.feedbackFilter, ui.errorFilter, ui.stageFilter, ui.startDate, ui.endDate].forEach((control) => control.addEventListener('change', render));
   ui.csv.addEventListener('click', downloadCsv);
+  ui.funnelCsv.addEventListener('click', downloadFunnelCsv);
   ui.deleteShared.addEventListener('click', deleteShared);
 })();

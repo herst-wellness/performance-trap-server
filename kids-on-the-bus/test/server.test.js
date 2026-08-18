@@ -32,7 +32,6 @@ function settings(overrides = {}) {
     port: 0,
     apiKey: 'sk-server-only-secret',
     anthropicKey: 'sk-ant-server-only-secret',
-    accessCode: 'private-code',
     adminCode: 'admin-secret',
     budgetUsd: 5,
     sessionMinutes: 60,
@@ -108,14 +107,14 @@ test('written sittings use the substantially extended session and exchange limit
   assert.equal(config.maxExchanges, 30);
 });
 
-test('browser cannot start a session without the private access code', async () => {
+test('the public browser can start a session without a visitor access code', async () => {
   const appSettings = settings();
   const server = createApp({ settings: appSettings, fetchImpl: async () => { throw new Error('must not call'); } });
   const response = await requestServer(server, {
       method: 'POST',
       url: '/api/kids-on-the-bus/session'
   });
-  assert.equal(response.status, 401);
+  assert.equal(response.status, 200);
   fs.rmSync(appSettings.dataDir, { recursive: true, force: true });
 });
 
@@ -126,7 +125,6 @@ test('written session starts without calling the paused voice provider', async (
   const server = createApp({ settings: appSettings, fetchImpl });
   const response = await requestServer(server, {
       method: 'POST',
-      headers: { 'X-Companion-Code': 'private-code' },
       url: '/api/kids-on-the-bus/session'
   });
   assert.equal(response.status, 200);
@@ -159,10 +157,47 @@ test('zero private budget blocks a written sitting while the page remains availa
   assert.equal(page.status, 200);
   const session = await requestServer(server, {
       method: 'POST',
-      headers: { 'X-Companion-Code': 'private-code' },
       url: '/api/kids-on-the-bus/session'
   });
   assert.equal(session.status, 503);
+  fs.rmSync(appSettings.dataDir, { recursive: true, force: true });
+});
+
+test('page visits and pre-session funnel events are stored without reflection content', async () => {
+  const appSettings = settings();
+  const server = createApp({ settings: appSettings, fetchImpl: async () => { throw new Error('must not call'); } });
+  const visitResponse = await requestServer(server, {
+    method: 'POST',
+    url: '/api/kids-on-the-bus/visit',
+    body: JSON.stringify({
+      referral: { referringPage: 'https://herstwellness.com/mind-body-foundations?private=discarded', utmSource: 'foundations-page' },
+      device: { category: 'Phone', browserFamily: 'Safari', operatingSystemFamily: 'iOS or iPadOS', screenSizeCategory: 'Small' },
+      returningBrowser: true,
+      reflectionText: 'This must never be stored.'
+    })
+  });
+  const visitId = JSON.parse(visitResponse.body).visitId;
+  await requestServer(server, {
+    method: 'POST',
+    url: '/api/kids-on-the-bus/visit/event',
+    body: JSON.stringify({ visitId, eventName: 'beginAttempts', reflectionText: 'Still must not be stored.' })
+  });
+  const started = await requestServer(server, {
+    method: 'POST',
+    url: '/api/kids-on-the-bus/session',
+    body: JSON.stringify({ acknowledged: true, noticeVersion: NOTICE_VERSION, visitId })
+  });
+  assert.equal(started.status, 200);
+  const dashboard = await requestServer(server, {
+    method: 'POST', headers: { 'X-Companion-Admin-Code': 'admin-secret' }, url: '/api/kids-on-the-bus/admin/insights', body: '{}'
+  });
+  const data = JSON.parse(dashboard.body);
+  assert.equal(data.funnel.pageVisits, 1);
+  assert.equal(data.funnel.beginAttempts, 1);
+  assert.equal(data.funnel.trackedStarts, 1);
+  assert.equal(data.visits[0].returningBrowser, true);
+  assert.equal(data.visits[0].referral.referringPage, 'https://herstwellness.com/mind-body-foundations');
+  assert.doesNotMatch(fs.readFileSync(path.join(appSettings.dataDir, 'usage-ledger.json'), 'utf8'), /This must never|Still must never|private=discarded/);
   fs.rmSync(appSettings.dataDir, { recursive: true, force: true });
 });
 
@@ -355,7 +390,7 @@ test('the analytics dashboard requires the separate administrative code', async 
     body: '{}'
   });
   assert.equal(admin.status, 200);
-  assert.doesNotMatch(admin.body, /admin-secret|private-code|sk-ant-server-only-secret/);
+  assert.doesNotMatch(admin.body, /admin-secret|sk-ant-server-only-secret/);
   fs.rmSync(appSettings.dataDir, { recursive: true, force: true });
 });
 
