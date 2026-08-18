@@ -5,6 +5,7 @@ const path = require('path');
 const { handleCompanionRoute, initializeCompanion } = require('./companion');
 const { handleOnrampRoute } = require('./onramp');
 const { handleCourseRoute } = require('./onramp-course');
+const { handleBonusRoute } = require('./book-bonus');
 
 const PORT = process.env.PORT || 3000;
 const MAILCHIMP_KEY = process.env.MAILCHIMP_API_KEY;
@@ -1214,6 +1215,23 @@ const server = http.createServer(async (req, res) => {
   req.url = req.url.split('?')[0];
   if (await handleOnrampRoute(req, res)) { return; }
   if (await handleCourseRoute(req, res)) { return; }
+  if (handleBonusRoute(req, res, {
+    addToMailchimp,
+    tagSubscriber: (email, tag) => {
+      const subscriberHash = require('crypto').createHash('md5').update(email.toLowerCase()).digest('hex');
+      const tagBody = JSON.stringify({ tags: [{ name: tag, status: 'active' }] });
+      const tagAuth = Buffer.from(`anystring:${MAILCHIMP_KEY}`).toString('base64');
+      const tagReq = https.request({
+        hostname: `${MAILCHIMP_SERVER}.api.mailchimp.com`,
+        path: `/3.0/lists/${MAILCHIMP_LIST_ID}/members/${subscriberHash}/tags`,
+        method: 'POST',
+        headers: { 'Authorization': `Basic ${tagAuth}`, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(tagBody) },
+      }, (tagRes) => { tagRes.resume(); });
+      tagReq.on('error', (e) => console.log('Tag error:', e.message));
+      tagReq.write(tagBody);
+      tagReq.end();
+    },
+  })) { return; }
   // ── STATIC FILES (logo, etc.) ────────────────────────────────
   if (req.method === 'GET' && serveStatic(req, res)) { return; }
 

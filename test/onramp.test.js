@@ -363,3 +363,34 @@ test('PayPal self-serve enrollment: off by default, and a mocked full checkout i
   const denied = await fetch(onBase + '/course/on-ramp/api/week-2', { headers: { 'X-Companion-Access': tampered } });
   assert.equal(denied.status, 401);
 });
+
+test('the book-bonus page serves its promises: field-guide PDF, breath audio, course link, no gating', { timeout: 30000 }, async (t) => {
+  const port = await getOpenPort();
+  const child = await startServer(port, {});
+  t.after(() => child.kill());
+  const baseUrl = 'http://127.0.0.1:' + port;
+
+  const page = await fetch(baseUrl + '/book-bonus');
+  assert.equal(page.status, 200);
+  const html = await page.text();
+  assert.match(html, /The practices, in one place/);
+  assert.match(html, /Everything here is free\. No forms, no catch\./);
+  assert.ok(html.includes('/downloads/practices-in-one-place.pdf'));
+  assert.ok(html.includes('/audio/onramp-breath-12min.mp3'));
+  assert.ok(html.includes('/course/on-ramp'), 'the course must be the featured next step');
+  assert.match(html, /being recorded/i, 'unrecorded audios must be named honestly');
+  assert.doesNotMatch(html, /—/);
+  assert.doesNotMatch(html, /googletagmanager|google-analytics/i);
+
+  const pdf = await fetch(baseUrl + '/downloads/practices-in-one-place.pdf');
+  assert.equal(pdf.status, 200);
+  assert.match(pdf.headers.get('content-type') || '', /application\/pdf/);
+  pdf.body && pdf.body.cancel && pdf.body.cancel();
+
+  const badSignup = await fetch(baseUrl + '/book-bonus-signup', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: 'not-an-email' }),
+  });
+  assert.equal(badSignup.status, 400);
+});
