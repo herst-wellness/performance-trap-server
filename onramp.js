@@ -24,25 +24,25 @@ const WEEKS = {
   1: {
     title: 'Week 1: From the Book to the Body',
     sub: 'Slow the breath. Enter the body. That is the whole week.',
-    opening: 'Where did the old pattern show up today? Bring me one moment, big or small.',
+    opening: 'This week is one move: leaving the story and coming back to what your body is doing. Bring me a moment from today, big or small.',
     methods: [SENSE_EARLY],
   },
   2: {
     title: 'Week 2: Staying With It',
     sub: 'Name it, keep it company, stop bracing.',
-    opening: 'What is the moment you are bringing today? We will find it in the body and keep it company.',
+    opening: 'This week we stay with what we find instead of fixing it. What is the moment you are bringing today?',
     methods: [SENSE_FULL],
   },
   3: {
     title: 'Week 3: Turning Contact Into Choice',
     sub: 'The pause, the trade, the third option, one honest sentence.',
-    opening: 'Bring me one interaction from today, even a tiny one. Where did the old pull show up?',
+    opening: 'This week it goes outward, into a real conversation. Bring me one interaction from today, even a tiny one.',
     methods: [SENSE_FULL, STEP_METHOD],
   },
   4: {
     title: 'Week 4: Integration and the Doorway',
     sub: 'The whole arc, run on real life.',
-    opening: 'Last stretch. What is the moment you are bringing today?',
+    opening: 'Last stretch, and you have all the moves now. What is the moment you are bringing today?',
     methods: [SENSE_FULL, STEP_METHOD],
   },
 };

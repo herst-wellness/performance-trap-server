@@ -190,6 +190,51 @@ test('all four weekly routes pass the full 25-case product-safety suite', { time
   }
 });
 
+test('every week opens on its own material and closes by attaching the rep to the skill and to their life', () => {
+  // The opening the person actually sees must name what this week is
+  // about, and the prompt must be told to use that same opening, or the
+  // companion drifts back to a generic "what happened today".
+  const openingMarkers = {
+    1: 'coming back to what your body is doing',
+    2: 'stay with what we find instead of fixing it',
+    3: 'goes outward, into a real conversation',
+    4: 'you have all the moves now',
+  };
+  for (const n of [1, 2, 3, 4]) {
+    const opening = WEEKS[n].opening;
+    assert.ok(opening.includes(openingMarkers[n]), 'week ' + n + ' opening must name the week material');
+    const flat = WEEKS[n].instructions.replace(/\s+/g, ' ').replace(/[‘’]/g, "'");
+    const head = opening.replace(/\s+/g, ' ').split(/[.?]/)[0].trim();
+    assert.ok(flat.includes(head), 'week ' + n + ' prompt must carry the same standing opening');
+  }
+
+  // The close is the part that turns a conversation into a practice, so
+  // all four weeks must carry the three beats and the reason for them.
+  for (const n of [1, 2, 3, 4]) {
+    const p = WEEKS[n].instructions;
+    assert.ok(p.includes('Close by making the rep usable'), 'week ' + n + ' close intent');
+    assert.ok(p.includes('What they got from today'), 'week ' + n + ' asks what landed');
+    assert.ok(p.includes('What they learned about the move itself'), 'week ' + n + ' asks about the move');
+    assert.ok(p.includes('Where it goes next'), 'week ' + n + ' asks where it applies');
+    assert.ok(p.includes('reach for when the pressure is real'), 'week ' + n + ' states why');
+    // And it must stay a practice, not a quiz.
+    assert.ok(p.includes('Never grade the answers'), 'week ' + n + ' must not grade');
+    assert.ok(p.includes("\"I don't know\" is a complete answer"), 'week ' + n + ' allows not knowing');
+  }
+
+  // Each week names its own move at the close, not a generic one.
+  const closingMove = {
+    1: 'leaving the story and coming back to the body',
+    2: 'staying with something instead of fixing it',
+    3: 'the trade',
+    4: 'meeting a protector with a little less argument',
+  };
+  for (const n of [1, 2, 3, 4]) {
+    const flat = WEEKS[n].instructions.replace(/\s+/g, ' ');
+    assert.ok(flat.includes(closingMove[n]), 'week ' + n + ' must name its own move at the close');
+  }
+});
+
 test('week prompts are scoped to their week and share the core, safety overlay, and evaluation-driven config', () => {
   const w = (n) => WEEKS[n].instructions;
 
