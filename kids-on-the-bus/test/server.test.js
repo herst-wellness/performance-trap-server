@@ -147,7 +147,7 @@ test('written session starts without calling the paused voice provider', async (
   const body = JSON.parse(response.body);
   assert.ok(body.sessionId);
   assert.match(body.sessionReference, /^MBF-[A-Z0-9]{4}-[A-Z0-9]{4}$/);
-  assert.match(body.opening, /What has you reaching out today/);
+  assert.equal(body.opening, 'What has you feeling stuck?');
   assert.equal(calls, 0);
   fs.rmSync(appSettings.dataDir, { recursive: true, force: true });
 });
