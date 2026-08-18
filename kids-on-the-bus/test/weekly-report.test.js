@@ -17,6 +17,11 @@ test('the weekly report contains structured summaries and no conversation conten
     processInvitations: { bodySensation: 1 },
     processEvidence: { specificSituation: 1 },
     responseTimesMs: [1200],
+    voiceRecordingStarts: 1,
+    voiceTranscriptionSuccesses: 1,
+    voiceTranscriptionFailures: 0,
+    voiceRecordedSeconds: 12,
+    transcriptionTimesMs: [700],
     estimatedCostUsd: 0.03,
     feedback: { ratings: [5, 4, 4, 5, 3] },
     conversionClicks: 1,
@@ -36,6 +41,8 @@ test('the weekly report contains structured summaries and no conversation conten
   assert.match(report.html, /Specific situation described \(1\)/);
   assert.match(report.html, /automatically estimated and potentially imperfect/i);
   assert.match(report.html, /structured usage information only/i);
+  assert.match(report.html, /Voice recordings<\/td><td><strong>1/);
+  assert.match(report.html, /Voice transcription success rate<\/td><td><strong>100%/);
   assert.doesNotMatch(report.html, /Melissa|identifiable|MBF-ABCD-2345/);
 });
 

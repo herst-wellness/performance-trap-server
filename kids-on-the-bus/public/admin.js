@@ -50,7 +50,7 @@
   }
 
   function hasErrors(row) {
-    return Number(row.serverErrors || 0) + Number(row.browserErrors || 0) + Number(row.emptyResponses || 0) + Number(row.responseFailures || 0) > 0;
+    return Number(row.serverErrors || 0) + Number(row.browserErrors || 0) + Number(row.emptyResponses || 0) + Number(row.responseFailures || 0) + Number(row.voiceTranscriptionFailures || 0) + Number(row.voiceClientFailures || 0) > 0;
   }
 
   function filteredSessions() {
@@ -106,6 +106,14 @@
     const feedback = rows.map(feedbackAverage).filter((value) => value != null);
     const cost = rows.reduce((sum, row) => sum + Number(row.estimatedCostUsd || 0), 0);
     const conversions = rows.reduce((sum, row) => sum + Number(row.conversionClicks || 0), 0);
+    const voiceStarts = rows.reduce((sum, row) => sum + Number(row.voiceRecordingStarts || 0), 0);
+    const voiceSuccesses = rows.reduce((sum, row) => sum + Number(row.voiceTranscriptionSuccesses || 0), 0);
+    const voiceFailures = rows.reduce((sum, row) => sum + Number(row.voiceTranscriptionFailures || 0), 0);
+    const voiceClientFailures = rows.reduce((sum, row) => sum + Number(row.voiceClientFailures || 0), 0);
+    const microphoneDenials = rows.reduce((sum, row) => sum + Number(row.microphoneDenials || 0), 0);
+    const voiceCorrections = rows.reduce((sum, row) => sum + Number(row.voiceTranscriptCorrections || 0), 0);
+    const voiceSeconds = rows.reduce((sum, row) => sum + Number(row.voiceRecordedSeconds || 0), 0);
+    const transcriptionTimes = rows.flatMap((row) => row.transcriptionTimesMs || []);
     const cards = [
       ['Total sittings', rows.length], ['Completion rate', rows.length ? `${Math.round(completed / rows.length * 100)}%` : '0%'],
       ['Abandonment rate', rows.length ? `${Math.round(abandoned / rows.length * 100)}%` : '0%'],
@@ -117,6 +125,12 @@
       ['Safety activations', rows.reduce((sum, row) => sum + Number(row.safetyActivations || 0), 0)],
       ['Feedback average', feedback.length ? (feedback.reduce((a, b) => a + b, 0) / feedback.length).toFixed(1) : 'No responses'],
       ['Estimated cost', `$${cost.toFixed(3)}`], ['Conversion clicks', conversions],
+      ['Voice recordings', voiceStarts], ['Voice transcripts', voiceSuccesses],
+      ['Voice success rate', voiceSuccesses + voiceFailures ? `${Math.round(voiceSuccesses / (voiceSuccesses + voiceFailures) * 100)}%` : 'No attempts'],
+      ['Average recording', voiceSuccesses + voiceFailures ? `${(voiceSeconds / (voiceSuccesses + voiceFailures)).toFixed(1)} sec` : '0 sec'],
+      ['Median transcription', transcriptionTimes.length ? `${(median(transcriptionTimes) / 1000).toFixed(1)} sec` : '0 sec'],
+      ['Transcription failures', voiceFailures], ['Browser voice failures', voiceClientFailures],
+      ['Microphone denials', microphoneDenials], ['Edited transcripts', voiceCorrections],
       ['Returning browsers', rows.filter((row) => row.returningBrowser).length], ['Active now', rows.filter((row) => !row.endedAt).length],
       ['Estimated abandonment point', (() => { const pairs = countBy(rows.filter((row) => row.abandoned), (row) => { const keys = Object.keys(state.data.processEvidenceLabels).filter((key) => Number(row.processEvidence?.[key] || 0) > 0); return [keys.length ? state.data.processEvidenceLabels[keys[keys.length - 1]] : 'Before participant evidence of a specific situation']; }); return pairs[0]?.[0] || 'Not enough data'; })()]
     ];

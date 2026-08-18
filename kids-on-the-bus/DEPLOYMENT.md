@@ -2,13 +2,14 @@
 
 The route at `/reflect/kids-on-the-bus` remains in place so existing links continue to work. The visitor-facing name is now Mind/Body Foundations Companion. Kids on the Bus remains one element inside the broader method, not the name of the whole experience.
 
-The application remains written only. The approved Module 2 coaching prompt, pacing, safety responses, 30-exchange limit, 60-minute limit, and Claude Sonnet 5 effort setting are unchanged.
+The application remains text-led and adds optional push-to-talk transcription for individual responses. Visitors can review, edit, or delete a transcript before sending it through the same approved Module 2 coaching and safety path. The coaching prompt, pacing, safety responses, 30-exchange limit, 60-minute limit, and Claude Sonnet 5 effort setting are unchanged.
 
 The approved Squarespace heading is `EXPERIENCE MIND/BODY FOUNDATIONS`. Use Mind/Body Foundations consistently in the website section, companion, dashboard, reports, and metadata.
 
 ## Required Render settings
 
 - `ANTHROPIC_API_KEY`
+- `OPENAI_API_KEY`, used server-side only for bounded audio transcription
 - `COMPANION_ADMIN_CODE`, a separate code used only for `/admin/mindbody-insights`
 - `PRIVATE_TEST_BUDGET_USD=100`
 - `REALTIME_DATA_DIR=/var/data/mindbody-companion`, or an equivalent path beneath the Render persistent disk mount
@@ -37,6 +38,10 @@ Optional controls:
 - `ANTHROPIC_EFFORT=high`
 - `WRITTEN_SESSION_MINUTES=60`
 - `WRITTEN_MAX_EXCHANGES=30`
+- `OPENAI_TRANSCRIPTION_MODEL=gpt-transcribe`
+- `OPENAI_TRANSCRIPTION_PER_MINUTE=0.0045`
+
+Voice recordings are limited to two minutes and 10 MB. The server holds audio in memory only long enough to send it to the transcription service and return the transcript. It does not write audio to disk, logs, analytics, shared sittings, or reports. A transcript is not sent to the coaching path until the visitor reviews it and selects Send.
 
 ## Weekly Resend report
 
@@ -70,4 +75,4 @@ npm run check
 npm test
 ```
 
-Then verify desktop and mobile layouts, no visitor code field or request header, required notice acknowledgment, optional sharing off by default, copy and download, end and clear, feedback, page-visit and funnel tracking, referral tracking, protected dashboard access, both CSV exports, optional sitting deletion, and the absence of microphone or voice controls.
+Then verify desktop and mobile layouts, no visitor code field or request header, required notice acknowledgment, optional sharing off by default, microphone permission denial, recording start and stop, the two-minute limit, transcription insertion without automatic submission, transcript correction, text-only fallback, copy and download, end and clear, feedback, page-visit and funnel tracking, voice analytics, referral tracking, protected dashboard access, both CSV exports, optional sitting deletion, and immediate microphone shutdown when a sitting ends or the page closes.

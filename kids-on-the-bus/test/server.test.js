@@ -32,6 +32,7 @@ function settings(overrides = {}) {
     port: 0,
     apiKey: 'sk-server-only-secret',
     anthropicKey: 'sk-ant-server-only-secret',
+    openaiKey: 'sk-openai-server-only-secret',
     adminCode: 'admin-secret',
     budgetUsd: 5,
     sessionMinutes: 60,
@@ -40,13 +41,16 @@ function settings(overrides = {}) {
     claudeEffort: 'high',
     instructions: 'Test instructions. Never use an em dash.',
     claudeInstructions: 'Test Module 2 instructions. Never use an em dash.',
+    transcriptionModel: 'gpt-transcribe',
+    maxAudioBytes: 10 * 1024 * 1024,
+    maxAudioDurationMs: 2 * 60 * 1000,
     rates: {
       inputText: 4,
       cachedInput: 0.4,
       inputAudio: 32,
       outputText: 24,
       outputAudio: 64,
-      transcriptionPerMinute: 0.017,
+      transcriptionPerMinute: 0.0045,
       claudeInput: 3,
       claudeOutput: 15,
       claudeCacheWrite: 3.75,
@@ -65,8 +69,8 @@ function requestServer(server, options = {}) {
     const isSessionStart = options.method === 'POST' && options.url === '/api/kids-on-the-bus/session';
     const body = options.body == null && isSessionStart
       ? JSON.stringify({ acknowledged: true, noticeVersion: NOTICE_VERSION })
-      : options.body == null ? '' : String(options.body);
-    const req = Readable.from(body ? [Buffer.from(body)] : []);
+      : options.body == null ? '' : options.body;
+    const req = Readable.from(body && body.length !== 0 ? [Buffer.isBuffer(body) ? body : Buffer.from(String(body))] : []);
     req.method = options.method || 'GET';
     req.url = options.url || '/';
     req.headers = Object.fromEntries(
@@ -107,6 +111,18 @@ test('written sittings use the substantially extended session and exchange limit
   assert.equal(config.maxExchanges, 30);
 });
 
+test('configuration exposes optional voice input without exposing the OpenAI key', async () => {
+  const appSettings = settings();
+  const server = createApp({ settings: appSettings });
+  const config = await requestServer(server, { url: '/api/kids-on-the-bus/config' });
+  assert.equal(config.status, 200);
+  assert.equal(JSON.parse(config.body).voiceInputAvailable, true);
+  assert.doesNotMatch(config.body, /sk-openai|openaiKey|OPENAI_API_KEY/);
+  const page = await requestServer(server, { url: '/reflect/kids-on-the-bus' });
+  assert.match(page.headers['Permissions-Policy'], /microphone=\(self\)/);
+  fs.rmSync(appSettings.dataDir, { recursive: true, force: true });
+});
+
 test('the public browser can start a session without a visitor access code', async () => {
   const appSettings = settings();
   const server = createApp({ settings: appSettings, fetchImpl: async () => { throw new Error('must not call'); } });
@@ -133,6 +149,90 @@ test('written session starts without calling the paused voice provider', async (
   assert.match(body.sessionReference, /^MBF-[A-Z0-9]{4}-[A-Z0-9]{4}$/);
   assert.match(body.opening, /What has you reaching out today/);
   assert.equal(calls, 0);
+  fs.rmSync(appSettings.dataDir, { recursive: true, force: true });
+});
+
+test('a bounded recording is transcribed without storing audio or transcript content', async () => {
+  const appSettings = settings();
+  let upstreamChecked = false;
+  const fetchImpl = async (url, options) => {
+    assert.equal(url, 'https://api.openai.com/v1/audio/transcriptions');
+    assert.equal(options.headers.Authorization, 'Bearer sk-openai-server-only-secret');
+    assert.equal(options.body.get('model'), 'gpt-transcribe');
+    const file = options.body.get('file');
+    assert.equal(file.type, 'audio/webm');
+    assert.equal(file.size, 2048);
+    upstreamChecked = true;
+    return new Response(JSON.stringify({ text: 'I notice a tight feeling in my chest.' }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    });
+  };
+  const server = createApp({ settings: appSettings, fetchImpl });
+  const started = await requestServer(server, { method: 'POST', url: '/api/kids-on-the-bus/session' });
+  const session = JSON.parse(started.body);
+  const response = await requestServer(server, {
+    method: 'POST',
+    url: '/api/kids-on-the-bus/transcribe',
+    headers: {
+      'Content-Type': 'audio/webm;codecs=opus',
+      'X-Companion-Session-Id': session.sessionId,
+      'X-Audio-Duration-Ms': '12500'
+    },
+    body: Buffer.alloc(2048, 7)
+  });
+  assert.equal(response.status, 200);
+  assert.equal(JSON.parse(response.body).text, 'I notice a tight feeling in my chest.');
+  assert.equal(upstreamChecked, true);
+
+  const dashboard = await requestServer(server, {
+    method: 'POST',
+    headers: { 'X-Companion-Admin-Code': 'admin-secret' },
+    url: '/api/kids-on-the-bus/admin/insights',
+    body: '{}'
+  });
+  const row = JSON.parse(dashboard.body).sessions[0];
+  assert.equal(row.voiceTranscriptionSuccesses, 1);
+  assert.equal(row.voiceTranscriptionFailures, 0);
+  assert.equal(row.voiceRecordedSeconds, 12.5);
+  assert.ok(row.medianTranscriptionTimeMs >= 0);
+  const stored = fs.readFileSync(path.join(appSettings.dataDir, 'usage-ledger.json'), 'utf8');
+  assert.doesNotMatch(stored, /tight feeling|audio\/webm|\u0007/);
+  fs.rmSync(appSettings.dataDir, { recursive: true, force: true });
+});
+
+test('transcription failures are content-free, counted, and preserve the writing fallback', async () => {
+  const appSettings = settings();
+  const fetchImpl = async () => new Response(JSON.stringify({ error: { message: 'provider detail must stay private' } }), {
+    status: 500,
+    headers: { 'Content-Type': 'application/json' }
+  });
+  const server = createApp({ settings: appSettings, fetchImpl });
+  const started = await requestServer(server, { method: 'POST', url: '/api/kids-on-the-bus/session' });
+  const session = JSON.parse(started.body);
+  const response = await requestServer(server, {
+    method: 'POST',
+    url: '/api/kids-on-the-bus/transcribe',
+    headers: {
+      'Content-Type': 'audio/webm',
+      'X-Companion-Session-Id': session.sessionId,
+      'X-Audio-Duration-Ms': '3000'
+    },
+    body: Buffer.alloc(1024, 3)
+  });
+  assert.equal(response.status, 502);
+  assert.match(response.body, /continue by writing/i);
+  assert.doesNotMatch(response.body, /provider detail|openai/i);
+  const dashboard = await requestServer(server, {
+    method: 'POST',
+    headers: { 'X-Companion-Admin-Code': 'admin-secret' },
+    url: '/api/kids-on-the-bus/admin/insights',
+    body: '{}'
+  });
+  const row = JSON.parse(dashboard.body).sessions[0];
+  assert.equal(row.voiceTranscriptionSuccesses, 0);
+  assert.equal(row.voiceTranscriptionFailures, 1);
+  assert.equal(row.serverErrors, 0);
   fs.rmSync(appSettings.dataDir, { recursive: true, force: true });
 });
 

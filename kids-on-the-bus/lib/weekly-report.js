@@ -50,6 +50,8 @@ function buildWeeklyReport(sessions, now = Date.now(), visits = []) {
     changeLine(current.totalSittings, prior.totalSittings, 'Sittings'),
     changeLine(current.completionRate, prior.completionRate, 'Completion rate'),
     changeLine(current.averageResponseTimeMs, prior.averageResponseTimeMs, 'Average response time'),
+    changeLine(current.voiceRecordingStarts, prior.voiceRecordingStarts, 'Voice recordings'),
+    changeLine(current.voiceTranscriptionSuccessRate, prior.voiceTranscriptionSuccessRate, 'Voice transcription success rate'),
     changeLine(current.errors, prior.errors, 'Errors')
   ].filter(Boolean);
   const topTopics = current.topics.slice(0, 3).map(([topic, count]) => `${topic} (${count})`).join(', ') || 'No topic data yet';
@@ -77,6 +79,14 @@ function buildWeeklyReport(sessions, now = Date.now(), visits = []) {
 <tr><td>Participant process evidence, automatically estimated</td><td><strong>${escapeHtml(topEvidence)}</strong></td></tr>
 <tr><td>Common abandonment point, estimated from participant evidence</td><td><strong>${escapeHtml(commonAbandonment)}</strong></td></tr>
 <tr><td>Average response time</td><td><strong>${(current.averageResponseTimeMs / 1000).toFixed(1)} seconds</strong></td></tr>
+<tr><td>Voice recordings</td><td><strong>${current.voiceRecordingStarts}</strong></td></tr>
+<tr><td>Successful voice transcripts</td><td><strong>${current.voiceTranscriptionSuccesses}</strong></td></tr>
+<tr><td>Voice transcription success rate</td><td><strong>${current.voiceTranscriptionSuccessRate}%</strong></td></tr>
+<tr><td>Average voice recording</td><td><strong>${current.averageVoiceRecordingSeconds.toFixed(1)} seconds</strong></td></tr>
+<tr><td>Median transcription time</td><td><strong>${(current.medianTranscriptionTimeMs / 1000).toFixed(1)} seconds</strong></td></tr>
+<tr><td>Transcription and browser voice failures</td><td><strong>${current.voiceTranscriptionFailures + current.voiceClientFailures}</strong></td></tr>
+<tr><td>Microphone denials</td><td><strong>${current.microphoneDenials}</strong></td></tr>
+<tr><td>Transcripts edited before sending</td><td><strong>${current.voiceTranscriptCorrections}</strong></td></tr>
 <tr><td>Errors</td><td><strong>${current.errors}</strong></td></tr>
 <tr><td>Estimated cost</td><td><strong>$${current.estimatedCostUsd.toFixed(3)}</strong></td></tr>
 <tr><td>Feedback averages, questions 1 to 5</td><td><strong>${escapeHtml(feedback)}</strong></td></tr>
@@ -85,7 +95,7 @@ function buildWeeklyReport(sessions, now = Date.now(), visits = []) {
 <h2 style="font-family:Georgia,serif">Changes from the prior week</h2>
 <p>${significant.length ? escapeHtml(significant.join(' ')) : 'No significant change was detected.'}</p>
 <p style="color:#5C4A38;font-size:13px">Topic and process classifications are automatically estimated and potentially imperfect. A companion invitation is tracked separately from evidence in the participant's response.</p>
-<p style="color:#5C4A38;font-size:13px">This report contains structured usage information only. It does not include names, exact entries, quotations, memories, or companion responses.</p>
+<p style="color:#5C4A38;font-size:13px">This report contains structured usage information only. It does not include names, audio, transcripts, exact entries, quotations, memories, or companion responses.</p>
 </body></html>`;
   return { subject, html, summary: current, currentStart, currentEnd };
 }

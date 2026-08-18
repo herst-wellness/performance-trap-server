@@ -29,6 +29,11 @@ const DEFAULT_SAFETY_OVERLAY_PATH = path.join(ROOT, 'canonical', 'module2', 'com
 const DEFAULT_SAFETY_OVERLAY_SHA256 = '023e23cb6fe0cac90d376278cd69aa64f06014ea84324604d668a04de90c9372';
 const DEFAULT_CLAUDE_MODEL = 'claude-sonnet-5';
 const ALLOWED_CLAUDE_EFFORTS = new Set(['low', 'medium', 'high', 'xhigh', 'max']);
+const DEFAULT_TRANSCRIPTION_MODEL = 'gpt-transcribe';
+const ALLOWED_TRANSCRIPTION_MODELS = new Set(['gpt-transcribe', 'gpt-4o-transcribe', 'gpt-4o-mini-transcribe']);
+const DEFAULT_TRANSCRIPTION_PER_MINUTE = 0.0045;
+const MAX_AUDIO_BYTES = 10 * 1024 * 1024;
+const MAX_AUDIO_DURATION_MS = 2 * 60 * 1000;
 const OPENING = 'What has you reaching out today? Give me a sense of what is happening.';
 const DEFAULT_WRITTEN_SESSION_MINUTES = 60;
 const DEFAULT_WRITTEN_MAX_EXCHANGES = 30;
@@ -36,7 +41,7 @@ const PAGE_PATH = '/reflect/kids-on-the-bus';
 const ADMIN_PATH = '/admin/mindbody-insights';
 const STATIC_PREFIX = '/kids-on-the-bus';
 const API_PREFIX = '/api/kids-on-the-bus';
-const NOTICE_VERSION = '2026-08-13-v2';
+const NOTICE_VERSION = '2026-08-18-v3';
 const DEFAULT_SHARED_RETENTION_DAYS = 90;
 const DEFAULT_ANALYTICS_RETENTION_DAYS = 365;
 
@@ -86,9 +91,11 @@ function loadSettings(env = process.env) {
   if (env.RENDER && !explicitDataDir) {
     throw new Error('Render requires REALTIME_DATA_DIR or RENDER_DISK_PATH to point to the mounted persistent disk.');
   }
+  const requestedTranscriptionModel = String(env.OPENAI_TRANSCRIPTION_MODEL || DEFAULT_TRANSCRIPTION_MODEL);
   return {
     port: boundedInteger(env.PORT, 5933, 1, 65535),
     anthropicKey: env.ANTHROPIC_API_KEY || '',
+    openaiKey: env.OPENAI_API_KEY || '',
     adminCode: env.COMPANION_ADMIN_CODE || '',
     budgetUsd,
     sessionMinutes: boundedInteger(env.WRITTEN_SESSION_MINUTES, DEFAULT_WRITTEN_SESSION_MINUTES, 1, 60),
@@ -98,11 +105,17 @@ function loadSettings(env = process.env) {
       ? String(env.ANTHROPIC_EFFORT).toLowerCase()
       : 'high',
     claudeInstructions: loadClaudeInstructions(env),
+    transcriptionModel: ALLOWED_TRANSCRIPTION_MODELS.has(requestedTranscriptionModel)
+      ? requestedTranscriptionModel
+      : DEFAULT_TRANSCRIPTION_MODEL,
+    maxAudioBytes: MAX_AUDIO_BYTES,
+    maxAudioDurationMs: MAX_AUDIO_DURATION_MS,
     rates: {
       claudeInput: money(env.CLAUDE_INPUT_PER_MILLION, DEFAULT_RATES.claudeInput),
       claudeOutput: money(env.CLAUDE_OUTPUT_PER_MILLION, DEFAULT_RATES.claudeOutput),
       claudeCacheWrite: money(env.CLAUDE_CACHE_WRITE_PER_MILLION, DEFAULT_RATES.claudeCacheWrite),
-      claudeCacheRead: money(env.CLAUDE_CACHE_READ_PER_MILLION, DEFAULT_RATES.claudeCacheRead)
+      claudeCacheRead: money(env.CLAUDE_CACHE_READ_PER_MILLION, DEFAULT_RATES.claudeCacheRead),
+      transcriptionPerMinute: money(env.OPENAI_TRANSCRIPTION_PER_MINUTE, DEFAULT_TRANSCRIPTION_PER_MINUTE)
     },
     dataDir: explicitDataDir || path.join(ROOT, 'data'),
     persistentDataDirConfigured: Boolean(explicitDataDir),
@@ -178,7 +191,7 @@ function securityHeaders(contentType) {
     'Content-Type': contentType,
     'Cache-Control': 'no-store',
     'Content-Security-Policy': "default-src 'self'; connect-src 'self'; font-src 'self' https://fonts.gstatic.com; frame-src 'self'; img-src 'self' data:; style-src 'self' https://fonts.googleapis.com; script-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'",
-    'Permissions-Policy': 'camera=(), geolocation=(), microphone=()',
+    'Permissions-Policy': 'camera=(), geolocation=(), microphone=(self)',
     'Referrer-Policy': 'no-referrer',
     'X-Content-Type-Options': 'nosniff',
     'X-Frame-Options': 'DENY'
@@ -265,6 +278,7 @@ function createApp(options = {}) {
         sendJson(res, 200, {
           publicAccess: true,
           configured: Boolean(settings.anthropicKey && settings.budgetUsd > 0),
+          voiceInputAvailable: Boolean(settings.openaiKey && settings.transcriptionModel),
           mode: 'writing',
           coachingModel: settings.claudeModel,
           coachingEffort: settings.claudeEffort,
@@ -355,6 +369,116 @@ function createApp(options = {}) {
         const body = await readJson(req, 24 * 1024);
         const result = routeSafety(body.text);
         sendJson(res, 200, { ...result, budget: ledger.status() });
+        return;
+      }
+
+      if (req.method === 'POST' && pathname === `${API_PREFIX}/transcribe`) {
+        const sessionId = String(req.headers['x-companion-session-id'] || '');
+        const active = activeSessions.get(sessionId);
+        if (!active || active.ended) {
+          sendJson(res, 400, { error: 'This sitting is no longer active.' });
+          return;
+        }
+        currentSessionReference = active.sessionReference;
+        const durationMs = Number(req.headers['x-audio-duration-ms']);
+        const startedAt = Date.now();
+        try {
+          if (!settings.openaiKey) {
+            throw Object.assign(new Error('Voice input is temporarily unavailable. You can continue by writing.'), { statusCode: 503 });
+          }
+          if (ledger.status().exhausted) {
+            throw Object.assign(new Error('The companion has reached its current usage limit. Please try again later.'), { statusCode: 402 });
+          }
+          if (!Number.isFinite(durationMs) || durationMs < 500 || durationMs > (settings.maxAudioDurationMs || MAX_AUDIO_DURATION_MS) + 1000) {
+            throw Object.assign(new Error('Record a little longer, or continue by writing.'), { statusCode: 400 });
+          }
+          const contentType = String(req.headers['content-type'] || '').toLowerCase().split(';')[0].trim();
+          const audioTypes = new Map([
+            ['audio/webm', 'response.webm'],
+            ['audio/mp4', 'response.mp4'],
+            ['audio/mpeg', 'response.mp3'],
+            ['audio/wav', 'response.wav']
+          ]);
+          const filename = audioTypes.get(contentType);
+          if (!filename) {
+            throw Object.assign(new Error('This browser produced an unsupported audio format. You can continue by writing.'), { statusCode: 415 });
+          }
+          const audio = await readBody(req, settings.maxAudioBytes || MAX_AUDIO_BYTES);
+          if (audio.length < 512) {
+            throw Object.assign(new Error('No speech was recorded. Try again or continue by writing.'), { statusCode: 400 });
+          }
+          const form = new FormData();
+          form.append('model', settings.transcriptionModel || DEFAULT_TRANSCRIPTION_MODEL);
+          form.append('file', new Blob([audio], { type: contentType }), filename);
+          const controller = new AbortController();
+          const abortUpstream = () => controller.abort();
+          req.once('aborted', abortUpstream);
+          if (typeof res.once === 'function') {
+            res.once('close', () => {
+              if (!res.writableEnded) abortUpstream();
+            });
+          }
+          let upstream;
+          try {
+            upstream = await fetchImpl('https://api.openai.com/v1/audio/transcriptions', {
+              method: 'POST',
+              headers: { Authorization: `Bearer ${settings.openaiKey}` },
+              body: form,
+              signal: controller.signal
+            });
+          } finally {
+            req.removeListener('aborted', abortUpstream);
+          }
+          const raw = await upstream.text();
+          if (!upstream.ok) {
+            throw Object.assign(new Error('Your recording could not be transcribed. Try again or continue by writing.'), { statusCode: 502 });
+          }
+          let parsed;
+          try {
+            parsed = JSON.parse(raw);
+          } catch {
+            throw Object.assign(new Error('Your recording could not be transcribed. Try again or continue by writing.'), { statusCode: 502 });
+          }
+          const transcript = String(parsed.text || '').trim();
+          if (!transcript) {
+            throw Object.assign(new Error('No words were detected. Try again or continue by writing.'), { statusCode: 422 });
+          }
+          if (transcript.length > 12000) {
+            throw Object.assign(new Error('That transcript is too long. Record a shorter response or continue by writing.'), { statusCode: 422 });
+          }
+          const responseTimeMs = Date.now() - startedAt;
+          const recorded = ledger.add({
+            sessionId,
+            sessionReference: active.sessionReference,
+            usageId: `transcription_${crypto.randomUUID().replace(/-/g, '')}`,
+            model: settings.transcriptionModel || DEFAULT_TRANSCRIPTION_MODEL,
+            usage: { transcriptionAudioSeconds: durationMs / 1000 }
+          });
+          ledger.recordTranscription(active.sessionReference, {
+            audioSeconds: durationMs / 1000,
+            responseTimeMs,
+            success: true
+          });
+          sendJson(res, 200, {
+            text: transcript,
+            audioSeconds: Math.round(durationMs / 100) / 10,
+            transcriptionMs: responseTimeMs,
+            transcriptionCostUsd: recorded.entry.costUsd,
+            budget: recorded.status
+          });
+        } catch (error) {
+          if (error?.name === 'AbortError') return;
+          ledger.recordTranscription(active.sessionReference, {
+            audioSeconds: Number.isFinite(durationMs) ? Math.min(MAX_AUDIO_DURATION_MS, Math.max(0, durationMs)) / 1000 : 0,
+            responseTimeMs: Date.now() - startedAt,
+            success: false
+          });
+          const status = error.statusCode || 500;
+          if (!res.headersSent) sendJson(res, status, { error: status >= 500 && status !== 503
+            ? 'Your recording could not be transcribed. Try again or continue by writing.'
+            : error.message });
+          return;
+        }
         return;
       }
 
@@ -491,7 +615,10 @@ function createApp(options = {}) {
           return;
         }
         currentSessionReference = active.sessionReference;
-        const directEvents = new Set(['copyButtonUse', 'downloadButtonUse', 'endAndClearButtonUse', 'browserErrors', 'responseFailures']);
+        const directEvents = new Set([
+          'copyButtonUse', 'downloadButtonUse', 'endAndClearButtonUse', 'browserErrors', 'responseFailures',
+          'voiceRecordingStarts', 'voiceRecordingStops', 'voiceClientFailures', 'microphoneDenials', 'voiceTranscriptCorrections'
+        ]);
         const conversionEvents = new Set(['mindbodyPageClick', 'chapterClick', 'bookClick', 'conversationClick', 'emailListClick', 'feedbackFormClicks']);
         const eventName = String(body.eventName || '');
         if (directEvents.has(eventName)) ledger.recordEvent(active.sessionReference, eventName);

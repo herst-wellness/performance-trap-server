@@ -95,6 +95,13 @@ test('dashboard aggregation and CSV contain structured information only', () => 
     processInvitations: { bodySensation: 1 },
     processEvidence: { specificSituation: 2, bodySensation: 1 },
     responseTimesMs: [1000, 2000],
+    voiceRecordingStarts: 2,
+    voiceRecordingStops: 2,
+    voiceTranscriptionSuccesses: 2,
+    voiceTranscriptionFailures: 0,
+    voiceTranscriptCorrections: 1,
+    voiceRecordedSeconds: 30,
+    transcriptionTimesMs: [600, 1000],
     estimatedCostUsd: 0.12,
     device: { category: 'Computer' },
     referral: { utmSource: 'newsletter' },
@@ -104,6 +111,9 @@ test('dashboard aggregation and CSV contain structured information only', () => 
   assert.equal(insights.totalSittings, 1);
   assert.equal(insights.completionRate, 100);
   assert.equal(insights.medianResponseTimeMs, 1500);
+  assert.equal(insights.voiceTranscriptionSuccessRate, 100);
+  assert.equal(insights.averageVoiceRecordingSeconds, 15);
+  assert.equal(insights.medianTranscriptionTimeMs, 800);
   assert.deepEqual(insights.processInvitations[0], ['Body awareness invited', 1]);
   assert.ok(insights.processEvidence.some(([label]) => label === 'Body sensation identified'));
   const csv = sessionsToCsv(sessions);
@@ -111,5 +121,6 @@ test('dashboard aggregation and CSV contain structured information only', () => 
   assert.match(csv, /Performance pressure/);
   assert.match(csv, /Body awareness invited/);
   assert.match(csv, /Body sensation identified/);
-  assert.doesNotMatch(csv, /exactEntry|transcript|Melissa/i);
+  assert.match(csv, /voiceTranscriptionSuccesses/);
+  assert.doesNotMatch(csv, /exactEntry|Melissa|identifiable written content/i);
 });

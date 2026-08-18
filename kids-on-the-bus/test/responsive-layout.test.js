@@ -38,5 +38,7 @@ test('interactive controls retain comfortable touch targets without overflowing 
 
   assert.match(css, /\.rating-row select\s*\{[^}]*min-height:\s*44px[^}]*font-size:\s*1rem/);
   assert.match(css, /@media \(max-width: 640px\)[\s\S]*\.pathway-grid\s*\{[^}]*grid-template-columns:\s*1fr/);
+  assert.match(css, /@media \(max-width: 640px\)[\s\S]*\.voice-controls\s*\{[^}]*flex-direction:\s*column/);
+  assert.match(css, /@media \(max-width: 640px\)[\s\S]*\.voice-button\s*\{[^}]*width:\s*100%[^}]*min-width:\s*0/);
   assert.match(html, /<meta name="viewport" content="width=device-width, initial-scale=1">/);
 });
