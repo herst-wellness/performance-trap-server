@@ -365,6 +365,48 @@ test('PayPal self-serve enrollment: off by default, and a mocked full checkout i
   assert.equal(denied.status, 401);
 });
 
+test('speaking is an optional way into the same written box, on every week, with no audio leaving the browser', { timeout: 30000 }, async (t) => {
+  const port = await getOpenPort();
+  const child = await startServer(port, { ONRAMP_ACCESS_CODE: 'onramp-test-access' });
+  t.after(() => child.kill());
+  const baseUrl = 'http://127.0.0.1:' + port;
+
+  for (const week of Object.values(WEEKS)) {
+    const page = await fetch(baseUrl + week.pagePath);
+    assert.equal(page.status, 200, week.pagePath);
+    const html = await page.text();
+
+    // The control exists, starts hidden, and is revealed only when the
+    // browser has the API, so a browser without it keeps the typed path.
+    assert.match(html, /id="speakButton"[^>]*class="button secondary hidden"/, week.pagePath + ' speak button starts hidden');
+    assert.ok(html.includes("window.SpeechRecognition || window.webkitSpeechRecognition"), week.pagePath + ' uses the browser recognizer');
+    assert.ok(html.includes("el('speakButton').classList.remove('hidden')"), week.pagePath + ' reveals the button only when supported');
+    assert.ok(html.includes('id="speakStatus"'), week.pagePath + ' has a status region for the microphone');
+
+    // Dictation must land in the existing textarea, editable, never
+    // auto-sent, and the transcript must never be posted as audio.
+    assert.ok(html.includes("el('messageInput').value = shown"), week.pagePath + ' transcribes into the written box');
+    assert.ok(!html.includes('MediaRecorder'), week.pagePath + ' must not record audio');
+    assert.ok(!html.includes('/api/transcribe'), week.pagePath + ' must not ship audio to this server');
+
+    // A stopped session, including the fixed crisis routing, releases the mic.
+    assert.ok(html.includes('if (value) stopListening();'), week.pagePath + ' releases the microphone when locked');
+
+    // The person is told plainly where their voice goes.
+    assert.match(html, /your own browser does the transcribing/, week.pagePath + ' discloses who transcribes');
+    assert.match(html, /No recording is sent here, and none is kept\./, week.pagePath + ' discloses retention');
+    assert.doesNotMatch(html, /—/);
+
+    // The page builds its client script inside a template literal, so a
+    // stray escape or interpolation would ship a page that silently fails
+    // to run. Parse what the browser would actually receive.
+    const scripts = html.match(/<script>([\s\S]*?)<\/script>/g) || [];
+    assert.ok(scripts.length > 0, week.pagePath + ' has a client script');
+    const body = scripts[scripts.length - 1].replace(/^<script>/, '').replace(/<\/script>$/, '');
+    assert.doesNotThrow(() => new Function(body), week.pagePath + ' client script must parse');
+  }
+});
+
 test('the book-bonus page serves its promises: field-guide PDF, breath audio, course link, no gating', { timeout: 30000 }, async (t) => {
   const port = await getOpenPort();
   const child = await startServer(port, {});

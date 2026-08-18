@@ -680,7 +680,7 @@ function companionPage(week) {
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <style>
 :root{--cream:#F4EDE4;--paper:#FBF7F0;--ink:#352515;--gold:#8B6B1E;--line:#D7C7B3;--soft:#EFE6D8;--danger:#8E2F27;--shadow:0 20px 55px rgba(53,37,21,.10)}
-*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:'Cormorant Garamond',Georgia,serif;font-size:19px;line-height:1.55}.shell{width:min(920px,calc(100% - 28px));margin:0 auto;padding:30px 0 54px}.brand{display:flex;justify-content:center;margin-bottom:22px}.brand img{display:block;width:min(520px,100%);height:auto}.rule{height:1px;background:var(--gold);opacity:.65;margin:0 0 30px}.hero{text-align:center;margin:0 auto 28px;max-width:700px}.eyebrow{text-transform:uppercase;letter-spacing:.18em;color:var(--gold);font:600 12px/1.4 Arial,sans-serif}.hero h1{font-family:'Playfair Display',Georgia,serif;font-size:clamp(34px,6vw,54px);line-height:1.08;margin:10px 0 10px}.hero p{font-style:italic;color:#6F5438;margin:0}.card{background:rgba(251,247,240,.94);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:clamp(22px,4vw,38px);max-width:720px;margin:0 auto}.card h2{font-family:'Playfair Display',Georgia,serif;font-size:24px;margin:0 0 10px}.small{font:14px/1.5 Arial,sans-serif;color:#715D49}.notice{padding:17px 18px;background:var(--soft);border-left:3px solid var(--gold);font:14px/1.55 Arial,sans-serif;margin:18px 0}.field{margin:18px 0}.field label{display:block;font:600 13px/1.4 Arial,sans-serif;letter-spacing:.03em;margin-bottom:7px}.field input,.field select,.composer textarea{width:100%;border:1px solid #BCA88E;border-radius:10px;background:#FFFDF9;color:var(--ink);padding:13px 14px;font:16px/1.4 Arial,sans-serif}.field input:focus,.field select:focus,.composer textarea:focus{outline:2px solid rgba(139,107,30,.28);border-color:var(--gold)}.check{display:flex;gap:10px;align-items:flex-start;font:15px/1.45 Arial,sans-serif;margin:13px 0}.check input{margin-top:3px}.button{border:1px solid var(--gold);background:var(--gold);color:white;border-radius:999px;padding:12px 20px;font:600 14px/1 Arial,sans-serif;cursor:pointer}.button:hover{filter:brightness(.95)}.button:disabled{opacity:.5;cursor:not-allowed}.button.secondary{background:transparent;color:var(--gold)}.button.danger{border-color:var(--danger);color:var(--danger);background:transparent}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.hidden{display:none!important}.error{color:var(--danger);font:600 14px/1.4 Arial,sans-serif;margin-top:12px}.session{max-width:820px;margin:0 auto;background:var(--paper);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}.session-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 20px;border-bottom:1px solid var(--line);background:#F8F1E8}.session-title{font-family:'Playfair Display',Georgia,serif;font-size:18px}.mode{font:12px/1.3 Arial,sans-serif;color:#715D49}.messages{min-height:390px;max-height:58vh;overflow-y:auto;padding:22px}.message{max-width:84%;padding:13px 15px;border-radius:14px;margin:0 0 14px;white-space:pre-wrap}.message.assistant{background:var(--soft);border-bottom-left-radius:4px}.message.user{background:#DFD0BC;margin-left:auto;border-bottom-right-radius:4px}.speaker{font:700 10px/1.2 Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:5px}.composer{border-top:1px solid var(--line);padding:16px 18px;background:#F8F1E8}.composer textarea{min-height:100px;resize:vertical}.composer-actions{display:flex;justify-content:space-between;gap:12px;margin-top:10px;align-items:center}.thinking{font:italic 16px/1.3 Georgia,serif;color:#715D49}.waiting-status{font:italic 15px/1.4 Georgia,serif;color:#715D49;text-align:center;margin:2px auto 12px}.breath-view{display:flex;flex-direction:column;align-items:center;gap:12px;padding:16px 0 4px}.breath-space{height:110px;display:flex;align-items:center;justify-content:center}.breath-dot{width:64px;height:64px;border-radius:50%;background:var(--gold);opacity:.85;transform:scale(.22);transform-origin:center}.breath-dot.still{transform:scale(.55)}.breath-phase{font-family:'Playfair Display',Georgia,serif;font-size:22px;min-height:28px}.breath-time{font:13px/1.4 Arial,sans-serif;color:#715D49;min-height:18px}.locked{padding:14px 18px;background:#F1DDD7;color:#6E241E;font:14px/1.45 Arial,sans-serif}.footer{text-align:center;margin:24px auto 0;color:#78644F;font:13px/1.5 Arial,sans-serif;max-width:680px}@media(max-width:620px){.shell{padding-top:18px}.card{border-radius:14px}.message{max-width:94%}.session-head{align-items:flex-start;flex-direction:column}.composer-actions{align-items:stretch;flex-direction:column}.composer-actions .row{width:100%}.composer-actions .button{flex:1}}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:'Cormorant Garamond',Georgia,serif;font-size:19px;line-height:1.55}.shell{width:min(920px,calc(100% - 28px));margin:0 auto;padding:30px 0 54px}.brand{display:flex;justify-content:center;margin-bottom:22px}.brand img{display:block;width:min(520px,100%);height:auto}.rule{height:1px;background:var(--gold);opacity:.65;margin:0 0 30px}.hero{text-align:center;margin:0 auto 28px;max-width:700px}.eyebrow{text-transform:uppercase;letter-spacing:.18em;color:var(--gold);font:600 12px/1.4 Arial,sans-serif}.hero h1{font-family:'Playfair Display',Georgia,serif;font-size:clamp(34px,6vw,54px);line-height:1.08;margin:10px 0 10px}.hero p{font-style:italic;color:#6F5438;margin:0}.card{background:rgba(251,247,240,.94);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:clamp(22px,4vw,38px);max-width:720px;margin:0 auto}.card h2{font-family:'Playfair Display',Georgia,serif;font-size:24px;margin:0 0 10px}.small{font:14px/1.5 Arial,sans-serif;color:#715D49}.notice{padding:17px 18px;background:var(--soft);border-left:3px solid var(--gold);font:14px/1.55 Arial,sans-serif;margin:18px 0}.field{margin:18px 0}.field label{display:block;font:600 13px/1.4 Arial,sans-serif;letter-spacing:.03em;margin-bottom:7px}.field input,.field select,.composer textarea{width:100%;border:1px solid #BCA88E;border-radius:10px;background:#FFFDF9;color:var(--ink);padding:13px 14px;font:16px/1.4 Arial,sans-serif}.field input:focus,.field select:focus,.composer textarea:focus{outline:2px solid rgba(139,107,30,.28);border-color:var(--gold)}.check{display:flex;gap:10px;align-items:flex-start;font:15px/1.45 Arial,sans-serif;margin:13px 0}.check input{margin-top:3px}.button{border:1px solid var(--gold);background:var(--gold);color:white;border-radius:999px;padding:12px 20px;font:600 14px/1 Arial,sans-serif;cursor:pointer}.button:hover{filter:brightness(.95)}.button:disabled{opacity:.5;cursor:not-allowed}.button.secondary{background:transparent;color:var(--gold)}.button.danger{border-color:var(--danger);color:var(--danger);background:transparent}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.hidden{display:none!important}.button.speaking{background:var(--danger);border-color:var(--danger);color:#fff}.speak-status{font:13px/1.45 Arial,sans-serif;color:#715D49;margin-top:9px}.error{color:var(--danger);font:600 14px/1.4 Arial,sans-serif;margin-top:12px}.session{max-width:820px;margin:0 auto;background:var(--paper);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}.session-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 20px;border-bottom:1px solid var(--line);background:#F8F1E8}.session-title{font-family:'Playfair Display',Georgia,serif;font-size:18px}.mode{font:12px/1.3 Arial,sans-serif;color:#715D49}.messages{min-height:390px;max-height:58vh;overflow-y:auto;padding:22px}.message{max-width:84%;padding:13px 15px;border-radius:14px;margin:0 0 14px;white-space:pre-wrap}.message.assistant{background:var(--soft);border-bottom-left-radius:4px}.message.user{background:#DFD0BC;margin-left:auto;border-bottom-right-radius:4px}.speaker{font:700 10px/1.2 Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:5px}.composer{border-top:1px solid var(--line);padding:16px 18px;background:#F8F1E8}.composer textarea{min-height:100px;resize:vertical}.composer-actions{display:flex;justify-content:space-between;gap:12px;margin-top:10px;align-items:center}.thinking{font:italic 16px/1.3 Georgia,serif;color:#715D49}.waiting-status{font:italic 15px/1.4 Georgia,serif;color:#715D49;text-align:center;margin:2px auto 12px}.breath-view{display:flex;flex-direction:column;align-items:center;gap:12px;padding:16px 0 4px}.breath-space{height:110px;display:flex;align-items:center;justify-content:center}.breath-dot{width:64px;height:64px;border-radius:50%;background:var(--gold);opacity:.85;transform:scale(.22);transform-origin:center}.breath-dot.still{transform:scale(.55)}.breath-phase{font-family:'Playfair Display',Georgia,serif;font-size:22px;min-height:28px}.breath-time{font:13px/1.4 Arial,sans-serif;color:#715D49;min-height:18px}.locked{padding:14px 18px;background:#F1DDD7;color:#6E241E;font:14px/1.45 Arial,sans-serif}.footer{text-align:center;margin:24px auto 0;color:#78644F;font:13px/1.5 Arial,sans-serif;max-width:680px}@media(max-width:620px){.shell{padding-top:18px}.card{border-radius:14px}.message{max-width:94%}.session-head{align-items:flex-start;flex-direction:column}.composer-actions{align-items:stretch;flex-direction:column}.composer-actions .row{width:100%}.composer-actions .button{flex:1}}
 </style>
 </head>
 <body>
@@ -709,13 +709,14 @@ function companionPage(week) {
     <h2>Welcome to the daily rep</h2>
     <p>If you are here, you have the map: SENSE for coming back to yourself when the pressure hits, STEP for bringing that back into the room with other people. This is where you get the reps. You bring one real moment from your day, and we run the practice on it together.</p>
     <p>The moment does not have to be big: the email that tightened your chest, the meeting where you shrank, the text you almost fired back. Small is the point.</p>
-    <p>You will write, and the companion will write back, responding to what you write and helping you make the next move: back into the body, staying with what you find, noticing the trade you were about to make, shaping the one honest sentence. It keeps nothing after you end. It is not me, and it is not therapy. It is practice, on the straightaways.</p>
+    <p>You will write, and the companion will write back, responding to what you write and helping you make the next move: back into the body, staying with what you find, noticing the trade you were about to make, shaping the one honest sentence. If you would rather talk than type, you can speak and your words arrive in the box as text, yours to change before you send. It keeps nothing after you end. It is not me, and it is not therapy. It is practice, on the straightaways.</p>
     <p>The deeper material, the old wound underneath the protectors, is real work, and it goes better with company. That is what your Integration and Next-Step Session with me is for. When something big stirs here, the companion will help you note it for that conversation rather than digging into it alone.</p>
     <p>Missing a day is not failure. There is no streak to protect here. If a day got away from you, you just begin again the next one.</p>
     <div class="rule" style="margin:26px 0"></div>
     <h2 style="font-size:20px">Before you begin</h2>
     <div id="privacyNotice" class="notice"></div>
     <p class="small">This is a guided practice for adults, not therapy, medical care, diagnosis, or crisis support. You may pause or stop at any time.</p>
+    <p class="small">If you speak instead of typing, your own browser does the transcribing, which means Apple or Google turns the sound into words. No recording is sent here, and none is kept.</p>
     <button id="beginButton" class="button">Begin</button>
     <div id="consentError" class="error hidden"></div>
   </section>
@@ -752,8 +753,10 @@ function companionPage(week) {
     <form id="composer" class="composer">
       <textarea id="messageInput" maxlength="12000" placeholder="Bring the moment..." aria-label="Your reflection"></textarea>
       <div class="composer-actions">
+        <div class="row"><button id="speakButton" type="button" class="button secondary hidden">Speak</button></div>
         <div class="row"><button id="stopButton" type="button" class="button danger">Stop</button><button id="sendButton" type="submit" class="button">Send</button></div>
       </div>
+      <div id="speakStatus" class="speak-status hidden" role="status" aria-live="polite"></div>
     </form>
   </section>
   <div class="footer">Herst Wellness &middot; This private prototype does not connect to the transcript database, email, analytics, or marketing tools.</div>
@@ -810,6 +813,10 @@ function companionPage(week) {
     el('messageInput').disabled = value;
     el('sendButton').disabled = value;
     el('stopButton').disabled = value;
+    el('speakButton').disabled = value;
+    // A session that stops, including the fixed crisis routing, must also
+    // release the microphone rather than leave it listening.
+    if (value) stopListening();
   }
   function clearSession(){
     pendingSeq++;
@@ -900,9 +907,85 @@ function companionPage(week) {
     enterSession();
   });
 
+  // Speaking instead of typing. The browser's own recognizer turns talk
+  // into text in the box, where it can be changed before sending; the
+  // companion still answers in writing. No audio reaches this server and
+  // none is stored. Browsers without the API never see the button, so the
+  // typed path is unchanged.
+  var SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var recognizer = null;
+  var listening = false;
+  var speechBase = '';
+
+  function speakStatus(text){
+    el('speakStatus').textContent = text || '';
+    el('speakStatus').classList.toggle('hidden', !text);
+  }
+  function stopListening(){
+    if (recognizer && listening) { try { recognizer.stop(); } catch (e) {} }
+  }
+
+  if (SpeechRec) {
+    el('speakButton').classList.remove('hidden');
+    recognizer = new SpeechRec();
+    recognizer.continuous = true;
+    recognizer.interimResults = true;
+    recognizer.lang = navigator.language || 'en-US';
+
+    recognizer.addEventListener('start', function(){
+      listening = true;
+      el('speakButton').textContent = 'Stop speaking';
+      el('speakButton').classList.add('speaking');
+      speakStatus('Listening. Take your time.');
+    });
+
+    recognizer.addEventListener('result', function(event){
+      var settled = '';
+      var pending = '';
+      for (var i = event.resultIndex; i < event.results.length; i++) {
+        if (event.results[i].isFinal) { settled += event.results[i][0].transcript; }
+        else { pending += event.results[i][0].transcript; }
+      }
+      if (settled.trim()) {
+        speechBase = speechBase ? speechBase + ' ' + settled.trim() : settled.trim();
+      }
+      var shown = speechBase;
+      if (pending.trim()) { shown = shown ? shown + ' ' + pending.trim() : pending.trim(); }
+      el('messageInput').value = shown;
+      el('messageInput').scrollTop = el('messageInput').scrollHeight;
+    });
+
+    recognizer.addEventListener('error', function(event){
+      if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
+        speakStatus('Your browser is not letting the microphone through. Allow it in the address bar, or just type.');
+      } else if (event.error === 'no-speech') {
+        speakStatus('I did not catch anything. Press Speak and try again, or just type.');
+      } else if (event.error !== 'aborted') {
+        speakStatus('Speaking is not working right now. You can type instead.');
+      }
+    });
+
+    recognizer.addEventListener('end', function(){
+      listening = false;
+      el('speakButton').textContent = 'Speak';
+      el('speakButton').classList.remove('speaking');
+      if (el('speakStatus').textContent.indexOf('Listening') === 0) speakStatus('');
+      el('messageInput').focus();
+    });
+
+    el('speakButton').addEventListener('click', function(){
+      if (listening) { stopListening(); return; }
+      speechBase = el('messageInput').value.trim();
+      speakStatus('');
+      try { recognizer.start(); }
+      catch (e) { speakStatus('Speaking is not working right now. You can type instead.'); }
+    });
+  }
+
   el('composer').addEventListener('submit', async function(event){
     event.preventDefault();
     if (locked) return;
+    stopListening();
     var message = el('messageInput').value.trim();
     if (!message) return;
     var history = messages.slice();
