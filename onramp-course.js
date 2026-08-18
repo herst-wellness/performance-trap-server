@@ -332,7 +332,8 @@ const COURSE_WEEKS = {
 <p>You made it through. However much of it you did, whatever stuck and whatever didn't, you spent four weeks turning toward yourself instead of away.</p>
 <p>The course ends with one private conversation with me. That session is where the month gets named: the contract you keep signing, where it shows up in your body first, the trade you keep making, and one small next step. It's yours whether or not we ever work together again.</p>
 <p>I'll also tell you whether deeper one-on-one work fits where you are, and what it looks like if it does. If it's not the right time, I'll say that too. And if you do continue within 30 days, what you paid for this course is credited toward the coaching.</p>
-<div class="placeholder">Booking link for the Integration and Next-Step Session goes here (Chad's scheduling page). Bring your notes from the reflection above.</div>`,
+<p><a class="button" href="https://chadherst.as.me/integration-and-next-step-session">Book your Integration and Next-Step Session</a></p>
+<p class="small">Bring your notes from the reflection above.</p>`,
   },
 };
 
