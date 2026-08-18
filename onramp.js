@@ -707,7 +707,7 @@ function companionPage(week) {
 
   <section id="consentCard" class="card hidden">
     <h2>Welcome to the daily rep</h2>
-    <p>If you are here, you have the maps: SENSE for coming back to yourself when the pressure hits, STEP for bringing that back into the room with other people. This is where you get the reps. You bring one real moment from your day, and we run the practice on it together.</p>
+    <p>If you are here, you have the map: SENSE for coming back to yourself when the pressure hits, STEP for bringing that back into the room with other people. This is where you get the reps. You bring one real moment from your day, and we run the practice on it together.</p>
     <p>The moment does not have to be big: the email that tightened your chest, the meeting where you shrank, the text you almost fired back. Small is the point.</p>
     <p>You will write, and the companion will write back, responding to what you write and helping you make the next move: back into the body, staying with what you find, noticing the trade you were about to make, shaping the one honest sentence. It keeps nothing after you end. It is not me, and it is not therapy. It is practice, on the straightaways.</p>
     <p>The deeper material, the old wound underneath the protectors, is real work, and it goes better with company. That is what your Integration and Next-Step Session with me is for. When something big stirs here, the companion will help you note it for that conversation rather than digging into it alone.</p>

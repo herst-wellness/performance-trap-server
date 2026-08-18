@@ -330,7 +330,7 @@ const COURSE_WEEKS = {
     closing: `
 <h3>Your Integration and Next-Step Session</h3>
 <p>You made it through. However much of it you did, whatever stuck and whatever didn't, you spent four weeks turning toward yourself instead of away.</p>
-<p>The course ends with one private conversation with me. That session is where the month gets named: the pattern you keep running, where it shows up in your body first, the trade you keep making, and one small next step. It's yours whether or not we ever work together again.</p>
+<p>The course ends with one private conversation with me. That session is where the month gets named: the contract you keep signing, where it shows up in your body first, the trade you keep making, and one small next step. It's yours whether or not we ever work together again.</p>
 <p>I'll also tell you whether deeper one-on-one work fits where you are, and what it looks like if it does. If it's not the right time, I'll say that too. And if you do continue within 30 days, what you paid for this course is credited toward the coaching.</p>
 <div class="placeholder">Booking link for the Integration and Next-Step Session goes here (Chad's scheduling page). Bring your notes from the reflection above.</div>`,
   },
@@ -513,7 +513,7 @@ function overviewPage() {
 <p class="sub">The four-week practice that goes with the book.</p>
 <div class="card">
 <p><strong>You already know the pattern. The text you fired back, the yes you didn't mean, the meeting where you went quiet. This is four weeks of practice, about ten minutes a day, so you can catch it in your body a little earlier each time and have a different response available when the pressure is real.</strong></p>
-<p>You read the book, so you have the maps: SENSE for coming back to yourself when the pressure hits, STEP for bringing that back into the room with other people. This is where the maps become practice: about ten minutes a day, one real moment a day, four weeks, and a private Integration and Next-Step Session with me at the end. That session is where the month gets named: the pattern you keep running, where it shows up in your body first, the trade you keep making, and what you might try next. It's yours whether or not we ever work together again.</p>
+<p>The book ends with the ache as a doorway. This is the walking through: SENSE for coming back to yourself when the pressure hits, STEP for bringing that back into the room with other people. One real moment a day, four weeks, and a private Integration and Next-Step Session with me at the end. That session is where the month gets named: the pattern you keep running, where it shows up in your body first, the trade you keep making, and what you might try next. It's yours whether or not we ever work together again.</p>
 ${selfServeEnabled() ? enrollSection() : '<p>Enrollment is personal: Chad sets you up directly and sends your access code. If you don\'t have one yet, reach out through <a href="https://herstwellness.com">herstwellness.com</a>.</p>'}
 <h2 style="font-size:19px;margin-top:26px">If it turns out not to be for you</h2>
 <p>Within the first 14 days, <a href="https://herstwellness.com/contact">write to me</a>, and I'll refund the whole thing. You don't need a reason, and there's no form to fill out. All I ask is that you stop using the course and the companion once the refund goes through.</p>
