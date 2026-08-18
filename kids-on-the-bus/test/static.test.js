@@ -67,6 +67,7 @@ test('the companion is framed as Mind/Body Foundations with notice and optional 
   assert.match(html, /I give Herst Wellness permission to save this written sitting/);
   assert.doesNotMatch(html, /id="researchConsent"[^>]*checked/);
   assert.doesNotMatch(`${html}\n${app}`, /completely private|private written|private test/i);
+  assert.doesNotMatch(`${html}\n${app}`, /access code|X-Companion-Code|Early access/i);
 });
 
 test('browser submits the notice version supplied by the server configuration', async () => {
@@ -115,6 +116,9 @@ test('browser submits the notice version supplied by the server configuration', 
         })
       };
     }
+    if (url.endsWith('/visit')) {
+      return { ok: true, json: async () => ({ visitId: 'visit-id' }) };
+    }
     if (url.endsWith('/session')) {
       return {
         ok: true,
@@ -146,10 +150,11 @@ test('browser submits the notice version supplied by the server configuration', 
   });
   await new Promise((resolve) => setImmediate(resolve));
   elements.get('noticeConsent').checked = true;
-  elements.get('accessCode').value = 'visitor-code';
   await listeners.get('beginButton:click')();
   const submitted = requests.find((request) => request.url.endsWith('/session'));
   assert.equal(JSON.parse(submitted.options.body).noticeVersion, serverNoticeVersion);
+  assert.equal(JSON.parse(submitted.options.body).visitId, 'visit-id');
+  assert.equal('X-Companion-Code' in submitted.options.headers, false);
   assert.doesNotMatch(app, /const NOTICE_VERSION\s*=/);
 });
 

@@ -9,9 +9,11 @@ const { generateClaudeResponse } = require('./lib/claude');
 const {
   PROCESS_EVIDENCE_LABELS,
   PROCESS_INVITATION_LABELS,
+  aggregateFunnel,
   aggregateInsights,
   classifyTurn,
-  sessionsToCsv
+  sessionsToCsv,
+  visitsToCsv
 } = require('./lib/analytics');
 const { LatencyLedger } = require('./lib/latency');
 const { routeSafety } = require('./lib/safety');
@@ -87,7 +89,6 @@ function loadSettings(env = process.env) {
   return {
     port: boundedInteger(env.PORT, 5933, 1, 65535),
     anthropicKey: env.ANTHROPIC_API_KEY || '',
-    accessCode: env.COMPANION_ACCESS_CODE || '',
     adminCode: env.COMPANION_ADMIN_CODE || '',
     budgetUsd,
     sessionMinutes: boundedInteger(env.WRITTEN_SESSION_MINUTES, DEFAULT_WRITTEN_SESSION_MINUTES, 1, 60),
@@ -205,10 +206,6 @@ function serveStatic(req, res, pathname) {
   return true;
 }
 
-function authorized(req, settings) {
-  return safeEqual(req.headers['x-companion-code'], settings.accessCode);
-}
-
 function adminAuthorized(req, settings) {
   return safeEqual(req.headers['x-companion-admin-code'], settings.adminCode);
 }
@@ -266,8 +263,8 @@ function createApp(options = {}) {
       if (req.method === 'GET' && pathname === `${API_PREFIX}/config`) {
         const budget = ledger.status();
         sendJson(res, 200, {
-          earlyAccess: true,
-          configured: Boolean(settings.anthropicKey && settings.accessCode && settings.budgetUsd > 0),
+          publicAccess: true,
+          configured: Boolean(settings.anthropicKey && settings.budgetUsd > 0),
           mode: 'writing',
           coachingModel: settings.claudeModel,
           coachingEffort: settings.claudeEffort,
@@ -283,13 +280,35 @@ function createApp(options = {}) {
         return;
       }
 
-      if (req.method === 'POST' && pathname === `${API_PREFIX}/session`) {
-        if (!settings.anthropicKey || !settings.accessCode || settings.budgetUsd <= 0) {
-          sendJson(res, 503, { error: 'The written companion has not been configured yet.' });
+      if (req.method === 'POST' && pathname === `${API_PREFIX}/visit`) {
+        const body = await readJson(req, 16 * 1024);
+        const visitId = crypto.randomUUID();
+        ledger.startVisit({
+          visitId,
+          openedAt: new Date().toISOString(),
+          configuredAtOpen: Boolean(settings.anthropicKey && settings.budgetUsd > 0),
+          referral: body.referral,
+          device: body.device,
+          returningBrowser: body.returningBrowser
+        });
+        sendJson(res, 200, { visitId });
+        return;
+      }
+
+      if (req.method === 'POST' && pathname === `${API_PREFIX}/visit/event`) {
+        const body = await readJson(req, 4 * 1024);
+        const recorded = ledger.recordVisitEvent(String(body.visitId || ''), String(body.eventName || ''));
+        if (!recorded) {
+          sendJson(res, 400, { error: 'Unknown visit or usage event.' });
           return;
         }
-        if (!authorized(req, settings)) {
-          sendJson(res, 401, { error: 'That access code was not accepted.' });
+        sendJson(res, 200, { recorded: true });
+        return;
+      }
+
+      if (req.method === 'POST' && pathname === `${API_PREFIX}/session`) {
+        if (!settings.anthropicKey || settings.budgetUsd <= 0) {
+          sendJson(res, 503, { error: 'The written companion has not been configured yet.' });
           return;
         }
         const body = await readJson(req, 24 * 1024);
@@ -299,7 +318,7 @@ function createApp(options = {}) {
         }
         pruneSessions();
         if (ledger.status().exhausted) {
-          sendJson(res, 402, { error: 'The authorized testing budget has been reached.' });
+          sendJson(res, 402, { error: 'The companion has reached its current usage limit. Please try again later.' });
           return;
         }
         const sessionId = crypto.randomUUID();
@@ -324,6 +343,7 @@ function createApp(options = {}) {
           noticeVersion: NOTICE_VERSION,
           sharedSittingRetentionDays: settings.sharedRetentionDays || DEFAULT_SHARED_RETENTION_DAYS
         });
+        ledger.linkVisitToSession(String(body.visitId || ''), reference);
         if (body.shareSitting === true) {
           sharedStore.begin({ sessionReference: reference, consentDate, noticeVersion: NOTICE_VERSION });
         }
@@ -332,10 +352,6 @@ function createApp(options = {}) {
       }
 
       if (req.method === 'POST' && pathname === `${API_PREFIX}/safety-check`) {
-        if (!authorized(req, settings)) {
-          sendJson(res, 401, { error: 'Access required.' });
-          return;
-        }
         const body = await readJson(req, 24 * 1024);
         const result = routeSafety(body.text);
         sendJson(res, 200, { ...result, budget: ledger.status() });
@@ -343,10 +359,6 @@ function createApp(options = {}) {
       }
 
       if (req.method === 'POST' && pathname === `${API_PREFIX}/claude-response`) {
-        if (!authorized(req, settings)) {
-          sendJson(res, 401, { error: 'Access required.' });
-          return;
-        }
         const body = await readJson(req, 128 * 1024);
         const sessionId = String(body.sessionId || '');
         const message = String(body.message || '').trim();
@@ -376,7 +388,7 @@ function createApp(options = {}) {
           return;
         }
         if (ledger.status().exhausted) {
-          sendJson(res, 402, { error: 'The authorized testing budget has been reached.' });
+          sendJson(res, 402, { error: 'The companion has reached its current usage limit. Please try again later.' });
           return;
         }
         const controller = new AbortController();
@@ -434,10 +446,6 @@ function createApp(options = {}) {
       }
 
       if (req.method === 'POST' && pathname === `${API_PREFIX}/latency`) {
-        if (!authorized(req, settings)) {
-          sendJson(res, 401, { error: 'Access required.' });
-          return;
-        }
         const body = await readJson(req, 16 * 1024);
         const sessionId = String(body.sessionId || '');
         const active = activeSessions.get(sessionId);
@@ -460,10 +468,6 @@ function createApp(options = {}) {
       }
 
       if (req.method === 'POST' && pathname === `${API_PREFIX}/session/end`) {
-        if (!authorized(req, settings)) {
-          sendJson(res, 401, { error: 'Access required.' });
-          return;
-        }
         const body = await readJson(req, 4 * 1024);
         const active = activeSessions.get(String(body.sessionId || ''));
         if (!active) {
@@ -480,10 +484,6 @@ function createApp(options = {}) {
       }
 
       if (req.method === 'POST' && pathname === `${API_PREFIX}/event`) {
-        if (!authorized(req, settings)) {
-          sendJson(res, 401, { error: 'Access required.' });
-          return;
-        }
         const body = await readJson(req, 8 * 1024);
         const active = activeSessions.get(String(body.sessionId || ''));
         if (!active) {
@@ -491,7 +491,7 @@ function createApp(options = {}) {
           return;
         }
         currentSessionReference = active.sessionReference;
-        const directEvents = new Set(['copyButtonUse', 'downloadButtonUse', 'endAndClearButtonUse', 'browserErrors']);
+        const directEvents = new Set(['copyButtonUse', 'downloadButtonUse', 'endAndClearButtonUse', 'browserErrors', 'responseFailures']);
         const conversionEvents = new Set(['mindbodyPageClick', 'chapterClick', 'bookClick', 'conversationClick', 'emailListClick', 'feedbackFormClicks']);
         const eventName = String(body.eventName || '');
         if (directEvents.has(eventName)) ledger.recordEvent(active.sessionReference, eventName);
@@ -507,10 +507,6 @@ function createApp(options = {}) {
       }
 
       if (req.method === 'POST' && pathname === `${API_PREFIX}/feedback`) {
-        if (!authorized(req, settings)) {
-          sendJson(res, 401, { error: 'Access required.' });
-          return;
-        }
         const body = await readJson(req, 16 * 1024);
         const active = activeSessions.get(String(body.sessionId || ''));
         if (!active) {
@@ -537,13 +533,27 @@ function createApp(options = {}) {
           return;
         }
         const sessions = ledger.sessions();
+        const visits = ledger.visits();
         sendJson(res, 200, {
           insights: aggregateInsights(sessions),
+          funnel: aggregateFunnel(visits, sessions),
           sessions,
+          visits,
           processInvitationLabels: PROCESS_INVITATION_LABELS,
           processEvidenceLabels: PROCESS_EVIDENCE_LABELS,
           sharedSittings: sharedStore.listMetadata(),
-          weeklyReportHtml: buildWeeklyReport(sessions).html
+          weeklyReportHtml: buildWeeklyReport(sessions, Date.now(), visits).html
+        });
+        return;
+      }
+
+      if (req.method === 'POST' && pathname === `${API_PREFIX}/admin/export-visits.csv`) {
+        if (!adminAuthorized(req, settings)) {
+          sendJson(res, 401, { error: 'That administrative code was not accepted.' });
+          return;
+        }
+        sendText(res, 200, visitsToCsv(ledger.visits()), 'text/csv; charset=utf-8', {
+          'Content-Disposition': 'attachment; filename="mind-body-foundations-companion-funnel.csv"'
         });
         return;
       }

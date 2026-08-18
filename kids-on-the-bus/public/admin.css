@@ -6,10 +6,12 @@
 .admin-login { max-width: 650px; padding: 40px; }
 .filter-panel, .insight-card, .table-card { padding: 28px; margin-bottom: 24px; }
 .filter-heading { display: flex; justify-content: space-between; gap: 20px; align-items: center; }
+.filter-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; }
 .filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
 .filters label { display: grid; gap: 6px; font-family: "Proxima Nova", Arial, sans-serif; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
 .filters input, .filters select { padding: 10px; font-family: "Proxima Nova", Arial, sans-serif; font-size: 0.8rem; }
 .metric-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin: 24px 0; }
+.funnel-card .metric-grid { margin-bottom: 0; }
 .metric { padding: 22px; border-top: 3px solid var(--gold); background: var(--paper); box-shadow: var(--shadow); }
 .metric span { display: block; color: var(--muted-brown); font-family: "Proxima Nova", Arial, sans-serif; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
 .metric strong { display: block; margin-top: 8px; font-family: "Playfair Display", Georgia, serif; font-size: 1.8rem; font-weight: 500; }
@@ -32,4 +34,4 @@ th { color: var(--muted-brown); font-size: 0.66rem; letter-spacing: 0.06em; text
 .shared-turn { margin: 16px 0; padding: 16px; background: var(--cream); white-space: pre-wrap; }
 .shared-turn strong { display: block; font-family: "Proxima Nova", Arial, sans-serif; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; }
 @media (max-width: 860px) { .filters, .metric-grid { grid-template-columns: repeat(2, 1fr); } .insight-grid { grid-template-columns: 1fr; } }
-@media (max-width: 560px) { .admin-header, .filter-heading, .shared-review-heading { align-items: flex-start; flex-direction: column; } .filters, .metric-grid { grid-template-columns: 1fr; } .shared-item { align-items: flex-start; flex-direction: column; } }
+@media (max-width: 560px) { .admin-header, .filter-heading, .shared-review-heading { align-items: flex-start; flex-direction: column; } .filter-actions { justify-content: flex-start; } .filters, .metric-grid { grid-template-columns: 1fr; } .shared-item { align-items: flex-start; flex-direction: column; } }

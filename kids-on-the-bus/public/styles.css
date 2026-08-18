@@ -77,19 +77,6 @@ p { line-height: 1.58; }
   font-style: italic;
 }
 
-.access-badge {
-  display: inline-block;
-  padding: 7px 12px;
-  border: 1px solid var(--gold);
-  border-radius: 999px;
-  color: var(--gold-dark);
-  font-family: "Proxima Nova", Arial, sans-serif;
-  font-size: 0.7rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
 .card {
   border: 1px solid var(--line);
   border-radius: 3px;
@@ -133,8 +120,6 @@ input:focus, textarea:focus, select:focus, button:focus-visible, a:focus-visible
 .consent-row input { width: 20px; height: 20px; flex: 0 0 20px; margin-top: 4px; accent-color: var(--gold-dark); }
 .optional-consent { padding-top: 18px; border-top: 1px solid var(--line); }
 .consent-detail { margin: 7px 0 18px; color: var(--muted-brown); font-size: 0.82rem; line-height: 1.45; }
-.access-field { max-width: 420px; }
-
 .button {
   display: inline-flex;
   align-items: center;

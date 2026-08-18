@@ -1,6 +1,6 @@
 'use strict';
 
-const { aggregateInsights } = require('./analytics');
+const { aggregateFunnel, aggregateInsights } = require('./analytics');
 
 function escapeHtml(value) {
   return String(value == null ? '' : value)
@@ -18,6 +18,13 @@ function sessionsBetween(sessions, start, end) {
   });
 }
 
+function visitsBetween(visits, start, end) {
+  return (visits || []).filter((visit) => {
+    const at = Date.parse(visit.openedAt);
+    return Number.isFinite(at) && at >= start && at < end;
+  });
+}
+
 function changeLine(current, prior, label, suffix = '') {
   if (!Number.isFinite(current) || !Number.isFinite(prior) || prior === 0) return '';
   const change = Math.round((current - prior) / Math.abs(prior) * 100);
@@ -25,15 +32,21 @@ function changeLine(current, prior, label, suffix = '') {
   return `${label} ${change > 0 ? 'increased' : 'decreased'} ${Math.abs(change)}%${suffix}.`;
 }
 
-function buildWeeklyReport(sessions, now = Date.now()) {
+function buildWeeklyReport(sessions, now = Date.now(), visits = []) {
   const currentEnd = now;
   const currentStart = currentEnd - 7 * 24 * 60 * 60 * 1000;
   const priorStart = currentStart - 7 * 24 * 60 * 60 * 1000;
   const currentRows = sessionsBetween(sessions, currentStart, currentEnd);
   const priorRows = sessionsBetween(sessions, priorStart, currentStart);
+  const currentVisits = visitsBetween(visits, currentStart, currentEnd);
+  const priorVisits = visitsBetween(visits, priorStart, currentStart);
   const current = aggregateInsights(currentRows);
   const prior = aggregateInsights(priorRows);
+  const currentFunnel = aggregateFunnel(currentVisits, currentRows);
+  const priorFunnel = aggregateFunnel(priorVisits, priorRows);
   const significant = [
+    changeLine(currentFunnel.pageVisits, priorFunnel.pageVisits, 'Page visits'),
+    changeLine(currentFunnel.visitToStartRate, priorFunnel.visitToStartRate, 'Visit-to-start rate'),
     changeLine(current.totalSittings, prior.totalSittings, 'Sittings'),
     changeLine(current.completionRate, prior.completionRate, 'Completion rate'),
     changeLine(current.averageResponseTimeMs, prior.averageResponseTimeMs, 'Average response time'),
@@ -51,6 +64,12 @@ function buildWeeklyReport(sessions, now = Date.now()) {
 <h1 style="font-family:Georgia,serif">Mind/Body Foundations Companion</h1>
 <p><strong>Weekly report:</strong> ${escapeHtml(dateLabel)}</p>
 <table cellpadding="8" cellspacing="0" style="border-collapse:collapse">
+<tr><td>Public page visits</td><td><strong>${currentFunnel.pageVisits}</strong></td></tr>
+<tr><td>Begin attempts</td><td><strong>${currentFunnel.beginAttempts}</strong></td></tr>
+<tr><td>Tracked sessions started</td><td><strong>${currentFunnel.trackedStarts}</strong></td></tr>
+<tr><td>Visit-to-start rate</td><td><strong>${currentFunnel.visitToStartRate}%</strong></td></tr>
+<tr><td>Left before starting</td><td><strong>${currentFunnel.pageExitsBeforeStart}</strong></td></tr>
+<tr><td>Startup problems</td><td><strong>${currentFunnel.configurationBlocks + currentFunnel.sessionStartErrors + currentFunnel.browserErrorsBeforeStart}</strong></td></tr>
 <tr><td>Sittings</td><td><strong>${current.totalSittings}</strong></td></tr>
 <tr><td>Completion rate</td><td><strong>${current.completionRate}%</strong></td></tr>
 <tr><td>Most common topics, automatically estimated</td><td><strong>${escapeHtml(topTopics)}</strong></td></tr>
@@ -110,7 +129,7 @@ class WeeklyReporter {
     }
     this.running = true;
     try {
-      const report = buildWeeklyReport(this.ledger.sessions());
+      const report = buildWeeklyReport(this.ledger.sessions(), Date.now(), this.ledger.visits());
       await sendWithResend(this.settings, report, this.fetchImpl);
       this.ledger.setReportState({ lastWeeklyReportAt: new Date().toISOString(), lastWeeklyReportErrorAt: '' });
       return { sent: true, subject: report.subject };

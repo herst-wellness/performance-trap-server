@@ -117,7 +117,7 @@ The server removes the query string before route matching. Preserve that behavio
 
 The live Render service uses these names:
 
-- `COMPANION_ACCESS_CODE`: secret access code for Chad and invited testers.
+- The public written companion does not require `COMPANION_ACCESS_CODE`. The separate administrative reporting code remains required.
 - `COMPANION_PROVIDER=anthropic`
 - `COMPANION_MODEL=claude-sonnet-5`
 - `ANTHROPIC_API_KEY`: already configured as a secret.

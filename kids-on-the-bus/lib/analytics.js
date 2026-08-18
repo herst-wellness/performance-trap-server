@@ -223,7 +223,7 @@ function aggregateInsights(sessions) {
       row.feedback.ratings.forEach((value, index) => { if (Number.isFinite(Number(value))) feedback[index].push(Number(value)); });
     }
     estimatedCostUsd += Number(row.estimatedCostUsd || 0);
-    errors += Number(row.serverErrors || 0) + Number(row.browserErrors || 0) + Number(row.emptyResponses || 0);
+    errors += Number(row.serverErrors || 0) + Number(row.browserErrors || 0) + Number(row.emptyResponses || 0) + Number(row.responseFailures || 0);
     retries += Number(row.chargeableRetries || 0);
     safetyActivations += Number(row.safetyActivations || 0);
     conversionClicks += Number(row.conversionClicks || 0);
@@ -259,6 +259,33 @@ function aggregateInsights(sessions) {
   };
 }
 
+function aggregateFunnel(visits, sessions) {
+  const visitRows = Array.isArray(visits) ? visits : [];
+  const sessionRows = Array.isArray(sessions) ? sessions : [];
+  const sum = (key) => visitRows.reduce((total, row) => total + Number(row[key] || 0), 0);
+  const trackedReferences = new Set(visitRows.filter((row) => row.sessionStarted && row.sessionReference).map((row) => row.sessionReference));
+  const trackedSessions = sessionRows.filter((row) => trackedReferences.has(row.sessionReference));
+  const trackedStarts = trackedReferences.size;
+  const beganWriting = trackedSessions.filter((row) => row.beganWriting).length;
+  const completed = trackedSessions.filter((row) => row.completed).length;
+  return {
+    pageVisits: visitRows.length,
+    returningVisits: visitRows.filter((row) => row.returningBrowser).length,
+    beginAttempts: sum('beginAttempts'),
+    noticeBlocks: sum('noticeBlocks'),
+    configurationBlocks: sum('configurationBlocks'),
+    sessionStartErrors: sum('sessionStartErrors'),
+    browserErrorsBeforeStart: sum('browserErrors'),
+    pageExitsBeforeStart: sum('pageExitsBeforeStart'),
+    trackedStarts,
+    beganWriting,
+    completed,
+    visitToStartRate: percentage(trackedStarts, visitRows.length),
+    startToWritingRate: percentage(beganWriting, trackedStarts),
+    startToCompletionRate: percentage(completed, trackedStarts)
+  };
+}
+
 function csvCell(value) {
   const text = value == null ? '' : String(value);
   return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
@@ -266,18 +293,18 @@ function csvCell(value) {
 
 function sessionsToCsv(sessions) {
   const headers = [
-    'sessionReference', 'startedAt', 'endedAt', 'durationSeconds', 'accessCompleted', 'beganWriting',
+    'sessionReference', 'startedAt', 'endedAt', 'durationSeconds', 'noticeAcknowledged', 'beganWriting',
     'completed', 'endedIntentionally', 'expired', 'limitReached', 'abandoned', 'userEntries',
     'companionResponses', 'averageUserEntryLength', 'longestUserEntryLength', 'estimatedPrimaryTopic',
     'estimatedSecondaryTopics', 'estimatedCompanionInvitations', 'estimatedParticipantEvidence', 'deviceCategory', 'browserFamily', 'operatingSystemFamily', 'screenSizeCategory',
     'referringPage', 'utmSource', 'utmMedium', 'utmCampaign', 'utmContent', 'estimatedCostUsd',
-    'medianResponseTimeMs', 'slowestResponseMs', 'serverErrors', 'browserErrors', 'safetyActivations',
+    'medianResponseTimeMs', 'slowestResponseMs', 'serverErrors', 'browserErrors', 'responseFailures', 'safetyActivations',
     'diagnosisBoundaryActivations', 'crisisActivations', 'feedbackRatings', 'sharedSittingPermission'
   ];
   const lines = [headers.join(',')];
   for (const row of sessions || []) {
     const values = [
-      row.sessionReference, row.startedAt, row.endedAt, row.durationSeconds, row.accessCompleted, row.beganWriting,
+      row.sessionReference, row.startedAt, row.endedAt, row.durationSeconds, row.noticeAcknowledged ?? row.accessCompleted, row.beganWriting,
       row.completed, row.endedIntentionally, row.expired, row.limitReached, row.abandoned, row.userEntries,
       row.companionResponses, row.averageUserEntryLength, row.longestUserEntryLength, row.primaryTopic,
       (row.secondaryTopics || []).join('|'),
@@ -286,9 +313,30 @@ function sessionsToCsv(sessions) {
       row.device?.category, row.device?.browserFamily, row.device?.operatingSystemFamily,
       row.device?.screenSizeCategory, row.referral?.referringPage, row.referral?.utmSource, row.referral?.utmMedium,
       row.referral?.utmCampaign, row.referral?.utmContent, row.estimatedCostUsd, row.medianResponseTimeMs,
-      row.slowestResponseMs, row.serverErrors, row.browserErrors, row.safetyActivations,
+      row.slowestResponseMs, row.serverErrors, row.browserErrors, row.responseFailures, row.safetyActivations,
       row.diagnosisBoundaryActivations, row.crisisActivations, (row.feedback?.ratings || []).join('|'),
       row.sharedSittingPermission
+    ];
+    lines.push(values.map(csvCell).join(','));
+  }
+  return `${lines.join('\n')}\n`;
+}
+
+function visitsToCsv(visits) {
+  const headers = [
+    'openedAt', 'configuredAtOpen', 'beginAttempts', 'noticeBlocks', 'configurationBlocks',
+    'sessionStartErrors', 'browserErrorsBeforeStart', 'pageExitsBeforeStart', 'sessionStarted',
+    'sessionReference', 'returningBrowser', 'deviceCategory', 'browserFamily', 'operatingSystemFamily',
+    'screenSizeCategory', 'referringPage', 'utmSource', 'utmMedium', 'utmCampaign', 'utmContent'
+  ];
+  const lines = [headers.join(',')];
+  for (const row of visits || []) {
+    const values = [
+      row.openedAt, row.configuredAtOpen, row.beginAttempts, row.noticeBlocks, row.configurationBlocks,
+      row.sessionStartErrors, row.browserErrors, row.pageExitsBeforeStart, row.sessionStarted,
+      row.sessionReference, row.returningBrowser, row.device?.category, row.device?.browserFamily,
+      row.device?.operatingSystemFamily, row.device?.screenSizeCategory, row.referral?.referringPage,
+      row.referral?.utmSource, row.referral?.utmMedium, row.referral?.utmCampaign, row.referral?.utmContent
     ];
     lines.push(values.map(csvCell).join(','));
   }
@@ -301,10 +349,12 @@ module.exports = {
   PROCESS_KEYS,
   TOPIC_RULES,
   aggregateInsights,
+  aggregateFunnel,
   classifyProcess,
   classifyTopics,
   classifyTurn,
   emptyProcess,
   median,
-  sessionsToCsv
+  sessionsToCsv,
+  visitsToCsv
 };

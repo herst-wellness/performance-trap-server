@@ -20,7 +20,7 @@
 
     <section id="adminLogin" class="card admin-login">
       <h2>Open the insights page</h2>
-      <p>Use the separate administrative code. The companion access code will not work here.</p>
+      <p>Use the separate administrative code. Visitors do not need an access code to use the companion.</p>
       <label class="field"><span>Administrative code</span><input id="adminCode" type="password" autocomplete="off"></label>
       <button id="openDashboard" class="button primary" type="button">Open insights</button>
       <p id="adminMessage" class="message" role="status"></p>
@@ -28,7 +28,7 @@
 
     <section id="dashboard" class="hidden">
       <div class="filter-panel card">
-        <div class="filter-heading"><div><p class="eyebrow">Review controls</p><h2>Filter sittings</h2></div><button id="downloadCsv" class="button secondary" type="button">Download structured CSV</button></div>
+        <div class="filter-heading"><div><p class="eyebrow">Review controls</p><h2>Filter sittings</h2></div><div class="filter-actions"><button id="downloadFunnelCsv" class="button secondary" type="button">Download funnel CSV</button><button id="downloadCsv" class="button secondary" type="button">Download sitting CSV</button></div></div>
         <div class="filters">
           <label><span>Start date</span><input id="startDate" type="date"></label>
           <label><span>End date</span><input id="endDate" type="date"></label>
@@ -41,6 +41,12 @@
           <label><span>Participant evidence</span><select id="stageFilter"><option value="">All estimated stages</option></select></label>
         </div>
       </div>
+
+      <section class="card insight-card funnel-card">
+        <h2>Public companion funnel</h2>
+        <p>Content-free counts show where people continue, leave, or hit a problem before a sitting begins.</p>
+        <div id="funnelMetrics" class="metric-grid"></div>
+      </section>
 
       <div id="metrics" class="metric-grid" aria-live="polite"></div>
 

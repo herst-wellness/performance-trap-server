@@ -2,7 +2,7 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { aggregateInsights, classifyTurn, sessionsToCsv } = require('../lib/analytics');
+const { aggregateFunnel, aggregateInsights, classifyTurn, sessionsToCsv, visitsToCsv } = require('../lib/analytics');
 
 test('topic classification returns controlled tags without copying names or identifying details', () => {
   const classification = classifyTurn({
@@ -16,6 +16,33 @@ test('topic classification returns controlled tags without copying names or iden
   assert.ok(classification.processEvidence.specificSituation > 0);
   assert.ok(classification.processInvitations.uTurnToExperience > 0);
   assert.doesNotMatch(raw, /Melissa|Acme|failed/i);
+});
+
+test('funnel aggregation and CSV show public use without reflection content', () => {
+  const visits = [{
+    openedAt: '2026-08-13T17:00:00.000Z',
+    configuredAtOpen: true,
+    beginAttempts: 2,
+    noticeBlocks: 1,
+    sessionStartErrors: 0,
+    pageExitsBeforeStart: 0,
+    sessionStarted: true,
+    sessionReference: 'MBF-ABCD-2345',
+    returningBrowser: false,
+    device: { category: 'Phone' },
+    referral: { utmSource: 'foundations-page' },
+    exactEntry: 'Never export this reflection.'
+  }];
+  const sessions = [{ sessionReference: 'MBF-ABCD-2345', beganWriting: true, completed: true }];
+  const funnel = aggregateFunnel(visits, sessions);
+  assert.equal(funnel.pageVisits, 1);
+  assert.equal(funnel.beginAttempts, 2);
+  assert.equal(funnel.trackedStarts, 1);
+  assert.equal(funnel.startToCompletionRate, 100);
+  const csv = visitsToCsv(visits);
+  assert.match(csv, /foundations-page/);
+  assert.match(csv, /MBF-ABCD-2345/);
+  assert.doesNotMatch(csv, /Never export|exactEntry|reflection/);
 });
 
 test('process classification separates companion invitations from participant evidence', () => {

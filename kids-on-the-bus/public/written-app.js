@@ -6,7 +6,6 @@
     setupCard: el('setupCard'),
     sessionCard: el('sessionCard'),
     endedCard: el('endedCard'),
-    accessCode: el('accessCode'),
     noticeConsent: el('noticeConsent'),
     researchConsent: el('researchConsent'),
     beginButton: el('beginButton'),
@@ -36,7 +35,10 @@
 
   const state = {
     config: null,
-    accessCode: '',
+    visitId: '',
+    referral: null,
+    device: null,
+    returningBrowser: null,
     sessionId: '',
     sessionReference: '',
     history: [],
@@ -151,35 +153,70 @@
       if (!state.config.configured) ui.setupMessage.textContent = 'The written companion is not ready yet.';
     } catch {
       ui.setupMessage.textContent = 'The written companion is not responding.';
+    } finally {
+      await registerVisit();
     }
+  }
+
+  async function registerVisit() {
+    if (state.visitId) return;
+    state.referral ||= referralContext();
+    state.device ||= deviceContext();
+    if (state.returningBrowser == null) state.returningBrowser = returningBrowser();
+    try {
+      const response = await fetch('/api/kids-on-the-bus/visit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          referral: state.referral,
+          device: state.device,
+          returningBrowser: state.returningBrowser
+        })
+      });
+      const data = await response.json();
+      if (response.ok) state.visitId = String(data.visitId || '');
+    } catch {
+      // A reporting problem must never prevent someone from using the companion.
+    }
+  }
+
+  function trackVisitEvent(eventName, keepalive) {
+    if (!state.visitId) return Promise.resolve();
+    return fetch('/api/kids-on-the-bus/visit/event', {
+      method: 'POST',
+      keepalive: Boolean(keepalive),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ visitId: state.visitId, eventName })
+    }).catch(function () {});
   }
 
   async function beginSession() {
     ui.setupMessage.textContent = '';
     if (!state.config) await loadConfig();
-    if (!state.config || !state.config.configured) return;
+    trackVisitEvent('beginAttempts');
+    if (!state.config || !state.config.configured) {
+      trackVisitEvent('configurationBlocks');
+      return;
+    }
     if (!ui.noticeConsent.checked) {
       ui.setupMessage.textContent = 'Please read and acknowledge the information notice before beginning.';
+      trackVisitEvent('noticeBlocks');
       return;
     }
-    if (!ui.accessCode.value.trim()) {
-      ui.setupMessage.textContent = 'Enter the access code.';
-      return;
-    }
-    state.accessCode = ui.accessCode.value.trim();
     state.sharedSitting = ui.researchConsent.checked;
     ui.beginButton.disabled = true;
     try {
       const response = await fetch('/api/kids-on-the-bus/session', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Companion-Code': state.accessCode },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           acknowledged: true,
           noticeVersion: state.config.noticeVersion,
           shareSitting: state.sharedSitting,
-          referral: referralContext(),
-          device: deviceContext(),
-          returningBrowser: returningBrowser()
+          visitId: state.visitId,
+          referral: state.referral,
+          device: state.device,
+          returningBrowser: state.returningBrowser
         })
       });
       const data = await response.json();
@@ -206,6 +243,7 @@
     } catch (error) {
       ui.setupMessage.textContent = error.message;
       ui.beginButton.disabled = false;
+      trackVisitEvent('sessionStartErrors');
     }
   }
 
@@ -225,10 +263,7 @@
       const response = await fetch('/api/kids-on-the-bus/claude-response', {
         method: 'POST',
         signal: state.controller.signal,
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Companion-Code': state.accessCode
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId: state.sessionId, message, history: priorHistory })
       });
       const data = await response.json();
@@ -251,7 +286,10 @@
       }
       setStatus('Your turn', 'Write when you are ready.', false);
     } catch (error) {
-      if (error.name !== 'AbortError') setStatus('The companion could not respond', error.message, false);
+      if (error.name !== 'AbortError') {
+        setStatus('The companion could not respond', error.message, false);
+        trackEvent('responseFailures');
+      }
     } finally {
       state.controller = null;
       if (!state.ended) {
@@ -262,24 +300,24 @@
     }
   }
 
-  function authenticatedFetch(path, body, keepalive) {
-    if (!state.sessionId || !state.accessCode) return Promise.resolve();
+  function sessionFetch(path, body, keepalive) {
+    if (!state.sessionId) return Promise.resolve();
     return fetch(path, {
       method: 'POST',
       keepalive: Boolean(keepalive),
-      headers: { 'Content-Type': 'application/json', 'X-Companion-Code': state.accessCode },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sessionId: state.sessionId, ...body })
     }).catch(function () {});
   }
 
   function trackEvent(eventName, keepalive) {
-    return authenticatedFetch('/api/kids-on-the-bus/event', { eventName }, keepalive);
+    return sessionFetch('/api/kids-on-the-bus/event', { eventName }, keepalive);
   }
 
   function reportEnd(reason, keepalive) {
     if (!state.sessionId || state.endReported) return;
     state.endReported = true;
-    authenticatedFetch('/api/kids-on-the-bus/session/end', { reason }, keepalive);
+    sessionFetch('/api/kids-on-the-bus/session/end', { reason }, keepalive);
   }
 
   function endSession(clear, reason, message) {
@@ -352,7 +390,7 @@
     }
     const response = await fetch('/api/kids-on-the-bus/feedback', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Companion-Code': state.accessCode },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sessionId: state.sessionId, ratings, comment: ui.feedbackComment.value })
     });
     const data = await response.json();
@@ -380,10 +418,15 @@
   document.querySelectorAll('.tracked-link').forEach((link) => {
     link.addEventListener('click', () => trackEvent(link.dataset.event || 'conversionClicks', true));
   });
-  window.addEventListener('error', () => trackEvent('browserErrors', true));
-  window.addEventListener('unhandledrejection', () => trackEvent('browserErrors', true));
+  function trackBrowserError() {
+    if (state.sessionId) trackEvent('browserErrors', true);
+    else trackVisitEvent('browserErrors', true);
+  }
+  window.addEventListener('error', trackBrowserError);
+  window.addEventListener('unhandledrejection', trackBrowserError);
   window.addEventListener('beforeunload', () => {
     if (state.sessionId && !state.endReported) reportEnd('page_exit', true);
+    else if (!state.sessionId) trackVisitEvent('pageExitsBeforeStart', true);
   });
   loadConfig();
 })();
