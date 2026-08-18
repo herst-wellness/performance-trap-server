@@ -365,7 +365,7 @@ test('PayPal self-serve enrollment: off by default, and a mocked full checkout i
   assert.equal(denied.status, 401);
 });
 
-test('speaking is an optional way into the same written box, on every week, with no audio leaving the browser', { timeout: 30000 }, async (t) => {
+test('speaking is an optional way into the same written box on every week, transcribed by OpenAI and disclosed', { timeout: 30000 }, async (t) => {
   const port = await getOpenPort();
   const child = await startServer(port, { ONRAMP_ACCESS_CODE: 'onramp-test-access' });
   t.after(() => child.kill());
@@ -376,25 +376,30 @@ test('speaking is an optional way into the same written box, on every week, with
     assert.equal(page.status, 200, week.pagePath);
     const html = await page.text();
 
-    // The control exists, starts hidden, and is revealed only when the
-    // browser has the API, so a browser without it keeps the typed path.
+    // The control exists, starts hidden, and is revealed only where the
+    // browser can record, so anywhere else keeps the typed path.
     assert.match(html, /id="speakButton"[^>]*class="button secondary hidden"/, week.pagePath + ' speak button starts hidden');
-    assert.ok(html.includes("window.SpeechRecognition || window.webkitSpeechRecognition"), week.pagePath + ' uses the browser recognizer');
+    assert.ok(html.includes('window.MediaRecorder'), week.pagePath + ' records with MediaRecorder');
+    assert.ok(html.includes('window.isSecureContext'), week.pagePath + ' requires a secure context for the microphone');
     assert.ok(html.includes("el('speakButton').classList.remove('hidden')"), week.pagePath + ' reveals the button only when supported');
     assert.ok(html.includes('id="speakStatus"'), week.pagePath + ' has a status region for the microphone');
 
-    // Dictation must land in the existing textarea, editable, never
-    // auto-sent, and the transcript must never be posted as audio.
-    assert.ok(html.includes("el('messageInput').value = shown"), week.pagePath + ' transcribes into the written box');
-    assert.ok(!html.includes('MediaRecorder'), week.pagePath + ' must not record audio');
-    assert.ok(!html.includes('/api/transcribe'), week.pagePath + ' must not ship audio to this server');
+    // Transcription is OpenAI's, reached through this server's own gated
+    // route, and the words land in the existing box rather than auto-sending.
+    assert.ok(html.includes("fetch('/api/on-ramp/transcribe'"), week.pagePath + ' posts audio to the transcribe route');
+    assert.ok(html.includes("'X-Companion-Access': accessCode"), week.pagePath + ' sends the access code with the audio');
+    assert.ok(html.includes('box.value = existing ? existing'), week.pagePath + ' appends the words to the written box');
+    assert.ok(!html.includes('webkitSpeechRecognition'), week.pagePath + ' no longer uses the browser recognizer');
 
-    // A stopped session, including the fixed crisis routing, releases the mic.
+    // The microphone is released when recording stops and when a session
+    // locks, including the fixed crisis routing.
+    assert.ok(html.includes('track.stop();'), week.pagePath + ' releases the microphone tracks');
     assert.ok(html.includes('if (value) stopListening();'), week.pagePath + ' releases the microphone when locked');
 
     // The person is told plainly where their voice goes.
-    assert.match(html, /your own browser does the transcribing/, week.pagePath + ' discloses who transcribes');
-    assert.match(html, /No recording is sent here, and none is kept\./, week.pagePath + ' discloses retention');
+    assert.match(html, /the sound goes to OpenAI to be turned into words/, week.pagePath + ' discloses who transcribes');
+    assert.match(html, /This application keeps no recording\./, week.pagePath + ' discloses retention here');
+    assert.match(html, /abuse-monitoring logs for up to 30 days/, week.pagePath + ' discloses provider retention');
     assert.doesNotMatch(html, /—/);
 
     // The page builds its client script inside a template literal, so a
@@ -405,6 +410,99 @@ test('speaking is an optional way into the same written box, on every week, with
     const body = scripts[scripts.length - 1].replace(/^<script>/, '').replace(/<\/script>$/, '');
     assert.doesNotThrow(() => new Function(body), week.pagePath + ' client script must parse');
   }
+});
+
+test('the transcribe route is gated, bounded, and posts the recording to OpenAI without keeping it', { timeout: 30000 }, async (t) => {
+  const http = require('node:http');
+
+  // Stand-in for OpenAI's transcription endpoint. It checks that a real
+  // multipart upload arrived with a file and a model, then answers with
+  // plain text the way response_format=text does.
+  let seen = null;
+  const openaiMock = http.createServer((req, res) => {
+    const chunks = [];
+    req.on('data', (c) => chunks.push(c));
+    req.on('end', () => {
+      const raw = Buffer.concat(chunks).toString('binary');
+      seen = {
+        auth: req.headers.authorization || '',
+        contentType: req.headers['content-type'] || '',
+        hasFilePart: /name="file"; filename="entry\.[a-z0-9]+"/.test(raw),
+        model: (raw.match(/name="model"\r\n\r\n([^\r]+)/) || [])[1] || '',
+        format: (raw.match(/name="response_format"\r\n\r\n([^\r]+)/) || [])[1] || '',
+        carriedAudio: raw.includes('PRETEND-AUDIO-BYTES'),
+      };
+      res.setHeader('Content-Type', 'text/plain');
+      res.end('I snapped at my kid, and then I felt sick about it.');
+    });
+  });
+  await new Promise((resolve) => openaiMock.listen(0, '127.0.0.1', resolve));
+  t.after(() => openaiMock.close());
+  const mockUrl = 'http://127.0.0.1:' + openaiMock.address().port + '/v1/audio/transcriptions';
+
+  const port = await getOpenPort();
+  const child = await startServer(port, {
+    ONRAMP_ACCESS_CODE: 'onramp-test-access',
+    OPENAI_API_KEY: 'fake-key-for-test',
+    OPENAI_TRANSCRIBE_URL: mockUrl,
+  });
+  t.after(() => child.kill());
+  const baseUrl = 'http://127.0.0.1:' + port;
+  const audio = Buffer.from('PRETEND-AUDIO-BYTES');
+
+  // No code, no transcription: otherwise this is a free transcription
+  // service for anyone who finds the URL.
+  const denied = await fetch(baseUrl + '/api/on-ramp/transcribe', {
+    method: 'POST',
+    headers: { 'Content-Type': 'audio/webm' },
+    body: audio,
+  });
+  assert.equal(denied.status, 401);
+  assert.equal(seen, null, 'a refused request must never reach OpenAI');
+
+  // A wrong method is refused before anything else happens.
+  const wrongMethod = await fetch(baseUrl + '/api/on-ramp/transcribe', { method: 'GET' });
+  assert.equal(wrongMethod.status, 405);
+
+  // A format OpenAI cannot read is refused here rather than forwarded.
+  const badType = await fetch(baseUrl + '/api/on-ramp/transcribe', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/zip', 'X-Companion-Access': 'onramp-test-access' },
+    body: audio,
+  });
+  assert.equal(badType.status, 415);
+
+  // An empty body is refused rather than billed.
+  const empty = await fetch(baseUrl + '/api/on-ramp/transcribe', {
+    method: 'POST',
+    headers: { 'Content-Type': 'audio/webm', 'X-Companion-Access': 'onramp-test-access' },
+    body: Buffer.alloc(0),
+  });
+  assert.equal(empty.status, 400);
+
+  // The happy path, including Safari's audio/mp4 recordings.
+  for (const type of ['audio/webm;codecs=opus', 'audio/mp4']) {
+    seen = null;
+    const ok = await fetch(baseUrl + '/api/on-ramp/transcribe', {
+      method: 'POST',
+      headers: { 'Content-Type': type, 'X-Companion-Access': 'onramp-test-access' },
+      body: audio,
+    });
+    assert.equal(ok.status, 200, type);
+    const body = await ok.json();
+    assert.equal(body.text, 'I snapped at my kid, and then I felt sick about it.', type);
+    assert.match(seen.auth, /^Bearer /, type + ' must authenticate to OpenAI');
+    assert.match(seen.contentType, /multipart\/form-data/, type + ' must upload as multipart');
+    assert.ok(seen.hasFilePart, type + ' must send a named file part');
+    assert.ok(seen.carriedAudio, type + ' must actually carry the recording');
+    assert.equal(seen.format, 'text', type + ' must ask for plain text back');
+    assert.ok(seen.model.length > 0, type + ' must name a model');
+  }
+
+  // Nothing about the audio may be written to disk anywhere in the repo.
+  const strays = fsSync.readdirSync(path.join(__dirname, '..'))
+    .filter((name) => /\.(webm|mp4|m4a|wav|ogg)$/i.test(name));
+  assert.deepEqual(strays, [], 'no recording may be written to disk');
 });
 
 test('the book-bonus page serves its promises: field-guide PDF, breath audio, course link, no gating', { timeout: 30000 }, async (t) => {

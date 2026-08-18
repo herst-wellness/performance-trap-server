@@ -716,7 +716,7 @@ function companionPage(week) {
     <h2 style="font-size:20px">Before you begin</h2>
     <div id="privacyNotice" class="notice"></div>
     <p class="small">This is a guided practice for adults, not therapy, medical care, diagnosis, or crisis support. You may pause or stop at any time.</p>
-    <p class="small">If you speak instead of typing, your own browser does the transcribing, which means Apple or Google turns the sound into words. No recording is sent here, and none is kept.</p>
+    <p class="small">If you speak instead of typing, the sound goes to OpenAI to be turned into words, the same place your writing already goes. This application keeps no recording. As with your writing, OpenAI may hold it in abuse-monitoring logs for up to 30 days.</p>
     <button id="beginButton" class="button">Begin</button>
     <div id="consentError" class="error hidden"></div>
   </section>
@@ -907,78 +907,108 @@ function companionPage(week) {
     enterSession();
   });
 
-  // Speaking instead of typing. The browser's own recognizer turns talk
-  // into text in the box, where it can be changed before sending; the
-  // companion still answers in writing. No audio reaches this server and
-  // none is stored. Browsers without the API never see the button, so the
-  // typed path is unchanged.
-  var SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-  var recognizer = null;
+  // Speaking instead of typing. The recording goes to OpenAI to be turned
+  // into words, then lands in the same box, editable before sending; the
+  // companion still answers in writing. Nothing about the audio is kept
+  // here. Browsers without recording never see the button, so the typed
+  // path is unchanged.
+  var canRecord = !!(window.MediaRecorder && navigator.mediaDevices &&
+    navigator.mediaDevices.getUserMedia && window.isSecureContext);
+  var recorder = null;
+  var micStream = null;
+  var audioChunks = [];
   var listening = false;
-  var speechBase = '';
 
   function speakStatus(text){
     el('speakStatus').textContent = text || '';
     el('speakStatus').classList.toggle('hidden', !text);
   }
+  function releaseMic(){
+    if (!micStream) return;
+    try { micStream.getTracks().forEach(function(track){ track.stop(); }); } catch (e) {}
+    micStream = null;
+  }
   function stopListening(){
-    if (recognizer && listening) { try { recognizer.stop(); } catch (e) {} }
+    if (recorder && listening) { try { recorder.stop(); } catch (e) {} }
+    else { releaseMic(); }
+  }
+  function restSpeakButton(){
+    listening = false;
+    el('speakButton').textContent = 'Speak';
+    el('speakButton').classList.remove('speaking');
   }
 
-  if (SpeechRec) {
-    el('speakButton').classList.remove('hidden');
-    recognizer = new SpeechRec();
-    recognizer.continuous = true;
-    recognizer.interimResults = true;
-    recognizer.lang = navigator.language || 'en-US';
+  async function sendForTranscription(){
+    var parts = audioChunks;
+    audioChunks = [];
+    if (!parts.length) { speakStatus(''); return; }
+    var blob = new Blob(parts, { type: parts[0].type || 'audio/webm' });
+    if (!blob.size) { speakStatus(''); return; }
+    el('speakButton').disabled = true;
+    speakStatus('Turning that into words.');
+    try {
+      var response = await fetch('/api/on-ramp/transcribe', {
+        method: 'POST',
+        headers: { 'X-Companion-Access': accessCode, 'Content-Type': blob.type },
+        cache: 'no-store',
+        body: blob
+      });
+      var data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Transcription failed');
+      var text = String(data.text || '').trim();
+      if (!text) {
+        speakStatus('I did not catch anything. Press Speak and try again, or just type.');
+        return;
+      }
+      var box = el('messageInput');
+      var existing = box.value.trim();
+      box.value = existing ? existing + ' ' + text : text;
+      box.scrollTop = box.scrollHeight;
+      speakStatus('');
+      box.focus();
+    } catch (error) {
+      speakStatus('That did not come through. Press Speak to try again, or just type.');
+    } finally {
+      el('speakButton').disabled = locked;
+    }
+  }
 
-    recognizer.addEventListener('start', function(){
+  if (canRecord) {
+    el('speakButton').classList.remove('hidden');
+    el('speakButton').addEventListener('click', async function(){
+      if (listening) { stopListening(); return; }
+      speakStatus('');
+      try {
+        micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch (e) {
+        speakStatus('Your browser is not letting the microphone through. Allow it in the address bar, or just type.');
+        return;
+      }
+      audioChunks = [];
+      try { recorder = new MediaRecorder(micStream); }
+      catch (e) {
+        releaseMic();
+        speakStatus('Recording is not working in this browser. You can type instead.');
+        return;
+      }
+      recorder.addEventListener('dataavailable', function(event){
+        if (event.data && event.data.size) audioChunks.push(event.data);
+      });
+      recorder.addEventListener('stop', function(){
+        releaseMic();
+        restSpeakButton();
+        sendForTranscription();
+      });
       listening = true;
       el('speakButton').textContent = 'Stop speaking';
       el('speakButton').classList.add('speaking');
-      speakStatus('Listening. Take your time.');
-    });
-
-    recognizer.addEventListener('result', function(event){
-      var settled = '';
-      var pending = '';
-      for (var i = event.resultIndex; i < event.results.length; i++) {
-        if (event.results[i].isFinal) { settled += event.results[i][0].transcript; }
-        else { pending += event.results[i][0].transcript; }
+      speakStatus('Listening. Take your time, then press Stop speaking.');
+      try { recorder.start(); }
+      catch (e) {
+        releaseMic();
+        restSpeakButton();
+        speakStatus('Recording is not working in this browser. You can type instead.');
       }
-      if (settled.trim()) {
-        speechBase = speechBase ? speechBase + ' ' + settled.trim() : settled.trim();
-      }
-      var shown = speechBase;
-      if (pending.trim()) { shown = shown ? shown + ' ' + pending.trim() : pending.trim(); }
-      el('messageInput').value = shown;
-      el('messageInput').scrollTop = el('messageInput').scrollHeight;
-    });
-
-    recognizer.addEventListener('error', function(event){
-      if (event.error === 'not-allowed' || event.error === 'service-not-allowed') {
-        speakStatus('Your browser is not letting the microphone through. Allow it in the address bar, or just type.');
-      } else if (event.error === 'no-speech') {
-        speakStatus('I did not catch anything. Press Speak and try again, or just type.');
-      } else if (event.error !== 'aborted') {
-        speakStatus('Speaking is not working right now. You can type instead.');
-      }
-    });
-
-    recognizer.addEventListener('end', function(){
-      listening = false;
-      el('speakButton').textContent = 'Speak';
-      el('speakButton').classList.remove('speaking');
-      if (el('speakStatus').textContent.indexOf('Listening') === 0) speakStatus('');
-      el('messageInput').focus();
-    });
-
-    el('speakButton').addEventListener('click', function(){
-      if (listening) { stopListening(); return; }
-      speechBase = el('messageInput').value.trim();
-      speakStatus('');
-      try { recognizer.start(); }
-      catch (e) { speakStatus('Speaking is not working right now. You can type instead.'); }
     });
   }
 
@@ -1059,7 +1089,135 @@ function indexPage() {
 </html>`;
 }
 
+// Speaking is transcribed by OpenAI rather than by the browser, so it
+// sounds the same in every browser and handles halting, self-correcting
+// speech far better. The audio is held in memory only for the length of
+// the request: never written to disk, never logged, never kept.
+const TRANSCRIBE_PATH = '/api/on-ramp/transcribe';
+const MAX_AUDIO_BYTES = 25 * 1024 * 1024; // OpenAI's per-file ceiling
+
+const AUDIO_EXTENSIONS = {
+  'audio/webm': 'webm',
+  'audio/ogg': 'ogg',
+  'audio/mp4': 'mp4',
+  'audio/mpeg': 'mp3',
+  'audio/mpga': 'mp3',
+  'audio/m4a': 'm4a',
+  'audio/x-m4a': 'm4a',
+  'audio/wav': 'wav',
+  'audio/x-wav': 'wav',
+  'audio/flac': 'flac',
+};
+
+function audioExtension(contentType) {
+  const base = String(contentType || '').split(';')[0].trim().toLowerCase();
+  return AUDIO_EXTENSIONS[base] || null;
+}
+
+function readAudioBody(req, limit) {
+  return new Promise((resolve, reject) => {
+    const chunks = [];
+    let total = 0;
+    req.on('data', (chunk) => {
+      total += chunk.length;
+      if (total > limit) {
+        const error = new Error('Recording too large');
+        error.clientStatus = 413;
+        reject(error);
+        req.destroy();
+        return;
+      }
+      chunks.push(chunk);
+    });
+    req.on('end', () => resolve(Buffer.concat(chunks)));
+    req.on('error', reject);
+  });
+}
+
+async function transcribeAudio(bytes, contentType) {
+  const extension = audioExtension(contentType);
+  if (!extension) {
+    const error = new Error('Unsupported audio type');
+    error.clientStatus = 415;
+    throw error;
+  }
+  // whisper-1 is the conservative default. Set ONRAMP_TRANSCRIBE_MODEL to
+  // gpt-4o-mini-transcribe for better accuracy at lower cost.
+  const model = process.env.ONRAMP_TRANSCRIBE_MODEL || 'whisper-1';
+  const url = process.env.OPENAI_TRANSCRIBE_URL || 'https://api.openai.com/v1/audio/transcriptions';
+  const form = new FormData();
+  form.append('file', new Blob([bytes], { type: contentType }), 'entry.' + extension);
+  form.append('model', model);
+  form.append('response_format', 'text');
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
+    body: form,
+  });
+  if (!response.ok) {
+    // Content-free diagnostic: status and OpenAI's own error label only.
+    let detail = '';
+    try {
+      const body = await response.json();
+      detail = (body && body.error && (body.error.code || body.error.type)) || '';
+    } catch (e) {
+      detail = '';
+    }
+    console.error('[companion] transcription failed', { status: response.status, model, detail });
+    throw new Error('Transcription failed');
+  }
+  return String((await response.text()) || '').trim();
+}
+
+async function handleTranscribeRoute(req, res) {
+  if (req.method !== 'POST') {
+    sendJson(res, 405, { error: 'Method not allowed' });
+    return true;
+  }
+  const access = hasAccess(req);
+  if (!access.ok) {
+    sendJson(
+      res,
+      access.status,
+      access.status === 503
+        ? { error: 'This private prototype is not enabled.' }
+        : { error: 'Access denied.' }
+    );
+    return true;
+  }
+  if (!process.env.OPENAI_API_KEY) {
+    sendJson(res, 503, { error: 'Speaking is not available right now.' });
+    return true;
+  }
+  let bytes;
+  try {
+    bytes = await readAudioBody(req, MAX_AUDIO_BYTES);
+  } catch (error) {
+    sendJson(res, error.clientStatus || 400, {
+      error: error.clientStatus === 413 ? 'That recording is too long.' : 'Could not read the recording.',
+    });
+    return true;
+  }
+  if (!bytes || !bytes.length) {
+    sendJson(res, 400, { error: 'No recording arrived.' });
+    return true;
+  }
+  try {
+    const text = await transcribeAudio(bytes, req.headers['content-type']);
+    sendJson(res, 200, { text });
+  } catch (error) {
+    sendJson(res, error.clientStatus || 502, {
+      error: error.clientStatus === 415 ? 'That audio format is not supported.' : 'Could not turn that into words.',
+    });
+  }
+  return true;
+}
+
 async function handleOnrampRoute(req, res) {
+  if (req.url === TRANSCRIBE_PATH) {
+    return handleTranscribeRoute(req, res);
+  }
+
   if (req.url === INDEX_PATH && req.method === 'GET') {
     res.writeHead(200, noStoreHeaders('text/html; charset=utf-8'));
     res.end(indexPage());
