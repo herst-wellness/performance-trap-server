@@ -102,15 +102,36 @@
         <p id="feedbackMessage" class="message" role="status"></p>
       </form>
 
-      <div class="next-steps">
-        <a id="googleFeedbackLink" class="button secondary tracked-link" data-event="feedbackFormClicks" href="https://docs.google.com/forms/d/e/1FAIpQLSfXr_Y0YxeUwx0Ky3QNBdNf6kCZCtlFXY2eZfp5qDq7jX-XEg/viewform">Open the additional feedback form</a>
-        <p class="consent-detail">Enter session reference <strong id="feedbackReference"></strong> in the form.</p>
-        <a class="text-link tracked-link" data-event="mindbodyPageClick" href="https://herstwellness.com/mind-body-foundations">Explore Mind/Body Foundations</a>
-        <a class="text-link tracked-link" data-event="chapterClick" href="https://performance-trap-server.onrender.com/listen/chapter-one">Read or listen to a chapter</a>
-        <a class="text-link tracked-link" data-event="bookClick" href="https://herstwellness.com/">Learn about the book</a>
-        <a class="text-link tracked-link" data-event="conversationClick" href="https://herstwellness.com/consult">Book a conversation with Chad</a>
-        <a class="text-link tracked-link" data-event="emailListClick" href="https://performance-trap-server.onrender.com/listen/chapter-one">Join the email list</a>
-      </div>
+      <section class="next-steps" aria-labelledby="nextStepsTitle">
+        <p class="eyebrow">Where to go from here</p>
+        <h3 id="nextStepsTitle">Choose what feels useful now.</h3>
+        <p class="next-steps-intro">You can talk with Chad, stay connected through the book and newsletter, or return to the Foundations page.</p>
+        <div class="pathway-grid">
+          <article class="pathway-card featured-pathway">
+            <p class="pathway-label">Work with Chad</p>
+            <h4>Book a consultation</h4>
+            <p>Talk with Chad about what surfaced and whether working together would be useful.</p>
+            <a class="button primary tracked-link" data-event="conversationClick" href="https://herstwellness.com/consult">Book a consultation</a>
+          </article>
+          <article class="pathway-card">
+            <p class="pathway-label">Stay connected</p>
+            <h4>Chapter One and the newsletter</h4>
+            <p>Read or listen to Chapter One. When you enter your email, you will also receive Chad's newsletter. Unsubscribe at any time.</p>
+            <a class="button secondary tracked-link" data-event="chapterClick" href="https://performance-trap-server.onrender.com/listen/chapter-one">Get Chapter One</a>
+          </article>
+          <article class="pathway-card">
+            <p class="pathway-label">Keep exploring</p>
+            <h4>Mind/Body Foundations</h4>
+            <p>Return to the Foundations page for the larger context around this written experience.</p>
+            <a class="button secondary tracked-link" data-event="mindbodyPageClick" href="https://herstwellness.com/mind-body-foundations">Explore Foundations</a>
+          </article>
+        </div>
+        <div class="additional-feedback">
+          <p><strong>Want to tell us more?</strong> The additional feedback form uses your anonymous session reference.</p>
+          <a id="googleFeedbackLink" class="button secondary tracked-link" data-event="feedbackFormClicks" href="https://docs.google.com/forms/d/e/1FAIpQLSfXr_Y0YxeUwx0Ky3QNBdNf6kCZCtlFXY2eZfp5qDq7jX-XEg/viewform">Open the additional feedback form</a>
+          <p class="consent-detail">Enter session reference <strong id="feedbackReference"></strong> in the form.</p>
+        </div>
+      </section>
       <button id="startAgainButton" class="button link-button" type="button">Return to the beginning</button>
     </section>
   </main>

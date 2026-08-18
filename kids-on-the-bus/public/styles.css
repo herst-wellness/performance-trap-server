@@ -181,8 +181,20 @@ input:focus, textarea:focus, select:focus, button:focus-visible, a:focus-visible
 .feedback-form { margin: 34px 0; padding-top: 28px; border-top: 1px solid var(--line); }
 .feedback-intro { color: var(--muted-brown); }
 .rating-row { display: grid; grid-template-columns: minmax(0, 1fr) 110px; gap: 20px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--line); line-height: 1.35; }
-.next-steps { display: grid; justify-items: start; gap: 14px; margin: 30px 0; padding: 26px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
-.next-steps .consent-detail { margin: -6px 0 8px; }
+.next-steps { margin: 34px 0; padding: 34px 0; border-top: 3px solid var(--gold); border-bottom: 1px solid var(--line); }
+.next-steps > .eyebrow { margin-top: 0; }
+.next-steps > h3 { max-width: 560px; font-size: clamp(1.7rem, 4vw, 2.25rem); }
+.next-steps-intro { max-width: 650px; color: var(--muted-brown); }
+.pathway-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 26px; }
+.pathway-card { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; padding: 22px; border: 1px solid var(--line); background: var(--cream); }
+.featured-pathway { border-top: 4px solid var(--gold); background: var(--soft-gold); }
+.pathway-label { margin: 0 0 8px; color: var(--gold-dark); font-family: "Proxima Nova", Arial, sans-serif; font-size: 0.66rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+.pathway-card h4 { margin: 0; font-family: "Playfair Display", Georgia, serif; font-size: 1.35rem; font-weight: 500; line-height: 1.15; }
+.pathway-card > p:not(.pathway-label) { flex: 1; color: var(--muted-brown); font-size: 0.94rem; line-height: 1.45; }
+.pathway-card .button { width: 100%; }
+.additional-feedback { margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--line); }
+.additional-feedback > p:first-child { margin-top: 0; }
+.additional-feedback .consent-detail { margin: 8px 0 0; }
 
 @media (max-width: 640px) {
   body { font-size: 18px; }
@@ -196,4 +208,6 @@ input:focus, textarea:focus, select:focus, button:focus-visible, a:focus-visible
   .utility-controls .button, .session-footer .button { width: 100%; }
   .rating-row { grid-template-columns: 1fr; gap: 8px; }
   .rating-row select { min-height: 44px; max-width: 130px; font-size: 1rem; }
+  .pathway-grid { grid-template-columns: 1fr; }
+  .pathway-card { padding: 22px 20px; }
 }

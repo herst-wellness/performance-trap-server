@@ -70,6 +70,16 @@ test('the companion is framed as Mind/Body Foundations with notice and optional 
   assert.doesNotMatch(`${html}\n${app}`, /access code|X-Companion-Code|Early access/i);
 });
 
+test('completion offers three intentional next steps with clear newsletter disclosure', () => {
+  assert.ok(html.indexOf('Book a consultation') < html.indexOf('Get Chapter One'));
+  assert.ok(html.indexOf('Get Chapter One') < html.indexOf('Explore Foundations'));
+  assert.match(html, /When you enter your email, you will also receive Chad's newsletter\. Unsubscribe at any time\./);
+  assert.match(html, /data-event="conversationClick" href="https:\/\/herstwellness\.com\/consult"/);
+  assert.match(html, /data-event="chapterClick" href="https:\/\/performance-trap-server\.onrender\.com\/listen\/chapter-one"/);
+  assert.match(html, /data-event="mindbodyPageClick" href="https:\/\/herstwellness\.com\/mind-body-foundations"/);
+  assert.doesNotMatch(html, /data-event="emailListClick"/);
+});
+
 test('browser submits the notice version supplied by the server configuration', async () => {
   const listeners = new Map();
   const elements = new Map();
