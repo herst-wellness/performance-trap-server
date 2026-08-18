@@ -19,6 +19,10 @@
     responseForm: el('responseForm'),
     responseText: el('responseText'),
     sendButton: el('sendButton'),
+    voiceControls: el('voiceControls'),
+    recordButton: el('recordButton'),
+    recordButtonLabel: el('recordButtonLabel'),
+    voiceStatus: el('voiceStatus'),
     statusLabel: el('statusLabel'),
     statusDetail: el('statusDetail'),
     breathDot: el('breathDot'),
@@ -50,13 +54,213 @@
     deadline: 0,
     timer: null,
     controller: null,
-    sharedSitting: false
+    sharedSitting: false,
+    mediaStream: null,
+    mediaRecorder: null,
+    audioChunks: [],
+    recordingStartedAt: 0,
+    recordingTimer: null,
+    recordingDeadlineTimer: null,
+    discardRecording: false,
+    transcribing: false,
+    transcriptionController: null,
+    lastTranscriptValue: '',
+    transcriptEdited: false
   };
+
+  const MAX_RECORDING_MS = 2 * 60 * 1000;
 
   function setStatus(label, detail, waiting) {
     ui.statusLabel.textContent = label;
     ui.statusDetail.textContent = detail || '';
     ui.breathDot.className = waiting ? 'breath-dot waiting' : 'breath-dot';
+  }
+
+  function setVoiceStatus(message, isError) {
+    ui.voiceStatus.textContent = message;
+    ui.voiceStatus.className = isError ? 'voice-status error' : 'voice-status';
+  }
+
+  function supportedRecordingType() {
+    if (typeof MediaRecorder === 'undefined') return '';
+    const choices = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4'];
+    if (typeof MediaRecorder.isTypeSupported !== 'function') return 'audio/webm';
+    return choices.find((type) => MediaRecorder.isTypeSupported(type)) || '';
+  }
+
+  function browserCanRecord() {
+    return Boolean(navigator.mediaDevices?.getUserMedia && supportedRecordingType());
+  }
+
+  function updateVoiceAvailability() {
+    const browserReady = browserCanRecord();
+    const serviceReady = Boolean(state.config?.voiceInputAvailable);
+    ui.recordButton.disabled = !browserReady || !serviceReady || !state.sessionId || state.ended || state.transcribing || Boolean(state.controller);
+    if (!browserReady) setVoiceStatus('Voice input is unavailable in this browser. You can continue by writing.', true);
+    else if (state.config && !serviceReady) setVoiceStatus('Voice input is temporarily unavailable. You can continue by writing.', true);
+  }
+
+  function clearRecordingTimers() {
+    if (state.recordingTimer) window.clearInterval(state.recordingTimer);
+    if (state.recordingDeadlineTimer) window.clearTimeout(state.recordingDeadlineTimer);
+    state.recordingTimer = null;
+    state.recordingDeadlineTimer = null;
+  }
+
+  function stopMediaTracks() {
+    if (state.mediaStream) state.mediaStream.getTracks().forEach((track) => track.stop());
+    state.mediaStream = null;
+  }
+
+  function resetRecordButton() {
+    ui.recordButton.classList.remove('recording');
+    ui.recordButton.setAttribute('aria-pressed', 'false');
+    ui.recordButtonLabel.textContent = 'Speak your response';
+    updateVoiceAvailability();
+  }
+
+  function discardVoiceRecording() {
+    state.discardRecording = true;
+    clearRecordingTimers();
+    if (state.mediaRecorder?.state === 'recording') state.mediaRecorder.stop();
+    stopMediaTracks();
+    if (state.transcriptionController) state.transcriptionController.abort();
+    state.transcriptionController = null;
+    state.transcribing = false;
+    resetRecordButton();
+  }
+
+  async function transcribeVoice(blob, durationMs) {
+    state.transcribing = true;
+    state.transcriptionController = new AbortController();
+    ui.recordButton.disabled = true;
+    ui.sendButton.disabled = true;
+    ui.recordButtonLabel.textContent = 'Transcribing...';
+    setVoiceStatus('Turning your recording into editable text.', false);
+    try {
+      const response = await fetch('/api/kids-on-the-bus/transcribe', {
+        method: 'POST',
+        signal: state.transcriptionController.signal,
+        headers: {
+          'Content-Type': blob.type || 'audio/webm',
+          'X-Companion-Session-Id': state.sessionId,
+          'X-Audio-Duration-Ms': String(Math.round(durationMs))
+        },
+        body: blob
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        const problem = new Error(data.error || 'Your recording could not be transcribed.');
+        problem.serverReported = true;
+        throw problem;
+      }
+      const transcript = String(data.text || '').trim();
+      if (!transcript) throw new Error('No words were detected. Try again or write your response.');
+      const existing = ui.responseText.value.trimEnd();
+      ui.responseText.value = existing ? `${existing}\n\n${transcript}` : transcript;
+      state.lastTranscriptValue = ui.responseText.value;
+      state.transcriptEdited = false;
+      state.costUsd += Number(data.transcriptionCostUsd || 0);
+      setVoiceStatus('Transcript added. Review or edit it before sending.', false);
+      ui.responseText.focus();
+    } catch (error) {
+      if (error.name !== 'AbortError') {
+        setVoiceStatus(error.message || 'Your recording could not be transcribed. You can continue by writing.', true);
+        if (!error.serverReported) trackEvent('voiceClientFailures');
+      }
+    } finally {
+      state.transcriptionController = null;
+      state.transcribing = false;
+      state.audioChunks = [];
+      state.mediaRecorder = null;
+      resetRecordButton();
+      if (!state.ended && !state.controller) ui.sendButton.disabled = false;
+    }
+  }
+
+  function stopVoiceRecording() {
+    if (!state.mediaRecorder || state.mediaRecorder.state !== 'recording') return;
+    clearRecordingTimers();
+    ui.recordButton.disabled = true;
+    ui.recordButtonLabel.textContent = 'Transcribing...';
+    setVoiceStatus('Recording stopped. Preparing the transcript.', false);
+    trackEvent('voiceRecordingStops');
+    state.mediaRecorder.stop();
+    stopMediaTracks();
+  }
+
+  async function startVoiceRecording() {
+    if (!state.sessionId || state.ended || state.controller || state.transcribing || !browserCanRecord()) return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true, channelCount: 1 }
+      });
+      state.mediaStream = stream;
+      state.audioChunks = [];
+      state.discardRecording = false;
+      const mimeType = supportedRecordingType();
+      const recorder = new MediaRecorder(stream, { mimeType });
+      state.mediaRecorder = recorder;
+      recorder.addEventListener('dataavailable', (event) => {
+        if (event.data?.size) state.audioChunks.push(event.data);
+      });
+      recorder.addEventListener('error', () => {
+        clearRecordingTimers();
+        stopMediaTracks();
+        setVoiceStatus('Recording stopped unexpectedly. You can try again or continue by writing.', true);
+        trackEvent('voiceClientFailures');
+        resetRecordButton();
+        ui.sendButton.disabled = false;
+      });
+      recorder.addEventListener('stop', () => {
+        const durationMs = Math.min(MAX_RECORDING_MS, Math.max(0, Date.now() - state.recordingStartedAt));
+        const chunks = state.audioChunks.slice();
+        const discarded = state.discardRecording;
+        state.discardRecording = false;
+        if (discarded) return;
+        if (durationMs < 500 || chunks.length === 0) {
+          state.audioChunks = [];
+          state.mediaRecorder = null;
+          setVoiceStatus('No speech was recorded. Try again or continue by writing.', true);
+          trackEvent('voiceClientFailures');
+          resetRecordButton();
+          ui.sendButton.disabled = false;
+          return;
+        }
+        const blob = new Blob(chunks, { type: recorder.mimeType || mimeType });
+        transcribeVoice(blob, durationMs);
+      });
+      recorder.start();
+      state.recordingStartedAt = Date.now();
+      ui.recordButton.classList.add('recording');
+      ui.recordButton.setAttribute('aria-pressed', 'true');
+      ui.recordButtonLabel.textContent = 'Stop recording';
+      ui.sendButton.disabled = true;
+      trackEvent('voiceRecordingStarts');
+      const updateTimer = () => {
+        const elapsed = Math.min(MAX_RECORDING_MS, Date.now() - state.recordingStartedAt);
+        const totalSeconds = Math.floor(elapsed / 1000);
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = String(totalSeconds % 60).padStart(2, '0');
+        setVoiceStatus(`Recording ${minutes}:${seconds}. Select Stop recording when you are finished.`, false);
+      };
+      updateTimer();
+      state.recordingTimer = window.setInterval(updateTimer, 500);
+      state.recordingDeadlineTimer = window.setTimeout(stopVoiceRecording, MAX_RECORDING_MS);
+    } catch (error) {
+      stopMediaTracks();
+      const denied = error?.name === 'NotAllowedError' || error?.name === 'PermissionDeniedError';
+      setVoiceStatus(denied
+        ? 'Microphone access was not granted. You can continue by writing.'
+        : 'The microphone could not start. You can continue by writing.', true);
+      trackEvent(denied ? 'microphoneDenials' : 'voiceClientFailures');
+      resetRecordButton();
+    }
+  }
+
+  function toggleVoiceRecording() {
+    if (state.mediaRecorder?.state === 'recording') stopVoiceRecording();
+    else startVoiceRecording();
   }
 
   function addTurn(role, text, extraClass) {
@@ -229,6 +433,8 @@
       state.costUsd = 0;
       state.ended = false;
       state.endReported = false;
+      state.lastTranscriptValue = '';
+      state.transcriptEdited = false;
       updateExchangeDisplay();
       ui.sessionReference.textContent = `Reference ${state.sessionReference}`;
       ui.retentionMessage.textContent = state.sharedSitting
@@ -237,7 +443,9 @@
       addTurn('companion', data.opening);
       ui.setupCard.classList.add('hidden');
       ui.sessionCard.classList.remove('hidden');
-      setStatus('Write when you are ready', 'Take as much time as you need. There is nothing listening or waiting for you to finish.', false);
+      setStatus('Respond when you are ready', 'Write, or choose Speak your response when you want the microphone to turn on.', false);
+      setVoiceStatus('Or speak one response at a time.', false);
+      updateVoiceAvailability();
       startClock();
       ui.responseText.focus();
     } catch (error) {
@@ -251,12 +459,16 @@
     event.preventDefault();
     const message = ui.responseText.value.trim();
     if (!message || state.ended || state.controller) return;
+    if (state.transcriptEdited) trackEvent('voiceTranscriptCorrections');
+    state.lastTranscriptValue = '';
+    state.transcriptEdited = false;
     ui.responseText.value = '';
     addTurn('user', message);
     const priorHistory = state.history.slice();
     state.history.push({ role: 'user', content: message });
     ui.responseText.disabled = true;
     ui.sendButton.disabled = true;
+    ui.recordButton.disabled = true;
     setStatus('The companion is responding', 'The breath circle expands for five seconds and settles for seven.', true);
     state.controller = new AbortController();
     try {
@@ -295,6 +507,7 @@
       if (!state.ended) {
         ui.responseText.disabled = false;
         ui.sendButton.disabled = false;
+        updateVoiceAvailability();
         ui.responseText.focus();
       }
     }
@@ -323,6 +536,7 @@
   function endSession(clear, reason, message) {
     if (!state.endReported) reportEnd(reason || 'intentional', true);
     state.ended = true;
+    discardVoiceRecording();
     if (state.controller) state.controller.abort();
     if (state.timer) window.clearInterval(state.timer);
     state.timer = null;
@@ -410,6 +624,10 @@
 
   ui.beginButton.addEventListener('click', beginSession);
   ui.responseForm.addEventListener('submit', submitResponse);
+  ui.recordButton.addEventListener('click', toggleVoiceRecording);
+  ui.responseText.addEventListener('input', () => {
+    if (state.lastTranscriptValue && ui.responseText.value !== state.lastTranscriptValue) state.transcriptEdited = true;
+  });
   ui.copyButton.addEventListener('click', copySitting);
   ui.downloadButton.addEventListener('click', downloadSitting);
   ui.endButton.addEventListener('click', clearFromButton);
@@ -425,8 +643,10 @@
   window.addEventListener('error', trackBrowserError);
   window.addEventListener('unhandledrejection', trackBrowserError);
   window.addEventListener('beforeunload', () => {
+    if (state.mediaRecorder?.state === 'recording') discardVoiceRecording();
     if (state.sessionId && !state.endReported) reportEnd('page_exit', true);
     else if (!state.sessionId) trackVisitEvent('pageExitsBeforeStart', true);
   });
+  updateVoiceAvailability();
   loadConfig();
 })();

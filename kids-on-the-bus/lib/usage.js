@@ -21,6 +21,7 @@ const SESSION_COUNTERS = new Set([
   'copyButtonUse', 'downloadButtonUse', 'endAndClearButtonUse', 'feedbackFormClicks',
   'conversionClicks', 'browserErrors', 'serverErrors', 'truncatedResponses', 'emptyResponses',
   'responseFailures',
+  'voiceRecordingStarts', 'voiceRecordingStops', 'voiceClientFailures', 'microphoneDenials', 'voiceTranscriptCorrections',
   'safetyActivations', 'diagnosisBoundaryActivations', 'crisisActivations', 'userStopRequests',
   'mindbodyPageClick', 'chapterClick', 'bookClick', 'conversationClick', 'emailListClick'
 ]);
@@ -191,6 +192,17 @@ function newSession(record) {
     serverErrors: 0,
     browserErrors: 0,
     responseFailures: 0,
+    voiceRecordingStarts: 0,
+    voiceRecordingStops: 0,
+    voiceTranscriptionSuccesses: 0,
+    voiceTranscriptionFailures: 0,
+    voiceClientFailures: 0,
+    microphoneDenials: 0,
+    voiceTranscriptCorrections: 0,
+    voiceRecordedSeconds: 0,
+    transcriptionTimesMs: [],
+    medianTranscriptionTimeMs: 0,
+    slowestTranscriptionMs: 0,
     safetyActivations: 0,
     diagnosisBoundaryActivations: 0,
     crisisActivations: 0,
@@ -232,6 +244,19 @@ function newVisit(record) {
 }
 
 function finalizeSessionMetrics(session) {
+  session.voiceRecordingStarts = wholeNonNegative(session.voiceRecordingStarts);
+  session.voiceRecordingStops = wholeNonNegative(session.voiceRecordingStops);
+  session.voiceTranscriptionSuccesses = wholeNonNegative(session.voiceTranscriptionSuccesses);
+  session.voiceTranscriptionFailures = wholeNonNegative(session.voiceTranscriptionFailures);
+  session.voiceClientFailures = wholeNonNegative(session.voiceClientFailures);
+  session.microphoneDenials = wholeNonNegative(session.microphoneDenials);
+  session.voiceTranscriptCorrections = wholeNonNegative(session.voiceTranscriptCorrections);
+  session.voiceRecordedSeconds = finiteNonNegative(session.voiceRecordedSeconds);
+  session.transcriptionTimesMs = Array.isArray(session.transcriptionTimesMs)
+    ? session.transcriptionTimesMs.map(wholeNonNegative).filter((value) => value > 0).slice(-100)
+    : [];
+  session.medianTranscriptionTimeMs = Math.round(median(session.transcriptionTimesMs));
+  session.slowestTranscriptionMs = session.transcriptionTimesMs.length ? Math.max(...session.transcriptionTimesMs) : 0;
   session.averageUserEntryLength = session.userEntries > 0
     ? Math.round(session.totalUserEntryLength / session.userEntries)
     : 0;
@@ -461,6 +486,16 @@ class UsageLedger {
   recordEvent(sessionReference, eventName) {
     if (!SESSION_COUNTERS.has(eventName)) return null;
     return this.updateSession(sessionReference, (session) => { session[eventName] = wholeNonNegative(session[eventName]) + 1; });
+  }
+
+  recordTranscription(sessionReference, record = {}) {
+    return this.updateSession(sessionReference, (session) => {
+      session.voiceRecordedSeconds = finiteNonNegative(session.voiceRecordedSeconds) + finiteNonNegative(record.audioSeconds);
+      if (!Array.isArray(session.transcriptionTimesMs)) session.transcriptionTimesMs = [];
+      if (finiteNonNegative(record.responseTimeMs) > 0) session.transcriptionTimesMs.push(wholeNonNegative(record.responseTimeMs));
+      if (record.success) session.voiceTranscriptionSuccesses = wholeNonNegative(session.voiceTranscriptionSuccesses) + 1;
+      else session.voiceTranscriptionFailures = wholeNonNegative(session.voiceTranscriptionFailures) + 1;
+    });
   }
 
   endSession(sessionReference, reason) {

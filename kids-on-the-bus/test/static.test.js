@@ -42,18 +42,25 @@ test('the main server preserves every existing feature and delegates the namespa
   assert.match(mainServerSource, /req\.url === '\/reading'/);
 });
 
-test('browser offers a written-only sitting while preserving the former voice implementation in source', () => {
+test('browser offers controlled push-to-talk transcription without restoring realtime voice', () => {
   assert.match(html, /Begin written reflection/);
-  assert.match(html, /Nothing is listening/);
-  assert.doesNotMatch(html, /Begin voice session|Voice session|microphone|remoteAudio/);
+  assert.match(html, /Speak your response/);
+  assert.match(html, /review, edit, or delete it before sending/);
+  assert.match(html, /audio is sent through Herst Wellness's server to OpenAI for transcription/);
+  assert.match(html, /Audio is never saved to the Herst Wellness analytics store/);
+  assert.doesNotMatch(html, /Begin voice session|Voice session|remoteAudio/);
   assert.match(html, /written-app\.js/);
   assert.match(html, /End and clear here/);
   assert.match(html, /Copy sitting/);
   assert.match(html, /Download sitting/);
   assert.match(app, /replaceChildren/);
   assert.match(app, /\/api\/kids-on-the-bus\/claude-response/);
+  assert.match(app, /\/api\/kids-on-the-bus\/transcribe/);
+  assert.match(app, /getUserMedia/);
+  assert.match(app, /new MediaRecorder/);
+  assert.match(app, /MAX_RECORDING_MS = 2 \* 60 \* 1000/);
   assert.match(app, /new AbortController/);
-  assert.doesNotMatch(app, /getUserMedia|RTCPeerConnection|speechSynthesis|remoteAudio|realtime\/session/);
+  assert.doesNotMatch(app, /RTCPeerConnection|speechSynthesis|remoteAudio|realtime\/session/);
   assert.match(preservedVoiceApp, /getUserMedia/);
   assert.match(preservedVoiceApp, /RTCPeerConnection/);
 });
@@ -166,6 +173,118 @@ test('browser submits the notice version supplied by the server configuration', 
   assert.equal(JSON.parse(submitted.options.body).visitId, 'visit-id');
   assert.equal('X-Companion-Code' in submitted.options.headers, false);
   assert.doesNotMatch(app, /const NOTICE_VERSION\s*=/);
+});
+
+test('voice input stops the microphone, inserts editable text, and never auto-sends', async () => {
+  const listeners = new Map();
+  const elements = new Map();
+  const makeElement = () => ({
+    addEventListener(event, handler) { listeners.set(`${this.id}:${event}`, handler); },
+    append() {},
+    appendChild() {},
+    classList: { add() {}, remove() {} },
+    disabled: false,
+    focus() {},
+    id: '',
+    checked: false,
+    scrollHeight: 0,
+    scrollTop: 0,
+    setAttribute(name, value) { this[name] = value; },
+    textContent: '',
+    value: ''
+  });
+  const document = {
+    body: { appendChild() {} },
+    createElement() { return makeElement(); },
+    getElementById(id) {
+      if (!elements.has(id)) {
+        const element = makeElement();
+        element.id = id;
+        elements.set(id, element);
+      }
+      return elements.get(id);
+    },
+    querySelectorAll() { return []; },
+    referrer: ''
+  };
+  let stoppedTracks = 0;
+  const stream = { getTracks: () => [{ stop() { stoppedTracks += 1; } }] };
+  class FakeMediaRecorder {
+    static isTypeSupported(type) { return type.startsWith('audio/webm'); }
+    constructor() { this.mimeType = 'audio/webm'; this.state = 'inactive'; this.listeners = {}; }
+    addEventListener(event, handler) { this.listeners[event] = handler; }
+    start() { this.state = 'recording'; }
+    stop() {
+      this.state = 'inactive';
+      this.listeners.dataavailable({ data: new Blob([new Uint8Array(1024)], { type: this.mimeType }) });
+      this.listeners.stop();
+    }
+  }
+  const requests = [];
+  const fetch = async (url, options = {}) => {
+    requests.push({ url, options });
+    if (url.endsWith('/config')) return { ok: true, json: async () => ({ configured: true, voiceInputAvailable: true, maxExchanges: 30, noticeVersion: 'voice-test', sessionMinutes: 60 }) };
+    if (url.endsWith('/visit')) return { ok: true, json: async () => ({ visitId: 'visit-id' }) };
+    if (url.endsWith('/session')) return { ok: true, json: async () => ({ sessionId: 'session-id', sessionReference: 'MBF-VOICE-TEST', opening: 'Opening' }) };
+    if (url.endsWith('/event')) return { ok: true, json: async () => ({ recorded: true }) };
+    if (url.endsWith('/transcribe')) return { ok: true, json: async () => ({ text: 'I notice pressure in my chest.', transcriptionCostUsd: 0.0001 }) };
+    if (url.endsWith('/claude-response')) return { ok: true, json: async () => ({ route: 'continue_reflection', response: 'Stay with that pressure.', responseCostUsd: 0.001 }) };
+    throw new Error(`Unexpected request: ${url}`);
+  };
+  const window = {
+    addEventListener() {},
+    clearInterval() {},
+    clearTimeout() {},
+    innerWidth: 1200,
+    localStorage: { getItem() { return null; }, setItem() {} },
+    location: { search: '' },
+    screen: { width: 1200 },
+    scrollTo() {},
+    setInterval() { return 1; },
+    setTimeout() { return 2; }
+  };
+  vm.runInNewContext(app, {
+    AbortController,
+    Blob,
+    Date,
+    document,
+    fetch,
+    MediaRecorder: FakeMediaRecorder,
+    navigator: {
+      clipboard: { writeText: async () => {} },
+      mediaDevices: { getUserMedia: async () => stream },
+      userAgent: 'test'
+    },
+    URL,
+    URLSearchParams,
+    window
+  });
+  await new Promise((resolve) => setImmediate(resolve));
+  elements.get('noticeConsent').checked = true;
+  await listeners.get('beginButton:click')();
+  listeners.get('recordButton:click')();
+  await new Promise((resolve) => setImmediate(resolve));
+  await new Promise((resolve) => setTimeout(resolve, 550));
+  listeners.get('recordButton:click')();
+  await new Promise((resolve) => setImmediate(resolve));
+  await new Promise((resolve) => setImmediate(resolve));
+
+  const transcriptionRequest = requests.find((request) => request.url.endsWith('/transcribe'));
+  assert.ok(transcriptionRequest);
+  assert.equal(transcriptionRequest.options.headers['X-Companion-Session-Id'], 'session-id');
+  assert.equal(transcriptionRequest.options.headers['Content-Type'], 'audio/webm');
+  assert.equal(stoppedTracks, 1);
+  assert.equal(elements.get('responseText').value, 'I notice pressure in my chest.');
+  assert.equal(requests.some((request) => request.url.endsWith('/claude-response')), false);
+
+  elements.get('responseText').value += ' Edited.';
+  listeners.get('responseText:input')();
+  await listeners.get('responseForm:submit')({ preventDefault() {} });
+  assert.equal(requests.some((request) => request.url.endsWith('/claude-response')), true);
+  const events = requests.filter((request) => request.url.endsWith('/event')).map((request) => JSON.parse(request.options.body).eventName);
+  assert.ok(events.includes('voiceRecordingStarts'));
+  assert.ok(events.includes('voiceRecordingStops'));
+  assert.ok(events.includes('voiceTranscriptCorrections'));
 });
 
 test('dashboard copy separates estimated companion invitations from estimated participant evidence', () => {

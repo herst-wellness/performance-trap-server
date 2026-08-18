@@ -163,7 +163,8 @@ input:focus, textarea:focus, select:focus, button:focus-visible, a:focus-visible
 .status-detail { margin: 7px 0 0; color: var(--muted-brown); font-size: 0.98rem; }
 
 @keyframes breathe { 0% { transform: scale(0.65); } 41.666% { transform: scale(2.1); } 100% { transform: scale(0.65); } }
-@media (prefers-reduced-motion: reduce) { .breath-dot { animation: none !important; } }
+@keyframes record-pulse { 0% { box-shadow: 0 0 0 0 rgba(145, 55, 44, 0.3); } 70% { box-shadow: 0 0 0 8px rgba(145, 55, 44, 0); } 100% { box-shadow: 0 0 0 0 rgba(145, 55, 44, 0); } }
+@media (prefers-reduced-motion: reduce) { .breath-dot, .voice-button.recording .record-dot { animation: none !important; } }
 
 .transcript { min-height: 270px; max-height: 500px; overflow-y: auto; padding: 28px; display: grid; align-content: start; gap: 16px; }
 .turn { max-width: 82%; padding: 15px 18px; border-radius: 3px; line-height: 1.5; font-size: 1.08rem; white-space: pre-wrap; }
@@ -173,6 +174,15 @@ input:focus, textarea:focus, select:focus, button:focus-visible, a:focus-visible
 .turn.safety { justify-self: start; border: 1px solid #d79b92; background: var(--soft-red); }
 .writing-panel { padding: 18px 28px 24px; border-top: 1px solid var(--line); }
 .primary-writing-panel textarea { min-height: 150px; }
+.voice-controls { display: flex; align-items: center; gap: 16px; margin: -2px 0 18px; padding: 16px; border: 1px solid var(--line); background: var(--cream); }
+.voice-button { flex: 0 0 auto; min-width: 190px; gap: 9px; background: var(--off-white); }
+.record-dot { width: 10px; height: 10px; flex: 0 0 10px; border-radius: 50%; background: var(--red); box-shadow: 0 0 0 0 rgba(145, 55, 44, 0.25); }
+.voice-button.recording { border-color: var(--red); background: var(--soft-red); color: var(--red); }
+.voice-button.recording .record-dot { animation: record-pulse 1.6s ease-out infinite; }
+.voice-copy { min-width: 0; }
+.voice-status { margin: 0; color: var(--brown); font-family: "Proxima Nova", Arial, sans-serif; font-size: 0.82rem; font-weight: 700; line-height: 1.4; }
+.voice-status.error { color: var(--red); }
+.voice-detail { margin: 5px 0 0; color: var(--muted-brown); font-size: 0.78rem; line-height: 1.4; }
 .utility-controls { display: flex; gap: 10px; padding: 0 28px 20px; }
 .session-footer { display: flex; justify-content: space-between; gap: 20px; align-items: center; padding: 20px 28px 26px; border-top: 1px solid var(--line); }
 .cost-message { margin: 0; max-width: 520px; color: var(--muted-brown); font-size: 0.82rem; line-height: 1.45; }
@@ -204,6 +214,8 @@ input:focus, textarea:focus, select:focus, button:focus-visible, a:focus-visible
   .session-meta { text-align: left; }
   .status-panel { justify-content: flex-start; }
   .turn { max-width: 94%; }
+  .voice-controls { align-items: stretch; flex-direction: column; }
+  .voice-button { width: 100%; min-width: 0; }
   .utility-controls { align-items: stretch; flex-direction: column; }
   .utility-controls .button, .session-footer .button { width: 100%; }
   .rating-row { grid-template-columns: 1fr; gap: 8px; }

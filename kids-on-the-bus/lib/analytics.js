@@ -185,6 +185,7 @@ function aggregateInsights(sessions) {
   const durations = rows.map((row) => Number(row.durationSeconds || 0)).filter((value) => value > 0);
   const exchanges = rows.map((row) => Number(row.companionResponses || 0));
   const responseTimes = rows.flatMap((row) => Array.isArray(row.responseTimesMs) ? row.responseTimesMs : []);
+  const transcriptionTimes = rows.flatMap((row) => Array.isArray(row.transcriptionTimesMs) ? row.transcriptionTimesMs : []);
   const topicCounts = {};
   const topicCombinations = {};
   const invitationCounts = Object.fromEntries(PROCESS_KEYS.map((key) => [key, 0]));
@@ -198,6 +199,13 @@ function aggregateInsights(sessions) {
   let retries = 0;
   let safetyActivations = 0;
   let conversionClicks = 0;
+  let voiceRecordingStarts = 0;
+  let voiceTranscriptionSuccesses = 0;
+  let voiceTranscriptionFailures = 0;
+  let voiceClientFailures = 0;
+  let microphoneDenials = 0;
+  let voiceTranscriptCorrections = 0;
+  let voiceRecordedSeconds = 0;
 
   for (const row of rows) {
     const topics = [row.primaryTopic, ...(row.secondaryTopics || [])].filter(Boolean);
@@ -223,10 +231,17 @@ function aggregateInsights(sessions) {
       row.feedback.ratings.forEach((value, index) => { if (Number.isFinite(Number(value))) feedback[index].push(Number(value)); });
     }
     estimatedCostUsd += Number(row.estimatedCostUsd || 0);
-    errors += Number(row.serverErrors || 0) + Number(row.browserErrors || 0) + Number(row.emptyResponses || 0) + Number(row.responseFailures || 0);
+    errors += Number(row.serverErrors || 0) + Number(row.browserErrors || 0) + Number(row.emptyResponses || 0) + Number(row.responseFailures || 0) + Number(row.voiceTranscriptionFailures || 0) + Number(row.voiceClientFailures || 0);
     retries += Number(row.chargeableRetries || 0);
     safetyActivations += Number(row.safetyActivations || 0);
     conversionClicks += Number(row.conversionClicks || 0);
+    voiceRecordingStarts += Number(row.voiceRecordingStarts || 0);
+    voiceTranscriptionSuccesses += Number(row.voiceTranscriptionSuccesses || 0);
+    voiceTranscriptionFailures += Number(row.voiceTranscriptionFailures || 0);
+    voiceClientFailures += Number(row.voiceClientFailures || 0);
+    microphoneDenials += Number(row.microphoneDenials || 0);
+    voiceTranscriptCorrections += Number(row.voiceTranscriptCorrections || 0);
+    voiceRecordedSeconds += Number(row.voiceRecordedSeconds || 0);
   }
 
   const ranked = (counts) => Object.entries(counts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
@@ -255,7 +270,20 @@ function aggregateInsights(sessions) {
     errors,
     retries,
     safetyActivations,
-    conversionClicks
+    conversionClicks,
+    voiceInputSittings: rows.filter((row) => Number(row.voiceRecordingStarts || 0) > 0).length,
+    voiceRecordingStarts,
+    voiceTranscriptionSuccesses,
+    voiceTranscriptionFailures,
+    voiceClientFailures,
+    microphoneDenials,
+    voiceTranscriptCorrections,
+    voiceTranscriptionSuccessRate: percentage(voiceTranscriptionSuccesses, voiceTranscriptionSuccesses + voiceTranscriptionFailures),
+    averageVoiceRecordingSeconds: voiceTranscriptionSuccesses + voiceTranscriptionFailures > 0
+      ? Math.round(voiceRecordedSeconds / (voiceTranscriptionSuccesses + voiceTranscriptionFailures) * 10) / 10
+      : 0,
+    medianTranscriptionTimeMs: Math.round(median(transcriptionTimes)),
+    slowestTranscriptionMs: transcriptionTimes.length ? Math.max(...transcriptionTimes) : 0
   };
 }
 
@@ -299,7 +327,10 @@ function sessionsToCsv(sessions) {
     'estimatedSecondaryTopics', 'estimatedCompanionInvitations', 'estimatedParticipantEvidence', 'deviceCategory', 'browserFamily', 'operatingSystemFamily', 'screenSizeCategory',
     'referringPage', 'utmSource', 'utmMedium', 'utmCampaign', 'utmContent', 'estimatedCostUsd',
     'medianResponseTimeMs', 'slowestResponseMs', 'serverErrors', 'browserErrors', 'responseFailures', 'safetyActivations',
-    'diagnosisBoundaryActivations', 'crisisActivations', 'feedbackRatings', 'sharedSittingPermission'
+    'diagnosisBoundaryActivations', 'crisisActivations', 'voiceRecordingStarts', 'voiceRecordingStops',
+    'voiceTranscriptionSuccesses', 'voiceTranscriptionFailures', 'voiceClientFailures', 'microphoneDenials',
+    'voiceTranscriptCorrections', 'voiceRecordedSeconds', 'medianTranscriptionTimeMs', 'slowestTranscriptionMs',
+    'feedbackRatings', 'sharedSittingPermission'
   ];
   const lines = [headers.join(',')];
   for (const row of sessions || []) {
@@ -314,8 +345,10 @@ function sessionsToCsv(sessions) {
       row.device?.screenSizeCategory, row.referral?.referringPage, row.referral?.utmSource, row.referral?.utmMedium,
       row.referral?.utmCampaign, row.referral?.utmContent, row.estimatedCostUsd, row.medianResponseTimeMs,
       row.slowestResponseMs, row.serverErrors, row.browserErrors, row.responseFailures, row.safetyActivations,
-      row.diagnosisBoundaryActivations, row.crisisActivations, (row.feedback?.ratings || []).join('|'),
-      row.sharedSittingPermission
+      row.diagnosisBoundaryActivations, row.crisisActivations, row.voiceRecordingStarts, row.voiceRecordingStops,
+      row.voiceTranscriptionSuccesses, row.voiceTranscriptionFailures, row.voiceClientFailures, row.microphoneDenials,
+      row.voiceTranscriptCorrections, row.voiceRecordedSeconds, row.medianTranscriptionTimeMs, row.slowestTranscriptionMs,
+      (row.feedback?.ratings || []).join('|'), row.sharedSittingPermission
     ];
     lines.push(values.map(csvCell).join(','));
   }

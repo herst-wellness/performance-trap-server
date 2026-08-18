@@ -91,6 +91,9 @@ test('the extended ledger preserves structured sessions across a process restart
     processInvitations: { bodySensation: 1 },
     processEvidence: { specificSituation: 1 }
   });
+  firstProcess.recordEvent('MBF-ABCD-2345', 'voiceRecordingStarts');
+  firstProcess.recordEvent('MBF-ABCD-2345', 'voiceRecordingStops');
+  firstProcess.recordTranscription('MBF-ABCD-2345', { audioSeconds: 9.5, responseTimeMs: 800, success: true });
   firstProcess.endSession('MBF-ABCD-2345', 'completed');
 
   const restartedProcess = new UsageLedger(file, { budgetUsd: 100, analyticsRetentionDays: 365 });
@@ -101,6 +104,11 @@ test('the extended ledger preserves structured sessions across a process restart
   assert.equal(saved.userEntries, 1);
   assert.equal(saved.processInvitations.bodySensation, 1);
   assert.equal(saved.processEvidence.specificSituation, 1);
+  assert.equal(saved.voiceRecordingStarts, 1);
+  assert.equal(saved.voiceRecordingStops, 1);
+  assert.equal(saved.voiceTranscriptionSuccesses, 1);
+  assert.equal(saved.voiceRecordedSeconds, 9.5);
+  assert.equal(saved.medianTranscriptionTimeMs, 800);
   assert.equal(saved.referral.referringPage, 'https://herstwellness.com/mind-body-foundations');
   fs.rmSync(directory, { recursive: true, force: true });
 });
