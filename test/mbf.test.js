@@ -422,6 +422,33 @@ test('the Send to Chad button is gated by the module access code and disclosed t
   assert.equal(empty.status, 400, 'an empty transcript must be refused before ever reaching email');
 });
 
+test('an "I\'m finished now" button swaps the typing box for the same four actions at the bottom, always leaving the top bar as a second way out', { timeout: 30000 }, async (t) => {
+  const port = await getOpenPort();
+  const child = await startServer(port, { MBF_ACCESS_CODES: 'mbf-test-access' });
+  t.after(() => child.kill());
+  const baseUrl = 'http://127.0.0.1:' + port;
+
+  for (const mod of Object.values(MODULES)) {
+    const page = await fetch(baseUrl + mod.pagePath);
+    const html = await page.text();
+    assert.ok(html.includes('id="finishedButton"'), mod.pagePath + ' has an I\'m finished now control');
+    assert.match(html, />I'm finished now</, mod.pagePath + ' labels it exactly');
+
+    // the closed panel starts hidden and carries its own copy of all four actions
+    assert.match(html, /id="composerClosed" class="composer-closed hidden"/, mod.pagePath + ' the closed panel is hidden until finishedButton is pressed');
+    for (const id of ['copyButtonBottom', 'downloadButtonBottom', 'emailButtonBottom', 'endButtonBottom', 'resumeButton']) {
+      assert.ok(html.includes('id="' + id + '"'), mod.pagePath + ' closed panel has ' + id);
+    }
+
+    // the original top-of-page bar is untouched, so ending is always available without pressing finishedButton first
+    assert.ok(html.includes('id="copyButton"') && html.includes('id="downloadButton"') && html.includes('id="emailButton"') && html.includes('id="endButton"'), mod.pagePath + ' keeps the original top bar');
+
+    // wiring: both the bottom Send to Chad and the bottom End must reach the same real functions as the top bar, not dead buttons
+    assert.match(html, /doEmail\(el\('emailButtonBottom'\)\)/, mod.pagePath + ' bottom Send to Chad is wired to the real send function');
+    assert.match(html, /el\('endButtonBottom'\)\.addEventListener\('click', clearSession\)/, mod.pagePath + ' bottom End is wired to the real clear function');
+  }
+});
+
 test('the deterministic refusal to autonomously email still names the button as the user-controlled alternative', { timeout: 30000 }, async (t) => {
   const port = await getOpenPort();
   const child = await startServer(port, { MBF_ACCESS_CODES: 'mbf-test-access' });

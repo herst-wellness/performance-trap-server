@@ -717,7 +717,7 @@ function companionPage(mod) {
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&display=swap" rel="stylesheet">
 <style>
 :root{--cream:#F4EDE4;--paper:#FBF7F0;--ink:#352515;--gold:#8B6B1E;--line:#D7C7B3;--soft:#EFE6D8;--danger:#8E2F27;--shadow:0 20px 55px rgba(53,37,21,.10)}
-*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:'Cormorant Garamond',Georgia,serif;font-size:19px;line-height:1.55}.shell{width:min(920px,calc(100% - 28px));margin:0 auto;padding:30px 0 54px}.brand{display:flex;justify-content:center;margin-bottom:22px}.brand img{display:block;width:min(520px,100%);height:auto}.rule{height:1px;background:var(--gold);opacity:.65;margin:0 0 30px}.hero{text-align:center;margin:0 auto 28px;max-width:700px}.eyebrow{text-transform:uppercase;letter-spacing:.18em;color:var(--gold);font:600 12px/1.4 Arial,sans-serif}.hero h1{font-family:'Playfair Display',Georgia,serif;font-size:clamp(30px,5.5vw,46px);line-height:1.1;margin:10px 0 10px}.hero p{font-style:italic;color:#6F5438;margin:0}.card{background:rgba(251,247,240,.94);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:clamp(22px,4vw,38px);max-width:720px;margin:0 auto}.card h2{font-family:'Playfair Display',Georgia,serif;font-size:24px;margin:0 0 10px}.small{font:14px/1.5 Arial,sans-serif;color:#715D49}.notice{padding:17px 18px;background:var(--soft);border-left:3px solid var(--gold);font:14px/1.55 Arial,sans-serif;margin:18px 0}.field{margin:18px 0}.field label{display:block;font:600 13px/1.4 Arial,sans-serif;letter-spacing:.03em;margin-bottom:7px}.field input,.field select,.composer textarea{width:100%;border:1px solid #BCA88E;border-radius:10px;background:#FFFDF9;color:var(--ink);padding:13px 14px;font:16px/1.4 Arial,sans-serif}.field input:focus,.field select:focus,.composer textarea:focus{outline:2px solid rgba(139,107,30,.28);border-color:var(--gold)}.button{border:1px solid var(--gold);background:var(--gold);color:white;border-radius:999px;padding:12px 20px;font:600 14px/1 Arial,sans-serif;cursor:pointer}.button:hover{filter:brightness(.95)}.button:disabled{opacity:.5;cursor:not-allowed}.button.secondary{background:transparent;color:var(--gold)}.button.danger{border-color:var(--danger);color:var(--danger);background:transparent}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.hidden{display:none!important}.button.speaking{background:var(--danger);border-color:var(--danger);color:#fff}.speak-status{font:13px/1.45 Arial,sans-serif;color:#715D49;margin-top:9px}.error{color:var(--danger);font:600 14px/1.4 Arial,sans-serif;margin-top:12px}.session{max-width:820px;margin:0 auto;background:var(--paper);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}.session-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 20px;border-bottom:1px solid var(--line);background:#F8F1E8}.session-title{font-family:'Playfair Display',Georgia,serif;font-size:18px}.mode{font:12px/1.3 Arial,sans-serif;color:#715D49}.messages{min-height:390px;max-height:58vh;overflow-y:auto;padding:22px}.message{max-width:84%;padding:13px 15px;border-radius:14px;margin:0 0 14px;white-space:pre-wrap}.message.assistant{background:var(--soft);border-bottom-left-radius:4px}.message.user{background:#DFD0BC;margin-left:auto;border-bottom-right-radius:4px}.speaker{font:700 10px/1.2 Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:5px}.composer{border-top:1px solid var(--line);padding:16px 18px;background:#F8F1E8}.composer textarea{min-height:100px;resize:vertical}.composer-actions{display:flex;justify-content:space-between;gap:12px;margin-top:10px;align-items:center}.waiting-status{font:italic 15px/1.4 Georgia,serif;color:#715D49;text-align:center;margin:2px auto 12px}.locked{padding:14px 18px;background:#F1DDD7;color:#6E241E;font:14px/1.45 Arial,sans-serif}.footer{text-align:center;margin:24px auto 0;color:#78644F;font:13px/1.5 Arial,sans-serif;max-width:680px}@media(max-width:620px){.shell{padding-top:18px}.card{border-radius:14px}.message{max-width:94%}.session-head{align-items:flex-start;flex-direction:column}.composer-actions{align-items:stretch;flex-direction:column}.composer-actions .row{width:100%}.composer-actions .button{flex:1}}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:'Cormorant Garamond',Georgia,serif;font-size:19px;line-height:1.55}.shell{width:min(920px,calc(100% - 28px));margin:0 auto;padding:30px 0 54px}.brand{display:flex;justify-content:center;margin-bottom:22px}.brand img{display:block;width:min(520px,100%);height:auto}.rule{height:1px;background:var(--gold);opacity:.65;margin:0 0 30px}.hero{text-align:center;margin:0 auto 28px;max-width:700px}.eyebrow{text-transform:uppercase;letter-spacing:.18em;color:var(--gold);font:600 12px/1.4 Arial,sans-serif}.hero h1{font-family:'Playfair Display',Georgia,serif;font-size:clamp(30px,5.5vw,46px);line-height:1.1;margin:10px 0 10px}.hero p{font-style:italic;color:#6F5438;margin:0}.card{background:rgba(251,247,240,.94);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:clamp(22px,4vw,38px);max-width:720px;margin:0 auto}.card h2{font-family:'Playfair Display',Georgia,serif;font-size:24px;margin:0 0 10px}.small{font:14px/1.5 Arial,sans-serif;color:#715D49}.notice{padding:17px 18px;background:var(--soft);border-left:3px solid var(--gold);font:14px/1.55 Arial,sans-serif;margin:18px 0}.field{margin:18px 0}.field label{display:block;font:600 13px/1.4 Arial,sans-serif;letter-spacing:.03em;margin-bottom:7px}.field input,.field select,.composer textarea{width:100%;border:1px solid #BCA88E;border-radius:10px;background:#FFFDF9;color:var(--ink);padding:13px 14px;font:16px/1.4 Arial,sans-serif}.field input:focus,.field select:focus,.composer textarea:focus{outline:2px solid rgba(139,107,30,.28);border-color:var(--gold)}.button{border:1px solid var(--gold);background:var(--gold);color:white;border-radius:999px;padding:12px 20px;font:600 14px/1 Arial,sans-serif;cursor:pointer}.button:hover{filter:brightness(.95)}.button:disabled{opacity:.5;cursor:not-allowed}.button.secondary{background:transparent;color:var(--gold)}.button.danger{border-color:var(--danger);color:var(--danger);background:transparent}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.hidden{display:none!important}.button.speaking{background:var(--danger);border-color:var(--danger);color:#fff}.speak-status{font:13px/1.45 Arial,sans-serif;color:#715D49;margin-top:9px}.error{color:var(--danger);font:600 14px/1.4 Arial,sans-serif;margin-top:12px}.session{max-width:820px;margin:0 auto;background:var(--paper);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}.session-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 20px;border-bottom:1px solid var(--line);background:#F8F1E8}.session-title{font-family:'Playfair Display',Georgia,serif;font-size:18px}.mode{font:12px/1.3 Arial,sans-serif;color:#715D49}.messages{min-height:390px;max-height:58vh;overflow-y:auto;padding:22px}.message{max-width:84%;padding:13px 15px;border-radius:14px;margin:0 0 14px;white-space:pre-wrap}.message.assistant{background:var(--soft);border-bottom-left-radius:4px}.message.user{background:#DFD0BC;margin-left:auto;border-bottom-right-radius:4px}.speaker{font:700 10px/1.2 Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:5px}.composer{border-top:1px solid var(--line);padding:16px 18px;background:#F8F1E8}.composer textarea{min-height:100px;resize:vertical}.composer-actions{display:flex;justify-content:space-between;gap:12px;margin-top:10px;align-items:center}.composer-closed{border-top:1px solid var(--line);padding:20px 18px;background:#F8F1E8;text-align:center}.composer-closed .row{justify-content:center}.waiting-status{font:italic 15px/1.4 Georgia,serif;color:#715D49;text-align:center;margin:2px auto 12px}.locked{padding:14px 18px;background:#F1DDD7;color:#6E241E;font:14px/1.45 Arial,sans-serif}.footer{text-align:center;margin:24px auto 0;color:#78644F;font:13px/1.5 Arial,sans-serif;max-width:680px}@media(max-width:620px){.shell{padding-top:18px}.card{border-radius:14px}.message{max-width:94%}.session-head{align-items:flex-start;flex-direction:column}.composer-actions{align-items:stretch;flex-direction:column}.composer-actions .row{width:100%}.composer-actions .button{flex:1}.composer-closed .row{flex-direction:column;align-items:stretch}.composer-closed .button{width:100%}}
 </style>
 </head>
 <body>
@@ -795,7 +795,18 @@ function companionPage(mod) {
         <div class="row"><button id="stopButton" type="button" class="button danger">Stop</button><button id="sendButton" type="submit" class="button">Send</button></div>
       </div>
       <div id="speakStatus" class="speak-status hidden" role="status" aria-live="polite"></div>
+      <div class="row" style="margin-top:12px"><button type="button" id="finishedButton" class="button secondary">I'm finished now</button></div>
     </form>
+    <div id="composerClosed" class="composer-closed hidden">
+      <p class="small">Here's what you can do with what you wrote.</p>
+      <div class="row" style="justify-content:center">
+        <button type="button" id="copyButtonBottom" class="button secondary">Copy</button>
+        <button type="button" id="downloadButtonBottom" class="button secondary">Download</button>
+        <button type="button" id="emailButtonBottom" class="button secondary">Send to Chad</button>
+        <button type="button" id="endButtonBottom" class="button danger">End and clear here</button>
+      </div>
+      <button type="button" id="resumeButton" class="button secondary" style="margin-top:12px">Keep writing</button>
+    </div>
   </section>
   <div class="footer">Herst Wellness &middot; This companion does not connect to the transcript database, analytics, or marketing tools. Sending your notes to Chad only happens if you choose the Send to Chad button.</div>
 </main>
@@ -852,7 +863,12 @@ function companionPage(mod) {
     el('sendButton').disabled = value;
     el('stopButton').disabled = value;
     el('speakButton').disabled = value;
+    el('finishedButton').disabled = value;
     if (value) stopListening();
+  }
+  function showComposer(){
+    el('composerClosed').classList.add('hidden');
+    el('composer').classList.remove('hidden');
   }
   function clearSession(){
     pendingSeq++;
@@ -868,6 +884,8 @@ function companionPage(mod) {
     el('consentCard').classList.add('hidden');
     el('accessCard').classList.remove('hidden');
     el('accessCode').value = '';
+    el('emailStatus').classList.add('hidden');
+    showComposer();
     try { window.sessionStorage.removeItem('mbfCode'); } catch (e) {}
     setLocked(false);
   }
@@ -1050,6 +1068,7 @@ function companionPage(mod) {
     el('messageInput').value = '';
     var seq = ++pendingSeq;
     el('sendButton').disabled = true;
+    el('finishedButton').disabled = true;
     showWaiting();
     try {
       var response = await fetch('${mod.apiPath}', {
@@ -1065,7 +1084,7 @@ function companionPage(mod) {
       if (seq === pendingSeq && !locked) addMessage('assistant', 'I am having trouble responding right now. This application has not saved your entry. Please copy anything you want to keep and try again later.');
     } finally {
       if (seq === pendingSeq) hideWaiting();
-      if (!locked) { el('sendButton').disabled = false; el('messageInput').focus(); }
+      if (!locked) { el('sendButton').disabled = false; el('finishedButton').disabled = false; el('messageInput').focus(); }
     }
   });
 
@@ -1075,24 +1094,24 @@ function companionPage(mod) {
     addMessage('assistant', 'Yes. We will stop here. You do not need to explain or push through anything.');
     setLocked(true);
   });
-  el('copyButton').addEventListener('click', async function(){
-    try { await navigator.clipboard.writeText(transcriptText()); el('copyButton').textContent = 'Copied'; setTimeout(function(){ el('copyButton').textContent = 'Copy'; }, 1200); } catch { el('copyButton').textContent = 'Copy unavailable'; }
-  });
-  el('downloadButton').addEventListener('click', function(){
+  async function doCopy(btn){
+    try { await navigator.clipboard.writeText(transcriptText()); btn.textContent = 'Copied'; setTimeout(function(){ btn.textContent = 'Copy'; }, 1200); } catch { btn.textContent = 'Copy unavailable'; }
+  }
+  function doDownload(){
     var blob = new Blob([transcriptText()], {type:'text/plain;charset=utf-8'});
     var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
     a.href = url; a.download = 'mind-body-foundations-practice-notes.txt'; a.click();
     URL.revokeObjectURL(url);
-  });
-  el('emailButton').addEventListener('click', async function(){
+  }
+  async function doEmail(btn){
     var status = el('emailStatus');
     if (!messages.length) {
       status.classList.remove('hidden');
       status.textContent = 'Nothing to send yet.';
       return;
     }
-    el('emailButton').disabled = true;
+    btn.disabled = true;
     status.classList.remove('hidden');
     status.textContent = 'Sending...';
     try {
@@ -1107,10 +1126,26 @@ function companionPage(mod) {
     } catch (error) {
       status.textContent = (error.message || 'Could not send.') + ' Try copy or download instead.';
     } finally {
-      el('emailButton').disabled = false;
+      btn.disabled = false;
     }
-  });
+  }
+  el('copyButton').addEventListener('click', function(){ doCopy(el('copyButton')); });
+  el('copyButtonBottom').addEventListener('click', function(){ doCopy(el('copyButtonBottom')); });
+  el('downloadButton').addEventListener('click', doDownload);
+  el('downloadButtonBottom').addEventListener('click', doDownload);
+  el('emailButton').addEventListener('click', function(){ doEmail(el('emailButton')); });
+  el('emailButtonBottom').addEventListener('click', function(){ doEmail(el('emailButtonBottom')); });
   el('endButton').addEventListener('click', clearSession);
+  el('endButtonBottom').addEventListener('click', clearSession);
+  el('finishedButton').addEventListener('click', function(){
+    stopListening();
+    el('composer').classList.add('hidden');
+    el('composerClosed').classList.remove('hidden');
+  });
+  el('resumeButton').addEventListener('click', function(){
+    showComposer();
+    el('messageInput').focus();
+  });
 })();
 </script>
 </body>
