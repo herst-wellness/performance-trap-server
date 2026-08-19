@@ -571,7 +571,7 @@ test('a sitting that closes well hands back the consult offer, and the marker ne
   const closingText = [
     'That distinction is the whole thing this exercise points at.',
     '',
-    'This exercise stops here, at recognition. What you are calling deeper digging is the kind of thing that happens with another person. Chad does a thirty minute conversation, no pitch and no script, if you want to talk about what came up today.',
+    'This exercise stops here, at recognition. What you are calling deeper digging is the kind of thing that happens with another person. Chad does a thirty minute session where the two of you translate what your body has been trying to tell you, if you want to take what came up today further.',
     '',
     '[[SITTING COMPLETE]]'
   ].join('\n');
@@ -603,7 +603,7 @@ test('a sitting that closes well hands back the consult offer, and the marker ne
   assert.equal(body.sittingComplete, true);
   assert.equal(body.consultUrl, 'https://chadherst.as.me/30-minute-consult-chad-herst');
   assert.doesNotMatch(response.body, /SITTING COMPLETE/);
-  assert.ok(body.response.endsWith('if you want to talk about what came up today.'));
+  assert.ok(body.response.endsWith('if you want to take what came up today further.'));
   fs.rmSync(appSettings.dataDir, { recursive: true, force: true });
 });
 
