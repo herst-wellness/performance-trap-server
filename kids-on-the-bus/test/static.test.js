@@ -21,7 +21,7 @@ const companionEntry = fs.readFileSync(path.join(root, '..', 'companion.js'), 'u
 
 test('canonical coaching assets are self-contained and retain their approved fingerprints', () => {
   const assets = [
-    ['companion-prompt.txt', '56b97d3986f3e47399f43dd17da18298500c4fb1ced6d27abe6d8b635146a119'],
+    ['companion-prompt.txt', '44a02da775309938be42aecf31ba372d8fdca72950746c2e08f2616b78fddc18'],
     ['companion-safety-overlay.txt', '023e23cb6fe0cac90d376278cd69aa64f06014ea84324604d668a04de90c9372']
   ];
   for (const [filename, expected] of assets) {
@@ -333,4 +333,18 @@ test('the sitting carries a consult offer that stays hidden until the sitting cl
   assert.match(prompt, /\[\[SITTING COMPLETE\]\]/);
   assert.match(prompt, /Do not make this offer at all if the sitting ended early/);
   assert.match(prompt, /Never claim an outcome/);
+});
+
+test('the companion offers its own read before the consult, and hands it back to be checked', () => {
+  assert.match(prompt, /Your read, offered and checked/);
+  assert.match(prompt, /Go back to how they opened/);
+  assert.match(prompt, /as a reading, not a verdict/);
+  assert.match(prompt, /Hand it back for checking/);
+  assert.match(prompt, /Does that land\?/);
+  assert.match(prompt, /Never diagnose, never\s+name a condition/);
+  assert.match(prompt, /skip this move rather than manufacturing one|say that plainly and skip\s+this move/);
+  assert.match(prompt, /keep your own reading out of the summary itself/);
+  assert.doesNotMatch(prompt, /Do not add an interpretation or new exercise/);
+  assert.ok(prompt.indexOf('Your read, offered and checked') < prompt.indexOf('The next step, and the close'),
+    'the read is offered before the consult, not after');
 });
