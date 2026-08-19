@@ -21,7 +21,7 @@ const companionEntry = fs.readFileSync(path.join(root, '..', 'companion.js'), 'u
 
 test('canonical coaching assets are self-contained and retain their approved fingerprints', () => {
   const assets = [
-    ['companion-prompt.txt', '44a02da775309938be42aecf31ba372d8fdca72950746c2e08f2616b78fddc18'],
+    ['companion-prompt.txt', '611576fe33b5681bd776c0b5bfc7c0044e6ff674fac467e5178db4cf6ef62f0e'],
     ['companion-safety-overlay.txt', '023e23cb6fe0cac90d376278cd69aa64f06014ea84324604d668a04de90c9372']
   ];
   for (const [filename, expected] of assets) {
@@ -78,7 +78,7 @@ test('the companion is framed as Mind/Body Foundations with notice and optional 
 });
 
 test('completion offers three intentional next steps with clear newsletter disclosure', () => {
-  assert.ok(html.indexOf('Book a consultation') < html.indexOf('Get Chapter One'));
+  assert.ok(html.indexOf('Explore further with Chad') < html.indexOf('Get Chapter One'));
   assert.ok(html.indexOf('Get Chapter One') < html.indexOf('Explore Foundations'));
   assert.match(html, /When you enter your email, you will also receive Chad's newsletter\. Unsubscribe at any time\./);
   assert.match(html, /data-event="conversationClick" href="https:\/\/chadherst\.as\.me\/30-minute-consult-chad-herst"/);
@@ -323,7 +323,10 @@ test('user-facing written copy contains no em dash', () => {
 test('the sitting carries a consult offer that stays hidden until the sitting closes well', () => {
   assert.match(html, /id="consultOffer" class="consult-offer hidden"/);
   assert.match(html, /href="https:\/\/chadherst\.as\.me\/30-minute-consult-chad-herst"/);
-  assert.match(html, /A 30-minute conversation\. No pitch, no script\./);
+  assert.match(html, /Explore further with Chad/);
+  assert.match(html, /most of the time goes into exploring what your body is holding/);
+  assert.doesNotMatch(html, /No pitch, no script/);
+  assert.doesNotMatch(html, /you're body|you are body/);
   assert.match(html, /Nothing from this sitting goes with it\./);
 
   assert.match(app, /if \(data\.sittingComplete\) revealConsultOffer\(\);/);
