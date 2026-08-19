@@ -21,7 +21,7 @@ const companionEntry = fs.readFileSync(path.join(root, '..', 'companion.js'), 'u
 
 test('canonical coaching assets are self-contained and retain their approved fingerprints', () => {
   const assets = [
-    ['companion-prompt.txt', '0ef7de853bbad8871b4e7b23c637ab47c8cf88812b5f488f7f9a6a09ba7a3c81'],
+    ['companion-prompt.txt', '56b97d3986f3e47399f43dd17da18298500c4fb1ced6d27abe6d8b635146a119'],
     ['companion-safety-overlay.txt', '023e23cb6fe0cac90d376278cd69aa64f06014ea84324604d668a04de90c9372']
   ];
   for (const [filename, expected] of assets) {
@@ -81,7 +81,7 @@ test('completion offers three intentional next steps with clear newsletter discl
   assert.ok(html.indexOf('Book a consultation') < html.indexOf('Get Chapter One'));
   assert.ok(html.indexOf('Get Chapter One') < html.indexOf('Explore Foundations'));
   assert.match(html, /When you enter your email, you will also receive Chad's newsletter\. Unsubscribe at any time\./);
-  assert.match(html, /data-event="conversationClick" href="https:\/\/herstwellness\.com\/consult"/);
+  assert.match(html, /data-event="conversationClick" href="https:\/\/chadherst\.as\.me\/30-minute-consult-chad-herst"/);
   assert.match(html, /data-event="chapterClick" href="https:\/\/performance-trap-server\.onrender\.com\/listen\/chapter-one"/);
   assert.match(html, /data-event="mindbodyPageClick" href="https:\/\/herstwellness\.com\/mind-body-foundations"/);
   assert.doesNotMatch(html, /data-event="emailListClick"/);
@@ -318,4 +318,19 @@ test('coaching prompt starts with story, earns embodiment, welcomes memory, and 
 
 test('user-facing written copy contains no em dash', () => {
   assert.doesNotMatch(`${html}\n${app}\n${adminHtml}\n${adminApp}\n${prompt}`, /—/);
+});
+
+test('the sitting carries a consult offer that stays hidden until the sitting closes well', () => {
+  assert.match(html, /id="consultOffer" class="consult-offer hidden"/);
+  assert.match(html, /href="https:\/\/chadherst\.as\.me\/30-minute-consult-chad-herst"/);
+  assert.match(html, /A 30-minute conversation\. No pitch, no script\./);
+  assert.match(html, /Nothing from this sitting goes with it\./);
+
+  assert.match(app, /if \(data\.sittingComplete\) revealConsultOffer\(\);/);
+  assert.match(app, /ui\.consultOffer\.classList\.add\('hidden'\)/);
+  assert.doesNotMatch(app, /SITTING COMPLETE/);
+
+  assert.match(prompt, /\[\[SITTING COMPLETE\]\]/);
+  assert.match(prompt, /Do not make this offer at all if the sitting ended early/);
+  assert.match(prompt, /Never claim an outcome/);
 });

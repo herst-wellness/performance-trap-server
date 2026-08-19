@@ -24,7 +24,7 @@ const { WeeklyReporter, buildWeeklyReport } = require('./lib/weekly-report');
 const ROOT = __dirname;
 const PUBLIC_DIR = path.join(ROOT, 'public');
 const DEFAULT_MODULE2_PROMPT_PATH = path.join(ROOT, 'canonical', 'module2', 'companion-prompt.txt');
-const DEFAULT_MODULE2_PROMPT_SHA256 = '0ef7de853bbad8871b4e7b23c637ab47c8cf88812b5f488f7f9a6a09ba7a3c81';
+const DEFAULT_MODULE2_PROMPT_SHA256 = '56b97d3986f3e47399f43dd17da18298500c4fb1ced6d27abe6d8b635146a119';
 const DEFAULT_SAFETY_OVERLAY_PATH = path.join(ROOT, 'canonical', 'module2', 'companion-safety-overlay.txt');
 const DEFAULT_SAFETY_OVERLAY_SHA256 = '023e23cb6fe0cac90d376278cd69aa64f06014ea84324604d668a04de90c9372';
 const DEFAULT_CLAUDE_MODEL = 'claude-sonnet-5';
@@ -35,6 +35,8 @@ const DEFAULT_TRANSCRIPTION_PER_MINUTE = 0.0045;
 const MAX_AUDIO_BYTES = 10 * 1024 * 1024;
 const MAX_AUDIO_DURATION_MS = 2 * 60 * 1000;
 const OPENING = 'What has you feeling stuck?';
+const COMPLETION_MARKER = '[[SITTING COMPLETE]]';
+const CONSULT_URL = 'https://chadherst.as.me/30-minute-consult-chad-herst';
 const DEFAULT_WRITTEN_SESSION_MINUTES = 60;
 const DEFAULT_WRITTEN_MAX_EXCHANGES = 30;
 const PAGE_PATH = '/reflect/kids-on-the-bus';
@@ -54,6 +56,14 @@ function boundedInteger(value, fallback, minimum, maximum) {
 function money(value, fallback = 0) {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
+}
+
+function containsCompletionMarker(text) {
+  return String(text || '').includes(COMPLETION_MARKER);
+}
+
+function stripCompletionMarker(text) {
+  return String(text || '').split(COMPLETION_MARKER).join('').replace(/\s+$/, '');
 }
 
 function readVerifiedFile(filePath, expectedHash, label) {
@@ -538,6 +548,8 @@ function createApp(options = {}) {
         } finally {
           req.removeListener('aborted', abortUpstream);
         }
+        const sittingComplete = containsCompletionMarker(generated.text);
+        generated.text = stripCompletionMarker(generated.text);
         const usageId = `claude_${crypto.randomUUID().replace(/-/g, '')}`;
         const recorded = ledger.add({
           sessionId,
@@ -564,7 +576,9 @@ function createApp(options = {}) {
           retried: generated.retried,
           responseCostUsd: recorded.entry.costUsd,
           costBreakdown: recorded.entry.costBreakdown,
-          budget: recorded.status
+          budget: recorded.status,
+          sittingComplete,
+          consultUrl: sittingComplete ? CONSULT_URL : ''
         });
         return;
       }
@@ -617,7 +631,8 @@ function createApp(options = {}) {
         currentSessionReference = active.sessionReference;
         const directEvents = new Set([
           'copyButtonUse', 'downloadButtonUse', 'endAndClearButtonUse', 'browserErrors', 'responseFailures',
-          'voiceRecordingStarts', 'voiceRecordingStops', 'voiceClientFailures', 'microphoneDenials', 'voiceTranscriptCorrections'
+          'voiceRecordingStarts', 'voiceRecordingStops', 'voiceClientFailures', 'microphoneDenials', 'voiceTranscriptCorrections',
+          'consultOfferShown'
         ]);
         const conversionEvents = new Set(['mindbodyPageClick', 'chapterClick', 'bookClick', 'conversationClick', 'emailListClick', 'feedbackFormClicks']);
         const eventName = String(body.eventName || '');
