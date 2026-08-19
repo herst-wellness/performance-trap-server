@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const { handleCompanionRoute, initializeCompanion } = require('./companion');
 const { handleOnrampRoute } = require('./onramp');
+const { handleMbfRoute } = require('./mbf');
 const { handleCourseRoute } = require('./onramp-course');
 const { handleBonusRoute } = require('./book-bonus');
 
@@ -1214,6 +1215,7 @@ const server = http.createServer(async (req, res) => {
   if (await handleCompanionRoute(req, res)) { return; }
   req.url = req.url.split('?')[0];
   if (await handleOnrampRoute(req, res)) { return; }
+  if (await handleMbfRoute(req, res)) { return; }
   if (await handleCourseRoute(req, res)) { return; }
   if (handleBonusRoute(req, res, {
     addToMailchimp,
