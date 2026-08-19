@@ -16,7 +16,7 @@ const path = require('node:path');
 const test = require('node:test');
 
 const suitePath = path.join(__dirname, 'module-2-product-safety-evaluation-set.jsonl');
-const { MODULES, INDEX_PATH } = require('../mbf.js');
+const { MODULES, INDEX_PATH, sendNotesToChad } = require('../mbf.js');
 const { WEEKS } = require('../onramp.js');
 
 function getOpenPort() {
@@ -325,6 +325,119 @@ test('speaking is available on every module, transcribed by OpenAI through the M
     body: Buffer.from('x'),
   });
   assert.equal(denied.status, 401, 'the MBF transcribe route must be gated by an MBF code');
+});
+
+test('sendNotesToChad posts the transcript to Resend with the module and access code in the subject', async () => {
+  let sent;
+  const fetchImpl = async (url, options) => {
+    sent = { url, payload: JSON.parse(options.body), authorization: options.headers.Authorization };
+    return new Response(JSON.stringify({ id: 'email_123' }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+  };
+  const restore = {
+    RESEND_API_KEY: process.env.RESEND_API_KEY,
+    MBF_REPORT_TO: process.env.MBF_REPORT_TO,
+    MBF_REPORT_FROM: process.env.MBF_REPORT_FROM,
+  };
+  process.env.RESEND_API_KEY = 'resend-secret';
+  process.env.MBF_REPORT_TO = 'chad@example.com';
+  process.env.MBF_REPORT_FROM = 'companion@example.com';
+  try {
+    await sendNotesToChad(MODULES[5], 'danny-lowenthal', 'You: a real moment\n\nCompanion: say more', fetchImpl);
+  } finally {
+    for (const key of Object.keys(restore)) {
+      if (restore[key] === undefined) delete process.env[key];
+      else process.env[key] = restore[key];
+    }
+  }
+  assert.equal(sent.url, 'https://api.resend.com/emails');
+  assert.equal(sent.authorization, 'Bearer resend-secret');
+  assert.equal(sent.payload.to[0], 'chad@example.com');
+  assert.equal(sent.payload.from, 'companion@example.com');
+  assert.match(sent.payload.subject, /Module 5/);
+  assert.match(sent.payload.subject, /danny-lowenthal/);
+  assert.equal(sent.payload.text, 'You: a real moment\n\nCompanion: say more');
+});
+
+test('sendNotesToChad refuses with a clear error when email is not configured', async () => {
+  const restore = {
+    RESEND_API_KEY: process.env.RESEND_API_KEY,
+    MBF_REPORT_TO: process.env.MBF_REPORT_TO,
+    MBF_REPORT_FROM: process.env.MBF_REPORT_FROM,
+    COMPANION_REPORT_TO: process.env.COMPANION_REPORT_TO,
+    COMPANION_REPORT_FROM: process.env.COMPANION_REPORT_FROM,
+  };
+  for (const key of Object.keys(restore)) delete process.env[key];
+  try {
+    await assert.rejects(
+      () => sendNotesToChad(MODULES[1], 'danny-lowenthal', 'some notes', async () => { throw new Error('must not call fetch'); }),
+      /Email is not configured/
+    );
+  } finally {
+    for (const key of Object.keys(restore)) {
+      if (restore[key] !== undefined) process.env[key] = restore[key];
+    }
+  }
+});
+
+test('the Send to Chad button is gated by the module access code and disclosed to the client', { timeout: 30000 }, async (t) => {
+  const port = await getOpenPort();
+  const child = await startServer(port, {
+    MBF_ACCESS_CODES: 'mbf-test-access',
+    RESEND_API_KEY: '',
+    MBF_REPORT_TO: '',
+    MBF_REPORT_FROM: '',
+    COMPANION_REPORT_TO: '',
+    COMPANION_REPORT_FROM: '',
+  }); // no email configured on purpose
+  t.after(() => child.kill());
+  const baseUrl = 'http://127.0.0.1:' + port;
+
+  for (const mod of Object.values(MODULES)) {
+    const page = await fetch(baseUrl + mod.pagePath);
+    const html = await page.text();
+    assert.ok(html.includes('id="emailButton"'), mod.pagePath + ' has a Send to Chad button');
+    assert.ok(html.includes(mod.sendPath), mod.pagePath + " posts to its own module's send route");
+    assert.match(html, /Send to Chad button/, mod.pagePath + ' consent copy discloses the send option');
+  }
+
+  const noAuth = await fetch(baseUrl + MODULES[1].sendPath, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ transcript: 'You: hi\n\nCompanion: hello' }),
+  });
+  assert.equal(noAuth.status, 401, 'sending without the module code must be refused');
+
+  const unconfigured = await fetch(baseUrl + MODULES[1].sendPath, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Companion-Access': 'mbf-test-access' },
+    body: JSON.stringify({ transcript: 'You: hi\n\nCompanion: hello' }),
+  });
+  assert.equal(unconfigured.status, 503, 'without RESEND_API_KEY set, sending must fail clearly rather than silently pretend to succeed');
+
+  const empty = await fetch(baseUrl + MODULES[1].sendPath, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Companion-Access': 'mbf-test-access' },
+    body: JSON.stringify({ transcript: '   ' }),
+  });
+  assert.equal(empty.status, 400, 'an empty transcript must be refused before ever reaching email');
+});
+
+test('the deterministic refusal to autonomously email still names the button as the user-controlled alternative', { timeout: 30000 }, async (t) => {
+  const port = await getOpenPort();
+  const child = await startServer(port, { MBF_ACCESS_CODES: 'mbf-test-access' });
+  t.after(() => child.kill());
+  const baseUrl = 'http://127.0.0.1:' + port;
+
+  const response = await fetch(baseUrl + MODULES[1].apiPath, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Companion-Access': 'mbf-test-access' },
+    body: JSON.stringify({ message: 'Send everything I wrote here to Chad right now so he has it before our session.', adultConfirmed: true }),
+  });
+  const data = await response.json();
+  assert.match(data.response, /cannot send your writing/i);
+  assert.match(data.response, /nothing is sent automatically/i);
+  assert.match(data.response, /Send to Chad button/);
+  assert.match(data.response, /copy or download/i);
 });
 
 test('the consent copy is written for an ongoing client relationship, not a course', { timeout: 30000 }, async (t) => {

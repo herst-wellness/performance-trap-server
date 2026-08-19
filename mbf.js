@@ -69,6 +69,7 @@ for (const n of Object.keys(MODULES)) {
   m.instructions = [CORE_OPEN, m.method, CORE_CLOSE, TAIL].join('\n\n');
   m.pagePath = '/practice/mbf/module-' + n;
   m.apiPath = '/api/mbf/module-' + n;
+  m.sendPath = '/api/mbf/module-' + n + '/send';
 }
 const INDEX_PATH = '/practice/mbf';
 
@@ -150,6 +151,39 @@ function noStoreHeaders(contentType) {
 function sendJson(res, status, payload) {
   res.writeHead(status, noStoreHeaders('application/json; charset=utf-8'));
   res.end(JSON.stringify(payload));
+}
+
+const MAX_TRANSCRIPT_CHARS = 60000;
+
+// One-click, user-initiated forward of a session's own notes to Chad, using
+// the same Resend account already wired for Kids on the Bus's weekly report
+// (kids-on-the-bus/lib/weekly-report.js). MBF-specific to/from env vars are
+// checked first so this can be pointed elsewhere without touching that
+// system, falling back to the shared COMPANION_REPORT_* vars so Chad only
+// has to configure his address once. This never runs automatically: the
+// deterministic safety layer is explicit that the AI itself cannot send
+// anything, this is a plain button the person clicks themselves.
+async function sendNotesToChad(mod, code, transcript, fetchImpl = fetch) {
+  const apiKey = process.env.RESEND_API_KEY || '';
+  const to = process.env.MBF_REPORT_TO || process.env.COMPANION_REPORT_TO || '';
+  const from = process.env.MBF_REPORT_FROM || process.env.COMPANION_REPORT_FROM || '';
+  if (!apiKey || !to || !from) {
+    const err = new Error('Email is not configured.');
+    err.clientStatus = 503;
+    throw err;
+  }
+  const subject = mod.title + ' notes - ' + code;
+  const response = await fetchImpl('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ from, to: [to], subject, text: transcript }),
+  });
+  if (!response.ok) {
+    const err = new Error('The notes could not be sent.');
+    err.clientStatus = 502;
+    throw err;
+  }
+  return response.json();
 }
 
 function result(route, response, lockSession) {
@@ -300,14 +334,14 @@ function evaluateDeterministicControls({ message, adultConfirmed, country, provi
   if (MEMORY_QUESTION.test(text)) {
     return result(
       'continue_reflection',
-      'No. This application does not save the session or carry memory into a new one, so when you return it will not know what you wrote today. You can use the copy or download option if you want to keep it yourself.',
+      'No. This application does not save the session or carry memory into a new one, so when you return it will not know what you wrote today. You can use the Send to Chad button, or copy or download it yourself.',
       false
     );
   }
   if (SAVE_OR_REMIND.test(text)) {
     return result(
       'continue_reflection',
-      'This application does not create accounts, store sessions, or schedule reminders, so I cannot save this journal or remind you later. You can use the copy or download option and set a reminder in a tool you control.',
+      'This application does not create accounts, store sessions, or schedule reminders, so I cannot save this journal or remind you later. You can use the Send to Chad button so he has it before your next session, or copy or download it and set a reminder in a tool you control.',
       false
     );
   }
@@ -321,7 +355,7 @@ function evaluateDeterministicControls({ message, adultConfirmed, country, provi
   if (SEND_TO_CHAD.test(text)) {
     return result(
       'continue_reflection',
-      'I cannot send your writing to Chad or anyone else, and nothing is sent automatically. If you want to share it, use a separate copy or download action, review exactly what will be included, and send it yourself, or bring it to your next session.',
+      'I cannot send your writing to Chad or anyone else on my own, and nothing is sent automatically. If you want him to have it, use the Send to Chad button in this session, or copy or download it and send it yourself, or bring it to your next session.',
       false
     );
   }
@@ -713,6 +747,7 @@ function companionPage(mod) {
     <p>This companion replaces the written journal for this module. Instead of filling in a form, you write to it the way you'd write to the page, and it responds, following what you bring rather than a fixed sequence of questions.</p>
     <p>You will write, and the companion will write back. If you would rather talk than type, you can speak and your words arrive in the box as text, yours to change before you send. It keeps nothing after you end.</p>
     <p>This is not Chad, and it is not therapy. It is your own between-session practice, the same ground the written journal for this module covers. You still have your real sessions with him; this is what happens between them.</p>
+    <p>When you are ready, you can send what you have written straight to Chad by email with the Send to Chad button, so he has it before your next session. That only happens if you choose it.</p>
     <div class="rule" style="margin:26px 0"></div>
     <h2 style="font-size:20px">Before you begin</h2>
     <div id="privacyNotice" class="notice"></div>
@@ -746,9 +781,11 @@ function companionPage(mod) {
       <div class="row">
         <button id="copyButton" class="button secondary">Copy</button>
         <button id="downloadButton" class="button secondary">Download</button>
+        <button id="emailButton" class="button secondary">Send to Chad</button>
         <button id="endButton" class="button danger">End and clear here</button>
       </div>
     </div>
+    <div id="emailStatus" class="small hidden" role="status" aria-live="polite"></div>
     <div id="messages" class="messages" aria-live="polite"></div>
     <div id="lockedNotice" class="locked hidden">This reflection has stopped. You may copy or download what is visible, then end and clear the session here.</div>
     <form id="composer" class="composer">
@@ -760,7 +797,7 @@ function companionPage(mod) {
       <div id="speakStatus" class="speak-status hidden" role="status" aria-live="polite"></div>
     </form>
   </section>
-  <div class="footer">Herst Wellness &middot; This companion does not connect to the transcript database, email, analytics, or marketing tools.</div>
+  <div class="footer">Herst Wellness &middot; This companion does not connect to the transcript database, analytics, or marketing tools. Sending your notes to Chad only happens if you choose the Send to Chad button.</div>
 </main>
 <script>
 (function(){
@@ -1048,6 +1085,31 @@ function companionPage(mod) {
     a.href = url; a.download = 'mind-body-foundations-practice-notes.txt'; a.click();
     URL.revokeObjectURL(url);
   });
+  el('emailButton').addEventListener('click', async function(){
+    var status = el('emailStatus');
+    if (!messages.length) {
+      status.classList.remove('hidden');
+      status.textContent = 'Nothing to send yet.';
+      return;
+    }
+    el('emailButton').disabled = true;
+    status.classList.remove('hidden');
+    status.textContent = 'Sending...';
+    try {
+      var response = await fetch('${mod.sendPath}', {
+        method: 'POST',
+        headers: headers(),
+        body: JSON.stringify({transcript: transcriptText()})
+      });
+      var data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Could not send.');
+      status.textContent = 'Sent to Chad.';
+    } catch (error) {
+      status.textContent = (error.message || 'Could not send.') + ' Try copy or download instead.';
+    } finally {
+      el('emailButton').disabled = false;
+    }
+  });
   el('endButton').addEventListener('click', clearSession);
 })();
 </script>
@@ -1210,7 +1272,7 @@ async function handleMbfRoute(req, res) {
   }
 
   const mod = Object.values(MODULES).find(
-    (m) => req.url === m.pagePath || req.url === m.apiPath
+    (m) => req.url === m.pagePath || req.url === m.apiPath || req.url === m.sendPath
   );
   if (!mod) return false;
 
@@ -1220,6 +1282,43 @@ async function handleMbfRoute(req, res) {
       'Content-Security-Policy': "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'",
     });
     res.end(companionPage(mod));
+    return true;
+  }
+
+  if (req.url === mod.sendPath) {
+    if (req.method !== 'POST') {
+      sendJson(res, 405, { error: 'Method not allowed' });
+      return true;
+    }
+    const sendAccess = hasAccess(req);
+    if (!sendAccess.ok) {
+      sendJson(
+        res,
+        sendAccess.status,
+        sendAccess.status === 503
+          ? { error: 'This companion is not enabled.' }
+          : { error: 'Access denied.' }
+      );
+      return true;
+    }
+    try {
+      const body = await readJsonBody(req);
+      if (typeof body.transcript !== 'string' || !body.transcript.trim()) {
+        sendJson(res, 400, { error: 'Nothing to send yet.' });
+        return true;
+      }
+      if (body.transcript.length > MAX_TRANSCRIPT_CHARS) {
+        sendJson(res, 413, { error: 'That is too long to send.' });
+        return true;
+      }
+      const code = String(req.headers['x-companion-access'] || '').trim();
+      await sendNotesToChad(mod, code, body.transcript);
+      sendJson(res, 200, { sent: true });
+    } catch (error) {
+      sendJson(res, error.clientStatus || 500, {
+        error: error.clientStatus === 503 ? 'Sending is not set up yet.' : (error.message || 'Could not send.'),
+      });
+    }
     return true;
   }
 
@@ -1305,4 +1404,5 @@ module.exports = {
   evaluateDeterministicControls,
   getActiveProvider,
   handleMbfRoute,
+  sendNotesToChad,
 };
