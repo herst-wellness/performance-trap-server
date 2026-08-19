@@ -23,6 +23,7 @@
     recordButton: el('recordButton'),
     recordButtonLabel: el('recordButtonLabel'),
     voiceStatus: el('voiceStatus'),
+    consultOffer: el('consultOffer'),
     statusLabel: el('statusLabel'),
     statusDetail: el('statusDetail'),
     breathDot: el('breathDot'),
@@ -65,7 +66,8 @@
     transcribing: false,
     transcriptionController: null,
     lastTranscriptValue: '',
-    transcriptEdited: false
+    transcriptEdited: false,
+    consultOffered: false
   };
 
   const MAX_RECORDING_MS = 2 * 60 * 1000;
@@ -263,6 +265,14 @@
     else startVoiceRecording();
   }
 
+  function revealConsultOffer() {
+    if (!ui.consultOffer || state.consultOffered) return;
+    state.consultOffered = true;
+    ui.consultOffer.classList.remove('hidden');
+    trackEvent('consultOfferShown');
+    ui.consultOffer.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
   function addTurn(role, text, extraClass) {
     const turn = document.createElement('div');
     turn.className = `turn ${role}${extraClass ? ` ${extraClass}` : ''}`;
@@ -435,6 +445,8 @@
       state.endReported = false;
       state.lastTranscriptValue = '';
       state.transcriptEdited = false;
+      state.consultOffered = false;
+      ui.consultOffer.classList.add('hidden');
       updateExchangeDisplay();
       ui.sessionReference.textContent = `Reference ${state.sessionReference}`;
       ui.retentionMessage.textContent = state.sharedSitting
@@ -492,6 +504,7 @@
         endSession(false, reason, 'This reflection has paused here. You can copy or download it before clearing the page.');
         return;
       }
+      if (data.sittingComplete) revealConsultOffer();
       if (state.exchangeCount >= state.config.maxExchanges) {
         endSession(false, 'exchange_limit', 'This sitting has reached its exchange limit. You can copy or download it before clearing the page.');
         return;

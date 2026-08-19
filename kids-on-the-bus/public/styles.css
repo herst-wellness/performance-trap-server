@@ -202,6 +202,12 @@ input:focus, textarea:focus, select:focus, button:focus-visible, a:focus-visible
 .pathway-card h4 { margin: 0; font-family: "Playfair Display", Georgia, serif; font-size: 1.35rem; font-weight: 500; line-height: 1.15; }
 .pathway-card > p:not(.pathway-label) { flex: 1; color: var(--muted-brown); font-size: 0.94rem; line-height: 1.45; }
 .pathway-card .button { width: 100%; }
+.consult-offer { margin: 20px 0 0; padding: 22px 24px; border: 1px solid var(--line); border-top: 4px solid var(--gold); background: var(--soft-gold); }
+.consult-offer h3 { margin: 0 0 8px; font-family: "Playfair Display", Georgia, serif; font-size: 1.35rem; font-weight: 500; line-height: 1.15; }
+.consult-offer > p { margin: 0 0 16px; color: var(--muted-brown); font-size: 0.94rem; line-height: 1.45; }
+.consult-offer .button { width: 100%; }
+.consult-offer .consult-detail { margin: 10px 0 0; color: var(--muted-brown); font-size: 0.82rem; line-height: 1.4; }
+
 .additional-feedback { margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--line); }
 .additional-feedback > p:first-child { margin-top: 0; }
 .additional-feedback .consent-detail { margin: 8px 0 0; }
@@ -222,4 +228,5 @@ input:focus, textarea:focus, select:focus, button:focus-visible, a:focus-visible
   .rating-row select { min-height: 44px; max-width: 130px; font-size: 1rem; }
   .pathway-grid { grid-template-columns: 1fr; }
   .pathway-card { padding: 22px 20px; }
+  .consult-offer { padding: 20px 18px; }
 }

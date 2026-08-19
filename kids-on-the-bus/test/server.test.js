@@ -565,3 +565,75 @@ test('optional sitting permission saves exact text separately with consent metad
   assert.doesNotMatch(ledger, /separately shared exact entry|Where does that land/);
   fs.rmSync(appSettings.dataDir, { recursive: true, force: true });
 });
+
+test('a sitting that closes well hands back the consult offer, and the marker never reaches the person', async () => {
+  const appSettings = settings();
+  const closingText = [
+    'That distinction is the whole thing this exercise points at.',
+    '',
+    'This exercise stops here, at recognition. What you are calling deeper digging is the kind of thing that happens with another person. Chad does a thirty minute conversation, no pitch and no script, if you want to talk about what came up today.',
+    '',
+    '[[SITTING COMPLETE]]'
+  ].join('\n');
+  const fetchImpl = async (url) => {
+    if (url.includes('/v1/messages')) {
+      return new Response(JSON.stringify({
+        content: [{ type: 'text', text: closingText }],
+        stop_reason: 'end_turn',
+        usage: { input_tokens: 40, output_tokens: 18, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 }
+      }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+    throw new Error(`Unexpected URL: ${url}`);
+  };
+  const server = createApp({ settings: appSettings, fetchImpl });
+  const session = await requestServer(server, {
+    method: 'POST',
+    headers: { 'X-Companion-Code': 'private-code' },
+    url: '/api/kids-on-the-bus/session'
+  });
+  const sessionId = JSON.parse(session.body).sessionId;
+  const response = await requestServer(server, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Companion-Code': 'private-code' },
+    url: '/api/kids-on-the-bus/claude-response',
+    body: JSON.stringify({ sessionId, message: 'No, that is good.', history: [] })
+  });
+  const body = JSON.parse(response.body);
+  assert.equal(response.status, 200);
+  assert.equal(body.sittingComplete, true);
+  assert.equal(body.consultUrl, 'https://chadherst.as.me/30-minute-consult-chad-herst');
+  assert.doesNotMatch(response.body, /SITTING COMPLETE/);
+  assert.ok(body.response.endsWith('if you want to talk about what came up today.'));
+  fs.rmSync(appSettings.dataDir, { recursive: true, force: true });
+});
+
+test('an ordinary mid-sitting turn carries no consult offer', async () => {
+  const appSettings = settings();
+  const fetchImpl = async (url) => {
+    if (url.includes('/v1/messages')) {
+      return new Response(JSON.stringify({
+        content: [{ type: 'text', text: 'Where does that land in the body?' }],
+        stop_reason: 'end_turn',
+        usage: { input_tokens: 40, output_tokens: 18, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 }
+      }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+    throw new Error(`Unexpected URL: ${url}`);
+  };
+  const server = createApp({ settings: appSettings, fetchImpl });
+  const session = await requestServer(server, {
+    method: 'POST',
+    headers: { 'X-Companion-Code': 'private-code' },
+    url: '/api/kids-on-the-bus/session'
+  });
+  const sessionId = JSON.parse(session.body).sessionId;
+  const response = await requestServer(server, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Companion-Code': 'private-code' },
+    url: '/api/kids-on-the-bus/claude-response',
+    body: JSON.stringify({ sessionId, message: 'It burns in my chest.', history: [] })
+  });
+  const body = JSON.parse(response.body);
+  assert.equal(body.sittingComplete, false);
+  assert.equal(body.consultUrl, '');
+  fs.rmSync(appSettings.dataDir, { recursive: true, force: true });
+});

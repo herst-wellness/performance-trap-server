@@ -23,7 +23,8 @@ const SESSION_COUNTERS = new Set([
   'responseFailures',
   'voiceRecordingStarts', 'voiceRecordingStops', 'voiceClientFailures', 'microphoneDenials', 'voiceTranscriptCorrections',
   'safetyActivations', 'diagnosisBoundaryActivations', 'crisisActivations', 'userStopRequests',
-  'mindbodyPageClick', 'chapterClick', 'bookClick', 'conversationClick', 'emailListClick'
+  'mindbodyPageClick', 'chapterClick', 'bookClick', 'conversationClick', 'emailListClick',
+  'consultOfferShown'
 ]);
 
 const VISIT_COUNTERS = new Set([
