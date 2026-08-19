@@ -195,10 +195,10 @@ test('every week opens on its own material and closes by attaching the rep to th
   // about, and the prompt must be told to use that same opening, or the
   // companion drifts back to a generic "what happened today".
   const openingMarkers = {
-    1: 'coming back to what your body is doing',
-    2: 'stay with what we find instead of fixing it',
-    3: 'goes outward, into a real conversation',
-    4: 'you have all the moves now',
+    1: 'triggered you recently',
+    2: 'fix-it mode around or push past',
+    3: 'a moment where you felt something was off',
+    4: 'feeling stuck today',
   };
   for (const n of [1, 2, 3, 4]) {
     const opening = WEEKS[n].opening;
@@ -207,6 +207,11 @@ test('every week opens on its own material and closes by attaching the rep to th
     const head = opening.replace(/\s+/g, ' ').split(/[.?]/)[0].trim();
     assert.ok(flat.includes(head), 'week ' + n + ' prompt must carry the same standing opening');
   }
+
+  // Week 1's opening is a two-beat: the trigger question, then the body
+  // question, one at a time.
+  assert.ok(WEEKS[1].instructions.includes('Where do you notice that in your body?'),
+    'week 1 must carry the standing second move into the body');
 
   // The close is the part that turns a conversation into a practice, so
   // all four weeks must carry the three beats and the reason for them.
