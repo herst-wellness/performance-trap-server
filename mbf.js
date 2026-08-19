@@ -624,9 +624,17 @@ function validAccessCodes() {
   return list;
 }
 
+// Codes are now issued as a client's own name (firstname-lastname), so
+// normalize case and separators before comparing: a client typing "Danny
+// Lowenthal" or "Danny-Lowenthal" must still match a code Chad entered as
+// "danny-lowenthal" in Render.
+function normalizeCode(s) {
+  return String(s).trim().toLowerCase().replace(/[\s_]+/g, '-');
+}
+
 function codeMatches(expected, supplied) {
-  const expectedBytes = Buffer.from(expected);
-  const suppliedBytes = Buffer.from(supplied);
+  const expectedBytes = Buffer.from(normalizeCode(expected));
+  const suppliedBytes = Buffer.from(normalizeCode(supplied));
   if (expectedBytes.length !== suppliedBytes.length) return false;
   return crypto.timingSafeEqual(expectedBytes, suppliedBytes);
 }

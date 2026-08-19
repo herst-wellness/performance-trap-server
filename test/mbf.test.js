@@ -123,6 +123,25 @@ test('an MBF code never unlocks On-Ramp, and an On-Ramp code never unlocks MBF',
   assert.equal(correct.status, 200);
 });
 
+test('a client name code matches regardless of case or spacing, since codes are now issued as names', { timeout: 30000 }, async (t) => {
+  const port = await getOpenPort();
+  const child = await startServer(port, { MBF_ACCESS_CODES: 'danny-lowenthal' });
+  t.after(() => child.kill());
+  const baseUrl = 'http://127.0.0.1:' + port;
+
+  for (const supplied of ['danny-lowenthal', 'Danny Lowenthal', 'DANNY-LOWENTHAL', '  danny   lowenthal  ']) {
+    const res = await fetch(baseUrl + MODULES[1].apiPath, {
+      headers: { 'X-Companion-Access': supplied },
+    });
+    assert.equal(res.status, 200, `expected "${supplied}" to match the issued code`);
+  }
+
+  const wrongPerson = await fetch(baseUrl + MODULES[1].apiPath, {
+    headers: { 'X-Companion-Access': 'danny-lowenthall' },
+  });
+  assert.equal(wrongPerson.status, 401, 'a genuinely different code must still be refused');
+});
+
 test('one MBF client code does not unlock the module if another client\'s code is revoked', { timeout: 30000 }, async (t) => {
   const port = await getOpenPort();
   const child = await startServer(port, { MBF_ACCESS_CODES: 'still-valid-code' }); // client-b removed
