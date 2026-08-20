@@ -6,6 +6,7 @@ const { handleCompanionRoute, initializeCompanion } = require('./companion');
 const { handleOnrampRoute } = require('./onramp');
 const { handleMbfRoute } = require('./mbf');
 const { handleAjRoute } = require('./aj');
+const { handleVivianReplyRoute } = require('./vivian-reply');
 const { handleCourseRoute } = require('./onramp-course');
 const { handleBonusRoute } = require('./book-bonus');
 
@@ -1218,6 +1219,7 @@ const server = http.createServer(async (req, res) => {
   if (await handleOnrampRoute(req, res)) { return; }
   if (await handleMbfRoute(req, res)) { return; }
   if (await handleAjRoute(req, res)) { return; }
+  if (await handleVivianReplyRoute(req, res)) { return; }
   if (await handleCourseRoute(req, res)) { return; }
   if (handleBonusRoute(req, res, {
     addToMailchimp,
