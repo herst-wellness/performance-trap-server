@@ -170,9 +170,6 @@ input:focus, textarea:focus, select:focus, button:focus-visible, a:focus-visible
 .turn { max-width: 82%; padding: 15px 18px; border-radius: 3px; line-height: 1.5; font-size: 1.08rem; white-space: pre-wrap; }
 .turn .speaker { display: block; margin-bottom: 7px; color: var(--gold-dark); font-family: "Proxima Nova", Arial, sans-serif; font-size: 0.65rem; font-weight: 800; letter-spacing: 0.11em; text-transform: uppercase; }
 .turn.companion { justify-self: start; background: var(--cream); }
-.speak-button { display: block; margin-top: 10px; padding: 4px 12px; border: 1px solid var(--gold-dark); border-radius: 3px; background: transparent; color: var(--gold-dark); font-family: "Proxima Nova", Arial, sans-serif; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; cursor: pointer; }
-.speak-button:hover:not(:disabled) { background: var(--soft-gold); }
-.speak-button:disabled { opacity: 0.5; cursor: default; }
 .turn.user { justify-self: end; background: var(--soft-gold); }
 .turn.safety { justify-self: start; border: 1px solid #d79b92; background: var(--soft-red); }
 .writing-panel { padding: 18px 28px 24px; border-top: 1px solid var(--line); }

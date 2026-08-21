@@ -32,13 +32,6 @@ const ALLOWED_CLAUDE_EFFORTS = new Set(['low', 'medium', 'high', 'xhigh', 'max']
 const DEFAULT_TRANSCRIPTION_MODEL = 'gpt-transcribe';
 const ALLOWED_TRANSCRIPTION_MODELS = new Set(['gpt-transcribe', 'gpt-4o-transcribe', 'gpt-4o-mini-transcribe']);
 const DEFAULT_TRANSCRIPTION_PER_MINUTE = 0.0045;
-const DEFAULT_SPEECH_MODEL = 'tts-1';
-const ALLOWED_SPEECH_MODELS = new Set(['tts-1', 'tts-1-hd', 'gpt-4o-mini-tts']);
-const DEFAULT_SPEECH_VOICE = 'onyx';
-const ALLOWED_SPEECH_VOICES = new Set(['alloy', 'ash', 'ballad', 'coral', 'echo', 'fable', 'nova', 'onyx', 'sage', 'shimmer', 'verse']);
-const DEFAULT_SPEECH_PER_MILLION_CHARACTERS = 15;
-const MAX_SPEECH_CHARACTERS = 3000;
-const MAX_SPEAKABLE_RESPONSES = 100;
 const MAX_AUDIO_BYTES = 10 * 1024 * 1024;
 const MAX_AUDIO_DURATION_MS = 2 * 60 * 1000;
 const OPENING = 'Start with one recent moment that got to you. What happened?';
@@ -52,7 +45,7 @@ const PAGE_PATH = '/reflect/kids-on-the-bus';
 const ADMIN_PATH = '/admin/mindbody-insights';
 const STATIC_PREFIX = '/kids-on-the-bus';
 const API_PREFIX = '/api/kids-on-the-bus';
-const NOTICE_VERSION = '2026-08-21-v4';
+const NOTICE_VERSION = '2026-08-18-v3';
 const DEFAULT_SHARED_RETENTION_DAYS = 90;
 const DEFAULT_ANALYTICS_RETENTION_DAYS = 365;
 
@@ -111,8 +104,6 @@ function loadSettings(env = process.env) {
     throw new Error('Render requires REALTIME_DATA_DIR or RENDER_DISK_PATH to point to the mounted persistent disk.');
   }
   const requestedTranscriptionModel = String(env.OPENAI_TRANSCRIPTION_MODEL || DEFAULT_TRANSCRIPTION_MODEL);
-  const requestedSpeechModel = String(env.OPENAI_SPEECH_MODEL || DEFAULT_SPEECH_MODEL);
-  const requestedSpeechVoice = String(env.OPENAI_SPEECH_VOICE || DEFAULT_SPEECH_VOICE).toLowerCase();
   return {
     port: boundedInteger(env.PORT, 5933, 1, 65535),
     anthropicKey: env.ANTHROPIC_API_KEY || '',
@@ -129,8 +120,6 @@ function loadSettings(env = process.env) {
     transcriptionModel: ALLOWED_TRANSCRIPTION_MODELS.has(requestedTranscriptionModel)
       ? requestedTranscriptionModel
       : DEFAULT_TRANSCRIPTION_MODEL,
-    speechModel: ALLOWED_SPEECH_MODELS.has(requestedSpeechModel) ? requestedSpeechModel : DEFAULT_SPEECH_MODEL,
-    speechVoice: ALLOWED_SPEECH_VOICES.has(requestedSpeechVoice) ? requestedSpeechVoice : DEFAULT_SPEECH_VOICE,
     maxAudioBytes: MAX_AUDIO_BYTES,
     maxAudioDurationMs: MAX_AUDIO_DURATION_MS,
     rates: {
@@ -138,8 +127,7 @@ function loadSettings(env = process.env) {
       claudeOutput: money(env.CLAUDE_OUTPUT_PER_MILLION, DEFAULT_RATES.claudeOutput),
       claudeCacheWrite: money(env.CLAUDE_CACHE_WRITE_PER_MILLION, DEFAULT_RATES.claudeCacheWrite),
       claudeCacheRead: money(env.CLAUDE_CACHE_READ_PER_MILLION, DEFAULT_RATES.claudeCacheRead),
-      transcriptionPerMinute: money(env.OPENAI_TRANSCRIPTION_PER_MINUTE, DEFAULT_TRANSCRIPTION_PER_MINUTE),
-      speechPerMillionCharacters: money(env.OPENAI_SPEECH_PER_MILLION_CHARACTERS, DEFAULT_SPEECH_PER_MILLION_CHARACTERS)
+      transcriptionPerMinute: money(env.OPENAI_TRANSCRIPTION_PER_MINUTE, DEFAULT_TRANSCRIPTION_PER_MINUTE)
     },
     dataDir: explicitDataDir || path.join(ROOT, 'data'),
     persistentDataDirConfigured: Boolean(explicitDataDir),
@@ -247,18 +235,6 @@ function adminAuthorized(req, settings) {
   return safeEqual(req.headers['x-companion-admin-code'], settings.adminCode);
 }
 
-function speakableHash(text) {
-  return crypto.createHash('sha256').update(String(text || '').trim()).digest('hex');
-}
-
-function rememberSpeakable(record, text) {
-  if (!record || !record.speakable) return;
-  const trimmed = String(text || '').trim();
-  if (!trimmed || trimmed.length > MAX_SPEECH_CHARACTERS) return;
-  if (record.speakable.size >= MAX_SPEAKABLE_RESPONSES) return;
-  record.speakable.add(speakableHash(trimmed));
-}
-
 function sessionReference() {
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   const bytes = crypto.randomBytes(8);
@@ -315,7 +291,6 @@ function createApp(options = {}) {
           publicAccess: true,
           configured: Boolean(settings.anthropicKey && settings.budgetUsd > 0),
           voiceInputAvailable: Boolean(settings.openaiKey && settings.transcriptionModel),
-          voicePlaybackAvailable: Boolean(settings.openaiKey && settings.speechModel),
           mode: 'writing',
           coachingModel: settings.claudeModel,
           coachingEffort: settings.claudeEffort,
@@ -375,15 +350,12 @@ function createApp(options = {}) {
         const sessionId = crypto.randomUUID();
         const reference = sessionReference();
         const consentDate = body.shareSitting === true ? new Date().toISOString() : '';
-        const sessionRecord = {
+        activeSessions.set(sessionId, {
           startedAt: Date.now(),
           sessionReference: reference,
           shareSitting: body.shareSitting === true,
-          ended: false,
-          speakable: new Set()
-        };
-        rememberSpeakable(sessionRecord, OPENING);
-        activeSessions.set(sessionId, sessionRecord);
+          ended: false
+        });
         ledger.startSession({
           sessionReference: reference,
           startedAt: new Date().toISOString(),
@@ -522,90 +494,6 @@ function createApp(options = {}) {
         return;
       }
 
-      if (req.method === 'POST' && pathname === `${API_PREFIX}/speak`) {
-        const body = await readJson(req, 24 * 1024);
-        const active = activeSessions.get(String(body.sessionId || ''));
-        if (!active || active.ended) {
-          sendJson(res, 400, { error: 'This sitting is no longer active.' });
-          return;
-        }
-        currentSessionReference = active.sessionReference;
-        try {
-          if (!settings.openaiKey) {
-            throw Object.assign(new Error('The voice is temporarily unavailable. You can keep reading.'), { statusCode: 503 });
-          }
-          if (ledger.status().exhausted) {
-            throw Object.assign(new Error('The companion has reached its current usage limit. Please try again later.'), { statusCode: 402 });
-          }
-          const text = String(body.text || '').trim();
-          if (!text || text.length > MAX_SPEECH_CHARACTERS) {
-            throw Object.assign(new Error('That response cannot be read aloud.'), { statusCode: 400 });
-          }
-          if (!active.speakable || !active.speakable.has(speakableHash(text))) {
-            throw Object.assign(new Error('Only the companion\'s own responses in this sitting can be read aloud.'), { statusCode: 403 });
-          }
-          const controller = new AbortController();
-          const abortUpstream = () => controller.abort();
-          req.once('aborted', abortUpstream);
-          if (typeof res.once === 'function') {
-            res.once('close', () => {
-              if (!res.writableEnded) abortUpstream();
-            });
-          }
-          let upstream;
-          try {
-            upstream = await fetchImpl('https://api.openai.com/v1/audio/speech', {
-              method: 'POST',
-              headers: {
-                Authorization: `Bearer ${settings.openaiKey}`,
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                model: settings.speechModel || DEFAULT_SPEECH_MODEL,
-                voice: settings.speechVoice || DEFAULT_SPEECH_VOICE,
-                input: text,
-                response_format: 'mp3'
-              }),
-              signal: controller.signal
-            });
-          } finally {
-            req.removeListener('aborted', abortUpstream);
-          }
-          if (!upstream.ok) {
-            throw Object.assign(new Error('The voice could not be generated. You can keep reading.'), { statusCode: 502 });
-          }
-          const audio = Buffer.from(await upstream.arrayBuffer());
-          if (!audio.length) {
-            throw Object.assign(new Error('The voice could not be generated. You can keep reading.'), { statusCode: 502 });
-          }
-          const recorded = ledger.add({
-            sessionId: String(body.sessionId || ''),
-            sessionReference: active.sessionReference,
-            usageId: `speech_${crypto.randomUUID().replace(/-/g, '')}`,
-            model: settings.speechModel || DEFAULT_SPEECH_MODEL,
-            usage: { speechCharacters: text.length }
-          });
-          ledger.recordEvent(active.sessionReference, 'speechPlaybacks');
-          res.writeHead(200, {
-            'Content-Type': 'audio/mpeg',
-            'Content-Length': audio.length,
-            'Cache-Control': 'no-store',
-            'X-Speech-Cost-Usd': recorded.entry.costUsd.toFixed(6)
-          });
-          res.end(audio);
-        } catch (error) {
-          if (error?.name === 'AbortError') return;
-          ledger.recordEvent(active.sessionReference, 'speechPlaybackFailures');
-          const status = error.statusCode || 500;
-          if (!res.headersSent) {
-            sendJson(res, status, { error: status >= 500 && status !== 503
-              ? 'The voice could not be generated. You can keep reading.'
-              : error.message });
-          }
-        }
-        return;
-      }
-
       if (req.method === 'POST' && pathname === `${API_PREFIX}/claude-response`) {
         const body = await readJson(req, 128 * 1024);
         const sessionId = String(body.sessionId || '');
@@ -632,7 +520,6 @@ function createApp(options = {}) {
             userStopRequest: safety.route === 'stop_requested'
           });
           if (active.shareSitting) sharedStore.appendTurn(active.sessionReference, message, safety.response);
-          rememberSpeakable(active, safety.response);
           sendJson(res, 200, { ...safety, handledBy: 'fixed-safety', budget: ledger.status() });
           return;
         }
@@ -675,7 +562,6 @@ function createApp(options = {}) {
         }
         const sittingComplete = containsCompletionMarker(generated.text);
         generated.text = stripCompletionMarker(generated.text);
-        rememberSpeakable(active, generated.text);
         const usageId = `claude_${crypto.randomUUID().replace(/-/g, '')}`;
         const recorded = ledger.add({
           sessionId,

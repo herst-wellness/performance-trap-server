@@ -206,8 +206,6 @@ function aggregateInsights(sessions) {
   let microphoneDenials = 0;
   let voiceTranscriptCorrections = 0;
   let voiceRecordedSeconds = 0;
-  let speechPlaybacks = 0;
-  let speechPlaybackFailures = 0;
 
   for (const row of rows) {
     const topics = [row.primaryTopic, ...(row.secondaryTopics || [])].filter(Boolean);
@@ -244,8 +242,6 @@ function aggregateInsights(sessions) {
     microphoneDenials += Number(row.microphoneDenials || 0);
     voiceTranscriptCorrections += Number(row.voiceTranscriptCorrections || 0);
     voiceRecordedSeconds += Number(row.voiceRecordedSeconds || 0);
-    speechPlaybacks += Number(row.speechPlaybacks || 0);
-    speechPlaybackFailures += Number(row.speechPlaybackFailures || 0);
   }
 
   const ranked = (counts) => Object.entries(counts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
@@ -282,9 +278,6 @@ function aggregateInsights(sessions) {
     voiceClientFailures,
     microphoneDenials,
     voiceTranscriptCorrections,
-    speechPlaybacks,
-    speechPlaybackFailures,
-    voicePlaybackSittings: rows.filter((row) => Number(row.speechPlaybacks || 0) > 0).length,
     voiceTranscriptionSuccessRate: percentage(voiceTranscriptionSuccesses, voiceTranscriptionSuccesses + voiceTranscriptionFailures),
     averageVoiceRecordingSeconds: voiceTranscriptionSuccesses + voiceTranscriptionFailures > 0
       ? Math.round(voiceRecordedSeconds / (voiceTranscriptionSuccesses + voiceTranscriptionFailures) * 10) / 10
@@ -337,7 +330,6 @@ function sessionsToCsv(sessions) {
     'diagnosisBoundaryActivations', 'crisisActivations', 'voiceRecordingStarts', 'voiceRecordingStops',
     'voiceTranscriptionSuccesses', 'voiceTranscriptionFailures', 'voiceClientFailures', 'microphoneDenials',
     'voiceTranscriptCorrections', 'voiceRecordedSeconds', 'medianTranscriptionTimeMs', 'slowestTranscriptionMs',
-    'speechPlaybacks', 'speechPlaybackFailures',
     'feedbackRatings', 'sharedSittingPermission'
   ];
   const lines = [headers.join(',')];
@@ -356,7 +348,6 @@ function sessionsToCsv(sessions) {
       row.diagnosisBoundaryActivations, row.crisisActivations, row.voiceRecordingStarts, row.voiceRecordingStops,
       row.voiceTranscriptionSuccesses, row.voiceTranscriptionFailures, row.voiceClientFailures, row.microphoneDenials,
       row.voiceTranscriptCorrections, row.voiceRecordedSeconds, row.medianTranscriptionTimeMs, row.slowestTranscriptionMs,
-      row.speechPlaybacks, row.speechPlaybackFailures,
       (row.feedback?.ratings || []).join('|'), row.sharedSittingPermission
     ];
     lines.push(values.map(csvCell).join(','));
