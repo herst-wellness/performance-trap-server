@@ -41,11 +41,16 @@ async function requestClaude(options, maxTokens) {
     },
     body: JSON.stringify({
       model: options.model,
-      system: [{
-        type: 'text',
-        text: options.instructions,
-        cache_control: { type: 'ephemeral' }
-      }],
+      system: [
+        {
+          type: 'text',
+          text: options.instructions,
+          cache_control: { type: 'ephemeral' }
+        },
+        // The wind-down note is appended after the cached block so the long
+        // instructions stay cacheable while the note varies per turn.
+        ...(options.contextNote ? [{ type: 'text', text: String(options.contextNote) }] : [])
+      ],
       messages: [
         ...cleanHistory(options.history),
         { role: 'user', content: options.message }

@@ -87,6 +87,8 @@ function buildWeeklyReport(sessions, now = Date.now(), visits = []) {
 <tr><td>Transcription and browser voice failures</td><td><strong>${current.voiceTranscriptionFailures + current.voiceClientFailures}</strong></td></tr>
 <tr><td>Microphone denials</td><td><strong>${current.microphoneDenials}</strong></td></tr>
 <tr><td>Transcripts edited before sending</td><td><strong>${current.voiceTranscriptCorrections}</strong></td></tr>
+<tr><td>Companion responses played aloud</td><td><strong>${current.speechPlaybacks}</strong></td></tr>
+<tr><td>Voice playback failures</td><td><strong>${current.speechPlaybackFailures}</strong></td></tr>
 <tr><td>Errors</td><td><strong>${current.errors}</strong></td></tr>
 <tr><td>Estimated cost</td><td><strong>$${current.estimatedCostUsd.toFixed(3)}</strong></td></tr>
 <tr><td>Feedback averages, questions 1 to 5</td><td><strong>${escapeHtml(feedback)}</strong></td></tr>

@@ -11,6 +11,7 @@ const DEFAULT_RATES = Object.freeze({
   outputText: 24,
   outputAudio: 64,
   transcriptionPerMinute: 0.017,
+  speechPerMillionCharacters: 15,
   claudeInput: 3,
   claudeOutput: 15,
   claudeCacheWrite: 3.75,
@@ -22,6 +23,7 @@ const SESSION_COUNTERS = new Set([
   'conversionClicks', 'browserErrors', 'serverErrors', 'truncatedResponses', 'emptyResponses',
   'responseFailures',
   'voiceRecordingStarts', 'voiceRecordingStops', 'voiceClientFailures', 'microphoneDenials', 'voiceTranscriptCorrections',
+  'speechPlaybacks', 'speechPlaybackFailures',
   'safetyActivations', 'diagnosisBoundaryActivations', 'crisisActivations', 'userStopRequests',
   'mindbodyPageClick', 'chapterClick', 'bookClick', 'conversationClick', 'emailListClick',
   'consultOfferShown'
@@ -50,6 +52,7 @@ function normalizeUsage(raw = {}) {
     outputTextTokens: finiteNonNegative(raw.outputTextTokens),
     outputAudioTokens: finiteNonNegative(raw.outputAudioTokens),
     transcriptionAudioSeconds: finiteNonNegative(raw.transcriptionAudioSeconds),
+    speechCharacters: finiteNonNegative(raw.speechCharacters),
     claudeInputTokens: finiteNonNegative(raw.claudeInputTokens),
     claudeOutputTokens: finiteNonNegative(raw.claudeOutputTokens),
     claudeCacheWriteTokens: finiteNonNegative(raw.claudeCacheWriteTokens),
@@ -70,13 +73,14 @@ function calculateBreakdown(usage, rates = DEFAULT_RATES) {
     u.outputAudioTokens * rates.outputAudio
   ) / 1_000_000;
   const transcriptionUsd = u.transcriptionAudioSeconds / 60 * rates.transcriptionPerMinute;
+  const speechUsd = u.speechCharacters * (rates.speechPerMillionCharacters || 0) / 1_000_000;
   const claudeUsd = (
     u.claudeInputTokens * rates.claudeInput +
     u.claudeOutputTokens * rates.claudeOutput +
     u.claudeCacheWriteTokens * rates.claudeCacheWrite +
     u.claudeCacheReadTokens * rates.claudeCacheRead
   ) / 1_000_000;
-  return { realtimeUsd, transcriptionUsd, claudeUsd, totalUsd: realtimeUsd + transcriptionUsd + claudeUsd };
+  return { realtimeUsd, transcriptionUsd, speechUsd, claudeUsd, totalUsd: realtimeUsd + transcriptionUsd + speechUsd + claudeUsd };
 }
 
 function calculateCost(usage, rates = DEFAULT_RATES) {
@@ -200,6 +204,8 @@ function newSession(record) {
     voiceClientFailures: 0,
     microphoneDenials: 0,
     voiceTranscriptCorrections: 0,
+    speechPlaybacks: 0,
+    speechPlaybackFailures: 0,
     voiceRecordedSeconds: 0,
     transcriptionTimesMs: [],
     medianTranscriptionTimeMs: 0,

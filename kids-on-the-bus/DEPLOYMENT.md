@@ -2,14 +2,14 @@
 
 The route at `/reflect/kids-on-the-bus` remains in place so existing links continue to work. The visitor-facing name is now Mind/Body Foundations Companion. Kids on the Bus remains one element inside the broader method, not the name of the whole experience.
 
-The application remains text-led and adds optional push-to-talk transcription for individual responses. Visitors can review, edit, or delete a transcript before sending it through the same approved Module 2 coaching and safety path. The coaching prompt, pacing, safety responses, 30-exchange limit, 60-minute limit, and Claude Sonnet 5 effort setting are unchanged.
+The application remains text-led, with optional push-to-talk transcription for individual responses and an optional per-response voice playback control that reads a companion response aloud in a deep OpenAI voice. Visitors can review, edit, or delete a transcript before sending it through the same approved Module 2 coaching and safety path. As of 2026-08-21 the fixed opening asks directly for one recent moment, sittings default to a 20-exchange, 30-minute limit, and the server sends the model a wind-down note when a sitting nears its limit.
 
 The approved Squarespace heading is `EXPERIENCE MIND/BODY FOUNDATIONS`. Use Mind/Body Foundations consistently in the website section, companion, dashboard, reports, and metadata.
 
 ## Required Render settings
 
 - `ANTHROPIC_API_KEY`
-- `OPENAI_API_KEY`, used server-side only for bounded audio transcription
+- `OPENAI_API_KEY`, used server-side only for bounded audio transcription and voice playback
 - `COMPANION_ADMIN_CODE`, a separate code used only for `/admin/mindbody-insights`
 - `PRIVATE_TEST_BUDGET_USD=100`
 - `REALTIME_DATA_DIR=/var/data/mindbody-companion`, or an equivalent path beneath the Render persistent disk mount
@@ -36,10 +36,17 @@ Optional controls:
 - `COMPANION_SHARED_RETENTION_DAYS=90`
 - `ANTHROPIC_MODEL=claude-sonnet-5`
 - `ANTHROPIC_EFFORT=high`
-- `WRITTEN_SESSION_MINUTES=60`
-- `WRITTEN_MAX_EXCHANGES=30`
+- `WRITTEN_SESSION_MINUTES=30`
+- `WRITTEN_MAX_EXCHANGES=20`
 - `OPENAI_TRANSCRIPTION_MODEL=gpt-transcribe`
 - `OPENAI_TRANSCRIPTION_PER_MINUTE=0.0045`
+- `OPENAI_SPEECH_MODEL=tts-1`
+- `OPENAI_SPEECH_VOICE=onyx`
+- `OPENAI_SPEECH_PER_MILLION_CHARACTERS=15`
+
+If `WRITTEN_SESSION_MINUTES` or `WRITTEN_MAX_EXCHANGES` are explicitly set in Render, they override the shortened defaults above and must be updated or removed there for the shorter sitting to take effect.
+
+Voice playback only speaks text the companion actually produced in the current sitting. The server verifies each playback request against the sitting's own responses, records only character counts and cost, and never stores the generated audio.
 
 Voice recordings are limited to two minutes and 10 MB. The server holds audio in memory only long enough to send it to the transcription service and return the transcript. It does not write audio to disk, logs, analytics, shared sittings, or reports. A transcript is not sent to the coaching path until the visitor reviews it and selects Send.
 

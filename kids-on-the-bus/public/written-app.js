@@ -67,7 +67,11 @@
     transcriptionController: null,
     lastTranscriptValue: '',
     transcriptEdited: false,
-    consultOffered: false
+    consultOffered: false,
+    playbackAudio: null,
+    playbackUrl: '',
+    playbackButton: null,
+    playbackFetching: false
   };
 
   const MAX_RECORDING_MS = 2 * 60 * 1000;
@@ -273,6 +277,65 @@
     ui.consultOffer.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
 
+  function stopSpeechPlayback() {
+    if (state.playbackAudio) {
+      state.playbackAudio.onended = null;
+      state.playbackAudio.onerror = null;
+      state.playbackAudio.pause();
+      state.playbackAudio = null;
+    }
+    if (state.playbackUrl) {
+      URL.revokeObjectURL(state.playbackUrl);
+      state.playbackUrl = '';
+    }
+    if (state.playbackButton) {
+      state.playbackButton.textContent = 'Hear this';
+      state.playbackButton.disabled = state.ended;
+      state.playbackButton = null;
+    }
+    state.playbackFetching = false;
+  }
+
+  async function toggleSpeakTurn(button, text) {
+    if (state.playbackButton === button && !state.playbackFetching) {
+      stopSpeechPlayback();
+      return;
+    }
+    if (state.playbackFetching) return;
+    stopSpeechPlayback();
+    if (!state.sessionId || state.ended) return;
+    state.playbackButton = button;
+    state.playbackFetching = true;
+    button.disabled = true;
+    button.textContent = 'Preparing voice...';
+    try {
+      const response = await fetch('/api/kids-on-the-bus/speak', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId: state.sessionId, text })
+      });
+      if (!response.ok) {
+        let message = 'The voice is unavailable right now.';
+        try { message = (await response.json()).error || message; } catch {}
+        throw new Error(message);
+      }
+      state.costUsd += Number(response.headers.get('X-Speech-Cost-Usd') || 0);
+      const blob = await response.blob();
+      state.playbackUrl = URL.createObjectURL(blob);
+      state.playbackAudio = new Audio(state.playbackUrl);
+      state.playbackAudio.onended = stopSpeechPlayback;
+      state.playbackAudio.onerror = stopSpeechPlayback;
+      state.playbackFetching = false;
+      button.disabled = false;
+      button.textContent = 'Stop';
+      await state.playbackAudio.play();
+    } catch (error) {
+      state.playbackFetching = false;
+      stopSpeechPlayback();
+      setVoiceStatus(error.message || 'The voice is unavailable right now. You can keep reading.', true);
+    }
+  }
+
   function addTurn(role, text, extraClass) {
     const turn = document.createElement('div');
     turn.className = `turn ${role}${extraClass ? ` ${extraClass}` : ''}`;
@@ -283,6 +346,14 @@
     content.className = 'turn-text';
     content.textContent = text;
     turn.append(speaker, content);
+    if (role !== 'user' && state.config?.voicePlaybackAvailable) {
+      const speak = document.createElement('button');
+      speak.type = 'button';
+      speak.className = 'speak-button';
+      speak.textContent = 'Hear this';
+      speak.addEventListener('click', () => toggleSpeakTurn(speak, text));
+      turn.appendChild(speak);
+    }
     ui.transcript.appendChild(turn);
     ui.transcript.scrollTop = ui.transcript.scrollHeight;
     state.exportTurns.push({ role: speaker.textContent, text });
@@ -549,6 +620,8 @@
   function endSession(clear, reason, message) {
     if (!state.endReported) reportEnd(reason || 'intentional', true);
     state.ended = true;
+    stopSpeechPlayback();
+    document.querySelectorAll('.speak-button').forEach((button) => { button.disabled = true; });
     discardVoiceRecording();
     if (state.controller) state.controller.abort();
     if (state.timer) window.clearInterval(state.timer);
