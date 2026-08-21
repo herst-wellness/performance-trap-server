@@ -2,7 +2,7 @@
 
 The route at `/reflect/kids-on-the-bus` remains in place so existing links continue to work. The visitor-facing name is now Mind/Body Foundations Companion. Kids on the Bus remains one element inside the broader method, not the name of the whole experience.
 
-The application remains text-led and adds optional push-to-talk transcription for individual responses. Visitors can review, edit, or delete a transcript before sending it through the same approved Module 2 coaching and safety path. As of 2026-08-21 the fixed opening asks directly for one recent moment, sittings default to a 20-exchange, 30-minute limit, and the server sends the model a wind-down note when a sitting nears its limit.
+The application remains text-led and adds optional push-to-talk transcription for individual responses. Visitors can review, edit, or delete a transcript before sending it through the same approved Module 2 coaching and safety path. As of 2026-08-21 the fixed opening asks what has been going on in the visitor's last few days (the companion then finds and follows the thread that carries weight), sittings default to a 20-exchange, 30-minute limit, and the server sends the model a wind-down note when a sitting nears its limit.
 
 The approved Squarespace heading is `EXPERIENCE MIND/BODY FOUNDATIONS`. Use Mind/Body Foundations consistently in the website section, companion, dashboard, reports, and metadata.
 
