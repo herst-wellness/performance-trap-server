@@ -21,7 +21,7 @@ const companionEntry = fs.readFileSync(path.join(root, '..', 'companion.js'), 'u
 
 test('canonical coaching assets are self-contained and retain their approved fingerprints', () => {
   const assets = [
-    ['companion-prompt.txt', '611576fe33b5681bd776c0b5bfc7c0044e6ff674fac467e5178db4cf6ef62f0e'],
+    ['companion-prompt.txt', '195a409133c0b5915f53947db97f5811c0d1acb605ef398e5544fa858c0fe30f'],
     ['companion-safety-overlay.txt', '023e23cb6fe0cac90d376278cd69aa64f06014ea84324604d668a04de90c9372']
   ];
   for (const [filename, expected] of assets) {

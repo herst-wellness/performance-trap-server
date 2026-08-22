@@ -35,8 +35,8 @@ function settings(overrides = {}) {
     openaiKey: 'sk-openai-server-only-secret',
     adminCode: 'admin-secret',
     budgetUsd: 5,
-    sessionMinutes: 60,
-    maxExchanges: 30,
+    sessionMinutes: 30,
+    maxExchanges: 20,
     claudeModel: 'claude-sonnet-5',
     claudeEffort: 'high',
     instructions: 'Test instructions. Never use an em dash.',
@@ -105,10 +105,10 @@ test('private companion refuses an unreviewed change to the authoritative Module
   fs.rmSync(changedPrompt, { force: true });
 });
 
-test('written sittings use the substantially extended session and exchange limits', () => {
-  const config = settings();
-  assert.equal(config.sessionMinutes, 60);
-  assert.equal(config.maxExchanges, 30);
+test('written sittings default to the shortened session and exchange limits', () => {
+  const defaults = loadSettings({ ANTHROPIC_API_KEY: 'sk-test' });
+  assert.equal(defaults.sessionMinutes, 30);
+  assert.equal(defaults.maxExchanges, 20);
 });
 
 test('configuration exposes optional voice input without exposing the OpenAI key', async () => {
@@ -147,7 +147,7 @@ test('written session starts without calling the paused voice provider', async (
   const body = JSON.parse(response.body);
   assert.ok(body.sessionId);
   assert.match(body.sessionReference, /^MBF-[A-Z0-9]{4}-[A-Z0-9]{4}$/);
-  assert.equal(body.opening, 'What has you feeling stuck?');
+  assert.equal(body.opening, 'What\'s been going on in your last few days? Start anywhere.');
   assert.equal(calls, 0);
   fs.rmSync(appSettings.dataDir, { recursive: true, force: true });
 });
@@ -635,5 +635,45 @@ test('an ordinary mid-sitting turn carries no consult offer', async () => {
   const body = JSON.parse(response.body);
   assert.equal(body.sittingComplete, false);
   assert.equal(body.consultUrl, '');
+  fs.rmSync(appSettings.dataDir, { recursive: true, force: true });
+});
+
+test('a sitting near its exchange limit carries an uncached wind-down note after the cached instructions', async () => {
+  const appSettings = settings();
+  const calls = [];
+  const fetchImpl = async (url, options) => {
+    calls.push({ url, options });
+    if (url.includes('/v1/messages')) {
+      return new Response(JSON.stringify({
+        content: [{ type: 'text', text: 'What are you carrying forward from this?' }],
+        stop_reason: 'end_turn',
+        usage: { input_tokens: 40, output_tokens: 18, cache_creation_input_tokens: 0, cache_read_input_tokens: 0 }
+      }), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+    throw new Error(`Unexpected URL: ${url}`);
+  };
+  const server = createApp({ settings: appSettings, fetchImpl });
+  const session = await requestServer(server, { method: 'POST', url: '/api/kids-on-the-bus/session' });
+  const sessionId = JSON.parse(session.body).sessionId;
+  const longHistory = Array.from({ length: 16 }, (unused, index) => [
+    { role: 'user', content: `entry ${index}` },
+    { role: 'assistant', content: `response ${index}` }
+  ]).flat();
+  const shortHistory = [{ role: 'user', content: 'entry' }, { role: 'assistant', content: 'response' }];
+  for (const history of [shortHistory, longHistory]) {
+    await requestServer(server, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      url: '/api/kids-on-the-bus/claude-response',
+      body: JSON.stringify({ sessionId, message: 'It settled.', history })
+    });
+  }
+  const [early, late] = calls.filter((call) => call.url.includes('/v1/messages')).map((call) => JSON.parse(call.options.body));
+  assert.equal(early.system.length, 1);
+  assert.equal(late.system.length, 2);
+  assert.deepEqual(late.system[0].cache_control, { type: 'ephemeral' });
+  assert.match(late.system[1].text, /SITTING TIME/);
+  assert.match(late.system[1].text, /Compress the closing/);
+  assert.equal('cache_control' in late.system[1], false);
   fs.rmSync(appSettings.dataDir, { recursive: true, force: true });
 });
