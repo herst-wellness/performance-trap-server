@@ -21,8 +21,7 @@ const safetyOverlay = readPart('onramp-safety-overlay.txt');
 
 const TITLE = 'AJ’s Companion';
 const SUB = 'Between sessions with Chad.';
-const OPENING =
-  'What’s alive right now? Bring me whatever’s actually here, the business, the body, the fog, whatever it is.';
+const OPENING = 'How’s the spirit today?';
 const PAGE_PATH = '/practice/aj';
 const API_PATH = '/api/aj';
 const SEND_PATH = API_PATH + '/send';
