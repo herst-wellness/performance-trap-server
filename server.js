@@ -1697,6 +1697,66 @@ const server = http.createServer(async (req, res) => {
     res.end(nl08html);
     return;
   }
+  if (req.method === 'GET' && req.url === '/listen/newsletter-09') {
+    const nl09html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Newsletter Nine — Chad Herst</title>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  body { margin:0; padding:0; background:#efe9e0; font-family:'EB Garamond',Georgia,serif; color:#2a2724; }
+  .wrap { max-width:600px; margin:0 auto; padding:40px 20px; }
+  .card { background:#faf7f2; padding:32px; }
+  .logo-top { display:block; width:100%; max-width:536px; height:auto; margin:0 auto; }
+  .divider { border:none; border-top:1px solid #8b3a2a; margin:28px 0; }
+  h1 { font-family:'EB Garamond',Georgia,serif; font-size:32px; line-height:1.2; color:#1f1c1a; margin:0 0 8px 0; font-weight:500; }
+  .subtitle { font-family:'EB Garamond',Georgia,serif; font-style:italic; font-size:18px; color:#8b3a2a; margin:0 0 32px 0; letter-spacing:0.02em; }
+  p { font-size:18px; line-height:1.9; margin:0 0 20px 0; }
+  .player-wrap { background:#efe9e0; border:1px solid #8b3a2a; padding:24px; margin:32px 0; text-align:center; }
+  audio { width:100%; max-width:520px; }
+  .duration { font-size:14px; color:#8a847f; font-style:italic; margin-top:12px; letter-spacing:0.05em; }
+  .class-btn { display:inline-block; font-family:Helvetica,Arial,sans-serif; font-size:13px; letter-spacing:0.2em; text-transform:uppercase; padding:14px 36px; border:1px solid #8b3a2a; color:#8b3a2a; text-decoration:none; }
+  .class-wrap { text-align:center; margin:32px 0 0 0; }
+  .footer { text-align:center; padding:40px 0 20px 0; border-top:1px solid #8b3a2a; margin-top:48px; }
+  .footer img { display:block; margin:0 auto 16px auto; max-width:200px; height:auto; }
+  .footer p { font-family:Helvetica,Arial,sans-serif; font-size:11px; letter-spacing:0.06em; color:#8a847f; margin:0 0 8px 0; line-height:1.7; }
+  .footer a { color:#8b3a2a; text-decoration:none; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+    <img src="${LOGO_URL}" alt="Herst Wellness" class="logo-top" />
+    <hr class="divider" />
+    <h1>Newsletter Nine</h1>
+    <p class="subtitle">My father thinks the book is selfish</p>
+    <p>Earlier this summer, my father and I took a fishing trip. I knew he had some qualms with my book, so I brought it up at our first dinner.</p>
+    <div class="player-wrap">
+      <audio controls preload="metadata" src="${AUDIO_BASE_URL}/newsletter-09.mp3">
+        Your browser does not support audio playback.
+      </audio>
+      <div class="duration">5&frac12; minutes</div>
+    </div>
+    <p>The book comes out October 1. If I haven't already given you a copy, I'd love to do so, as audio in my own voice, or EPUB, or PDF. All I ask is an honest review on Amazon around launch time.</p>
+    <div class="class-wrap">
+      <a class="class-btn" href="https://herstwellness.com/launch-team">Join the launch team</a>
+    </div>
+    <div class="footer">
+      <img src="${LOGO_URL}" alt="Herst Wellness" />
+      <p>765 Market St, San Francisco, CA 94103<br>(415) 686-4411 &middot; <a href="mailto:chad@herstwellness.com">chad@herstwellness.com</a></p>
+      <p><a href="https://herstwellness.com">herstwellness.com</a></p>
+    </div>
+    </div>
+  </div>
+</body>
+</html>`;
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=300' });
+    res.end(nl09html);
+    return;
+  }
   if (req.method === 'GET' && req.url === '/book') {
     const tracks = [
       { num: 1,  file: '01-opening-credits.mp3',                 title: 'Opening Credits',                          duration: '1:42',  part: 'front' },
