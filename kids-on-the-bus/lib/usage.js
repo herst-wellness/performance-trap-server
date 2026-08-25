@@ -152,6 +152,7 @@ function newSession(record) {
   const startedAt = record.startedAt || new Date().toISOString();
   return {
     sessionReference: sanitizeText(record.sessionReference, 40),
+    internal: record.internal === true,
     startedAt,
     lastActivityAt: startedAt,
     endedAt: '',
@@ -242,7 +243,8 @@ function newVisit(record) {
     sessionReference: '',
     referral: normalizeReferral(record.referral),
     device: normalizeDevice(record.device),
-    returningBrowser: Boolean(record.returningBrowser)
+    returningBrowser: Boolean(record.returningBrowser),
+    internal: record.internal === true
   };
 }
 

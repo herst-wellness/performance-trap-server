@@ -124,3 +124,23 @@ test('dashboard aggregation and CSV contain structured information only', () => 
   assert.match(csv, /voiceTranscriptionSuccesses/);
   assert.doesNotMatch(csv, /exactEntry|Melissa|identifiable written content/i);
 });
+
+test('sittings and visits marked as Chad testing stay out of the numbers, and are counted as left out', () => {
+  const sessions = [
+    { sessionReference: 'A', internal: true, startedAt: '2026-08-20T10:00:00.000Z', endedAt: '2026-08-20T10:01:00.000Z', durationSeconds: 60, completed: true, beganWriting: true, companionResponses: 1 },
+    { sessionReference: 'B', startedAt: '2026-08-21T10:00:00.000Z', endedAt: '2026-08-21T10:20:00.000Z', durationSeconds: 1200, completed: false, abandoned: true, beganWriting: true, companionResponses: 12 }
+  ];
+  const visits = [
+    { visitId: 'v1', internal: true, openedAt: '2026-08-20T09:59:00.000Z', sessionStarted: true, sessionReference: 'A', beginAttempts: 1 },
+    { visitId: 'v2', openedAt: '2026-08-21T09:59:00.000Z', sessionStarted: true, sessionReference: 'B', beginAttempts: 1 }
+  ];
+  const insights = aggregateInsights(sessions);
+  assert.equal(insights.totalSittings, 1, 'only the real sitting counts');
+  assert.equal(insights.internalSittingsExcluded, 1);
+  assert.equal(insights.completed, 0, 'the test sitting no longer inflates completions');
+
+  const funnel = aggregateFunnel(visits, sessions);
+  assert.equal(funnel.pageVisits, 1);
+  assert.equal(funnel.trackedStarts, 1);
+  assert.equal(funnel.internalVisitsExcluded, 1);
+});

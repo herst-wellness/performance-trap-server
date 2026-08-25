@@ -9,7 +9,7 @@
     referralBars: el('referralBars'), deviceBars: el('deviceBars'), rows: el('sessionRows'), weekly: el('weeklyPreview'),
     topicFilter: el('topicFilter'), referralFilter: el('referralFilter'), deviceFilter: el('deviceFilter'),
     statusFilter: el('statusFilter'), feedbackFilter: el('feedbackFilter'), errorFilter: el('errorFilter'),
-    stageFilter: el('stageFilter'), startDate: el('startDate'), endDate: el('endDate'), csv: el('downloadCsv'), funnelCsv: el('downloadFunnelCsv'),
+    stageFilter: el('stageFilter'), internalFilter: el('internalFilter'), startDate: el('startDate'), endDate: el('endDate'), csv: el('downloadCsv'), funnelCsv: el('downloadFunnelCsv'),
     sharedList: el('sharedList'), sharedReview: el('sharedReview'), sharedTitle: el('sharedTitle'),
     sharedTurns: el('sharedTurns'), deleteShared: el('deleteShared')
   };
@@ -73,6 +73,8 @@
       if (ui.errorFilter.value === 'yes' && !hasErrors(row)) return false;
       if (ui.errorFilter.value === 'no' && hasErrors(row)) return false;
       if (ui.stageFilter.value && Number(row.processEvidence?.[ui.stageFilter.value] || 0) === 0) return false;
+      if (ui.internalFilter.value === '' && row.internal) return false;
+      if (ui.internalFilter.value === 'only' && !row.internal) return false;
       return true;
     });
   }
@@ -151,6 +153,8 @@
       ['Left before starting', funnel.pageExitsBeforeStart || 0],
       ['Startup problems', startupProblems]
     ];
+    const excluded = Number(funnel.internalVisitsExcluded || 0) + Number(state.data.insights?.internalSittingsExcluded || 0);
+    if (excluded > 0) cards.push(['Your own testing, left out', excluded]);
     ui.funnelMetrics.replaceChildren(...cards.map(([label, value]) => metric(label, value)));
   }
 
@@ -263,7 +267,7 @@
 
   ui.open.addEventListener('click', openDashboard);
   ui.code.addEventListener('keydown', (event) => { if (event.key === 'Enter') openDashboard(); });
-  [ui.topicFilter, ui.referralFilter, ui.deviceFilter, ui.statusFilter, ui.feedbackFilter, ui.errorFilter, ui.stageFilter, ui.startDate, ui.endDate].forEach((control) => control.addEventListener('change', render));
+  [ui.topicFilter, ui.referralFilter, ui.deviceFilter, ui.statusFilter, ui.feedbackFilter, ui.errorFilter, ui.stageFilter, ui.internalFilter, ui.startDate, ui.endDate].forEach((control) => control.addEventListener('change', render));
   ui.csv.addEventListener('click', downloadCsv);
   ui.funnelCsv.addEventListener('click', downloadFunnelCsv);
   ui.deleteShared.addEventListener('click', deleteShared);
