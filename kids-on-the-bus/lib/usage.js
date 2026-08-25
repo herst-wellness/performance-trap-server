@@ -373,6 +373,28 @@ class UsageLedger {
     return current.visits.map((visit) => ({ ...visit }));
   }
 
+  markInternalBefore(beforeIso, internal = true) {
+    const cutoff = Date.parse(beforeIso);
+    if (!Number.isFinite(cutoff)) throw Object.assign(new Error('A valid cutoff date is required.'), { statusCode: 400 });
+    const store = this.pruneStore(this.readStore());
+    let visits = 0;
+    let sessions = 0;
+    for (const visit of store.visits || []) {
+      if (Date.parse(visit.openedAt) >= cutoff) continue;
+      if (visit.internal === internal) continue;
+      visit.internal = internal;
+      visits += 1;
+    }
+    for (const session of store.sessions || []) {
+      if (Date.parse(session.startedAt) >= cutoff) continue;
+      if (session.internal === internal) continue;
+      session.internal = internal;
+      sessions += 1;
+    }
+    if (visits || sessions) this.writeStore(store);
+    return { visits, sessions, internal, before: new Date(cutoff).toISOString() };
+  }
+
   total() {
     return this.entries().reduce((sum, entry) => sum + finiteNonNegative(entry.costUsd), 0);
   }

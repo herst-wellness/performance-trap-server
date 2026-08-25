@@ -26,6 +26,8 @@ Tagged visits and sittings are left out of the insights page, the funnel, and th
 
 Use a different browser or a private window to see the companion the way a real visitor does.
 
+Records made before the mark existed can be tagged after the fact. `POST /api/kids-on-the-bus/admin/mark-internal` with the administrative code and `{"before": "<ISO date>"}` tags every visit and sitting that started before that moment, and returns how many it touched. Sending `{"before": "<ISO date>", "internal": false}` puts them back. Nothing is deleted either way, so a record wrongly tagged is always recoverable.
+
 The existing `usage-ledger.json` is upgraded in place. It keeps content-free page visits, funnel events, cost entries, and structured sitting records together. An older array-shaped ledger is read automatically and converted the next time it is written.
 
 ## Retention
