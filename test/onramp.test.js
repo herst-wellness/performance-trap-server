@@ -92,7 +92,7 @@ test('every weekly route stays disabled until ONRAMP_ACCESS_CODE is set, and the
     assert.match(body.error, /not enabled/i);
   }
 
-  const kotb = await fetch(baseUrl + '/reflect/kids-on-the-bus');
+  const kotb = await fetch(baseUrl + '/start-anywhere');
   assert.equal(kotb.status, 200, 'the existing companion page must keep working');
 });
 

@@ -10,6 +10,7 @@ const { Readable } = require('node:stream');
 const { NOTICE_VERSION, createApp, isCompanionPath, loadClaudeInstructions, loadSettings } = require('../server');
 
 test('the replacement owns only Kids on the Bus routes', () => {
+  assert.equal(isCompanionPath('/start-anywhere'), true);
   assert.equal(isCompanionPath('/reflect/kids-on-the-bus'), true);
   assert.equal(isCompanionPath('/kids-on-the-bus/app.js'), true);
   assert.equal(isCompanionPath('/api/kids-on-the-bus/config'), true);
@@ -118,7 +119,7 @@ test('configuration exposes optional voice input without exposing the OpenAI key
   assert.equal(config.status, 200);
   assert.equal(JSON.parse(config.body).voiceInputAvailable, true);
   assert.doesNotMatch(config.body, /sk-openai|openaiKey|OPENAI_API_KEY/);
-  const page = await requestServer(server, { url: '/reflect/kids-on-the-bus' });
+  const page = await requestServer(server, { url: '/start-anywhere' });
   assert.match(page.headers['Permissions-Policy'], /microphone=\(self\)/);
   fs.rmSync(appSettings.dataDir, { recursive: true, force: true });
 });
@@ -253,7 +254,7 @@ test('the former Realtime voice-session endpoint is paused', async () => {
 test('zero private budget blocks a written sitting while the page remains available', async () => {
   const appSettings = settings({ budgetUsd: 0 });
   const server = createApp({ settings: appSettings, fetchImpl: async () => { throw new Error('must not call'); } });
-  const page = await requestServer(server, { url: '/reflect/kids-on-the-bus' });
+  const page = await requestServer(server, { url: '/start-anywhere' });
   assert.equal(page.status, 200);
   const session = await requestServer(server, {
       method: 'POST',
@@ -675,5 +676,17 @@ test('a sitting near its exchange limit carries an uncached wind-down note after
   assert.match(late.system[1].text, /SITTING TIME/);
   assert.match(late.system[1].text, /Compress the closing/);
   assert.equal('cache_control' in late.system[1], false);
+  fs.rmSync(appSettings.dataDir, { recursive: true, force: true });
+});
+
+test('the old address still works, sending people to the new one and keeping their tracking parameters', async () => {
+  const appSettings = settings({});
+  const server = createApp({ settings: appSettings, fetchImpl: async () => { throw new Error('must not call'); } });
+  const bare = await requestServer(server, { url: '/reflect/kids-on-the-bus' });
+  assert.equal(bare.status, 301);
+  assert.equal(bare.headers.Location, '/start-anywhere');
+  const tagged = await requestServer(server, { url: '/reflect/kids-on-the-bus?source=companion-page&utm_source=substack' });
+  assert.equal(tagged.status, 301);
+  assert.equal(tagged.headers.Location, '/start-anywhere?source=companion-page&utm_source=substack');
   fs.rmSync(appSettings.dataDir, { recursive: true, force: true });
 });

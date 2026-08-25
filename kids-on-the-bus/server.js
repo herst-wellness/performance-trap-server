@@ -41,7 +41,8 @@ const DEFAULT_WRITTEN_SESSION_MINUTES = 30;
 const DEFAULT_WRITTEN_MAX_EXCHANGES = 20;
 const WIND_DOWN_EXCHANGES_REMAINING = 4;
 const WIND_DOWN_MINUTES_REMAINING = 6;
-const PAGE_PATH = '/reflect/kids-on-the-bus';
+const PAGE_PATH = '/start-anywhere';
+const LEGACY_PAGE_PATHS = ['/reflect/kids-on-the-bus'];
 const ADMIN_PATH = '/admin/mindbody-insights';
 const STATIC_PREFIX = '/kids-on-the-bus';
 const API_PREFIX = '/api/kids-on-the-bus';
@@ -211,6 +212,13 @@ function securityHeaders(contentType) {
 }
 
 function serveStatic(req, res, pathname) {
+  if (LEGACY_PAGE_PATHS.includes(pathname)) {
+    const queryStart = req.url.indexOf('?');
+    const query = queryStart === -1 ? '' : req.url.slice(queryStart);
+    res.writeHead(301, { Location: `${PAGE_PATH}${query}`, 'Cache-Control': 'no-store', 'Content-Length': 0 });
+    res.end();
+    return true;
+  }
   const routes = {
     [PAGE_PATH]: ['index.html', 'text/html; charset=utf-8'],
     [ADMIN_PATH]: ['admin.html', 'text/html; charset=utf-8'],
@@ -814,7 +822,7 @@ function initializeCompanion(options = {}) {
 }
 
 function isCompanionPath(pathname) {
-  return pathname === PAGE_PATH || pathname === ADMIN_PATH || pathname.startsWith(`${STATIC_PREFIX}/`) || pathname.startsWith(`${API_PREFIX}/`);
+  return pathname === PAGE_PATH || LEGACY_PAGE_PATHS.includes(pathname) || pathname === ADMIN_PATH || pathname.startsWith(`${STATIC_PREFIX}/`) || pathname.startsWith(`${API_PREFIX}/`);
 }
 
 async function handleCompanionRoute(req, res) {
