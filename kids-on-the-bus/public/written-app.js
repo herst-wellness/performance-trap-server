@@ -588,7 +588,7 @@
 
   function formattedSitting() {
     const lines = [
-      'Mind/Body Foundations Companion',
+      'Start Anywhere | Herst Wellness',
       `Session reference: ${state.sessionReference}`,
       '',
       ...state.exportTurns.flatMap((turn) => [`${turn.role}:`, turn.text, ''])

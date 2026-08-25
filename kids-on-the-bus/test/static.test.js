@@ -65,8 +65,9 @@ test('browser offers controlled push-to-talk transcription without restoring rea
   assert.match(preservedVoiceApp, /RTCPeerConnection/);
 });
 
-test('the companion is framed as Mind/Body Foundations with notice and optional sharing off by default', () => {
-  assert.match(html, /Mind\/Body Foundations Companion/);
+test('the companion is framed as Start Anywhere with notice and optional sharing off by default', () => {
+  assert.match(html, /<h1>Start Anywhere<\/h1>/);
+  assert.doesNotMatch(html, /Kids on the Bus/i, 'the metaphor must never surface before the exercise earns it');
   assert.match(html, /How your information is used/i);
   assert.match(html, /Your exact written conversation will not be saved/);
   assert.match(html, /structured usage information, without the exact words of your sitting, for up to 12 months/);

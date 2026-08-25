@@ -1,6 +1,6 @@
 # Mind/Body Foundations Companion
 
-The route at `/reflect/kids-on-the-bus` remains in place so existing links continue to work. The visitor-facing name is now Mind/Body Foundations Companion. Kids on the Bus remains one element inside the broader method, not the name of the whole experience.
+The page lives at `/start-anywhere`. The old route at `/reflect/kids-on-the-bus` permanently redirects there, carrying any query string with it, so the Squarespace button on `/try-mind-body-foundations` and links already handed out keep working. The visitor-facing name is Start Anywhere, taken from the companion's own opening line. Kids on the Bus remains one element inside the broader method, and must never appear in visitor-facing copy or addresses.
 
 The application remains text-led and adds optional push-to-talk transcription for individual responses. Visitors can review, edit, or delete a transcript before sending it through the same approved Module 2 coaching and safety path. As of 2026-08-21 the fixed opening asks what has been going on in the visitor's last few days (the companion then finds and follows the thread that carries weight), sittings default to a 20-exchange, 30-minute limit, and the server sends the model a wind-down note when a sitting nears its limit.
 
