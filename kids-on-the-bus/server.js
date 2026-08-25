@@ -315,7 +315,8 @@ function createApp(options = {}) {
           configuredAtOpen: Boolean(settings.anthropicKey && settings.budgetUsd > 0),
           referral: body.referral,
           device: body.device,
-          returningBrowser: body.returningBrowser
+          returningBrowser: body.returningBrowser,
+          internal: body.internal === true
         });
         sendJson(res, 200, { visitId });
         return;
@@ -364,6 +365,7 @@ function createApp(options = {}) {
           referral: body.referral,
           device: body.device,
           returningBrowser: body.returningBrowser,
+          internal: body.internal === true,
           sharedSittingPermission: body.shareSitting === true,
           consentDate,
           noticeVersion: NOTICE_VERSION,

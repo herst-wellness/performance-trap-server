@@ -18,6 +18,14 @@ Attach a Render persistent disk at `/var/data` before deployment. The applicatio
 
 The public companion does not require a visitor access code. `COMPANION_ADMIN_CODE` still protects the reporting dashboard and exports.
 
+## Keeping your own testing out of the numbers
+
+Open the companion once with `?internal=1` on the end of the address. That browser is marked from then on, and every visit and sitting it makes is tagged as testing rather than as a real visitor. The mark survives reloads and new sittings because it is stored in the browser itself. To clear it, open the page once with `?internal=0`.
+
+Tagged visits and sittings are left out of the insights page, the funnel, and the weekly email by default. Nothing is deleted. The insights page shows how many were left out, its "My own testing" filter can put them back or show only them, and the sitting export carries an `internalTesting` column.
+
+Use a different browser or a private window to see the companion the way a real visitor does.
+
 The existing `usage-ledger.json` is upgraded in place. It keeps content-free page visits, funnel events, cost entries, and structured sitting records together. An older array-shaped ledger is read automatically and converted the next time it is written.
 
 ## Retention

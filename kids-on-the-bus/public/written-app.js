@@ -42,6 +42,7 @@
     config: null,
     visitId: '',
     referral: null,
+    internal: null,
     device: null,
     returningBrowser: null,
     sessionId: '',
@@ -335,6 +336,18 @@
     };
   }
 
+  function internalBrowser() {
+    const key = 'herst_mbf_companion_internal';
+    try {
+      const requested = new URLSearchParams(window.location.search).get('internal');
+      if (requested === '1') window.localStorage.setItem(key, '1');
+      if (requested === '0') window.localStorage.removeItem(key);
+      return window.localStorage.getItem(key) === '1';
+    } catch {
+      return false;
+    }
+  }
+
   function returningBrowser() {
     try {
       const key = 'herst_mbf_companion_visited';
@@ -377,6 +390,7 @@
     state.referral ||= referralContext();
     state.device ||= deviceContext();
     if (state.returningBrowser == null) state.returningBrowser = returningBrowser();
+    if (state.internal == null) state.internal = internalBrowser();
     try {
       const response = await fetch('/api/kids-on-the-bus/visit', {
         method: 'POST',
@@ -384,7 +398,8 @@
         body: JSON.stringify({
           referral: state.referral,
           device: state.device,
-          returningBrowser: state.returningBrowser
+          returningBrowser: state.returningBrowser,
+          internal: state.internal
         })
       });
       const data = await response.json();
@@ -430,7 +445,8 @@
           visitId: state.visitId,
           referral: state.referral,
           device: state.device,
-          returningBrowser: state.returningBrowser
+          returningBrowser: state.returningBrowser,
+          internal: state.internal
         })
       });
       const data = await response.json();

@@ -179,10 +179,11 @@ function percentage(numerator, denominator) {
 }
 
 function aggregateInsights(sessions) {
-  const rows = Array.isArray(sessions) ? sessions : [];
+  const allRows = Array.isArray(sessions) ? sessions : [];
+  const rows = allRows.filter((row) => !row.internal);
   const completed = rows.filter((row) => row.completed).length;
   const abandoned = rows.filter((row) => row.abandoned).length;
-  const durations = rows.map((row) => Number(row.durationSeconds || 0)).filter((value) => value > 0);
+  const durations = rows.filter((row) => row.endedAt).map((row) => Number(row.durationSeconds || 0)).filter((value) => value > 0);
   const exchanges = rows.map((row) => Number(row.companionResponses || 0));
   const responseTimes = rows.flatMap((row) => Array.isArray(row.responseTimesMs) ? row.responseTimesMs : []);
   const transcriptionTimes = rows.flatMap((row) => Array.isArray(row.transcriptionTimesMs) ? row.transcriptionTimesMs : []);
@@ -247,6 +248,7 @@ function aggregateInsights(sessions) {
   const ranked = (counts) => Object.entries(counts).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
   return {
     totalSittings: rows.length,
+    internalSittingsExcluded: allRows.length - rows.length,
     started: rows.filter((row) => row.beganWriting).length,
     completed,
     abandoned,
@@ -288,8 +290,9 @@ function aggregateInsights(sessions) {
 }
 
 function aggregateFunnel(visits, sessions) {
-  const visitRows = Array.isArray(visits) ? visits : [];
-  const sessionRows = Array.isArray(sessions) ? sessions : [];
+  const allVisitRows = Array.isArray(visits) ? visits : [];
+  const visitRows = allVisitRows.filter((row) => !row.internal);
+  const sessionRows = (Array.isArray(sessions) ? sessions : []).filter((row) => !row.internal);
   const sum = (key) => visitRows.reduce((total, row) => total + Number(row[key] || 0), 0);
   const trackedReferences = new Set(visitRows.filter((row) => row.sessionStarted && row.sessionReference).map((row) => row.sessionReference));
   const trackedSessions = sessionRows.filter((row) => trackedReferences.has(row.sessionReference));
@@ -310,7 +313,8 @@ function aggregateFunnel(visits, sessions) {
     completed,
     visitToStartRate: percentage(trackedStarts, visitRows.length),
     startToWritingRate: percentage(beganWriting, trackedStarts),
-    startToCompletionRate: percentage(completed, trackedStarts)
+    startToCompletionRate: percentage(completed, trackedStarts),
+    internalVisitsExcluded: allVisitRows.length - visitRows.length
   };
 }
 
@@ -321,7 +325,7 @@ function csvCell(value) {
 
 function sessionsToCsv(sessions) {
   const headers = [
-    'sessionReference', 'startedAt', 'endedAt', 'durationSeconds', 'noticeAcknowledged', 'beganWriting',
+    'sessionReference', 'internalTesting', 'startedAt', 'endedAt', 'durationSeconds', 'noticeAcknowledged', 'beganWriting',
     'completed', 'endedIntentionally', 'expired', 'limitReached', 'abandoned', 'userEntries',
     'companionResponses', 'averageUserEntryLength', 'longestUserEntryLength', 'estimatedPrimaryTopic',
     'estimatedSecondaryTopics', 'estimatedCompanionInvitations', 'estimatedParticipantEvidence', 'deviceCategory', 'browserFamily', 'operatingSystemFamily', 'screenSizeCategory',
@@ -335,7 +339,7 @@ function sessionsToCsv(sessions) {
   const lines = [headers.join(',')];
   for (const row of sessions || []) {
     const values = [
-      row.sessionReference, row.startedAt, row.endedAt, row.durationSeconds, row.noticeAcknowledged ?? row.accessCompleted, row.beganWriting,
+      row.sessionReference, row.internal === true, row.startedAt, row.endedAt, row.durationSeconds, row.noticeAcknowledged ?? row.accessCompleted, row.beganWriting,
       row.completed, row.endedIntentionally, row.expired, row.limitReached, row.abandoned, row.userEntries,
       row.companionResponses, row.averageUserEntryLength, row.longestUserEntryLength, row.primaryTopic,
       (row.secondaryTopics || []).join('|'),
