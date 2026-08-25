@@ -182,7 +182,7 @@ function aggregateInsights(sessions) {
   const rows = Array.isArray(sessions) ? sessions : [];
   const completed = rows.filter((row) => row.completed).length;
   const abandoned = rows.filter((row) => row.abandoned).length;
-  const durations = rows.map((row) => Number(row.durationSeconds || 0)).filter((value) => value > 0);
+  const durations = rows.filter((row) => row.endedAt).map((row) => Number(row.durationSeconds || 0)).filter((value) => value > 0);
   const exchanges = rows.map((row) => Number(row.companionResponses || 0));
   const responseTimes = rows.flatMap((row) => Array.isArray(row.responseTimesMs) ? row.responseTimesMs : []);
   const transcriptionTimes = rows.flatMap((row) => Array.isArray(row.transcriptionTimesMs) ? row.transcriptionTimesMs : []);

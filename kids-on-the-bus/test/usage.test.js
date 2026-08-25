@@ -175,3 +175,68 @@ test('legacy combined process estimates are not relabeled as participant evidenc
   assert.equal('process' in saved, false);
   fs.rmSync(directory, { recursive: true, force: true });
 });
+
+test('a stray page-exit beacon does not freeze the length of a sitting that carries on', () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'realtime-ledger-'));
+  const file = path.join(directory, 'usage.json');
+  const ledger = new UsageLedger(file, { budgetUsd: 100 });
+  const startedAt = new Date(Date.now() - 12 * 60 * 1000).toISOString();
+  ledger.startSession({ sessionReference: 'MBF-AAAA-1111', startedAt });
+  ledger.endSession('MBF-AAAA-1111', 'page_exit');
+  const frozen = ledger.sessions()[0];
+  assert.equal(frozen.abandoned, true);
+
+  for (let turn = 0; turn < 28; turn += 1) {
+    ledger.recordTurn('MBF-AAAA-1111', { userEntryLength: 257, hasCompanionResponse: true });
+  }
+  const live = ledger.sessions()[0];
+  assert.equal(live.endedAt, '', 'real writing reopens a sitting that was only provisionally ended');
+  assert.equal(live.abandoned, false);
+  assert.ok(live.durationSeconds >= 11 * 60, `expected the real elapsed time, got ${live.durationSeconds}s`);
+
+  ledger.endSession('MBF-AAAA-1111', 'completed');
+  const finished = ledger.sessions()[0];
+  assert.equal(finished.completed, true);
+  assert.ok(finished.durationSeconds >= 11 * 60);
+  fs.rmSync(directory, { recursive: true, force: true });
+});
+
+test('a late page-exit beacon cannot turn a finished sitting back into an abandoned one', () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'realtime-ledger-'));
+  const file = path.join(directory, 'usage.json');
+  const ledger = new UsageLedger(file, { budgetUsd: 100 });
+  ledger.startSession({ sessionReference: 'MBF-BBBB-2222' });
+  ledger.recordTurn('MBF-BBBB-2222', { userEntryLength: 40, hasCompanionResponse: true });
+  ledger.endSession('MBF-BBBB-2222', 'completed');
+  ledger.endSession('MBF-BBBB-2222', 'page_exit');
+  const saved = ledger.sessions()[0];
+  assert.equal(saved.completed, true);
+  assert.equal(saved.abandoned, false);
+  fs.rmSync(directory, { recursive: true, force: true });
+});
+
+test('a sitting that goes quiet is timed to its last activity, not to the length of the timeout', () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'realtime-ledger-'));
+  const file = path.join(directory, 'usage.json');
+  const startedAt = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
+  fs.writeFileSync(file, JSON.stringify({
+    version: 2,
+    usageEntries: [],
+    reportState: {},
+    visits: [],
+    sessions: [{
+      sessionReference: 'MBF-CCCC-3333',
+      startedAt,
+      lastActivityAt: startedAt,
+      endedAt: '',
+      topicCounts: {},
+      userEntries: 0,
+      companionResponses: 0
+    }]
+  }));
+  const ledger = new UsageLedger(file, { budgetUsd: 100, staleSessionMinutes: 25 });
+  const saved = ledger.sessions()[0];
+  assert.equal(saved.abandoned, true);
+  assert.equal(saved.durationSeconds, 0, 'nobody wrote anything, so the sitting lasted no time at all');
+  fs.rmSync(directory, { recursive: true, force: true });
+});

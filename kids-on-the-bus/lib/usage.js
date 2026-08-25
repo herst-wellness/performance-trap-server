@@ -149,9 +149,11 @@ function normalizeSessionProcess(session) {
 }
 
 function newSession(record) {
+  const startedAt = record.startedAt || new Date().toISOString();
   return {
     sessionReference: sanitizeText(record.sessionReference, 40),
-    startedAt: record.startedAt || new Date().toISOString(),
+    startedAt,
+    lastActivityAt: startedAt,
     endedAt: '',
     durationSeconds: 0,
     noticeAcknowledged: true,
@@ -244,7 +246,26 @@ function newVisit(record) {
   };
 }
 
+function markSessionActivity(session, now = new Date()) {
+  session.lastActivityAt = now.toISOString();
+  const provisionallyEnded = Boolean(session.endedAt) && session.abandoned && !session.completed && !session.endedIntentionally;
+  if (provisionallyEnded) {
+    session.endedAt = '';
+    session.abandoned = false;
+  }
+  return session;
+}
+
+function sessionDurationSeconds(session) {
+  const startedMs = Date.parse(session.startedAt);
+  const endedMs = Date.parse(session.endedAt || session.lastActivityAt || session.startedAt);
+  if (!Number.isFinite(startedMs) || !Number.isFinite(endedMs)) return 0;
+  return Math.max(0, Math.round((endedMs - startedMs) / 1000));
+}
+
 function finalizeSessionMetrics(session) {
+  if (!session.lastActivityAt) session.lastActivityAt = session.endedAt || session.startedAt;
+  session.durationSeconds = sessionDurationSeconds(session);
   session.voiceRecordingStarts = wholeNonNegative(session.voiceRecordingStarts);
   session.voiceRecordingStops = wholeNonNegative(session.voiceRecordingStops);
   session.voiceTranscriptionSuccesses = wholeNonNegative(session.voiceTranscriptionSuccesses);
@@ -314,9 +335,9 @@ class UsageLedger {
     store.visits = (store.visits || []).filter((visit) => Date.parse(visit.openedAt) >= analyticsCutoff).slice(-100000);
     for (const session of store.sessions) {
       normalizeSessionProcess(session);
-      if (!session.endedAt && Date.parse(session.startedAt) < staleCutoff) {
-        session.endedAt = new Date(Math.max(Date.parse(session.startedAt), staleCutoff)).toISOString();
-        session.durationSeconds = Math.max(0, Math.round((Date.parse(session.endedAt) - Date.parse(session.startedAt)) / 1000));
+      const lastActivityMs = Date.parse(session.lastActivityAt || session.startedAt);
+      if (!session.endedAt && lastActivityMs < staleCutoff) {
+        session.endedAt = new Date(Math.max(Date.parse(session.startedAt), lastActivityMs)).toISOString();
         session.abandoned = true;
         session.completed = false;
         session.endedIntentionally = false;
@@ -461,6 +482,7 @@ class UsageLedger {
 
   recordTurn(sessionReference, record = {}) {
     return this.updateSession(sessionReference, (session) => {
+      markSessionActivity(session);
       session.beganWriting = true;
       session.userEntries += 1;
       session.totalUserEntryLength += wholeNonNegative(record.userEntryLength);
@@ -491,6 +513,7 @@ class UsageLedger {
 
   recordTranscription(sessionReference, record = {}) {
     return this.updateSession(sessionReference, (session) => {
+      markSessionActivity(session);
       session.voiceRecordedSeconds = finiteNonNegative(session.voiceRecordedSeconds) + finiteNonNegative(record.audioSeconds);
       if (!Array.isArray(session.transcriptionTimesMs)) session.transcriptionTimesMs = [];
       if (finiteNonNegative(record.responseTimeMs) > 0) session.transcriptionTimesMs.push(wholeNonNegative(record.responseTimeMs));
@@ -501,8 +524,9 @@ class UsageLedger {
 
   endSession(sessionReference, reason) {
     return this.updateSession(sessionReference, (session) => {
+      const alreadyEndedDeliberately = Boolean(session.endedAt) && (session.completed || session.endedIntentionally);
+      if (alreadyEndedDeliberately && (reason === 'page_exit' || reason === 'abandoned')) return;
       if (!session.endedAt) session.endedAt = new Date().toISOString();
-      session.durationSeconds = Math.max(0, Math.round((Date.parse(session.endedAt) - Date.parse(session.startedAt)) / 1000));
       session.completed = reason === 'completed';
       session.endedIntentionally = reason === 'completed' || reason === 'intentional';
       session.expired = reason === 'time_limit';
