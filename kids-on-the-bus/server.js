@@ -768,6 +768,20 @@ function createApp(options = {}) {
         return;
       }
 
+      if (req.method === 'POST' && pathname === `${API_PREFIX}/admin/mark-internal`) {
+        if (!adminAuthorized(req, settings)) {
+          sendJson(res, 401, { error: 'That administrative code was not accepted.' });
+          return;
+        }
+        const body = await readJson(req, 1024);
+        try {
+          sendJson(res, 200, ledger.markInternalBefore(body.before, body.internal !== false));
+        } catch (error) {
+          sendJson(res, error.statusCode === 400 ? 400 : 500, { error: error.message });
+        }
+        return;
+      }
+
       sendJson(res, 404, { error: 'Not found.' });
     } catch (error) {
       if (error && error.name === 'AbortError') return;

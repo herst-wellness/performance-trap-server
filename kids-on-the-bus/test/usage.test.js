@@ -240,3 +240,27 @@ test('a sitting that goes quiet is timed to its last activity, not to the length
   assert.equal(saved.durationSeconds, 0, 'nobody wrote anything, so the sitting lasted no time at all');
   fs.rmSync(directory, { recursive: true, force: true });
 });
+
+test('old records can be marked as testing by date, and marked back again, without losing anything', () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'realtime-ledger-'));
+  const file = path.join(directory, 'usage.json');
+  const ledger = new UsageLedger(file, { budgetUsd: 100 });
+  ledger.startVisit({ visitId: 'v-old', openedAt: '2026-08-18T21:00:00.000Z' });
+  ledger.startVisit({ visitId: 'v-new', openedAt: '2026-08-25T02:00:00.000Z' });
+  ledger.startSession({ sessionReference: 'MBF-OLD-0001', startedAt: '2026-08-18T21:00:00.000Z' });
+  ledger.startSession({ sessionReference: 'MBF-NEW-0002', startedAt: '2026-08-25T02:00:00.000Z' });
+
+  const marked = ledger.markInternalBefore('2026-08-25T00:00:00.000Z');
+  assert.deepEqual({ visits: marked.visits, sessions: marked.sessions }, { visits: 1, sessions: 1 });
+  assert.equal(ledger.visits().find((row) => row.visitId === 'v-old').internal, true);
+  assert.equal(ledger.visits().find((row) => row.visitId === 'v-new').internal, false, 'anything after the cutoff is untouched');
+  assert.equal(ledger.sessions().find((row) => row.sessionReference === 'MBF-OLD-0001').internal, true);
+  assert.equal(ledger.sessions().length, 2, 'nothing is deleted');
+
+  const undone = ledger.markInternalBefore('2026-08-25T00:00:00.000Z', false);
+  assert.deepEqual({ visits: undone.visits, sessions: undone.sessions }, { visits: 1, sessions: 1 });
+  assert.equal(ledger.visits().find((row) => row.visitId === 'v-old').internal, false);
+
+  assert.throws(() => ledger.markInternalBefore('not a date'), /valid cutoff date/);
+  fs.rmSync(directory, { recursive: true, force: true });
+});
