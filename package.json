@@ -9,6 +9,6 @@
     "test": "node --test kids-on-the-bus/test/*.test.js test/*.test.js"
   },
   "engines": {
-    "node": ">=18"
+    "node": "22.x"
   }
 }
