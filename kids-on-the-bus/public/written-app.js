@@ -290,6 +290,77 @@
     state.exportTurns.push({ role: speaker.textContent, text });
   }
 
+  // A companion bubble that text can be appended to as it streams in.
+  function openCompanionTurn(extraClass) {
+    const turn = document.createElement('div');
+    turn.className = `turn companion${extraClass ? ` ${extraClass}` : ''}`;
+    const speaker = document.createElement('span');
+    speaker.className = 'speaker';
+    speaker.textContent = 'Companion';
+    const content = document.createElement('span');
+    content.className = 'turn-text';
+    turn.append(speaker, content);
+    ui.transcript.appendChild(turn);
+    ui.transcript.scrollTop = ui.transcript.scrollHeight;
+    let text = '';
+    let recorded = false;
+    const nearBottom = () => ui.transcript.scrollHeight - ui.transcript.scrollTop - ui.transcript.clientHeight < 80;
+    return {
+      append(piece) {
+        const stick = nearBottom();
+        text += piece;
+        content.textContent = text;
+        // Do not yank the page back if the reader has scrolled up to re-read.
+        if (stick) ui.transcript.scrollTop = ui.transcript.scrollHeight;
+      },
+      get text() {
+        return text;
+      },
+      started() {
+        return text.length > 0;
+      },
+      commit() {
+        if (recorded) return text;
+        recorded = true;
+        state.exportTurns.push({ role: 'Companion', text });
+        return text;
+      },
+      discard() {
+        if (recorded) return;
+        turn.remove();
+      }
+    };
+  }
+
+  // Reads an event stream without EventSource, which cannot POST.
+  async function readEventStream(response, handlers) {
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      let boundary = buffer.indexOf('\n\n');
+      while (boundary !== -1) {
+        const frame = buffer.slice(0, boundary);
+        buffer = buffer.slice(boundary + 2);
+        boundary = buffer.indexOf('\n\n');
+        const lines = frame.split('\n');
+        const name = (lines.find((line) => line.startsWith('event:')) || '').slice(6).trim();
+        const dataLine = lines.find((line) => line.startsWith('data:'));
+        if (!name || !dataLine) continue;
+        let payload;
+        try {
+          payload = JSON.parse(dataLine.slice(5).trim());
+        } catch {
+          continue;
+        }
+        if (handlers[name]) handlers[name](payload);
+      }
+    }
+  }
+
   function updateExchangeDisplay() {
     ui.exchangeCount.textContent = `${state.exchangeCount} of ${state.config.maxExchanges} exchanges`;
   }
@@ -505,17 +576,45 @@
     setStatus('The companion is responding', 'The breath circle expands for five seconds and settles for seven.', true);
     state.controller = new AbortController();
     try {
+      const streaming = typeof TextDecoder === 'function';
       const response = await fetch('/api/kids-on-the-bus/claude-response', {
         method: 'POST',
         signal: state.controller.signal,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionId: state.sessionId, message, history: priorHistory })
+        body: JSON.stringify({ sessionId: state.sessionId, message, history: priorHistory, stream: streaming })
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'The companion could not respond.');
-      const responseText = String(data.response || '').trim();
-      if (!responseText) throw new Error('The companion returned no response.');
-      addTurn('companion', responseText, data.route === 'continue_reflection' ? '' : 'safety');
+      let data;
+      let responseText;
+      const streamed = streaming && response.ok && response.body
+        && (response.headers.get('Content-Type') || '').includes('text/event-stream');
+      if (streamed) {
+        const bubble = openCompanionTurn('');
+        let failure = '';
+        await readEventStream(response, {
+          delta: (payload) => {
+            if (!bubble.started()) setStatus('The companion is responding', '', true);
+            bubble.append(String(payload.text || ''));
+          },
+          done: (payload) => { data = payload; },
+          failed: (payload) => { failure = String(payload.error || 'The companion could not respond.'); }
+        });
+        if (!data) {
+          bubble.discard();
+          throw new Error(failure || 'The companion could not finish responding. Please try again.');
+        }
+        responseText = bubble.commit().trim();
+        if (!responseText) {
+          bubble.discard();
+          throw new Error('The companion returned no response.');
+        }
+        data.response = responseText;
+      } else {
+        data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'The companion could not respond.');
+        responseText = String(data.response || '').trim();
+        if (!responseText) throw new Error('The companion returned no response.');
+        addTurn('companion', responseText, data.route === 'continue_reflection' ? '' : 'safety');
+      }
       state.history.push({ role: 'assistant', content: responseText });
       state.exchangeCount += 1;
       state.costUsd += Number(data.responseCostUsd || 0);

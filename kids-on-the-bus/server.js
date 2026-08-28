@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const http = require('node:http');
 const path = require('node:path');
 const { URL } = require('node:url');
-const { generateClaudeResponse } = require('./lib/claude');
+const { createMarkerScrubber, generateClaudeResponse, streamClaude } = require('./lib/claude');
 const {
   PROCESS_EVIDENCE_LABELS,
   PROCESS_INVITATION_LABELS,
@@ -194,6 +194,26 @@ function sendText(res, status, body, contentType, extraHeaders = {}) {
     ...extraHeaders
   });
   res.end(value);
+}
+
+function openEventStream(res) {
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream; charset=utf-8',
+    'Cache-Control': 'no-store',
+    Connection: 'keep-alive',
+    // Proxies buffer by default, which would defeat the point of streaming.
+    'X-Accel-Buffering': 'no',
+    'X-Content-Type-Options': 'nosniff'
+  });
+  return {
+    send(event, payload) {
+      if (res.writableEnded) return;
+      res.write(`event: ${event}\ndata: ${JSON.stringify(payload)}\n\n`);
+    },
+    close() {
+      if (!res.writableEnded) res.end();
+    }
+  };
 }
 
 function readBody(req, maximumBytes = 64 * 1024) {
@@ -581,23 +601,51 @@ function createApp(options = {}) {
           elapsedMinutes: (Date.now() - active.startedAt) / 60000,
           closeMinutes: settings.closeMinutes
         });
+        const wantsStream = body.stream === true;
+        const stream = wantsStream ? openEventStream(res) : null;
+        const scrubber = wantsStream ? createMarkerScrubber(COMPLETION_MARKER) : null;
         let generated;
         try {
-          generated = await generateClaudeResponse({
-            apiKey: settings.anthropicKey,
-            model: settings.claudeModel,
-            effort: settings.claudeEffort,
-            instructions: settings.claudeInstructions,
-            contextNote,
-            message,
-            history: body.history,
-            fetchImpl,
-            signal: controller.signal
-          });
-        } finally {
+          generated = wantsStream
+            ? await streamClaude({
+              apiKey: settings.anthropicKey,
+              model: settings.claudeModel,
+              effort: settings.claudeEffort,
+              instructions: settings.claudeInstructions,
+              contextNote,
+              message,
+              history: body.history,
+              fetchImpl,
+              signal: controller.signal
+            }, (piece) => {
+              const release = scrubber.push(piece);
+              if (release) stream.send('delta', { text: release });
+            })
+            : await generateClaudeResponse({
+              apiKey: settings.anthropicKey,
+              model: settings.claudeModel,
+              effort: settings.claudeEffort,
+              instructions: settings.claudeInstructions,
+              contextNote,
+              message,
+              history: body.history,
+              fetchImpl,
+              signal: controller.signal
+            });
+        } catch (error) {
           req.removeListener('aborted', abortUpstream);
+          if (!stream) throw error;
+          // Headers are already out, so the browser is told inside the stream.
+          stream.send('failed', { error: 'The companion could not finish responding. Please try again.' });
+          stream.close();
+          return;
         }
-        const sittingComplete = containsCompletionMarker(generated.text) || finalTurn;
+        req.removeListener('aborted', abortUpstream);
+        if (stream) {
+          const tail = scrubber.flush();
+          if (tail) stream.send('delta', { text: tail });
+        }
+        const sittingComplete = (stream ? scrubber.markerSeen : containsCompletionMarker(generated.text)) || finalTurn;
         generated.text = stripCompletionMarker(generated.text);
         const usageId = `claude_${crypto.randomUUID().replace(/-/g, '')}`;
         const recorded = ledger.add({
@@ -616,6 +664,22 @@ function createApp(options = {}) {
           ...classification
         });
         if (active.shareSitting) sharedStore.appendTurn(active.sessionReference, message, generated.text);
+        if (stream) {
+          stream.send('done', {
+            route: 'continue_reflection',
+            handledBy: 'claude',
+            effort: settings.claudeEffort,
+            latency: generated.latency,
+            retried: generated.retried,
+            responseCostUsd: recorded.entry.costUsd,
+            costBreakdown: recorded.entry.costBreakdown,
+            budget: recorded.status,
+            sittingComplete,
+            consultUrl: sittingComplete ? CONSULT_URL : ''
+          });
+          stream.close();
+          return;
+        }
         sendJson(res, 200, {
           route: 'continue_reflection',
           response: generated.text,
