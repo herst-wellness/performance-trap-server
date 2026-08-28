@@ -54,6 +54,7 @@
     ended: false,
     endReported: false,
     deadline: 0,
+    hardDeadline: 0,
     timer: null,
     controller: null,
     sharedSitting: false,
@@ -360,14 +361,18 @@
   }
 
   function startClock() {
-    state.deadline = Date.now() + state.config.sessionMinutes * 60 * 1000;
+    const closeMinutes = Number(state.config.closeMinutes) || state.config.sessionMinutes;
+    state.deadline = Date.now() + closeMinutes * 60 * 1000;
+    state.hardDeadline = Date.now() + state.config.sessionMinutes * 60 * 1000;
     function tick() {
       const remaining = Math.max(0, state.deadline - Date.now());
       const secondsLeft = Math.ceil(remaining / 1000);
       const minutes = Math.floor(secondsLeft / 60);
       const seconds = String(secondsLeft % 60).padStart(2, '0');
-      ui.timeRemaining.textContent = `${minutes}:${seconds} remaining`;
-      if (remaining <= 0) endSession(false, 'time_limit', 'This sitting has reached its time limit.');
+      ui.timeRemaining.textContent = remaining > 0
+        ? `${minutes}:${seconds} remaining`
+        : 'closing after your next response';
+      if (Date.now() >= state.hardDeadline) endSession(false, 'time_limit', 'This sitting has reached its time limit.');
     }
     tick();
     state.timer = window.setInterval(tick, 1000);
@@ -520,7 +525,11 @@
         endSession(false, reason, 'This reflection has paused here. You can copy or download it before clearing the page.');
         return;
       }
-      if (data.sittingComplete) revealConsultOffer();
+      if (data.sittingComplete) {
+        revealConsultOffer();
+        endSession(false, 'completed', 'This sitting is complete. You can copy or download it before clearing the page.');
+        return;
+      }
       if (state.exchangeCount >= state.config.maxExchanges) {
         endSession(false, 'exchange_limit', 'This sitting has reached its exchange limit. You can copy or download it before clearing the page.');
         return;
