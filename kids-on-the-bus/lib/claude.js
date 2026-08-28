@@ -85,6 +85,135 @@ async function requestClaude(options, maxTokens) {
   };
 }
 
+
+// Holds back the tail of the stream so a completion marker split across two
+// deltas can never reach the reader, and removes any whole marker before the
+// text in front of it is released.
+function createMarkerScrubber(marker) {
+  const hold = Math.max(0, String(marker).length - 1);
+  let pending = '';
+  let found = false;
+  return {
+    push(chunk) {
+      pending += chunk;
+      let index = pending.indexOf(marker);
+      while (index !== -1) {
+        found = true;
+        pending = pending.slice(0, index) + pending.slice(index + marker.length);
+        index = pending.indexOf(marker);
+      }
+      if (pending.length <= hold) return '';
+      const release = pending.slice(0, pending.length - hold);
+      pending = pending.slice(pending.length - hold);
+      return release;
+    },
+    flush() {
+      let index = pending.indexOf(marker);
+      while (index !== -1) {
+        found = true;
+        pending = pending.slice(0, index) + pending.slice(index + marker.length);
+        index = pending.indexOf(marker);
+      }
+      const release = pending;
+      pending = '';
+      return release;
+    },
+    get markerSeen() {
+      return found;
+    }
+  };
+}
+
+function cleanDelta(text) {
+  return String(text).replace(/\u2014/g, ',');
+}
+
+// One streamed request. Uses the larger token ceiling from the start: once a
+// delta has reached the reader it cannot be taken back, so the retry-on-
+// truncation path that the buffered call relies on is not available here.
+async function streamClaude(options, onText) {
+  const startedAt = performance.now();
+  const response = await options.fetchImpl('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    signal: options.signal,
+    headers: {
+      'x-api-key': options.apiKey,
+      'anthropic-version': '2023-06-01',
+      'Content-Type': 'application/json',
+      Accept: 'text/event-stream'
+    },
+    body: JSON.stringify({
+      model: options.model,
+      system: [
+        { type: 'text', text: options.instructions, cache_control: { type: 'ephemeral' } },
+        ...(options.contextNote ? [{ type: 'text', text: String(options.contextNote) }] : [])
+      ],
+      messages: [
+        ...cleanHistory(options.history),
+        { role: 'user', content: options.message }
+      ],
+      output_config: { effort: normalizeClaudeEffort(options.effort) },
+      max_tokens: RETRY_OUTPUT_TOKENS,
+      stream: true
+    })
+  });
+  const headersAt = performance.now();
+  if (!response.ok || !response.body) {
+    throw Object.assign(new Error('Claude could not generate the coaching response.'), { statusCode: 502 });
+  }
+  const usage = { claudeInputTokens: 0, claudeOutputTokens: 0, claudeCacheWriteTokens: 0, claudeCacheReadTokens: 0 };
+  let stopReason = '';
+  let full = '';
+  let buffer = '';
+  const decoder = new TextDecoder();
+  for await (const chunk of response.body) {
+    buffer += typeof chunk === 'string' ? chunk : decoder.decode(chunk, { stream: true });
+    let boundary = buffer.indexOf('\n\n');
+    while (boundary !== -1) {
+      const frame = buffer.slice(0, boundary);
+      buffer = buffer.slice(boundary + 2);
+      boundary = buffer.indexOf('\n\n');
+      const dataLine = frame.split('\n').find((line) => line.startsWith('data:'));
+      if (!dataLine) continue;
+      let event;
+      try {
+        event = JSON.parse(dataLine.slice(5).trim());
+      } catch {
+        continue;
+      }
+      if (event.type === 'message_start') {
+        const started = event.message?.usage || {};
+        usage.claudeInputTokens += Number(started.input_tokens || 0);
+        usage.claudeCacheWriteTokens += Number(started.cache_creation_input_tokens || 0);
+        usage.claudeCacheReadTokens += Number(started.cache_read_input_tokens || 0);
+      } else if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
+        const piece = cleanDelta(event.delta.text || '');
+        full += piece;
+        if (piece) await onText(piece);
+      } else if (event.type === 'message_delta') {
+        usage.claudeOutputTokens += Number(event.usage?.output_tokens || 0);
+        stopReason = event.delta?.stop_reason || stopReason;
+      } else if (event.type === 'error') {
+        throw Object.assign(new Error('Claude could not finish the coaching response.'), { statusCode: 502 });
+      }
+    }
+  }
+  const completedAt = performance.now();
+  const text = full.trim();
+  if (!text) throw Object.assign(new Error('Claude returned no coaching response.'), { statusCode: 502 });
+  return {
+    text,
+    incomplete: stopReason === 'max_tokens' || stopReason === 'model_context_window_exceeded',
+    stopReason,
+    usage,
+    retried: false,
+    latency: {
+      headersMs: Math.round(headersAt - startedAt),
+      completeMs: Math.round(completedAt - startedAt)
+    }
+  };
+}
+
 async function generateClaudeResponse(options) {
   let result = await requestClaude(options, NORMAL_OUTPUT_TOKENS);
   let retried = false;
@@ -112,7 +241,9 @@ async function generateClaudeResponse(options) {
 module.exports = {
   MAX_AUTHORIZED_HISTORY_MESSAGES,
   cleanHistory,
+  createMarkerScrubber,
   generateClaudeResponse,
+  streamClaude,
   normalizeClaudeEffort,
   textFromPayload
 };

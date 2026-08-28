@@ -103,3 +103,24 @@ out. The visible countdown runs to the closing minute and then reads "closing
 after your next response"; the hard wall stays as a silent backstop for someone
 who walks away mid-sitting.
 
+## Streaming
+
+The browser asks for a stream by sending `stream: true` on the turn request,
+and the server answers with server-sent events: `delta` for each piece of
+text, then one `done` carrying the route, cost, budget and completion, or one
+`failed` if the response died after the headers were already out. A browser
+that does not ask for a stream still gets the whole response as JSON, and the
+page falls back to that on its own.
+
+Two things the streamed path does differently. It asks for the larger token
+ceiling from the start, because the buffered path's retry-on-truncation
+cannot be used once text has reached the reader and cannot be taken back. And
+it holds back a tail the length of the completion marker, so a marker split
+across two deltas can never be shown and then removed.
+
+Safety routing is unaffected: it runs on the visitor's own message before
+Claude is called at all, so nothing streamed can get past it.
+
+`X-Accel-Buffering: no` is set on the stream. Without it a proxy will buffer
+the whole response and the streaming is invisible.
+

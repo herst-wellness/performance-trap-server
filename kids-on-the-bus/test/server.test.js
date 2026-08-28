@@ -85,8 +85,14 @@ function requestServer(server, options = {}) {
         response.headers = headers || {};
         response.headersSent = true;
       },
+      write(chunk) {
+        if (chunk) response.chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk)));
+        return true;
+      },
+      get writableEnded() { return response.ended === true; },
       end(chunk) {
         if (chunk) response.chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk)));
+        response.ended = true;
         response.body = Buffer.concat(response.chunks).toString('utf8');
         resolve(response);
       }
@@ -718,4 +724,103 @@ test('the closing minute always leaves the hard limit as a backstop behind it', 
   assert.equal(short.closeMinutes, 9, 'a short sitting still closes before its own wall');
   const explicit = loadSettings({ ...base, WRITTEN_SESSION_MINUTES: '40', WRITTEN_CLOSE_MINUTES: '30' });
   assert.equal(explicit.closeMinutes, 30);
+});
+
+function sseUpstream(frames) {
+  return Readable.from(frames.map((f) => Buffer.from(`event: ${f.type}\ndata: ${JSON.stringify(f)}\n\n`)));
+}
+
+function parseSse(body) {
+  return body.split('\n\n').filter(Boolean).map((frame) => {
+    const lines = frame.split('\n');
+    return {
+      event: (lines.find((l) => l.startsWith('event:')) || '').slice(6).trim(),
+      data: JSON.parse((lines.find((l) => l.startsWith('data:')) || 'data: {}').slice(5).trim())
+    };
+  });
+}
+
+test('a streamed sitting reaches the reader in pieces, and the completion marker never does', async () => {
+  const appSettings = settings();
+  const server = createApp({
+    settings: appSettings,
+    fetchImpl: async () => ({
+      ok: true,
+      status: 200,
+      body: sseUpstream([
+        { type: 'message_start', message: { usage: { input_tokens: 10, cache_read_input_tokens: 17000 } } },
+        { type: 'content_block_delta', delta: { type: 'text_delta', text: 'That sounds like it took something. ' } },
+        { type: 'content_block_delta', delta: { type: 'text_delta', text: 'Carry that with you. [[SITT' } },
+        { type: 'content_block_delta', delta: { type: 'text_delta', text: 'ING COMPLETE]]' } },
+        { type: 'message_delta', delta: { stop_reason: 'end_turn' }, usage: { output_tokens: 40 } }
+      ])
+    })
+  });
+  const started = await requestServer(server, { method: 'POST', url: '/api/kids-on-the-bus/session' });
+  const sessionId = JSON.parse(started.body).sessionId;
+  const turn = await requestServer(server, {
+    method: 'POST',
+    url: '/api/kids-on-the-bus/claude-response',
+    body: JSON.stringify({ sessionId, message: 'I said yes again.', history: [], stream: true })
+  });
+
+  assert.match(turn.headers['Content-Type'], /text\/event-stream/);
+  assert.equal(turn.headers['X-Accel-Buffering'], 'no', 'proxies must not buffer the stream');
+  const events = parseSse(turn.body);
+  const deltas = events.filter((e) => e.event === 'delta');
+  assert.ok(deltas.length > 1, 'the reader gets the response in pieces, not one lump');
+  const shown = deltas.map((e) => e.data.text).join('');
+  assert.equal(shown, 'That sounds like it took something. Carry that with you. ');
+  assert.doesNotMatch(turn.body, /SITTING COMPLETE/, 'the marker never appears anywhere in the stream');
+
+  const done = events.find((e) => e.event === 'done');
+  assert.equal(done.data.sittingComplete, true);
+  assert.equal(done.data.route, 'continue_reflection');
+  assert.ok(done.data.consultUrl.includes('30-minute-consult'));
+  fs.rmSync(appSettings.dataDir, { recursive: true, force: true });
+});
+
+test('a stream that dies mid-response tells the reader inside the stream', async () => {
+  const appSettings = settings();
+  const server = createApp({
+    settings: appSettings,
+    fetchImpl: async () => ({ ok: false, status: 500, body: null })
+  });
+  const started = await requestServer(server, { method: 'POST', url: '/api/kids-on-the-bus/session' });
+  const sessionId = JSON.parse(started.body).sessionId;
+  const turn = await requestServer(server, {
+    method: 'POST',
+    url: '/api/kids-on-the-bus/claude-response',
+    body: JSON.stringify({ sessionId, message: 'Still here.', history: [], stream: true })
+  });
+  const events = parseSse(turn.body);
+  assert.equal(events.some((e) => e.event === 'done'), false);
+  assert.equal(events.find((e) => e.event === 'failed').data.error, 'The companion could not finish responding. Please try again.');
+  fs.rmSync(appSettings.dataDir, { recursive: true, force: true });
+});
+
+test('a browser that does not ask for a stream still gets the whole response at once', async () => {
+  const appSettings = settings();
+  const server = createApp({
+    settings: appSettings,
+    fetchImpl: async () => ({
+      ok: true,
+      status: 200,
+      json: async () => ({
+        content: [{ type: 'text', text: 'Say more about that moment.' }],
+        stop_reason: 'end_turn',
+        usage: { input_tokens: 10, output_tokens: 20 }
+      })
+    })
+  });
+  const started = await requestServer(server, { method: 'POST', url: '/api/kids-on-the-bus/session' });
+  const sessionId = JSON.parse(started.body).sessionId;
+  const turn = await requestServer(server, {
+    method: 'POST',
+    url: '/api/kids-on-the-bus/claude-response',
+    body: JSON.stringify({ sessionId, message: 'I went quiet.', history: [] })
+  });
+  assert.match(turn.headers['Content-Type'], /application\/json/);
+  assert.equal(JSON.parse(turn.body).response, 'Say more about that moment.');
+  fs.rmSync(appSettings.dataDir, { recursive: true, force: true });
 });
