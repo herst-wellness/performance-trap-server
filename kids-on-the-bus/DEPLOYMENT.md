@@ -124,3 +124,19 @@ Claude is called at all, so nothing streamed can get past it.
 `X-Accel-Buffering: no` is set on the stream. Without it a proxy will buffer
 the whole response and the streaming is invisible.
 
+## Comparing effort levels
+
+`/admin/effort-compare` answers one message at two effort levels at once and
+shows both without saying which is which. The order is shuffled per pair, the
+page is never sent the mapping, and it is revealed only after a choice is
+recorded. Whichever response is chosen becomes the history both sides continue
+from, so a multi-turn comparison stays coherent and each turn is still blind.
+
+It uses the same administrative code as the insights page, the real Module 2
+instructions, and the real settings, so what is compared is what visitors
+would actually get. The running tally lives in memory and resets whenever the
+service redeploys.
+
+Comparison sittings are not visitors: they never touch the analytics ledger,
+so they cannot show up in the funnel or the weekly report.
+

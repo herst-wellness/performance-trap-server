@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Which one listens better | Herst Wellness</title>
+  <meta name="robots" content="noindex, nofollow, noarchive">
+  <link rel="stylesheet" href="/kids-on-the-bus/admin.css">
+  <style>
+    .hidden { display: none; }
+    .compare-shell { max-width: 60rem; margin: 0 auto; padding: 1.5rem; }
+    .compare-shell label { display: block; margin: 0.75rem 0; }
+    .compare-shell label span { display: block; font-size: 0.85rem; margin-bottom: 0.25rem; }
+    .compare-shell textarea, .compare-shell input, .compare-shell select { width: 100%; max-width: 34rem; padding: 0.5rem; font: inherit; }
+    .compare-shell button { margin: 0.5rem 0.5rem 0.5rem 0; padding: 0.5rem 0.9rem; font: inherit; cursor: pointer; }
+    .pair-grid { display: grid; gap: 1rem; grid-template-columns: 1fr; }
+    @media (min-width: 48rem) { .pair-grid { grid-template-columns: 1fr 1fr; } }
+    .option { border: 1px solid rgba(55, 36, 22, 0.25); padding: 1rem; }
+    .option p { white-space: pre-wrap; }
+    .turn { margin: 0.4rem 0; }
+    .turn.user { opacity: 0.75; }
+  </style>
+</head>
+<body>
+  <main class="admin-shell compare-shell">
+    <header class="masthead">
+      <img src="/Herst-Wellness-Logo-cropped.jpg" alt="Herst Wellness" class="logo">
+      <p class="eyebrow">Chad's protected view</p>
+      <h1>Which one listens better</h1>
+    </header>
+
+    <section id="gate" class="card">
+      <h2>Open the comparison</h2>
+      <p>Use the same administrative code as the insights page.</p>
+      <label><span>Administrative code</span><input id="code" type="password" autocomplete="off"></label>
+      <button id="open" type="button">Open</button>
+      <p id="gateMessage" role="status"></p>
+    </section>
+
+    <section id="tool" class="card hidden">
+      <h2>How this works</h2>
+      <p>Write what a person might write, and the companion answers it twice, once at each effort level. You are not told which is which until after you choose. The order is shuffled every time.</p>
+      <p>Pick the one that listens better. Whatever you pick becomes what the companion said, so the conversation carries on from your own choice and the next comparison is a fair one.</p>
+
+      <label><span>Compare</span>
+        <select id="leftEffort">
+          <option value="high" selected>high</option>
+          <option value="xhigh">xhigh</option>
+          <option value="medium">medium</option>
+          <option value="low">low</option>
+        </select>
+      </label>
+      <label><span>against</span>
+        <select id="rightEffort">
+          <option value="medium" selected>medium</option>
+          <option value="low">low</option>
+          <option value="high">high</option>
+          <option value="xhigh">xhigh</option>
+        </select>
+      </label>
+
+      <div id="conversation" aria-live="polite"></div>
+
+      <label><span>What the person writes</span>
+        <textarea id="message" rows="4" placeholder="What's been going on in your last few days? Start anywhere."></textarea>
+      </label>
+      <button id="ask" type="button">Ask both</button>
+      <button id="restart" type="button">Start a new conversation</button>
+      <p id="status" role="status"></p>
+
+      <div id="pair" class="hidden">
+        <div class="pair-grid">
+        <article class="option">
+          <h3>First response</h3>
+          <p id="firstText"></p>
+          <button data-choice="first" type="button">This one listens better</button>
+        </article>
+        <article class="option">
+          <h3>Second response</h3>
+          <p id="secondText"></p>
+          <button data-choice="second" type="button">This one listens better</button>
+        </article>
+        </div>
+        <button data-choice="tie" type="button">No difference worth naming</button>
+      </div>
+
+      <div id="reveal" class="hidden">
+        <h3>What you picked</h3>
+        <p id="revealText"></p>
+        <p id="tallyText"></p>
+      </div>
+    </section>
+  </main>
+  <script src="/kids-on-the-bus/compare.js"></script>
+</body>
+</html>
