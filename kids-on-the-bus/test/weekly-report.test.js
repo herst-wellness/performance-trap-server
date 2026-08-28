@@ -60,3 +60,21 @@ test('Resend receives only the prepared weekly summary', async () => {
   assert.equal(sent.payload.to[0], 'chad@example.com');
   assert.doesNotMatch(JSON.stringify(sent.payload), /entry|transcript|quotation/i);
 });
+
+test('the weekly report carries the current name, not the one it was renamed from', () => {
+  const report = buildWeeklyReport([{
+    sessionReference: 'MBF-ABCD-2345',
+    startedAt: '2026-08-27T13:04:00.000Z',
+    completed: false,
+    durationSeconds: 1800,
+    companionResponses: 11,
+    primaryTopic: 'Other',
+    secondaryTopics: [],
+    processInvitations: {},
+    processEvidence: {},
+    responseTimesMs: [9789]
+  }], Date.parse('2026-08-28T20:00:00.000Z'), []);
+  assert.match(report.subject, /Start Anywhere/);
+  assert.match(report.html, /<h1[^>]*>Start Anywhere<\/h1>/);
+  assert.doesNotMatch(`${report.subject}\n${report.html}`, /Mind\/Body Foundations Companion|Kids on the Bus/i);
+});

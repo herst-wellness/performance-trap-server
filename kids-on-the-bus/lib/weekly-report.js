@@ -60,10 +60,10 @@ function buildWeeklyReport(sessions, now = Date.now(), visits = []) {
   const commonAbandonment = current.commonAbandonmentPoint;
   const feedback = current.feedbackAverages.map((value) => value == null ? 'n/a' : value.toFixed(1)).join(', ');
   const dateLabel = `${new Date(currentStart).toLocaleDateString('en-US')} to ${new Date(currentEnd).toLocaleDateString('en-US')}`;
-  const subject = `Mind/Body Foundations companion weekly report: ${dateLabel}`;
+  const subject = `Start Anywhere weekly report: ${dateLabel}`;
   const html = `<!doctype html>
 <html lang="en"><body style="font-family:Arial,sans-serif;color:#372416;line-height:1.5">
-<h1 style="font-family:Georgia,serif">Mind/Body Foundations Companion</h1>
+<h1 style="font-family:Georgia,serif">Start Anywhere</h1>
 <p><strong>Weekly report:</strong> ${escapeHtml(dateLabel)}</p>
 <table cellpadding="8" cellspacing="0" style="border-collapse:collapse">
 <tr><td>Public page visits</td><td><strong>${currentFunnel.pageVisits}</strong></td></tr>
