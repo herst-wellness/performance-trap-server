@@ -38,6 +38,7 @@ const OPENING = 'What\'s been going on in your last few days? Start anywhere.';
 const COMPLETION_MARKER = '[[SITTING COMPLETE]]';
 const CONSULT_URL = 'https://chadherst.as.me/30-minute-consult-chad-herst';
 const DEFAULT_WRITTEN_SESSION_MINUTES = 30;
+const DEFAULT_WRITTEN_CLOSE_MINUTES = 25;
 const DEFAULT_WRITTEN_MAX_EXCHANGES = 20;
 const WIND_DOWN_EXCHANGES_REMAINING = 4;
 const WIND_DOWN_MINUTES_REMAINING = 6;
@@ -59,6 +60,24 @@ function boundedInteger(value, fallback, minimum, maximum) {
 function money(value, fallback = 0) {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
+}
+
+function sittingTimeNote({ exchangesRemaining, minutesRemaining, elapsedMinutes, closeMinutes }) {
+  const finalTurn = elapsedMinutes >= closeMinutes || exchangesRemaining <= 0;
+  if (finalTurn) {
+    return {
+      finalTurn: true,
+      contextNote: 'SITTING TIME\n\nThis is the final response of the sitting. There is no exchange after this one. Close now, in this response. Do not ask a question that expects an answer, and do not open new territory. If material is still open, name it plainly as unfinished. Close the way you always close: what they learned about their parts, what they discovered about awareness, and what they are carrying forward, asked briefly and answered by them only if they choose. End warmly and let it be finished.'
+    };
+  }
+  const windingDown = exchangesRemaining <= WIND_DOWN_EXCHANGES_REMAINING || minutesRemaining <= WIND_DOWN_MINUTES_REMAINING;
+  if (windingDown) {
+    return {
+      finalTurn: false,
+      contextNote: `SITTING TIME\n\nThis sitting is close to its limit. About ${exchangesRemaining} exchanges and ${Math.round(minutesRemaining)} minutes remain after this response. Begin moving toward closing now. Do not open new territory. If material is still open, name it plainly as unfinished rather than exploring it. Compress the closing: ask only what the user is carrying forward, and keep any summary brief.`
+    };
+  }
+  return { finalTurn: false, contextNote: '' };
 }
 
 function containsCompletionMarker(text) {
@@ -100,6 +119,7 @@ function loadClaudeInstructions(env = process.env) {
 
 function loadSettings(env = process.env) {
   const budgetUsd = money(env.PRIVATE_TEST_BUDGET_USD, 0);
+  const sessionMinutes = boundedInteger(env.WRITTEN_SESSION_MINUTES, DEFAULT_WRITTEN_SESSION_MINUTES, 1, 60);
   const explicitDataDir = env.RENDER_DISK_PATH || env.REALTIME_DATA_DIR || '';
   if (env.RENDER && !explicitDataDir) {
     throw new Error('Render requires REALTIME_DATA_DIR or RENDER_DISK_PATH to point to the mounted persistent disk.');
@@ -111,7 +131,11 @@ function loadSettings(env = process.env) {
     openaiKey: env.OPENAI_API_KEY || '',
     adminCode: env.COMPANION_ADMIN_CODE || '',
     budgetUsd,
-    sessionMinutes: boundedInteger(env.WRITTEN_SESSION_MINUTES, DEFAULT_WRITTEN_SESSION_MINUTES, 1, 60),
+    sessionMinutes: sessionMinutes,
+    closeMinutes: Math.min(
+      boundedInteger(env.WRITTEN_CLOSE_MINUTES, DEFAULT_WRITTEN_CLOSE_MINUTES, 1, 60),
+      Math.max(1, sessionMinutes - 1)
+    ),
     maxExchanges: boundedInteger(env.WRITTEN_MAX_EXCHANGES, DEFAULT_WRITTEN_MAX_EXCHANGES, 1, 30),
     claudeModel: env.ANTHROPIC_MODEL || DEFAULT_CLAUDE_MODEL,
     claudeEffort: ALLOWED_CLAUDE_EFFORTS.has(String(env.ANTHROPIC_EFFORT || '').toLowerCase())
@@ -305,6 +329,7 @@ function createApp(options = {}) {
           opening: OPENING,
           noticeVersion: NOTICE_VERSION,
           sessionMinutes: settings.sessionMinutes,
+          closeMinutes: settings.closeMinutes,
           absoluteMaximumMinutes: 60,
           maxExchanges: settings.maxExchanges,
           absoluteMaximumExchanges: 30,
@@ -550,10 +575,12 @@ function createApp(options = {}) {
           : 0;
         const exchangesRemaining = Math.max(0, settings.maxExchanges - companionTurnsSoFar - 1);
         const minutesRemaining = Math.max(0, settings.sessionMinutes - (Date.now() - active.startedAt) / 60000);
-        const windingDown = exchangesRemaining <= WIND_DOWN_EXCHANGES_REMAINING || minutesRemaining <= WIND_DOWN_MINUTES_REMAINING;
-        const contextNote = windingDown
-          ? `SITTING TIME\n\nThis sitting is close to its limit. About ${exchangesRemaining} exchanges and ${Math.round(minutesRemaining)} minutes remain after this response. Begin moving toward closing now. Do not open new territory. If material is still open, name it plainly as unfinished rather than exploring it. Compress the closing: ask only what the user is carrying forward, and keep any summary brief.`
-          : '';
+        const { finalTurn, contextNote } = sittingTimeNote({
+          exchangesRemaining,
+          minutesRemaining,
+          elapsedMinutes: (Date.now() - active.startedAt) / 60000,
+          closeMinutes: settings.closeMinutes
+        });
         let generated;
         try {
           generated = await generateClaudeResponse({
@@ -570,7 +597,7 @@ function createApp(options = {}) {
         } finally {
           req.removeListener('aborted', abortUpstream);
         }
-        const sittingComplete = containsCompletionMarker(generated.text);
+        const sittingComplete = containsCompletionMarker(generated.text) || finalTurn;
         generated.text = stripCompletionMarker(generated.text);
         const usageId = `claude_${crypto.randomUUID().replace(/-/g, '')}`;
         const recorded = ledger.add({
@@ -850,6 +877,7 @@ module.exports = {
   handleCompanionRoute,
   initializeCompanion,
   isCompanionPath,
+  sittingTimeNote,
   loadSettings,
   loadClaudeInstructions
 };

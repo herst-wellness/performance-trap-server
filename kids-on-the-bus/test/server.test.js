@@ -7,7 +7,7 @@ const os = require('node:os');
 const path = require('node:path');
 const { EventEmitter } = require('node:events');
 const { Readable } = require('node:stream');
-const { NOTICE_VERSION, createApp, isCompanionPath, loadClaudeInstructions, loadSettings } = require('../server');
+const { NOTICE_VERSION, createApp, isCompanionPath, loadClaudeInstructions, loadSettings, sittingTimeNote } = require('../server');
 
 test('the replacement owns only Kids on the Bus routes', () => {
   assert.equal(isCompanionPath('/start-anywhere'), true);
@@ -689,4 +689,33 @@ test('the old address still works, sending people to the new one and keeping the
   assert.equal(tagged.status, 301);
   assert.equal(tagged.headers.Location, '/start-anywhere?source=companion-page&utm_source=substack');
   fs.rmSync(appSettings.dataDir, { recursive: true, force: true });
+});
+
+test('a sitting closes deliberately at the closing minute instead of running into the wall', () => {
+  const open = sittingTimeNote({ exchangesRemaining: 14, minutesRemaining: 22, elapsedMinutes: 8, closeMinutes: 25 });
+  assert.equal(open.finalTurn, false);
+  assert.equal(open.contextNote, '', 'a sitting with room left gets no timing instruction at all');
+
+  const winding = sittingTimeNote({ exchangesRemaining: 9, minutesRemaining: 5, elapsedMinutes: 21, closeMinutes: 25 });
+  assert.equal(winding.finalTurn, false);
+  assert.match(winding.contextNote, /Begin moving toward closing now/);
+
+  const byClock = sittingTimeNote({ exchangesRemaining: 9, minutesRemaining: 4, elapsedMinutes: 26, closeMinutes: 25 });
+  assert.equal(byClock.finalTurn, true, 'past the closing minute, this is the last response');
+  assert.match(byClock.contextNote, /final response of the sitting/);
+  assert.doesNotMatch(byClock.contextNote, /minutes remain after this response/, 'the final turn does not dangle a next exchange');
+
+  const byExchanges = sittingTimeNote({ exchangesRemaining: 0, minutesRemaining: 18, elapsedMinutes: 6, closeMinutes: 25 });
+  assert.equal(byExchanges.finalTurn, true, 'the last allowed exchange also closes deliberately');
+});
+
+test('the closing minute always leaves the hard limit as a backstop behind it', () => {
+  const base = { ANTHROPIC_API_KEY: 'k', REALTIME_DATA_DIR: os.tmpdir() };
+  assert.equal(loadSettings({ ...base }).closeMinutes, 25, 'twenty five by default');
+  assert.equal(loadSettings({ ...base }).sessionMinutes, 30);
+  const short = loadSettings({ ...base, WRITTEN_SESSION_MINUTES: '10' });
+  assert.equal(short.sessionMinutes, 10);
+  assert.equal(short.closeMinutes, 9, 'a short sitting still closes before its own wall');
+  const explicit = loadSettings({ ...base, WRITTEN_SESSION_MINUTES: '40', WRITTEN_CLOSE_MINUTES: '30' });
+  assert.equal(explicit.closeMinutes, 30);
 });

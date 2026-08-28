@@ -88,3 +88,18 @@ npm test
 ```
 
 Then verify desktop and mobile layouts, no visitor code field or request header, required notice acknowledgment, optional sharing off by default, microphone permission denial, recording start and stop, the two-minute limit, transcription insertion without automatic submission, transcript correction, text-only fallback, copy and download, end and clear, feedback, page-visit and funnel tracking, voice analytics, referral tracking, protected dashboard access, both CSV exports, optional sitting deletion, and immediate microphone shutdown when a sitting ends or the page closes.
+
+## Closing a sitting
+
+`WRITTEN_SESSION_MINUTES` (default 30) is the hard wall. `WRITTEN_CLOSE_MINUTES`
+(default 25) is when the sitting actually closes, and it is always forced to at
+least a minute inside the wall.
+
+Past the closing minute, or on the last allowed exchange, the companion is told
+that this is its final response and to close in it. That turn is recorded as a
+completed sitting whether or not the model remembers to emit its completion
+marker, and the browser ends the sitting on it rather than letting the clock run
+out. The visible countdown runs to the closing minute and then reads "closing
+after your next response"; the hard wall stays as a silent backstop for someone
+who walks away mid-sitting.
+

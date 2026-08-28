@@ -330,7 +330,9 @@ test('the sitting carries a consult offer that stays hidden until the sitting cl
   assert.doesNotMatch(html, /you're body|you are body/);
   assert.match(html, /Nothing from this sitting goes with it\./);
 
-  assert.match(app, /if \(data\.sittingComplete\) revealConsultOffer\(\);/);
+  assert.match(app, /if \(data\.sittingComplete\) \{\s*\n\s*revealConsultOffer\(\);/);
+  assert.match(app, /endSession\(false, 'completed', 'This sitting is complete\./, 'a completed sitting ends rather than running on to the clock');
+  assert.match(app, /closing after your next response/, 'the clock names the deliberate close instead of counting to the wall');
   assert.match(app, /ui\.consultOffer\.classList\.add\('hidden'\)/);
   assert.doesNotMatch(app, /SITTING COMPLETE/);
 
