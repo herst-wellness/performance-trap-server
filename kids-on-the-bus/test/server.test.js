@@ -824,3 +824,84 @@ test('a browser that does not ask for a stream still gets the whole response at 
   assert.equal(JSON.parse(turn.body).response, 'Say more about that moment.');
   fs.rmSync(appSettings.dataDir, { recursive: true, force: true });
 });
+
+test('the effort comparison is gated, blind, and shuffled, and only reveals after a choice', async () => {
+  const appSettings = settings();
+  const asked = [];
+  const server = createApp({
+    settings: appSettings,
+    fetchImpl: async (url, init) => {
+      const payload = JSON.parse(init.body);
+      const effort = payload.output_config.effort;
+      asked.push(effort);
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          content: [{ type: 'text', text: `Answer at ${effort} effort.` }],
+          stop_reason: 'end_turn',
+          usage: { input_tokens: 10, output_tokens: 20 }
+        })
+      };
+    }
+  });
+
+  const locked = await requestServer(server, {
+    method: 'POST', url: '/api/kids-on-the-bus/admin/compare',
+    body: JSON.stringify({ message: 'I went quiet again.', leftEffort: 'high', rightEffort: 'medium' })
+  });
+  assert.equal(locked.status, 401, 'the comparison needs the administrative code');
+  assert.equal(asked.length, 0, 'nothing is generated for an unauthorised caller');
+
+  const auth = { 'Content-Type': 'application/json', 'X-Companion-Admin-Code': 'admin-secret' };
+  const sameBoth = await requestServer(server, {
+    method: 'POST', url: '/api/kids-on-the-bus/admin/compare', headers: auth,
+    body: JSON.stringify({ message: 'Anything.', leftEffort: 'high', rightEffort: 'high' })
+  });
+  assert.equal(sameBoth.status, 400, 'comparing a level against itself is refused');
+
+  const compared = await requestServer(server, {
+    method: 'POST', url: '/api/kids-on-the-bus/admin/compare', headers: auth,
+    body: JSON.stringify({ message: 'I went quiet again.', leftEffort: 'high', rightEffort: 'medium' })
+  });
+  const pair = JSON.parse(compared.body);
+  assert.deepEqual(asked.slice().sort(), ['high', 'medium'], 'both levels answer the same message');
+  assert.ok(pair.pairId);
+  const shown = `${pair.first.text}\n${pair.second.text}`;
+  assert.match(shown, /Answer at high effort\./);
+  assert.match(shown, /Answer at medium effort\./);
+  assert.equal('effort' in pair.first, false, 'the page is never told which side is which');
+  assert.equal('effort' in pair.second, false);
+
+  const chosen = await requestServer(server, {
+    method: 'POST', url: '/api/kids-on-the-bus/admin/compare/choose', headers: auth,
+    body: JSON.stringify({ pairId: pair.pairId, choice: 'first' })
+  });
+  const verdict = JSON.parse(chosen.body);
+  assert.equal(verdict.chosen, verdict.first, 'choosing the first reveals what the first was');
+  assert.equal(verdict.tally[verdict.first], 1);
+
+  const again = await requestServer(server, {
+    method: 'POST', url: '/api/kids-on-the-bus/admin/compare/choose', headers: auth,
+    body: JSON.stringify({ pairId: pair.pairId, choice: 'second' })
+  });
+  assert.equal(JSON.parse(again.body).tally[verdict.first], 1, 'a second click cannot pad the tally');
+
+  const stale = await requestServer(server, {
+    method: 'POST', url: '/api/kids-on-the-bus/admin/compare/choose', headers: auth,
+    body: JSON.stringify({ pairId: 'not-a-real-pair', choice: 'first' })
+  });
+  assert.equal(stale.status, 400);
+  fs.rmSync(appSettings.dataDir, { recursive: true, force: true });
+});
+
+test('the comparison page is served, carries no code, and is never indexed', async () => {
+  const appSettings = settings();
+  const server = createApp({ settings: appSettings, fetchImpl: async () => { throw new Error('must not call'); } });
+  const page = await requestServer(server, { url: '/admin/effort-compare' });
+  assert.equal(page.status, 200);
+  assert.match(page.body, /noindex/);
+  assert.doesNotMatch(page.body, /admin-secret/);
+  assert.equal(isCompanionPath('/admin/effort-compare'), true);
+  fs.rmSync(appSettings.dataDir, { recursive: true, force: true });
+});

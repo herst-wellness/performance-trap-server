@@ -45,6 +45,7 @@ const WIND_DOWN_MINUTES_REMAINING = 6;
 const PAGE_PATH = '/start-anywhere';
 const LEGACY_PAGE_PATHS = ['/reflect/kids-on-the-bus'];
 const ADMIN_PATH = '/admin/mindbody-insights';
+const COMPARE_PATH = '/admin/effort-compare';
 const STATIC_PREFIX = '/kids-on-the-bus';
 const API_PREFIX = '/api/kids-on-the-bus';
 const NOTICE_VERSION = '2026-08-18-v3';
@@ -266,6 +267,8 @@ function serveStatic(req, res, pathname) {
   const routes = {
     [PAGE_PATH]: ['index.html', 'text/html; charset=utf-8'],
     [ADMIN_PATH]: ['admin.html', 'text/html; charset=utf-8'],
+    [COMPARE_PATH]: ['compare.html', 'text/html; charset=utf-8'],
+    [`${STATIC_PREFIX}/compare.js`]: ['compare.js', 'text/javascript; charset=utf-8'],
     [`${STATIC_PREFIX}/written-app.js`]: ['written-app.js', 'text/javascript; charset=utf-8'],
     [`${STATIC_PREFIX}/admin.js`]: ['admin.js', 'text/javascript; charset=utf-8'],
     [`${STATIC_PREFIX}/styles.css`]: ['styles.css', 'text/css; charset=utf-8'],
@@ -316,6 +319,8 @@ function createApp(options = {}) {
   });
   const weeklyReporter = options.weeklyReporter || new WeeklyReporter(ledger, settings.weeklyReport || {}, fetchImpl);
   const activeSessions = new Map();
+  const comparisons = new Map();
+  const comparisonTally = { tie: 0 };
 
   function pruneSessions() {
     const cutoff = Date.now() - (settings.sessionMinutes + 5) * 60 * 1000;
@@ -867,6 +872,89 @@ function createApp(options = {}) {
         return;
       }
 
+      if (req.method === 'POST' && pathname === `${API_PREFIX}/admin/compare`) {
+        if (!adminAuthorized(req, settings)) {
+          sendJson(res, 401, { error: 'That administrative code was not accepted.' });
+          return;
+        }
+        const body = await readJson(req, 128 * 1024);
+        const message = String(body.message || '').trim();
+        if (!message || message.length > 12000) {
+          sendJson(res, 400, { error: 'A message is required.' });
+          return;
+        }
+        const efforts = [body.leftEffort, body.rightEffort]
+          .map((value) => String(value || '').toLowerCase())
+          .filter((value) => ALLOWED_CLAUDE_EFFORTS.has(value));
+        if (efforts.length !== 2 || efforts[0] === efforts[1]) {
+          sendJson(res, 400, { error: 'Two different effort levels are required.' });
+          return;
+        }
+        const ask = (effort) => generateClaudeResponse({
+          apiKey: settings.anthropicKey,
+          model: settings.claudeModel,
+          effort,
+          instructions: settings.claudeInstructions,
+          contextNote: '',
+          message,
+          history: body.history,
+          fetchImpl
+        }).then((result) => ({ effort, result }));
+        let outcomes;
+        try {
+          outcomes = await Promise.all(efforts.map(ask));
+        } catch (error) {
+          sendJson(res, 502, { error: 'One of the two responses could not be generated. Nothing is recorded.' });
+          return;
+        }
+        // Randomise which side is shown first so the comparison stays blind.
+        const flipped = crypto.randomInt(2) === 1;
+        const shown = flipped ? [outcomes[1], outcomes[0]] : outcomes;
+        const pairId = crypto.randomUUID();
+        comparisons.set(pairId, { first: shown[0].effort, second: shown[1].effort, decided: false });
+        if (comparisons.size > 200) comparisons.delete(comparisons.keys().next().value);
+        sendJson(res, 200, {
+          pairId,
+          first: { text: stripCompletionMarker(shown[0].result.text), seconds: Math.round(shown[0].result.latency.completeMs / 100) / 10 },
+          second: { text: stripCompletionMarker(shown[1].result.text), seconds: Math.round(shown[1].result.latency.completeMs / 100) / 10 }
+        });
+        return;
+      }
+
+      if (req.method === 'POST' && pathname === `${API_PREFIX}/admin/compare/choose`) {
+        if (!adminAuthorized(req, settings)) {
+          sendJson(res, 401, { error: 'That administrative code was not accepted.' });
+          return;
+        }
+        const body = await readJson(req, 4 * 1024);
+        const pair = comparisons.get(String(body.pairId || ''));
+        if (!pair) {
+          sendJson(res, 400, { error: 'That comparison is no longer open.' });
+          return;
+        }
+        const choice = String(body.choice || '');
+        if (!['first', 'second', 'tie'].includes(choice)) {
+          sendJson(res, 400, { error: 'Choose the first, the second, or a tie.' });
+          return;
+        }
+        if (!pair.decided) {
+          pair.decided = true;
+          if (choice === 'tie') {
+            comparisonTally.tie += 1;
+          } else {
+            const winner = choice === 'first' ? pair.first : pair.second;
+            comparisonTally[winner] = (comparisonTally[winner] || 0) + 1;
+          }
+        }
+        sendJson(res, 200, {
+          first: pair.first,
+          second: pair.second,
+          chosen: choice === 'tie' ? 'tie' : (choice === 'first' ? pair.first : pair.second),
+          tally: { ...comparisonTally }
+        });
+        return;
+      }
+
       if (req.method === 'POST' && pathname === `${API_PREFIX}/admin/mark-internal`) {
         if (!adminAuthorized(req, settings)) {
           sendJson(res, 401, { error: 'That administrative code was not accepted.' });
@@ -913,7 +1001,7 @@ function initializeCompanion(options = {}) {
 }
 
 function isCompanionPath(pathname) {
-  return pathname === PAGE_PATH || LEGACY_PAGE_PATHS.includes(pathname) || pathname === ADMIN_PATH || pathname.startsWith(`${STATIC_PREFIX}/`) || pathname.startsWith(`${API_PREFIX}/`);
+  return pathname === PAGE_PATH || LEGACY_PAGE_PATHS.includes(pathname) || pathname === ADMIN_PATH || pathname === COMPARE_PATH || pathname.startsWith(`${STATIC_PREFIX}/`) || pathname.startsWith(`${API_PREFIX}/`);
 }
 
 async function handleCompanionRoute(req, res) {
@@ -932,6 +1020,7 @@ if (require.main === module) {
 
 module.exports = {
   ADMIN_PATH,
+  COMPARE_PATH,
   API_PREFIX,
   NOTICE_VERSION,
   OPENING,
