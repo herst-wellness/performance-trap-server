@@ -49,6 +49,8 @@ test('the audiobook player includes the refreshed 29-track collection and preser
   assert.match(mainServerSource, /duration: '0:36'/);
   assert.match(mainServerSource, /const next = TRACKS\[currentIndex \+ 1\]/);
   assert.match(mainServerSource, /Chapter ' \+ \(TRACKS\.indexOf\(t\) \+ 1\) \+ ' of '/);
+  assert.match(mainServerSource, /book-cover-current\.jpg/);
+  assert.doesNotMatch(mainServerSource, /book-cover\.jpg/);
 });
 
 test('browser offers controlled push-to-talk transcription without restoring realtime voice', () => {
