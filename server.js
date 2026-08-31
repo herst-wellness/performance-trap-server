@@ -1942,7 +1942,7 @@ const server = http.createServer(async (req, res) => {
 
     <div class="player-wrap">
       <div class="player-header">
-        <img src="${BASE_URL}/book-cover.jpg" alt="The Performance Trap cover" class="player-header-cover" />
+        <img src="${BASE_URL}/book-cover-current.jpg" alt="The Performance Trap cover" class="player-header-cover" />
         <div class="player-header-text">
           <p class="now-playing-label">Now playing</p>
           <p class="now-playing-title" id="now-title">Opening Credits</p>
@@ -2010,12 +2010,12 @@ const server = http.createServer(async (req, res) => {
 
     <div class="downloads">
       <a class="dl-card" href="${BASE_URL}/downloads/the-performance-trap.epub" download>
-        <img src="${BASE_URL}/book-cover.jpg" alt="The Performance Trap cover" />
+        <img src="${BASE_URL}/book-cover-current.jpg" alt="The Performance Trap cover" />
         <p class="dl-format">EPUB</p>
         <p class="dl-desc">For Kindle, Apple Books, Kobo, and most e-readers</p>
       </a>
       <a class="dl-card" href="${BASE_URL}/downloads/the-performance-trap.pdf" download>
-        <img src="${BASE_URL}/book-cover.jpg" alt="The Performance Trap cover" />
+        <img src="${BASE_URL}/book-cover-current.jpg" alt="The Performance Trap cover" />
         <p class="dl-format">PDF</p>
         <p class="dl-desc">For desktop, tablet, or printing</p>
       </a>
