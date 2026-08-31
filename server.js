@@ -1803,6 +1803,8 @@ const server = http.createServer(async (req, res) => {
   if (req.method === 'GET' && req.url === '/book') {
     const tracks = [
       { num: 1,  file: '01-opening-credits.mp3',                 title: 'Opening Credits',                          duration: '1:44',  part: 'front' },
+      // New identifier keeps every existing listener's saved chapter progress intact.
+      { num: 30, file: '/audio/02-foreword.mp3',                 title: 'Foreword',                                 duration: '3:31',  part: 'front' },
       { num: 2,  file: '02-introduction.mp3',                    title: 'Introduction',                             duration: '15:33', part: 'front' },
       { num: 3,  file: '04-ch01-the-day-the-mask-cracked.mp3',   title: 'Chapter One: The Day the Mask Cracked',    duration: '28:19', part: 'one' },
       { num: 4,  file: '05-ch02-am-i-a-man-or-a-mooch.mp3',      title: 'Chapter Two: Am I a Man or a Mooch?',      duration: '36:30', part: 'one' },
@@ -1974,9 +1976,9 @@ const server = http.createServer(async (req, res) => {
     <h1>The Performance Trap</h1>
     <p class="subtitle">The Ache No Success Will Ever Fix</p>
     <p class="author">Chad Herst</p>
-    <p class="book-meta">${totalDurationText} &middot; 29 tracks</p>
+    <p class="book-meta">${totalDurationText} &middot; ${tracks.length} tracks</p>
 
-    <p>This is the audiobook, in my voice. Twenty-nine tracks, just over seven and a half hours, recorded chapter by chapter. Listen in any order. Stop when you need to.</p>
+    <p>This is the audiobook, in my voice. Thirty tracks, just over seven and a half hours, recorded chapter by chapter. Listen in any order. Stop when you need to.</p>
     <p><em>Prefer to read? The EPUB and PDF are below &mdash; keep scrolling.</em></p>
 
     <div class="resume" id="resume-banner">
@@ -1990,7 +1992,7 @@ const server = http.createServer(async (req, res) => {
         <div class="player-header-text">
           <p class="now-playing-label">Now playing</p>
           <p class="now-playing-title" id="now-title">Opening Credits</p>
-          <p class="now-playing-context" id="now-context">Chapter 1 of 29</p>
+          <p class="now-playing-context" id="now-context">Chapter 1 of ${tracks.length}</p>
         </div>
       </div>
 
@@ -2081,7 +2083,7 @@ const server = http.createServer(async (req, res) => {
 
   <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
   <script>
-    const TRACKS = ${JSON.stringify(tracks.map(t => ({ num: t.num, file: AUDIO_BASE_URL + '/' + t.file, title: t.title, duration: t.duration, seconds: parseDuration(t.duration), part: t.part })))};
+    const TRACKS = ${JSON.stringify(tracks.map(t => ({ num: t.num, file: t.file.startsWith('/') ? BASE_URL + t.file : AUDIO_BASE_URL + '/' + t.file, title: t.title, duration: t.duration, seconds: parseDuration(t.duration), part: t.part })))};
     const TOTAL_SECONDS = ${totalSeconds};
     const STORAGE_KEY = 'performance-trap-progress-v2';
     const audio = document.getElementById('player');
