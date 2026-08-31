@@ -103,8 +103,11 @@ test('the main server preserves every existing feature and delegates the namespa
   assert.match(mainServerSource, /req\.url === '\/reading'/);
 });
 
-test('the audiobook player includes the refreshed 29-track collection and preserves saved progress identifiers', () => {
-  assert.match(mainServerSource, /Twenty-nine tracks/);
+test('the audiobook player includes the refreshed 30-track collection and preserves saved progress identifiers', () => {
+  assert.match(mainServerSource, /Thirty tracks/);
+  assert.match(mainServerSource, /num: 30, file: '\/audio\/02-foreword\.mp3'.*title: 'Foreword'.*duration: '3:31'/);
+  assert.ok(mainServerSource.indexOf("file: '/audio/02-foreword.mp3'") < mainServerSource.indexOf("file: '02-introduction.mp3'"));
+  assert.match(mainServerSource, /t\.file\.startsWith\('\/'\) \? BASE_URL \+ t\.file/);
   assert.match(mainServerSource, /file: '28-keep-exploring\.mp3\?v=20260830-echo-fix'/);
   assert.match(mainServerSource, /title: 'Keep Exploring'/);
   assert.match(mainServerSource, /duration: '0:36'/);
