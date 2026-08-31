@@ -1804,7 +1804,7 @@ const server = http.createServer(async (req, res) => {
     const tracks = [
       { num: 1,  file: '01-opening-credits.mp3',                 title: 'Opening Credits',                          duration: '1:44',  part: 'front' },
       // New identifier keeps every existing listener's saved chapter progress intact.
-      { num: 30, file: '/audio/02-foreword.mp3',                 title: 'Foreword',                                 duration: '3:31',  part: 'front' },
+      { num: 30, file: '02-foreword.mp3',                        title: 'Foreword',                                 duration: '3:31',  part: 'front' },
       { num: 2,  file: '02-introduction.mp3',                    title: 'Introduction',                             duration: '15:33', part: 'front' },
       { num: 3,  file: '04-ch01-the-day-the-mask-cracked.mp3',   title: 'Chapter One: The Day the Mask Cracked',    duration: '28:19', part: 'one' },
       { num: 4,  file: '05-ch02-am-i-a-man-or-a-mooch.mp3',      title: 'Chapter Two: Am I a Man or a Mooch?',      duration: '36:30', part: 'one' },
