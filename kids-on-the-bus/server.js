@@ -249,7 +249,14 @@ async function readJson(req, maximumBytes) {
 // served here keeps the original, stricter policy.
 const ANALYTICS_SCRIPT_HASH = "'sha256-lZlMJDkjukFYc1WIZwFBpVdxqrrVferrHZQFL/YvWnM='";
 const ANALYTICS_SCRIPT_SRC = 'https://www.googletagmanager.com';
-const ANALYTICS_CONNECT_SRC = 'https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com';
+// GA4 sends its page_view hit to the bare host https://analytics.google.com/g/collect,
+// not to a subdomain of analytics.google.com, so the https://*.analytics.google.com
+// wildcard above does not cover it. The bare host must be listed explicitly or the
+// browser refuses the request and nothing gets recorded. (Two related endpoints,
+// https://stats.g.doubleclick.net and https://www.google.com/g/collect, are Google
+// Signals advertising and demographics pings, not measurement, and are deliberately
+// left blocked.)
+const ANALYTICS_CONNECT_SRC = 'https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://analytics.google.com';
 
 function securityHeaders(contentType, options = {}) {
   const scriptSrc = options.allowAnalytics

@@ -1358,7 +1358,15 @@ const server = http.createServer(async (req, res) => {
     res.writeHead(200, {
       'Content-Type': 'text/html; charset=utf-8',
       'Cache-Control': 'public, max-age=300',
-      'Content-Security-Policy': `default-src 'self'; script-src 'self' 'nonce-${nonce}' https://www.googletagmanager.com; style-src 'self' 'nonce-${nonce}' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self'; media-src 'self'; connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com; frame-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'`,
+      // connect-src note: GA4 sends its page_view hit to the bare host
+      // https://analytics.google.com/g/collect, not a subdomain, so the
+      // https://*.analytics.google.com wildcard alone does not cover it and the
+      // browser refuses the request. https://analytics.google.com is listed
+      // explicitly below to fix that. Two related endpoints,
+      // https://stats.g.doubleclick.net and https://www.google.com/g/collect,
+      // are Google Signals advertising and demographics pings, not
+      // measurement, and are deliberately left blocked.
+      'Content-Security-Policy': `default-src 'self'; script-src 'self' 'nonce-${nonce}' https://www.googletagmanager.com; style-src 'self' 'nonce-${nonce}' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self'; media-src 'self'; connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://analytics.google.com; frame-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'`,
       'X-Content-Type-Options': 'nosniff',
       'Referrer-Policy': 'no-referrer',
       'X-Frame-Options': 'DENY'
