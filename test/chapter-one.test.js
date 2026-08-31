@@ -100,6 +100,17 @@ test('the /listen/chapter-one page carries a Content-Security-Policy whose nonce
   assert.match(csp, /frame-ancestors 'none'/);
   assert.match(csp, /base-uri 'none'/);
   assert.match(csp, /form-action 'self'/);
+
+  // GA4 sends its page_view hit to the bare host https://analytics.google.com/g/collect,
+  // not a subdomain, so a wildcard like https://*.analytics.google.com does not cover it
+  // (the literal substring "https://analytics.google.com" does not occur inside
+  // "https://*.analytics.google.com", so this assertion only passes when the bare host
+  // is listed separately). A test that only checked for the wildcard is what let this
+  // bug through the first time: every real GA4 hit was silently refused.
+  assert.ok(
+    csp.includes('https://analytics.google.com'),
+    'connect-src must allow the bare https://analytics.google.com host, since GA4 posts there directly and a wildcard subdomain source does not match a bare host'
+  );
 });
 
 test('two separate requests to /listen/chapter-one receive two different nonces', { timeout: 30000 }, async (t) => {
