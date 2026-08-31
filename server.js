@@ -1784,7 +1784,7 @@ const server = http.createServer(async (req, res) => {
       { num: 24, file: '26-try-this-pressure-to-perform.mp3',    title: 'Try This: Pressure to Perform',            duration: '5:07',  part: 'two', sub: true },
       { num: 25, file: '27-epilogue-the-hidden-trail.mp3',       title: 'Epilogue: The Hidden Trail',               duration: '17:08', part: 'two' },
       // Preserve the existing identifiers so returning listeners keep their saved progress.
-      { num: 29, file: '28-keep-exploring.mp3',                  title: 'Keep Exploring',                           duration: '0:36',  part: 'back' },
+      { num: 29, file: '28-keep-exploring.mp3?v=20260830-echo-fix', title: 'Keep Exploring',                         duration: '0:36',  part: 'back' },
       { num: 26, file: '28-acknowledgements.mp3',                title: 'Acknowledgements',                         duration: '7:58',  part: 'back' },
       { num: 27, file: '29-notes-and-resources.mp3',             title: 'Notes and Resources',                      duration: '48:33', part: 'back' },
       { num: 28, file: '30-about-the-author.mp3',                title: 'About the Author',                         duration: '1:19',  part: 'back' },

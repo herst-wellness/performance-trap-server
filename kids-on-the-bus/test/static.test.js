@@ -44,7 +44,7 @@ test('the main server preserves every existing feature and delegates the namespa
 
 test('the audiobook player includes the refreshed 29-track collection and preserves saved progress identifiers', () => {
   assert.match(mainServerSource, /Twenty-nine tracks/);
-  assert.match(mainServerSource, /file: '28-keep-exploring\.mp3'/);
+  assert.match(mainServerSource, /file: '28-keep-exploring\.mp3\?v=20260830-echo-fix'/);
   assert.match(mainServerSource, /title: 'Keep Exploring'/);
   assert.match(mainServerSource, /duration: '0:36'/);
   assert.match(mainServerSource, /const next = TRACKS\[currentIndex \+ 1\]/);
