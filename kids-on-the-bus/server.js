@@ -244,11 +244,24 @@ async function readJson(req, maximumBytes) {
   }
 }
 
-function securityHeaders(contentType) {
+// Analytics tag (GA4, id G-RGBQ9JX82L) lives only on PAGE_PATH's index.html.
+// These CSP allowances are scoped to that one route so every other route
+// served here keeps the original, stricter policy.
+const ANALYTICS_SCRIPT_HASH = "'sha256-lZlMJDkjukFYc1WIZwFBpVdxqrrVferrHZQFL/YvWnM='";
+const ANALYTICS_SCRIPT_SRC = 'https://www.googletagmanager.com';
+const ANALYTICS_CONNECT_SRC = 'https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com';
+
+function securityHeaders(contentType, options = {}) {
+  const scriptSrc = options.allowAnalytics
+    ? `script-src 'self' ${ANALYTICS_SCRIPT_SRC} ${ANALYTICS_SCRIPT_HASH}`
+    : "script-src 'self'";
+  const connectSrc = options.allowAnalytics
+    ? `connect-src 'self' ${ANALYTICS_CONNECT_SRC}`
+    : "connect-src 'self'";
   return {
     'Content-Type': contentType,
     'Cache-Control': 'no-store',
-    'Content-Security-Policy': "default-src 'self'; connect-src 'self'; font-src 'self' https://fonts.gstatic.com; frame-src 'self'; img-src 'self' data:; style-src 'self' https://fonts.googleapis.com; script-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'",
+    'Content-Security-Policy': `default-src 'self'; ${connectSrc}; font-src 'self' https://fonts.gstatic.com; frame-src 'self'; img-src 'self' data:; style-src 'self' https://fonts.googleapis.com; ${scriptSrc}; frame-ancestors 'none'; base-uri 'none'; form-action 'self'`,
     'Permissions-Policy': 'camera=(), geolocation=(), microphone=(self)',
     'Referrer-Policy': 'no-referrer',
     'X-Content-Type-Options': 'nosniff',
@@ -278,7 +291,7 @@ function serveStatic(req, res, pathname) {
   if (!match) return false;
   const body = fs.readFileSync(path.join(PUBLIC_DIR, match[0]));
   res.writeHead(200, {
-    ...securityHeaders(match[1]),
+    ...securityHeaders(match[1], { allowAnalytics: pathname === PAGE_PATH }),
     'Content-Length': body.length
   });
   if (req.method === 'HEAD') res.end();
