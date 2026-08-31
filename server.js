@@ -1758,34 +1758,36 @@ const server = http.createServer(async (req, res) => {
   }
   if (req.method === 'GET' && req.url === '/book') {
     const tracks = [
-      { num: 1,  file: '01-opening-credits.mp3',                 title: 'Opening Credits',                          duration: '1:42',  part: 'front' },
-      { num: 2,  file: '02-introduction.mp3',                    title: 'Introduction',                             duration: '12:57', part: 'front' },
-      { num: 3,  file: '04-ch01-the-day-the-mask-cracked.mp3',   title: 'Chapter One: The Day the Mask Cracked',    duration: '28:17', part: 'one' },
+      { num: 1,  file: '01-opening-credits.mp3',                 title: 'Opening Credits',                          duration: '1:44',  part: 'front' },
+      { num: 2,  file: '02-introduction.mp3',                    title: 'Introduction',                             duration: '15:33', part: 'front' },
+      { num: 3,  file: '04-ch01-the-day-the-mask-cracked.mp3',   title: 'Chapter One: The Day the Mask Cracked',    duration: '28:19', part: 'one' },
       { num: 4,  file: '05-ch02-am-i-a-man-or-a-mooch.mp3',      title: 'Chapter Two: Am I a Man or a Mooch?',      duration: '36:30', part: 'one' },
-      { num: 5,  file: '06-ch03-i-thought-the-hard-part-was-over.mp3', title: 'Chapter Three: I Thought the Hard Part Was Over', duration: '27:29', part: 'one' },
-      { num: 6,  file: '07-ch04-the-beginning-of-the-end.mp3',   title: 'Chapter Four: The Beginning of the End',   duration: '9:05',  part: 'one' },
-      { num: 7,  file: '08-ch05-proving-myself-into-pain.mp3',   title: 'Chapter Five: Proving Myself into Pain',   duration: '14:08', part: 'one' },
-      { num: 8,  file: '09-ch06-the-good-kid.mp3',               title: 'Chapter Six: The Good Kid',                duration: '16:25', part: 'one' },
-      { num: 9,  file: '10-ch07-walls.mp3',                      title: 'Chapter Seven: Walls',                     duration: '16:49', part: 'one' },
-      { num: 10, file: '11-ch08-snot-and-all.mp3',               title: 'Chapter Eight: Snot and All',              duration: '19:23', part: 'one' },
-      { num: 11, file: '12-ch09-my-way-home.mp3',                title: 'Chapter Nine: My Way Home',                duration: '21:46', part: 'one' },
+      { num: 5,  file: '06-ch03-i-thought-the-hard-part-was-over.mp3', title: 'Chapter Three: I Thought the Hard Part Was Over', duration: '27:30', part: 'one' },
+      { num: 6,  file: '07-ch04-the-beginning-of-the-end.mp3',   title: 'Chapter Four: The Beginning of the End',   duration: '9:06',  part: 'one' },
+      { num: 7,  file: '08-ch05-proving-myself-into-pain.mp3',   title: 'Chapter Five: Proving Myself into Pain',   duration: '14:09', part: 'one' },
+      { num: 8,  file: '09-ch06-the-good-kid.mp3',               title: 'Chapter Six: The Good Kid',                duration: '16:27', part: 'one' },
+      { num: 9,  file: '10-ch07-walls.mp3',                      title: 'Chapter Seven: Walls',                     duration: '16:50', part: 'one' },
+      { num: 10, file: '11-ch08-snot-and-all.mp3',               title: 'Chapter Eight: Snot and All',              duration: '19:22', part: 'one' },
+      { num: 11, file: '12-ch09-my-way-home.mp3',                title: 'Chapter Nine: My Way Home',                duration: '21:48', part: 'one' },
       { num: 12, file: '13-bridge-the-performance-trap.mp3',     title: 'Bridge: The Performance Trap',             duration: '21:40', part: 'one' },
-      { num: 13, file: '15-how-to-use-this-section.mp3',         title: 'How to Use This Section',                  duration: '20:45', part: 'two' },
-      { num: 14, file: '16-methods-breaking-the-performance-trap.mp3', title: 'Methods: Breaking the Performance Trap', duration: '17:55', part: 'two' },
-      { num: 15, file: '17-ch10-overwhelm.mp3',                  title: 'Chapter Ten: Overwhelm',                   duration: '19:08', part: 'two' },
-      { num: 16, file: '18-try-this-overwhelm.mp3',              title: 'Try This: Overwhelm',                      duration: '6:16',  part: 'two', sub: true },
+      { num: 13, file: '15-how-to-use-this-section.mp3',         title: 'How to Use This Section',                  duration: '20:47', part: 'two' },
+      { num: 14, file: '16-methods-breaking-the-performance-trap.mp3', title: 'Methods: Breaking the Performance Trap', duration: '17:57', part: 'two' },
+      { num: 15, file: '17-ch10-overwhelm.mp3',                  title: 'Chapter Ten: Overwhelm',                   duration: '19:10', part: 'two' },
+      { num: 16, file: '18-try-this-overwhelm.mp3',              title: 'Try This: Overwhelm',                      duration: '6:17',  part: 'two', sub: true },
       { num: 17, file: '19-ch11-the-inner-critic.mp3',           title: 'Chapter Eleven: The Inner Critic',         duration: '22:04', part: 'two' },
-      { num: 18, file: '20-try-this-the-inner-critic.mp3',       title: 'Try This: The Inner Critic',               duration: '8:14',  part: 'two', sub: true },
-      { num: 19, file: '21-ch12-emptiness.mp3',                  title: 'Chapter Twelve: Emptiness',                duration: '15:16', part: 'two' },
-      { num: 20, file: '22-try-this-emptiness.mp3',              title: 'Try This: Emptiness',                      duration: '5:34',  part: 'two', sub: true },
-      { num: 21, file: '23-ch13-self-abandonment.mp3',           title: 'Chapter Thirteen: Self-Abandonment',       duration: '15:40', part: 'two' },
+      { num: 18, file: '20-try-this-the-inner-critic.mp3',       title: 'Try This: The Inner Critic',               duration: '8:15',  part: 'two', sub: true },
+      { num: 19, file: '21-ch12-emptiness.mp3',                  title: 'Chapter Twelve: Emptiness',                duration: '15:18', part: 'two' },
+      { num: 20, file: '22-try-this-emptiness.mp3',              title: 'Try This: Emptiness',                      duration: '5:35',  part: 'two', sub: true },
+      { num: 21, file: '23-ch13-self-abandonment.mp3',           title: 'Chapter Thirteen: Self-Abandonment',       duration: '17:01', part: 'two' },
       { num: 22, file: '24-try-this-self-abandonment.mp3',       title: 'Try This: Self-Abandonment',               duration: '6:59',  part: 'two', sub: true },
-      { num: 23, file: '25-ch14-the-pressure-to-perform.mp3',    title: 'Chapter Fourteen: The Pressure to Perform',duration: '12:33', part: 'two' },
-      { num: 24, file: '26-try-this-pressure-to-perform.mp3',    title: 'Try This: Pressure to Perform',            duration: '5:04',  part: 'two', sub: true },
-      { num: 25, file: '27-epilogue-the-hidden-trail.mp3',       title: 'Epilogue: The Hidden Trail',               duration: '14:39', part: 'two' },
-      { num: 26, file: '28-acknowledgements.mp3',                title: 'Acknowledgements',                         duration: '7:55',  part: 'back' },
-      { num: 27, file: '29-notes-and-resources.mp3',             title: 'Notes and Resources',                      duration: '48:31', part: 'back' },
-      { num: 28, file: '30-about-the-author.mp3',                title: 'About the Author',                         duration: '1:17',  part: 'back' },
+      { num: 23, file: '25-ch14-the-pressure-to-perform.mp3',    title: 'Chapter Fourteen: The Pressure to Perform',duration: '12:35', part: 'two' },
+      { num: 24, file: '26-try-this-pressure-to-perform.mp3',    title: 'Try This: Pressure to Perform',            duration: '5:07',  part: 'two', sub: true },
+      { num: 25, file: '27-epilogue-the-hidden-trail.mp3',       title: 'Epilogue: The Hidden Trail',               duration: '17:08', part: 'two' },
+      // Preserve the existing identifiers so returning listeners keep their saved progress.
+      { num: 29, file: '28-keep-exploring.mp3',                  title: 'Keep Exploring',                           duration: '0:36',  part: 'back' },
+      { num: 26, file: '28-acknowledgements.mp3',                title: 'Acknowledgements',                         duration: '7:58',  part: 'back' },
+      { num: 27, file: '29-notes-and-resources.mp3',             title: 'Notes and Resources',                      duration: '48:33', part: 'back' },
+      { num: 28, file: '30-about-the-author.mp3',                title: 'About the Author',                         duration: '1:19',  part: 'back' },
     ];
 
     // Convert "MM:SS" or "HH:MM:SS" to seconds
@@ -1928,9 +1930,9 @@ const server = http.createServer(async (req, res) => {
     <h1>The Performance Trap</h1>
     <p class="subtitle">The Ache No Success Will Ever Fix</p>
     <p class="author">Chad Herst</p>
-    <p class="book-meta">${totalDurationText} &middot; 28 tracks</p>
+    <p class="book-meta">${totalDurationText} &middot; 29 tracks</p>
 
-    <p>This is the audiobook, in my voice. Twenty-eight tracks, just over seven hours, recorded chapter by chapter. Read in any order. Stop when you need to.</p>
+    <p>This is the audiobook, in my voice. Twenty-nine tracks, just over seven and a half hours, recorded chapter by chapter. Listen in any order. Stop when you need to.</p>
     <p><em>Prefer to read? The EPUB and PDF are below &mdash; keep scrolling.</em></p>
 
     <div class="resume" id="resume-banner">
@@ -1944,7 +1946,7 @@ const server = http.createServer(async (req, res) => {
         <div class="player-header-text">
           <p class="now-playing-label">Now playing</p>
           <p class="now-playing-title" id="now-title">Opening Credits</p>
-          <p class="now-playing-context" id="now-context">Chapter 1 of 28</p>
+          <p class="now-playing-context" id="now-context">Chapter 1 of 29</p>
         </div>
       </div>
 
@@ -2105,15 +2107,17 @@ const server = http.createServer(async (req, res) => {
     function updateOverallProgress() {
       const p = loadProgress();
       let elapsed = 0;
-      for (const t of TRACKS) {
-        if (t.num < currentNum) {
+      const currentIndex = TRACKS.findIndex(t => t.num === currentNum);
+      for (let i = 0; i < TRACKS.length; i += 1) {
+        const t = TRACKS[i];
+        if (i < currentIndex) {
           const stored = p.tracks && p.tracks[t.num];
           if (stored && stored.completed) {
             elapsed += t.seconds;
           } else if (stored && typeof stored.position === 'number') {
             elapsed += Math.min(stored.position, t.seconds);
           }
-        } else if (t.num === currentNum) {
+        } else if (i === currentIndex) {
           elapsed += audio.currentTime || 0;
         }
       }
@@ -2145,7 +2149,7 @@ const server = http.createServer(async (req, res) => {
       audio.src = t.file;
       audio.load();
       nowTitle.textContent = t.title;
-      nowContext.textContent = 'Chapter ' + num + ' of ' + TRACKS.length;
+      nowContext.textContent = 'Chapter ' + (TRACKS.indexOf(t) + 1) + ' of ' + TRACKS.length;
       document.querySelectorAll('.track-btn').forEach(b => b.classList.remove('playing'));
       const li = document.querySelector('.track[data-num="' + num + '"] .track-btn');
       if (li) li.classList.add('playing');
@@ -2182,7 +2186,8 @@ const server = http.createServer(async (req, res) => {
       advancing = true;
       lastAdvancedFrom = currentNum;
       saveProgress(currentNum, TRACKS.find(x => x.num === currentNum).seconds);
-      const next = TRACKS.find(x => x.num === currentNum + 1);
+      const currentIndex = TRACKS.findIndex(x => x.num === currentNum);
+      const next = TRACKS[currentIndex + 1];
       if (next) {
         loadTrack(next.num, 0);
         player.play();
