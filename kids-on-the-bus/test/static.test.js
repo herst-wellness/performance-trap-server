@@ -4,9 +4,11 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
+const { Readable } = require('node:stream');
 const vm = require('node:vm');
-const { loadClaudeInstructions } = require('../server');
+const { ADMIN_PATH, createApp, loadClaudeInstructions } = require('../server');
 
 const root = path.join(__dirname, '..');
 const app = fs.readFileSync(path.join(root, 'public', 'written-app.js'), 'utf8');
@@ -18,6 +20,65 @@ const prompt = loadClaudeInstructions();
 const serverSource = fs.readFileSync(path.join(root, 'server.js'), 'utf8');
 const mainServerSource = fs.readFileSync(path.join(root, '..', 'server.js'), 'utf8');
 const companionEntry = fs.readFileSync(path.join(root, '..', 'companion.js'), 'utf8');
+const analyticsHashDeclaration = serverSource.match(/ANALYTICS_SCRIPT_HASH = "([^"]+)"/);
+const ANALYTICS_SCRIPT_HASH = analyticsHashDeclaration && analyticsHashDeclaration[1];
+
+function analyticsTestSettings() {
+  return {
+    port: 0,
+    anthropicKey: '',
+    openaiKey: '',
+    adminCode: '',
+    budgetUsd: 0,
+    sessionMinutes: 30,
+    maxExchanges: 20,
+    claudeModel: 'claude-sonnet-5',
+    claudeEffort: 'high',
+    claudeInstructions: 'Test instructions. Never use an em dash.',
+    transcriptionModel: 'gpt-transcribe',
+    maxAudioBytes: 10 * 1024 * 1024,
+    maxAudioDurationMs: 2 * 60 * 1000,
+    rates: {
+      claudeInput: 3,
+      claudeOutput: 15,
+      claudeCacheWrite: 3.75,
+      claudeCacheRead: 0.3,
+      transcriptionPerMinute: 0.0045
+    },
+    dataDir: os.tmpdir(),
+    analyticsRetentionDays: 365,
+    sharedRetentionDays: 90,
+    weeklyReport: { enabled: false }
+  };
+}
+
+function requestApp(server, url) {
+  return new Promise((resolve, reject) => {
+    const req = new Readable({ read() {} });
+    req.method = 'GET';
+    req.url = url;
+    req.headers = {};
+    req.push(null);
+    const response = { status: 200, headers: {}, chunks: [] };
+    const res = {
+      writeHead(status, headers) {
+        response.status = status;
+        response.headers = headers || {};
+      },
+      write(chunk) {
+        response.chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk)));
+        return true;
+      },
+      end(chunk) {
+        if (chunk) response.chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk)));
+        response.body = Buffer.concat(response.chunks).toString('utf8');
+        resolve(response);
+      }
+    };
+    server.emit('request', req, res);
+    req.on('error', reject);
+  });
+}
 
 test('canonical coaching assets are self-contained and retain their approved fingerprints', () => {
   const assets = [
@@ -364,4 +425,49 @@ test('the companion offers its own read before the consult, and hands it back to
   assert.doesNotMatch(prompt, /Do not add an interpretation or new exercise/);
   assert.ok(prompt.indexOf('Your read, offered and checked') < prompt.indexOf('The next step, and the close'),
     'the read is offered before the consult, not after');
+});
+
+test('the /start-anywhere response carries the GA4 tag and a Content-Security-Policy that actually permits it to run', async () => {
+  const server = createApp({ settings: analyticsTestSettings() });
+  const page = await requestApp(server, '/start-anywhere');
+  assert.equal(page.status, 200);
+  assert.match(page.body, /G-RGBQ9JX82L/);
+  const csp = page.headers['Content-Security-Policy'];
+  assert.ok(csp, 'the response must carry a Content-Security-Policy header');
+  assert.match(
+    csp,
+    /script-src[^;]*https:\/\/www\.googletagmanager\.com/,
+    'script-src must allow the googletagmanager host that serves the GA4 tag'
+  );
+  assert.ok(ANALYTICS_SCRIPT_HASH, 'server.js must define ANALYTICS_SCRIPT_HASH as a quoted string');
+  assert.ok(
+    csp.includes(ANALYTICS_SCRIPT_HASH),
+    'script-src must allow the exact inline gtag script hash, or the tag silently stops running'
+  );
+});
+
+test('ANALYTICS_SCRIPT_HASH in server.js matches the exact bytes of the inline gtag script in index.html, as it sits on disk', () => {
+  assert.ok(ANALYTICS_SCRIPT_HASH, 'server.js must define ANALYTICS_SCRIPT_HASH as a quoted string');
+  const inlineScriptMatch = html.match(/<script>([\s\S]*?)<\/script>/);
+  assert.ok(inlineScriptMatch, 'index.html must contain a bare inline <script> block for the gtag config');
+  const digest = crypto.createHash('sha256').update(inlineScriptMatch[1]).digest('base64');
+  assert.equal(
+    ANALYTICS_SCRIPT_HASH,
+    `'sha256-${digest}'`,
+    'reformatting the inline gtag script (whitespace included) changes its hash; ANALYTICS_SCRIPT_HASH must be recomputed and updated in server.js whenever that script changes'
+  );
+});
+
+test('a route other than /start-anywhere still receives the original stricter policy, with no googletagmanager host and no analytics hash', async () => {
+  const server = createApp({ settings: analyticsTestSettings() });
+  const page = await requestApp(server, ADMIN_PATH);
+  assert.equal(page.status, 200);
+  const csp = page.headers['Content-Security-Policy'];
+  assert.ok(csp, 'the response must carry a Content-Security-Policy header');
+  assert.doesNotMatch(csp, /googletagmanager/, 'the analytics allowance must not leak to other routes');
+  assert.ok(ANALYTICS_SCRIPT_HASH, 'server.js must define ANALYTICS_SCRIPT_HASH as a quoted string');
+  assert.ok(
+    !csp.includes(ANALYTICS_SCRIPT_HASH),
+    'the analytics allowance must not leak to other routes'
+  );
 });
