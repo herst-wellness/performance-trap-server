@@ -1242,6 +1242,14 @@ const server = http.createServer(async (req, res) => {
   if (req.method === 'GET' && serveStatic(req, res)) { return; }
 
   if (req.method === 'GET' && req.url === '/listen/chapter-one') {
+    // This HTML is generated fresh on every request (unlike the static
+    // kids-on-the-bus page), so a per-request nonce is used to authorize the
+    // inline <script>/<style> blocks below, instead of a SHA-256 hash. A hash
+    // would silently go stale the next time this page's copy or scripts are
+    // edited; a nonce never does, because it is regenerated every request and
+    // never reused. See the Content-Security-Policy header set further down,
+    // which is built from this same nonce value.
+    const nonce = require('crypto').randomBytes(16).toString('base64');
     const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1250,14 +1258,14 @@ const server = http.createServer(async (req, res) => {
 <meta name="robots" content="noindex, nofollow">
 <title>Chapter One — The Performance Trap</title>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-RGBQ9JX82L"></script>
-<script>
+<script nonce="${nonce}">
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
   gtag('config', 'G-RGBQ9JX82L');
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
-<style>
+<style nonce="${nonce}">
   body { margin:0; padding:0; background:#F4EDE4; font-family:'Cormorant Garamond',Georgia,serif; color:#352515; }
   .wrap { max-width:600px; margin:0 auto; padding:40px 20px; }
   .logo-top { display:block; width:100%; max-width:600px; height:auto; margin:0 auto; }
@@ -1272,6 +1280,14 @@ const server = http.createServer(async (req, res) => {
   .footer img { display:block; margin:0 auto 16px auto; max-width:200px; height:auto; }
   .footer p { font-size:12px; color:#4F4130; margin:0 0 8px 0; line-height:1.6; }
   .footer a { color:#8B6B1E; text-decoration:none; }
+  .hidden { display:none; }
+  .gate-input { width:100%; padding:12px; font-size:16px; border:1px solid #d4c5a0; background:#FBF7F0; font-family:'Cormorant Garamond',Georgia,serif; margin-bottom:12px; box-sizing:border-box; }
+  .unlock-button { width:100%; padding:14px; background:#8B6B1E; color:#FBF7F0; border:none; font-family:'Cormorant Garamond',Georgia,serif; font-size:14px; letter-spacing:0.2em; text-transform:uppercase; cursor:pointer; }
+  .gate-msg { margin-top:12px; font-size:14px; color:#6b5a3a; font-style:italic; min-height:20px; }
+  .next-wrap { margin:40px 0 0 0; padding-top:32px; border-top:1px solid #8B6B1E; }
+  .next-heading { font-family:'Playfair Display',Georgia,serif; font-size:26px; line-height:1.2; color:#352515; margin:0 0 20px 0; font-weight:700; }
+  .launch-cta-wrap { text-align:center; margin:32px 0 0 0; }
+  .launch-cta { display:inline-block; font-family:'Cormorant Garamond',Georgia,serif; font-size:14px; letter-spacing:0.2em; text-transform:uppercase; padding:14px 36px; border:1px solid #8B6B1E; color:#8B6B1E; text-decoration:none; }
 </style>
 </head>
 <body>
@@ -1283,26 +1299,26 @@ const server = http.createServer(async (req, res) => {
     <p>This is where the story really begins. The phone call. My brother. The day everything I'd built started to come apart.</p>
     <p>Twenty-eight minutes, in my own voice. Enter your name and email and I'll send it to you.</p>
     <div id="gateForm" class="player-wrap">
-      <input type="text" id="gateName" placeholder="Your first name" style="width:100%; padding:12px; font-size:16px; border:1px solid #d4c5a0; background:#FBF7F0; font-family:'Cormorant Garamond',Georgia,serif; margin-bottom:12px; box-sizing:border-box;">
-      <input type="email" id="gateEmail" placeholder="Your email address" style="width:100%; padding:12px; font-size:16px; border:1px solid #d4c5a0; background:#FBF7F0; font-family:'Cormorant Garamond',Georgia,serif; margin-bottom:12px; box-sizing:border-box;">
-      <button onclick="unlockAudio()" style="width:100%; padding:14px; background:#8B6B1E; color:#FBF7F0; border:none; font-family:'Cormorant Garamond',Georgia,serif; font-size:14px; letter-spacing:0.2em; text-transform:uppercase; cursor:pointer;">Send Me Chapter One</button>
-      <p id="gateMsg" style="margin-top:12px; font-size:14px; color:#6b5a3a; font-style:italic; min-height:20px;"></p>
+      <input type="text" id="gateName" class="gate-input" placeholder="Your first name">
+      <input type="email" id="gateEmail" class="gate-input" placeholder="Your email address">
+      <button id="unlockButton" class="unlock-button">Send Me Chapter One</button>
+      <p id="gateMsg" class="gate-msg"></p>
     </div>
-    <div id="playerWrap" class="player-wrap" style="display:none;">
+    <div id="playerWrap" class="player-wrap hidden">
       <audio controls preload="metadata" src="${CHAPTER_ONE_AUDIO_URL}">
         Your browser does not support audio playback. <a href="${CHAPTER_ONE_AUDIO_URL}">Download the MP3</a>.
       </audio>
       <div class="duration">28 minutes</div>
     </div>
-    <div id="nextWrap" style="display:none; margin:40px 0 0 0; padding-top:32px; border-top:1px solid #8B6B1E;">
-  <h2 style="font-family:'Playfair Display',Georgia,serif; font-size:26px; line-height:1.2; color:#352515; margin:0 0 20px 0; font-weight:700;">If you want the rest of it</h2>
+    <div id="nextWrap" class="next-wrap hidden">
+  <h2 class="next-heading">If you want the rest of it</h2>
   <p>The whole book is recorded. Every chapter, in my voice, a little over seven hours. The EPUB and the PDF too, if you'd rather read.</p>
   <p>It comes out October 1. You can have all of it now if you'll post an honest Amazon review during launch week. That's the whole trade. If the book doesn't land for you, say that. I'd rather have a true two-star than a courteous five.</p>
-  <div style="text-align:center; margin:32px 0 0 0;">
-    <a href="https://herstwellness.com/launch-team" style="display:inline-block; font-family:'Cormorant Garamond',Georgia,serif; font-size:14px; letter-spacing:0.2em; text-transform:uppercase; padding:14px 36px; border:1px solid #8B6B1E; color:#8B6B1E; text-decoration:none;">Join the launch team</a>
+  <div class="launch-cta-wrap">
+    <a href="https://herstwellness.com/launch-team" class="launch-cta">Join the launch team</a>
   </div>
 </div>
-    <script>
+    <script nonce="${nonce}">
     async function unlockAudio(){
       const name=document.getElementById('gateName').value.trim();
       const email=document.getElementById('gateEmail').value.trim();
@@ -1317,7 +1333,8 @@ const server = http.createServer(async (req, res) => {
          if(r1.ok){document.getElementById('gateForm').style.display='none';document.getElementById('playerWrap').style.display='block';document.getElementById('nextWrap').style.display='block';msg.textContent='';gtag('event','chapter_one_signup');}        else{msg.textContent='Something went wrong. Please try again.';}
       }catch(e){msg.textContent='Something went wrong. Please try again.';}
     }
-    </script>  
+    document.getElementById('unlockButton').addEventListener('click', unlockAudio);
+    </script>
     <div class="footer">
       <img src="${LOGO_URL}" alt="Herst Wellness" />
       <p>765 Market St, San Francisco, CA 94103<br>(415) 686-4411 &middot; <a href="mailto:chad@herstwellness.com">chad@herstwellness.com</a></p>
@@ -1326,7 +1343,26 @@ const server = http.createServer(async (req, res) => {
   </div>
 </body>
 </html>`;
-    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'public, max-age=300' });
+    // The nonce above is generated fresh at the top of this handler and used
+    // nowhere else, so the header below and the inline <script>/<style> tags
+    // in `html` are always produced together, from the same variable, in the
+    // same request. Cache-Control: public, max-age=300 only controls how long
+    // a cache may keep this exact response (this header plus this body) before
+    // asking the server for a new one; HTTP caches always store and replay a
+    // response's status, headers, and body together as one unit; there is no
+    // mechanism for a cache to serve this body with a different response's
+    // headers. This deployment also has no separate CDN or reverse-proxy cache
+    // in front of it (confirmed: no render.yaml/CDN config, plain Render Node
+    // service) that could split them apart another way, so the existing
+    // 5-minute cache is left in place.
+    res.writeHead(200, {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'public, max-age=300',
+      'Content-Security-Policy': `default-src 'self'; script-src 'self' 'nonce-${nonce}' https://www.googletagmanager.com; style-src 'self' 'nonce-${nonce}' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self'; media-src 'self'; connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com; frame-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'`,
+      'X-Content-Type-Options': 'nosniff',
+      'Referrer-Policy': 'no-referrer',
+      'X-Frame-Options': 'DENY'
+    });
     res.end(html);
     return;
   }
