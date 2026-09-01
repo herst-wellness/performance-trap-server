@@ -108,6 +108,9 @@ test('the audiobook player includes the refreshed 30-track collection and preser
   assert.match(mainServerSource, /num: 30, file: '02-foreword\.mp3'.*title: 'Foreword'.*duration: '3:31'/);
   assert.ok(mainServerSource.indexOf("file: '02-foreword.mp3'") < mainServerSource.indexOf("file: '02-introduction.mp3'"));
   assert.match(mainServerSource, /t\.file\.startsWith\('\/'\) \? BASE_URL \+ t\.file/);
+  assert.match(mainServerSource, /t\.part === 'front' \? ' front' : ''/);
+  assert.match(mainServerSource, /\.track\.front \.track-btn \{ position:relative; justify-content:center;/);
+  assert.match(mainServerSource, /\.track\.front \.track-dur \{ position:absolute; right:4px;/);
   assert.match(mainServerSource, /file: '28-keep-exploring\.mp3\?v=20260830-echo-fix'/);
   assert.match(mainServerSource, /title: 'Keep Exploring'/);
   assert.match(mainServerSource, /duration: '0:36'/);
