@@ -1849,7 +1849,7 @@ const server = http.createServer(async (req, res) => {
     const totalDurationText = `${totalHours} hours ${totalMinutes} minutes`;
 
     const renderTrack = (t) => `
-      <li class="track${t.sub ? ' sub' : ''}" data-num="${t.num}" data-seconds="${parseDuration(t.duration)}">
+      <li class="track${t.sub ? ' sub' : ''}${t.part === 'front' ? ' front' : ''}" data-num="${t.num}" data-seconds="${parseDuration(t.duration)}">
         <button class="track-btn" type="button">
           <span class="check-mark" aria-label="completed">&#10003;</span>
           <span class="track-title">${t.title}</span>
@@ -1945,6 +1945,10 @@ const server = http.createServer(async (req, res) => {
   .track-title { font-size:15px; line-height:1.35; flex:1; }
   .track.sub .track-title { font-style:italic; font-size:14px; color:#4F4130; }
   .track-dur { font-size:13px; color:#8B6B1E; font-style:italic; flex-shrink:0; letter-spacing:0.05em; }
+  .track.front .track-btn { position:relative; justify-content:center; padding-left:64px; padding-right:64px; text-align:center; }
+  .track.front .check-mark { position:absolute; left:10px; }
+  .track.front .track-title { flex:0 1 auto; text-align:center; }
+  .track.front .track-dur { position:absolute; right:4px; }
   .check-mark { display:inline-block; width:16px; font-size:14px; color:#8B6B1E; opacity:0; flex-shrink:0; transition:opacity 0.2s; }
   .track.completed .check-mark { opacity:1; }
   .track.back-matter .track-title { color:#6F6050; font-style:italic; }
