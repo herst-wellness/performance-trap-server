@@ -2059,7 +2059,7 @@ const server = http.createServer(async (req, res) => {
     <p>If you'd rather read than listen, the book is available in two formats. Click either cover to download.</p>
 
     <div class="downloads">
-      <a class="dl-card" href="${BASE_URL}/downloads/the-performance-trap.epub" download>
+      <a class="dl-card" href="${BASE_URL}/downloads/the-performance-trap-v2.2.epub" download>
         <img src="${BASE_URL}/book-cover-current.jpg" alt="The Performance Trap cover" />
         <p class="dl-format">EPUB</p>
         <p class="dl-desc">For Kindle, Apple Books, Kobo, and most e-readers</p>
