@@ -118,7 +118,7 @@ test('the audiobook player includes the refreshed 30-track collection and preser
   assert.match(mainServerSource, /Chapter ' \+ \(TRACKS\.indexOf\(t\) \+ 1\) \+ ' of '/);
   assert.match(mainServerSource, /book-cover-current\.jpg/);
   assert.doesNotMatch(mainServerSource, /book-cover\.jpg/);
-  assert.match(mainServerSource, /downloads\/the-performance-trap-v2\.2\.epub/);
+  assert.match(mainServerSource, /downloads\/the-performance-trap-v2\.3\.epub/);
 });
 
 test('browser offers controlled push-to-talk transcription without restoring realtime voice', () => {
