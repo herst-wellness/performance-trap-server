@@ -82,7 +82,7 @@ function requestApp(server, url) {
 
 test('canonical coaching assets are self-contained and retain their approved fingerprints', () => {
   const assets = [
-    ['companion-prompt.txt', '195a409133c0b5915f53947db97f5811c0d1acb605ef398e5544fa858c0fe30f'],
+    ['companion-prompt.txt', 'da031e3d2680177c282aa258d8cd7f1257d27021367f17a3c1c9952c306e4e98'],
     ['companion-safety-overlay.txt', '023e23cb6fe0cac90d376278cd69aa64f06014ea84324604d668a04de90c9372']
   ];
   for (const [filename, expected] of assets) {

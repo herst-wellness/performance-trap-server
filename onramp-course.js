@@ -160,7 +160,7 @@ const COURSE_WEEKS = {
 <p>Once you've settled, the second move is a U-turn. When you're caught in a story about a feeling, the mind wants to keep talking about it. Entering the body is turning around and going to where the feeling actually lives. Not analyzing why it's there. Just locating it. Throat, chest, belly. Then noticing its quality: tight, hot, heavy, hollow, buzzing, dull. Then you surround it with attention and breathe right into the region, not to push it out, just to see how it responds to being noticed.</p>
 <p>The story is your mind's interpretation. The body is what's actually happening. Going to the body is how you get underneath the commentary to the thing itself.</p>
 <h4>The small rephrase</h4>
-<p>There's a linguistic version of the same move, and it's the one to carry into your day. Take the sentence <em>I am anxious</em> and turn it into <em>there's anxiety here</em>. <em>I'm a failure</em> becomes <em>there's a part here that says I'm failing</em>. Say both out loud and notice what changes in your body. The first is a verdict. The second is an observation.</p>
+<p>There's a linguistic version of the same move, and it's the one to carry into your day. Take the sentence <em>I am anxious</em> and turn it into <em>a part of me is anxious</em>. <em>I'm a failure</em> becomes <em>a part of me feels like I'm failing</em>. Say both out loud and notice what changes in your body. The first is a verdict. The second is an observation.</p>
 <p>Here's why it matters. When you're identified with a feeling, when the butterflies are you, you only have two options: push them down or ignore them. Neither works. Stepping back gives you a third. You can turn toward the feeling and say: this thing that's arising, it's not all of me. It's a part of me. That small step back is the whole foundation. Everything we build sits on it.</p>
 <p class="note">This week you're practicing three letters of SENSE already: S, E, and the start of N. That's plenty. Stay with it.</p>`,
     meditation: meditationPlayer('/audio/onramp-breath-12min.mp3', 'The breathing practice, recorded by Chad. About twelve minutes. Sit with it most days this week.'),
@@ -170,7 +170,7 @@ const COURSE_WEEKS = {
 <h4>Through the day, whenever you remember</h4>
 <p>Three deliberate straw breaths before a meeting, a hard email, a conversation you've been avoiding. Slow the inhale, lengthen the exhale. Each long exhale tells the body: we're safe here.</p>
 <h4>The rephrase</h4>
-<p>When you catch yourself thinking <em>I am [anxious, angry, behind, not enough]</em>, turn it into <em>there's [anxiety, anger] here</em>. Notice what changes.</p>
+<p>When you catch yourself thinking <em>I am [anxious, angry, behind, not enough]</em>, turn it into <em>a part of me is [anxious, angry]</em>. Notice what changes.</p>
 <h4>The two-minute version (for when you're activated)</h4>
 <ol>
 <li><strong>Slow the Breath.</strong> Three straw breaths. Longer out than in.</li>
@@ -188,7 +188,7 @@ const COURSE_WEEKS = {
 <li>What happened, in a few plain sentences. Who, what, the moment the pressure hit.</li>
 <li>Where did you feel it in your body? Throat, chest, belly, somewhere else? What was the quality, tight, hot, heavy, hollow?</li>
 <li>What did you automatically do, or want to do? The old move.</li>
-<li>Now write the verdict you told yourself: <em>I am ___.</em> Then rewrite it as an observation: <em>There's ___ here.</em> Read both out loud. Note what shifts.</li>
+<li>Now write the verdict you told yourself: <em>I am ___.</em> Then rewrite it as an observation: <em>A part of me is ___.</em> Read both out loud. Note what shifts.</li>
 </ol>
 <p class="note">Keep it to a few paragraphs. This is practice, not excavation. If something bigger surfaces and wants more room, that's exactly the work we'll talk about in your Integration and Next-Step Session.</p>`,
   },
@@ -215,7 +215,7 @@ const COURSE_WEEKS = {
 <h4>Most days this week</h4>
 <p>Sit about twelve minutes with this week's audio once it's here; until then, sit with the Week 1 breathing recording and practice the staying rhythm on your own. The point is to sit, not to do the hardest version. A missed day is fine. Begin again the next.</p>
 <h4>The staying rhythm</h4>
-<p>Touch the sensation on the exhale. Let it go on the inhale. Return. Small doses, not endurance; the name for this is titration. If it gets too big, stay longer with the breath before you go back. And you're done with a rep when something settles: a sigh, the shoulders dropping.</p>
+<p>Touch the sensation on the exhale. Let it go on the inhale. Return. Small doses, not endurance; the name for this is titration. If it gets too big, touch only on the exhale, and if that's still too much, bring your attention into your hands. And you're done with a rep when something settles: a sigh, the shoulders dropping.</p>
 <h4>Through the day, in thirty seconds</h4>
 <p>When something fires, a meeting, a text, a pickup line at school: notice the sensation, stay with it for a moment, let attention rest on your breath or hands, come back once. You're telling the body you won't override it this time.</p>
 <h4>The two-minute version</h4>
@@ -300,7 +300,7 @@ const COURSE_WEEKS = {
 <h3>The Whole Arc, and What's Underneath</h3>
 <p>Here's the shape of everything you've practiced, in one line: come back from the old panic, restore contact with yourself, then take one small step that doesn't require you to abandon yourself to stay connected.</p>
 <p>SENSE is the inner half. Slow the breath so the system settles. Enter the body so you're dealing with what's real and not the story. Name it so there's a little distance. Stay with it in small doses. Let it move without bracing. That's how you come home.</p>
-<p>STEP is the outer half. Still, so the reflex doesn't drive. Tune in to the trade, so you see what you were about to give away. Expand the options, so it's not just fight or fold. Practice, one honest step. That's how you bring the home you found into your relationships.</p>
+<p>STEP is the outer half. Still, so the reflex doesn't drive. Tune in to the trade, so you see what you were about to give away. Expand the options, so it's not just attack or cave. Practice, one honest step. That's how you bring the home you found into your relationships.</p>
 <h4>What you've been brushing against</h4>
 <p>When you stay with a sensation and it softens into something more tender, you're meeting the edge of what the book calls the sacred wound. It's the imprint of all the times you contorted yourself to belong. The reflex to perform, the tightness, the inner critic, those are protectors. They formed around that tender place to keep it safe, and they are good at their job: they run about five or ten steps ahead of you, always scanning, because nothing in the system has ever been prepared to let you feel that wound directly. They are not your defects. They were your survival, and often they became your gifts. Even the aliveness in you got co-opted into keeping you safe.</p>
 <p>The deeper work is turning toward that wound with the kindness it never got, so the protectors don't have to work so hard. That's not a straightaway. It goes better with company, and this course didn't ask you to do it alone. But it's the real doorway, and you've been standing near it all month. As the book puts it: the ache you've been running from isn't the problem. It's the signal, and it's the way back.</p>
