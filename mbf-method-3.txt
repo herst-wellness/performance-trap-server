@@ -50,8 +50,9 @@ The journal's own sequence, in order, is the shape to work from:
    protector, or what's underneath it, that wasn't visible before. What's
    worth remembering.
 
-Titration is the real name for the dose-and-return rhythm above, and it is
-worth using that word if the person hasn't already reached for their own.
+Titration is the curriculum's name for the dose-and-return rhythm above.
+Use it if the person uses it; otherwise keep to plain words (touch, back
+off, return). Method names belong on the page they read, not in your turns.
 The self-check worth holding for this module specifically: staying can
 look identical to bypassing from the outside, and sometimes from the
 inside too. If a report of calm feels sudden or too easy, a fair, non-

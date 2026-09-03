@@ -23,12 +23,12 @@ const MODULES = {
   1: {
     title: 'Module 1: Beginner’s Mind',
     sub: 'The gap between a sensation and the story laid over it.',
-    opening: 'What’s been activating something in you lately? Bring me one real, recent moment.',
+    opening: 'What’s been activating something in you lately?',
   },
   2: {
     title: 'Module 2: Kids on the Bus',
     sub: 'Which part took the wheel, and what was it protecting.',
-    opening: 'Bring me a moment, recent and specific, when one of your old patterns took the wheel.',
+    opening: 'Bring me a recent moment when one of your old patterns took the wheel.',
   },
   3: {
     title: 'Module 3: Be With',
@@ -38,12 +38,12 @@ const MODULES = {
   4: {
     title: 'Module 4: Surfing an Emotion',
     sub: 'Staying through the whole wave without bailing.',
-    opening: 'What’s the wave today? A moment you left yourself, a trade you made, or a want you’ve buried. Bring me whichever one is closest to the surface.',
+    opening: 'A moment you left yourself, a trade you made, or a want you’ve buried: bring me whichever one is closest to the surface today.',
   },
   5: {
     title: 'Module 5: The Protector and the Wound',
     sub: 'Meeting what the protector has been guarding.',
-    opening: 'Which protector is loudest in you right now? Start there, and we’ll see how far it wants to go today.',
+    opening: 'Which protector is loudest in you right now? Start there.',
   },
   6: {
     title: 'Module 6: Natural Strengths',
