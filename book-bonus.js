@@ -11,6 +11,12 @@ const { ONE_PAGERS, ONE_PAGER_BY_SLUG, onePagerPageHtml } = require('./book-onep
 const BONUS_PATH = '/book-bonus';
 const ONE_PAGER_PREFIX = '/book-bonus/one-pagers/';
 
+// SENSE full walk-through, recorded 9/1/26. Served from the same public R2
+// bucket as the audiobook pages (AUDIO_BASE_URL in server.js) because R2
+// honors range requests, so a listener can scrub inside a 16-minute track;
+// the local /audio/ static route sends the whole file and cannot.
+const SENSE_AUDIO_URL = 'https://pub-3e45b3813f2d4b1b81f913aad060a3b8.r2.dev/audio/sense-full-practice.mp3';
+
 function noStoreHeaders(contentType) {
   return {
     'Content-Type': contentType,
@@ -64,7 +70,9 @@ ul li{margin-bottom:8px}
     <p>Reading a practice and doing one are different things. These are me walking you through it, so you can close your eyes and follow along.</p>
     <p><strong>The breathing practice.</strong> Twelve minutes. The straw breath, and coming back to the body.</p>
     <audio controls preload="none" src="/audio/onramp-breath-12min.mp3" style="width:100%"></audio>
-    <div class="soon">The rest are being recorded and will appear here as they're ready: SENSE, the full practice. STEP, for the moment after contact. The two-minute straw breath. And one for each Part Two chapter: overwhelm, the inner critic, emptiness, self-abandonment, and the pressure to perform.</div>
+    <p><strong>SENSE, the full practice.</strong> Sixteen minutes. Slowing the breath, entering the body, naming, staying, equanimity.</p>
+    <audio controls preload="none" src="${SENSE_AUDIO_URL}" style="width:100%"></audio>
+    <div class="soon">The rest are being recorded and will appear here as they're ready: STEP, for the moment after contact. The two-minute straw breath. And one for the inner critic, for when the voice sounds like the truth.</div>
   </div>
 
   <div class="card">
