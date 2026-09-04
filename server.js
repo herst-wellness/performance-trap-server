@@ -1869,6 +1869,21 @@ const server = http.createServer(async (req, res) => {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow">
 <title>The Performance Trap &mdash; Chad Herst</title>
+<!-- The audiobook page is noindex and private, but Chad still sends people to
+     it directly at launch, and an arrival that is not counted on the day cannot
+     be counted later. Same property as the rest of the site. This route sends no
+     Content-Security-Policy at all, so unlike /book-bonus and /listen/chapter-one
+     there is nothing here that has to be told to permit the tag; if a policy is
+     ever added to this route, it has to allow www.googletagmanager.com on
+     script-src and the bare host https://analytics.google.com on connect-src, or
+     this tag will load and silently report nothing. -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-RGBQ9JX82L"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-RGBQ9JX82L');
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
 <style>
