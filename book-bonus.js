@@ -17,6 +17,76 @@ const ONE_PAGER_PREFIX = '/book-bonus/one-pagers/';
 // the local /audio/ static route sends the whole file and cannot.
 const SENSE_AUDIO_URL = 'https://pub-3e45b3813f2d4b1b81f913aad060a3b8.r2.dev/audio/sense-full-practice.mp3';
 
+// The bucket the SENSE recording streams from. Named separately because the
+// Content-Security-Policy below has to list it on media-src: if it is missing
+// there, the browser refuses the audio and the player sits silent with no
+// error message anywhere. Same shape of failure as the analytics one this
+// page's tag was added to fix.
+const AUDIO_HOST = 'https://pub-3e45b3813f2d4b1b81f913aad060a3b8.r2.dev';
+
+// This is the address printed inside the book, so arrivals here are the ones
+// that matter most in October, and an arrival that is not counted on the day
+// cannot be recovered afterwards. The property is the same one the rest of the
+// site and /listen/chapter-one report to.
+const GA_MEASUREMENT_ID = 'G-RGBQ9JX82L';
+
+// The Google tag, in the two halves the browser needs: the loader from
+// googletagmanager (allowed by name on script-src) and an inline config block
+// (allowed by the per-request nonce). Both must be permitted or the page looks
+// instrumented and measures nothing.
+function analyticsHead(nonce) {
+  return `<script async src="https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}"></script>
+<script nonce="${nonce}">
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', '${GA_MEASUREMENT_ID}');
+</script>`;
+}
+
+// A fresh nonce per request, never reused, matching /listen/chapter-one. These
+// pages are sent with Cache-Control: no-store, so a cached body can never be
+// replayed against a newer header's nonce.
+function newNonce() {
+  return crypto.randomBytes(16).toString('base64');
+}
+
+function pageHeaders(nonce) {
+  return {
+    ...noStoreHeaders('text/html; charset=utf-8'),
+    // Two deliberate choices here, both learned the hard way elsewhere in this
+    // repo:
+    //
+    // connect-src lists the bare host https://analytics.google.com as well as
+    // the wildcard. GA4 sends its page_view to https://analytics.google.com/g/collect
+    // and a wildcard does not match a bare domain, so without this the tag
+    // loads, reports nothing, and looks fine. stats.g.doubleclick.net and
+    // www.google.com/g/collect stay blocked on purpose: those are Google
+    // Signals advertising pings, not measurement.
+    //
+    // style-src takes 'unsafe-inline' rather than the nonce used on
+    // /listen/chapter-one. This page carries eight inline style attributes
+    // (the two audio players' full width, heading and button spacing), and a
+    // nonce cannot authorize a style attribute, only a <style> block. A
+    // nonce here would silently drop that styling instead of erroring. Styles
+    // on this page hold nothing executable and no visitor-supplied content,
+    // so the protection that matters, script-src, stays strict.
+    'Content-Security-Policy': [
+      `default-src 'self'`,
+      `script-src 'self' 'nonce-${nonce}' https://www.googletagmanager.com`,
+      `style-src 'self' 'unsafe-inline' https://fonts.googleapis.com`,
+      `font-src 'self' https://fonts.gstatic.com`,
+      `img-src 'self' data:`,
+      `media-src 'self' ${AUDIO_HOST}`,
+      `connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://analytics.google.com`,
+      `frame-src 'none'`,
+      `frame-ancestors 'none'`,
+      `base-uri 'none'`,
+      `form-action 'self'`,
+    ].join('; '),
+  };
+}
+
 function noStoreHeaders(contentType) {
   return {
     'Content-Type': contentType,
@@ -27,13 +97,14 @@ function noStoreHeaders(contentType) {
   };
 }
 
-function bonusPage() {
+function bonusPage(nonce) {
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>The practices, in one place | The Performance Trap</title>
+${analyticsHead(nonce)}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
@@ -101,7 +172,7 @@ ul li{margin-bottom:8px}
   <p>That's the whole page. Take the tools. Use them badly at first. That's how it goes.</p>
   <div class="footer">Herst Wellness</div>
 </main>
-<script>
+<script nonce="${nonce}">
 document.getElementById('bonusSignup').addEventListener('click', async function(){
   var note = document.getElementById('bonusSignupNote');
   var email = document.getElementById('bonusEmail').value.trim();
@@ -123,8 +194,9 @@ document.getElementById('bonusSignup').addEventListener('click', async function(
 
 function handleBonusRoute(req, res, helpers) {
   if (req.method === 'GET' && req.url === BONUS_PATH) {
-    res.writeHead(200, noStoreHeaders('text/html; charset=utf-8'));
-    res.end(bonusPage());
+    const nonce = newNonce();
+    res.writeHead(200, pageHeaders(nonce));
+    res.end(bonusPage(nonce));
     return true;
   }
 
@@ -136,8 +208,9 @@ function handleBonusRoute(req, res, helpers) {
       res.end('Not found');
       return true;
     }
-    res.writeHead(200, noStoreHeaders('text/html; charset=utf-8'));
-    res.end(onePagerPageHtml(page));
+    const nonce = newNonce();
+    res.writeHead(200, pageHeaders(nonce));
+    res.end(onePagerPageHtml(page, analyticsHead(nonce)));
     return true;
   }
 
