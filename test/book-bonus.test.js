@@ -187,3 +187,31 @@ test('the five one-pagers under /book-bonus are measured and protected the same 
     assert.ok(html.includes('/book-bonus'), `${page.slug} must still link back to the practices page`);
   }
 });
+
+test('the audiobook page at /book carries the Google tag too', { timeout: 30000 }, async (t) => {
+  const port = await getOpenPort();
+  const child = await startServer(port);
+  t.after(() => child.kill());
+
+  const res = await fetch('http://127.0.0.1:' + port + '/book');
+  assert.equal(res.status, 200);
+  const html = await res.text();
+
+  assert.ok(html.includes(`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`), 'the audiobook page must carry the tag loader');
+  assert.ok(html.includes(`gtag('config', '${GA_ID}')`), 'the audiobook page must configure the tag');
+
+  // This route deliberately sends no Content-Security-Policy, so nothing has
+  // to permit the tag. If one is ever added here, the tag will keep loading
+  // and quietly stop reporting unless the policy names the tag host and the
+  // bare analytics host. This assertion is what would catch that.
+  const csp = res.headers.get('content-security-policy');
+  if (csp) {
+    const connectSrc = directive(csp, 'connect-src');
+    assert.ok(connectSrc.includes('https://analytics.google.com'), 'a policy added here must let the tag report to the bare analytics host');
+    assert.ok(directive(csp, 'script-src').includes('https://www.googletagmanager.com'), 'a policy added here must let the tag load');
+  }
+
+  // The page still is what it was: private, and still the audiobook.
+  assert.match(html, /noindex/, 'the audiobook page stays out of search results');
+  assert.ok(html.includes('Opening Credits'), 'the track list must still be on the page');
+});
