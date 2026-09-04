@@ -572,7 +572,16 @@ test('the book-bonus page serves its promises: field-guide PDF, breath audio, co
   assert.ok(html.includes('/course/on-ramp'), 'the course must be the featured next step');
   assert.match(html, /being recorded/i, 'unrecorded audios must still be named honestly');
   assert.doesNotMatch(html, /—/);
-  assert.doesNotMatch(html, /googletagmanager|google-analytics/i);
+  // Until 9/4/26 this line asserted the opposite, that this page carried no
+  // Google tag. It was written when the page was built and no privacy rule
+  // anywhere asked for it; the page plan's "no gating" rule is about not
+  // charging a reader an email for materials the book already promised, not
+  // about measurement. Chad asked for the tag on 9/4/26 because this is the
+  // address printed inside the book and an October arrival that is not counted
+  // on the day cannot be recovered later. The private course pages above still
+  // assert the opposite, deliberately. The tag's own behaviour is asserted in
+  // test/book-bonus.test.js.
+  assert.match(html, /googletagmanager/i, 'the printed-book page must be measurable');
   assert.doesNotMatch(html, /Being made now/, 'the one-pagers are live, not a placeholder anymore');
   for (const p of ONE_PAGERS) {
     assert.ok(html.includes(`/book-bonus/one-pagers/${p.slug}`), `bonus page must link to the ${p.slug} one-pager`);
