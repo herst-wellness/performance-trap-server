@@ -16,7 +16,7 @@ const MAILCHIMP_LIST_ID = process.env.MAILCHIMP_LIST_ID;
 const MAILCHIMP_SERVER = process.env.MAILCHIMP_SERVER_PREFIX || 'us6';
 
 // ── LOGO URL (served as static file from /public) ─────────────
-const BASE_URL = 'https://performance-trap-server.onrender.com';
+const BASE_URL = 'https://practice.herstwellness.com';
 const AUDIO_BASE_URL = 'https://pub-3e45b3813f2d4b1b81f913aad060a3b8.r2.dev/audio';
 const LOGO_URL = BASE_URL + '/Herst-Wellness-Logo-cropped.jpg';
 const CHAPTER_ONE_AUDIO_URL = BASE_URL + '/audio/chapter-one.mp3';
@@ -1077,7 +1077,7 @@ That's the real work. That's where things change.
 
 If you want to hear where this whole framework came from — the day my own performance trap finally cracked — I recorded the first chapter of my book in my own voice. It's twenty-eight minutes. The phone call. My brother. The day everything I'd built started to come apart.
 
-https://performance-trap-server.onrender.com/listen/chapter-one
+https://practice.herstwellness.com/listen/chapter-one
 
 For now, sit with this one question:
 

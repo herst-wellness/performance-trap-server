@@ -162,7 +162,7 @@ test('completion offers three intentional next steps with clear newsletter discl
   assert.ok(html.indexOf('Get Chapter One') < html.indexOf('Explore Foundations'));
   assert.match(html, /When you enter your email, you will also receive Chad's newsletter\. Unsubscribe at any time\./);
   assert.match(html, /data-event="conversationClick" href="https:\/\/chadherst\.as\.me\/30-minute-consult-chad-herst"/);
-  assert.match(html, /data-event="chapterClick" href="https:\/\/performance-trap-server\.onrender\.com\/listen\/chapter-one"/);
+  assert.match(html, /data-event="chapterClick" href="https:\/\/practice\.herstwellness\.com\/listen\/chapter-one"/);
   assert.match(html, /data-event="mindbodyPageClick" href="https:\/\/herstwellness\.com\/mind-body-foundations"/);
   assert.doesNotMatch(html, /data-event="emailListClick"/);
 });

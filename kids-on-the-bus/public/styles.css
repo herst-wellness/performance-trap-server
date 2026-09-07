@@ -96,7 +96,20 @@ p { line-height: 1.58; }
 }
 
 .information-notice .notice-label { margin-top: 0; }
+.information-notice h3 { margin-top: 0; }
 .information-notice p { margin: 12px 0 0; font-size: 0.98rem; }
+
+.notice-more { margin-top: 16px; }
+.notice-more summary {
+  cursor: pointer;
+  color: var(--muted-brown);
+  font-size: 0.86rem;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+.notice-more[open] summary { margin-bottom: 4px; }
+.notice-more p { font-size: 0.88rem; color: var(--muted-brown); }
 
 .field { display: grid; gap: 8px; margin: 18px 0; font-weight: 600; }
 input[type="password"], textarea, select {
