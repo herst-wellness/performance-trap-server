@@ -126,6 +126,10 @@ test('the /book-bonus page carries the Google tag AND a policy that lets the tag
   // AUDIO_HOST has to appear on media-src: a missing entry there fails silently,
   // with a player that renders and simply never sounds.
   assert.ok(html.includes(`src="${AUDIO_HOST}/audio/straw-breath-daily.mp3"`), 'the straw breath daily practice must be on the page');
+  assert.ok(html.includes(`src="${AUDIO_HOST}/audio/step-full-practice.mp3"`), 'STEP must be on the page');
+  assert.ok(html.includes(`src="${AUDIO_HOST}/audio/inner-critic-full-practice.mp3"`), 'the inner critic must be on the page');
+  assert.ok(!/will appear here[^<]*inner critic/i.test(html), 'the inner critic must not still be promised as coming once it is on the page');
+  assert.ok(!/will appear here as they're ready:[^<]*STEP/.test(html), 'STEP must not still be promised as coming once it is on the page');
 
   // 5. The page's own styling survives. Eight inline style attributes carry
   //    the audio players' width and the heading and button spacing, and a

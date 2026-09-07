@@ -23,6 +23,16 @@ const SENSE_AUDIO_URL = 'https://pub-3e45b3813f2d4b1b81f913aad060a3b8.r2.dev/aud
 // Same R2 bucket and the same reason: range requests.
 const STRAW_AUDIO_URL = 'https://pub-3e45b3813f2d4b1b81f913aad060a3b8.r2.dev/audio/straw-breath-daily.mp3';
 
+// STEP, recorded 9/4/26 and spaced to sixteen minutes on 9/7/26. The one that
+// follows a real moment with a real person, so it asks more of the listener
+// than the others and holds the longest silences on this page.
+const STEP_AUDIO_URL = 'https://pub-3e45b3813f2d4b1b81f913aad060a3b8.r2.dev/audio/step-full-practice.mp3';
+
+// The inner critic, recorded 9/7/26. It goes furthest of the four: it ends by
+// turning toward the part of the listener that has been taking the criticism,
+// so its copy says that plainly rather than selling it as relief.
+const CRITIC_AUDIO_URL = 'https://pub-3e45b3813f2d4b1b81f913aad060a3b8.r2.dev/audio/inner-critic-full-practice.mp3';
+
 // The bucket the SENSE recording streams from. Named separately because the
 // Content-Security-Policy below has to list it on media-src: if it is missing
 // there, the browser refuses the audio and the player sits silent with no
@@ -151,7 +161,11 @@ ul li{margin-bottom:8px}
     <audio controls preload="none" src="${STRAW_AUDIO_URL}" style="width:100%"></audio>
     <p><strong>SENSE, the full practice.</strong> Sixteen minutes. Slowing the breath, entering the body, naming, staying, equanimity.</p>
     <audio controls preload="none" src="${SENSE_AUDIO_URL}" style="width:100%"></audio>
-    <div class="soon">The rest are being recorded and will appear here as they're ready: STEP, for the moment after contact. The two-minute straw breath. And one for the inner critic, for when the voice sounds like the truth.</div>
+    <p><strong>STEP, the full practice.</strong> Sixteen minutes. For after it happened. Bring to mind a moment you went quiet or small around someone, get still, find the trade you were about to make, and find the option that isn't say it or swallow it.</p>
+    <audio controls preload="none" src="${STEP_AUDIO_URL}" style="width:100%"></audio>
+    <p><strong>The inner critic.</strong> Sixteen minutes. For when the voice sounds like the truth. What it thinks you have to become to deserve love, what it's protecting, and the part of you that's been taking it.</p>
+    <audio controls preload="none" src="${CRITIC_AUDIO_URL}" style="width:100%"></audio>
+    <div class="soon">One more is being recorded and will appear here when it's ready: the two-minute straw breath, for the middle of a day.</div>
   </div>
 
   <div class="card">
