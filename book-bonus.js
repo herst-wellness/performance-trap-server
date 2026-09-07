@@ -17,6 +17,12 @@ const ONE_PAGER_PREFIX = '/book-bonus/one-pagers/';
 // the local /audio/ static route sends the whole file and cannot.
 const SENSE_AUDIO_URL = 'https://pub-3e45b3813f2d4b1b81f913aad060a3b8.r2.dev/audio/sense-full-practice.mp3';
 
+// The straw breath as a daily practice, recorded 9/7/26. Sixteen minutes, and
+// the only one on this page that sets a breathing rhythm and then holds the
+// listener in it, so it is the one people are most likely to scrub around in.
+// Same R2 bucket and the same reason: range requests.
+const STRAW_AUDIO_URL = 'https://pub-3e45b3813f2d4b1b81f913aad060a3b8.r2.dev/audio/straw-breath-daily.mp3';
+
 // The bucket the SENSE recording streams from. Named separately because the
 // Content-Security-Policy below has to list it on media-src: if it is missing
 // there, the browser refuses the audio and the player sits silent with no
@@ -141,6 +147,8 @@ ul li{margin-bottom:8px}
     <p>Reading a practice and doing one are different things. These are me walking you through it, so you can close your eyes and follow along.</p>
     <p><strong>The breathing practice.</strong> Twelve minutes. The straw breath, and coming back to the body.</p>
     <audio controls preload="none" src="/audio/onramp-breath-12min.mp3" style="width:100%"></audio>
+    <p><strong>The straw breath, the daily practice.</strong> Sixteen minutes. I count you into five in and seven out, then leave you in it. This is the one to do in the morning, before the day starts pulling on you.</p>
+    <audio controls preload="none" src="${STRAW_AUDIO_URL}" style="width:100%"></audio>
     <p><strong>SENSE, the full practice.</strong> Sixteen minutes. Slowing the breath, entering the body, naming, staying, equanimity.</p>
     <audio controls preload="none" src="${SENSE_AUDIO_URL}" style="width:100%"></audio>
     <div class="soon">The rest are being recorded and will appear here as they're ready: STEP, for the moment after contact. The two-minute straw breath. And one for the inner critic, for when the voice sounds like the truth.</div>

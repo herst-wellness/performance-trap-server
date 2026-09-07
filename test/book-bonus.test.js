@@ -122,6 +122,10 @@ test('the /book-bonus page carries the Google tag AND a policy that lets the tag
   assert.ok(mediaSrc.includes("'self'"), 'media-src must allow the recordings served from this server');
   assert.ok(html.includes(`src="${AUDIO_HOST}/audio/sense-full-practice.mp3"`), 'the SENSE recording must still be on the page');
   assert.ok(html.includes('src="/audio/onramp-breath-12min.mp3"'), 'the breathing recording must still be on the page');
+  // The straw breath streams from the same host, which is the whole reason
+  // AUDIO_HOST has to appear on media-src: a missing entry there fails silently,
+  // with a player that renders and simply never sounds.
+  assert.ok(html.includes(`src="${AUDIO_HOST}/audio/straw-breath-daily.mp3"`), 'the straw breath daily practice must be on the page');
 
   // 5. The page's own styling survives. Eight inline style attributes carry
   //    the audio players' width and the heading and button spacing, and a
