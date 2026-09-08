@@ -57,6 +57,27 @@ for (const n of Object.keys(WEEKS)) {
 }
 const INDEX_PATH = '/practice/on-ramp';
 
+// One free sitting for readers arriving from the book-bonus page. Same
+// engine as Week 1 (SENSE, early form), no access code, no course context,
+// capped short. It exists so a reader can feel what it is like to have
+// something track what they say before deciding on the course. Kept out of
+// WEEKS so the course index and lesson pages never list it.
+const TRY = {
+  public: true,
+  title: 'One sitting, on something real',
+  sub: 'SENSE, from the book, on one moment from your day.',
+  opening: 'Bring me something that triggered you recently, or something that\'s been brewing below the surface. Either counts.',
+  methods: [SENSE_EARLY],
+  weekFrame: readPart('onramp-try-frame.txt'),
+  pagePath: '/book-bonus/try',
+  apiPath: '/api/book-bonus/try',
+};
+TRY.instructions = [CORE_OPEN, ...TRY.methods, TRY.weekFrame, CORE_CLOSE, TAIL].join('\n\n');
+// After this many stored turns the model is told to close; after the hard
+// cap the server answers for it. Eight exchanges is a full Week 1 rep.
+const TRY_SOFT_TURNS = 14;
+const TRY_HARD_TURNS = 22;
+
 const SELF_HARM_URGENT =
   /\b(kill myself|suicide|take (?:all |the )?pills|hurt myself|end my life)\b|\bpills\b[\s\S]*\b(?:take them|going to take)\b/i;
 const IMMEDIACY =
@@ -674,7 +695,7 @@ function companionPage(week) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow, noarchive">
-<title>The Daily Rep, ${week.title.split(":")[0]} | Herst Wellness</title>
+<title>${week.public ? 'One sitting, on something real' : 'The Daily Rep, ' + week.title.split(":")[0]} | Herst Wellness</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
@@ -686,15 +707,17 @@ function companionPage(week) {
 <body>
 <main class="shell">
   <div class="brand"><img src="/Herst-Wellness-Logo-cropped.jpg" alt="Herst Wellness"></div>
-  <nav style="font:13px/1.4 Arial,sans-serif;color:#78644F;margin:-8px 0 14px;text-align:center"><a style="color:var(--gold);text-decoration:none" href="/course/on-ramp">The Practice</a> &rsaquo; <a style="color:var(--gold);text-decoration:none" href="/course/on-ramp/week-${week.pagePath.slice(-1)}">Week ${week.pagePath.slice(-1)} lesson</a> &rsaquo; <span>The daily rep</span></nav>
+  <nav style="font:13px/1.4 Arial,sans-serif;color:#78644F;margin:-8px 0 14px;text-align:center">${week.public
+    ? `<a style="color:var(--gold);text-decoration:none" href="/book-bonus">The book bonus page</a> &rsaquo; <span>One sitting</span>`
+    : `<a style="color:var(--gold);text-decoration:none" href="/course/on-ramp">The Practice</a> &rsaquo; <a style="color:var(--gold);text-decoration:none" href="/course/on-ramp/week-${week.pagePath.slice(-1)}">Week ${week.pagePath.slice(-1)} lesson</a> &rsaquo; <span>The daily rep</span>`}</nav>
   <div class="rule"></div>
   <header class="hero">
-    <div class="eyebrow">The Performance Trap Practice</div>
+    <div class="eyebrow">${week.public ? 'From the book' : 'The Performance Trap Practice'}</div>
     <h1>${week.title}</h1>
     <p>${week.sub}</p>
   </header>
 
-  <section id="accessCard" class="card">
+  <section id="accessCard" class="card${week.public ? ' hidden' : ''}">
     <h2>Your access code</h2>
     <p>Enter the access code from your enrollment. The same code opens the weekly lessons and this companion.</p>
     <div class="field">
@@ -706,12 +729,16 @@ function companionPage(week) {
   </section>
 
   <section id="consentCard" class="card hidden">
-    <h2>Welcome to the daily rep</h2>
+${week.public ? `    <h2>One sitting, on something real</h2>
+    <p>You've read about SENSE. This is a chance to do it once, on one real moment from the last few days, with something responding to what you write. The moment does not have to be big: the email that tightened your chest, the meeting where you shrank, the text you almost fired back. Small is the point.</p>
+    <p>You will write, and the companion will write back, helping you make the next move: out of the story and back into the body. It is not me, and it is not therapy. It keeps nothing after you end. One sitting, about ten minutes, and it will bring itself to a close.</p>
+` : `    <h2>Welcome to the daily rep</h2>
     <p>If you are here, you have the map: SENSE for coming back to yourself when the pressure hits, STEP for bringing that back into the room with other people. This is where you get the reps. You bring one real moment from your day, and we run the practice on it together.</p>
     <p>The moment does not have to be big: the email that tightened your chest, the meeting where you shrank, the text you almost fired back. Small is the point.</p>
     <p>You will write, and the companion will write back, responding to what you write and helping you make the next move: back into the body, staying with what you find, noticing the trade you were about to make, shaping the one honest sentence. If you would rather talk than type, you can speak and your words arrive in the box as text, yours to change before you send. It keeps nothing after you end. It is not me, and it is not therapy. It is practice, on the straightaways.</p>
     <p>The deeper material, the old wound underneath the protectors, is real work, and it goes better with company. That is what your Integration and Next-Step Session with me is for. When something big stirs here, the companion will help you note it for that conversation rather than digging into it alone.</p>
     <p>Missing a day is not failure. There is no streak to protect here. If a day got away from you, you just begin again the next one.</p>
+`}
     <div class="rule" style="margin:26px 0"></div>
     <h2 style="font-size:20px">Before you begin</h2>
     <div id="privacyNotice" class="notice"></div>
@@ -741,7 +768,7 @@ function companionPage(week) {
 
   <section id="session" class="session hidden">
     <div class="session-head">
-      <div><div class="session-title">The Daily Rep</div><div id="modeLabel" class="mode"></div></div>
+      <div><div class="session-title">${week.public ? 'One sitting' : 'The Daily Rep'}</div><div id="modeLabel" class="mode"></div></div>
       <div class="row">
         <button id="copyButton" class="button secondary">Copy</button>
         <button id="downloadButton" class="button secondary">Download</button>
@@ -829,8 +856,8 @@ function companionPage(week) {
     el('messages').textContent = '';
     el('messageInput').value = '';
     el('session').classList.add('hidden');
-    el('consentCard').classList.add('hidden');
-    el('accessCard').classList.remove('hidden');
+    el('consentCard').classList.${week.public ? "remove" : "add"}('hidden');
+    el('accessCard').classList.${week.public ? "add" : "remove"}('hidden');
     el('accessCode').value = '';
     setLocked(false);
   }
@@ -859,9 +886,28 @@ function companionPage(week) {
     }
   });
 
+  // The public sitting has no code: fetch the notice and go straight to the
+  // welcome. The speak button stays hidden there; transcription is gated.
+  if (${week.public ? 'true' : 'false'}) {
+    (async function(){
+      try {
+        var r = await fetch('${week.apiPath}', {cache:'no-store'});
+        var d = await r.json();
+        provider = d.provider;
+        el('privacyNotice').textContent = d.notice;
+        el('modeLabel').textContent = providerLabel(provider);
+        el('consentCard').classList.remove('hidden');
+      } catch (e) {
+        el('consentCard').classList.remove('hidden');
+        el('privacyNotice').textContent = 'The companion is not available right now. Please try again later.';
+        el('beginButton').disabled = true;
+      }
+    })();
+  }
+
   // Arriving from a lesson page that already unlocked this browser session:
   // try the stored code silently, so the person is not asked twice.
-  if (accessCode) {
+  if (!${week.public ? 'true' : 'false'} && accessCode) {
     el('accessCode').value = accessCode;
     el('unlockButton').click();
   }
@@ -1224,7 +1270,7 @@ async function handleOnrampRoute(req, res) {
     return true;
   }
 
-  const week = Object.values(WEEKS).find(
+  const week = [...Object.values(WEEKS), TRY].find(
     (w) => req.url === w.pagePath || req.url === w.apiPath
   );
   if (!week) return false;
@@ -1244,7 +1290,7 @@ async function handleOnrampRoute(req, res) {
     return true;
   }
 
-  const access = hasAccess(req);
+  const access = week.public ? { ok: true } : hasAccess(req);
   if (!access.ok) {
     sendJson(
       res,
@@ -1297,7 +1343,22 @@ async function handleOnrampRoute(req, res) {
       return true;
     }
 
-    const generated = await generateReflection(week.instructions, body.message, body.history, provider);
+    let instructions = week.instructions;
+    const turns = Array.isArray(body.history) ? body.history.length : 0;
+    if (week.public && turns >= TRY_HARD_TURNS) {
+      sendJson(res, 200, {
+        route: 'continue_reflection',
+        response: 'This is where we stop for today. You can copy or download what is here. If you want to keep doing this, a little each day, that is what The Performance Trap Practice is for, and it is on the page you came from.',
+        lockSession: true,
+        handledBy: 'turn-cap',
+        provider,
+      });
+      return true;
+    }
+    if (week.public && turns >= TRY_SOFT_TURNS) {
+      instructions += '\n\nCLOSE NOW. This is the last exchange of the sitting. Finish the beat the person is in, then do the close, briefly, and the single sentence about the daily version. Do not open anything new.';
+    }
+    const generated = await generateReflection(instructions, body.message, body.history, provider);
     sendJson(res, 200, {
       route: 'continue_reflection',
       response: generated.response,
@@ -1315,6 +1376,7 @@ async function handleOnrampRoute(req, res) {
 
 module.exports = {
   INDEX_PATH,
+  TRY,
   hasAccess,
   issueSignedCode,
   verifySignedCode,

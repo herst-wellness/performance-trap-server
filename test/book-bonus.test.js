@@ -149,6 +149,29 @@ test('the /book-bonus page carries the Google tag AND a policy that lets the tag
   assert.ok(html.includes('href="https://herstwellness.com">Herst Wellness'), 'the footer wordmark links home');
   assert.ok(/as they're ready/.test(html) === false, 'the signup no longer promises audios that are already on the page');
 
+  // The free sitting: linked from the page, open without a code, capped.
+  assert.ok(html.includes('href="/book-bonus/try"'), 'the page must link to the one free sitting');
+  const tryPage = await fetch('http://127.0.0.1:' + port + '/book-bonus/try');
+  assert.equal(tryPage.status, 200, 'the sitting page opens without a code');
+  const tryHtml = await tryPage.text();
+  assert.ok(tryHtml.includes('One sitting, on something real'), 'the sitting page carries its own welcome');
+  assert.ok(tryHtml.includes('id="accessCard" class="card hidden"'), 'the access card is hidden on the public sitting');
+  assert.ok(!/Integration and Next-Step Session/.test(tryHtml.split('id="consentCard"')[1].split('</section>')[0]), 'the public welcome never mentions the course session');
+  const tryApi = await fetch('http://127.0.0.1:' + port + '/api/book-bonus/try');
+  assert.equal(tryApi.status, 200, 'the sitting API answers without a code');
+  const tryBad = await fetch('http://127.0.0.1:' + port + '/api/book-bonus/try', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: '' }) });
+  assert.equal(tryBad.status, 400, 'an empty message is refused');
+  const capped = await fetch('http://127.0.0.1:' + port + '/api/book-bonus/try', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+    // adultConfirmed and country are what the page sends; the safety layer
+    // runs first and answers for itself when they are missing, by design.
+    body: JSON.stringify({ message: 'still here', adultConfirmed: true, country: 'US', history: Array.from({ length: 22 }, (_, i) => ({ role: i % 2 ? 'assistant' : 'user', content: 'x' })) }) });
+  const cappedBody = await capped.json();
+  assert.equal(capped.status, 200);
+  assert.equal(cappedBody.lockSession, true, 'past the hard cap the server closes the sitting itself');
+  assert.equal(cappedBody.handledBy, 'turn-cap');
+  const weekStillGated = await fetch('http://127.0.0.1:' + port + '/api/on-ramp/week-1');
+  assert.ok([401, 403, 503].includes(weekStillGated.status), 'the course companion stays gated');
+
   // The cohort route validates like the newsletter route does.
   const badCohort = await fetch('http://127.0.0.1:' + port + '/cohort-interest', {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'nope' }),
