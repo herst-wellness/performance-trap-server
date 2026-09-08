@@ -565,7 +565,7 @@ test('the book-bonus page serves its promises: field-guide PDF, breath audio, co
   assert.equal(page.status, 200);
   const html = await page.text();
   assert.match(html, /The practices, in one place/);
-  assert.match(html, /Everything here is free\. No forms, no catch\./);
+  assert.match(html, /Everything here is free\. There's no catch\./, 'the page still says plainly that it is free');
   assert.ok(html.includes('/downloads/practices-in-one-place.pdf'));
   assert.ok(html.includes('/audio/onramp-breath-12min.mp3'));
   assert.ok(html.includes('audio/sense-full-practice.mp3'), 'bonus page must offer the SENSE full walk-through');
