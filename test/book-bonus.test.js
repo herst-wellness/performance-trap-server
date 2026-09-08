@@ -154,7 +154,12 @@ test('the /book-bonus page carries the Google tag AND a policy that lets the tag
   const tryPage = await fetch('http://127.0.0.1:' + port + '/book-bonus/try');
   assert.equal(tryPage.status, 200, 'the sitting page opens without a code');
   const tryHtml = await tryPage.text();
-  assert.ok(tryHtml.includes('One sitting, on something real'), 'the sitting page carries its own welcome');
+  assert.ok(tryHtml.includes('Try SENSE on something that happened this week'), 'the sitting page carries its own welcome');
+  assert.ok(tryHtml.includes("/api/book-bonus/transcribe"), 'the free sitting can speak, through its own ungated transcribe path');
+  const pubSpeak = await fetch('http://127.0.0.1:' + port + '/api/book-bonus/transcribe', { method: 'POST', headers: { 'Content-Type': 'audio/webm' }, body: '' });
+  assert.ok([400, 503].includes(pubSpeak.status), 'the public transcribe path is open (refuses only for no audio or no key), not access-gated');
+  const gatedSpeak = await fetch('http://127.0.0.1:' + port + '/api/on-ramp/transcribe', { method: 'POST', headers: { 'Content-Type': 'audio/webm' }, body: '' });
+  assert.ok([401, 403, 503].includes(gatedSpeak.status), 'the course transcribe path stays gated');
   assert.ok(tryHtml.includes('id="accessCard" class="card hidden"'), 'the access card is hidden on the public sitting');
   assert.ok(!/Integration and Next-Step Session/.test(tryHtml.split('id="consentCard"')[1].split('</section>')[0]), 'the public welcome never mentions the course session');
   const tryApi = await fetch('http://127.0.0.1:' + port + '/api/book-bonus/try');

@@ -64,7 +64,7 @@ const INDEX_PATH = '/practice/on-ramp';
 // WEEKS so the course index and lesson pages never list it.
 const TRY = {
   public: true,
-  title: 'One sitting, on something real',
+  title: 'Try SENSE on something that happened this week',
   sub: 'SENSE, from the book, on one moment from your day.',
   opening: 'Bring me something that triggered you recently, or something that\'s been brewing below the surface. Either counts.',
   methods: [SENSE_EARLY],
@@ -695,7 +695,7 @@ function companionPage(week) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow, noarchive">
-<title>${week.public ? 'One sitting, on something real' : 'The Daily Rep, ' + week.title.split(":")[0]} | Herst Wellness</title>
+<title>${week.public ? 'Try SENSE on something real' : 'The Daily Rep, ' + week.title.split(":")[0]} | Herst Wellness</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
@@ -729,9 +729,10 @@ function companionPage(week) {
   </section>
 
   <section id="consentCard" class="card hidden">
-${week.public ? `    <h2>One sitting, on something real</h2>
-    <p>You've read about SENSE. This is a chance to do it once, on one real moment from the last few days, with something responding to what you write. The moment does not have to be big: the email that tightened your chest, the meeting where you shrank, the text you almost fired back. Small is the point.</p>
-    <p>You will write, and the companion will write back, helping you make the next move: out of the story and back into the body. It is not me, and it is not therapy. It keeps nothing after you end. One sitting, about ten minutes, and it will bring itself to a close.</p>
+${week.public ? `    <h2>Try SENSE on something that happened this week</h2>
+    <p>You've read about SENSE in the book. Here you get to do it. Bring one moment from the last few days, the email that tightened your chest, the meeting where you went small, and either type it or just talk. It listens, it responds, and it walks you through the practice on that moment: slowing the breath, entering the body, naming what's there, staying with it.</p>
+    <p>It's an AI I built from my own work with people, and it does capture a sense of how I work. It's not perfect, and it doesn't have the human touch, which is the main thing. But you can't learn this from reading. You have to practice it, and this is a place to start. About ten minutes, and it brings itself to a close.</p>
+    <p>It's not me, and it's not therapy. It keeps nothing after you end.</p>
 ` : `    <h2>Welcome to the daily rep</h2>
     <p>If you are here, you have the map: SENSE for coming back to yourself when the pressure hits, STEP for bringing that back into the room with other people. This is where you get the reps. You bring one real moment from your day, and we run the practice on it together.</p>
     <p>The moment does not have to be big: the email that tightened your chest, the meeting where you shrank, the text you almost fired back. Small is the point.</p>
@@ -743,7 +744,7 @@ ${week.public ? `    <h2>One sitting, on something real</h2>
     <h2 style="font-size:20px">Before you begin</h2>
     <div id="privacyNotice" class="notice"></div>
     <p class="small">This is a guided practice for adults, not therapy, medical care, diagnosis, or crisis support. You may pause or stop at any time.</p>
-    <p class="small">If you speak instead of typing, the sound goes to OpenAI to be turned into words, the same place your writing already goes. This application keeps no recording. As with your writing, OpenAI may hold it in abuse-monitoring logs for up to 30 days.</p>
+    <p class="small">If you speak instead of typing, the sound goes to OpenAI to be turned into words${week.public ? '' : ', the same place your writing already goes'}. This application keeps no recording. OpenAI may hold it in abuse-monitoring logs for up to 30 days.</p>
     <button id="beginButton" class="button">Begin</button>
     <div id="consentError" class="error hidden"></div>
   </section>
@@ -993,7 +994,7 @@ ${week.public ? `    <h2>One sitting, on something real</h2>
     el('speakButton').disabled = true;
     speakStatus('Turning that into words.');
     try {
-      var response = await fetch('/api/on-ramp/transcribe', {
+      var response = await fetch('${week.public ? PUBLIC_TRANSCRIBE_PATH : TRANSCRIBE_PATH}', {
         method: 'POST',
         headers: { 'X-Companion-Access': accessCode, 'Content-Type': blob.type },
         cache: 'no-store',
@@ -1140,6 +1141,9 @@ function indexPage() {
 // speech far better. The audio is held in memory only for the length of
 // the request: never written to disk, never logged, never kept.
 const TRANSCRIBE_PATH = '/api/on-ramp/transcribe';
+// The free sitting can speak too. Same handler and the same size cap; the
+// only difference is that no access code is required.
+const PUBLIC_TRANSCRIBE_PATH = '/api/book-bonus/transcribe';
 const MAX_AUDIO_BYTES = 25 * 1024 * 1024; // OpenAI's per-file ceiling
 
 const AUDIO_EXTENSIONS = {
@@ -1215,12 +1219,12 @@ async function transcribeAudio(bytes, contentType) {
   return String((await response.text()) || '').trim();
 }
 
-async function handleTranscribeRoute(req, res) {
+async function handleTranscribeRoute(req, res, isPublic) {
   if (req.method !== 'POST') {
     sendJson(res, 405, { error: 'Method not allowed' });
     return true;
   }
-  const access = hasAccess(req);
+  const access = isPublic ? { ok: true } : hasAccess(req);
   if (!access.ok) {
     sendJson(
       res,
@@ -1261,7 +1265,10 @@ async function handleTranscribeRoute(req, res) {
 
 async function handleOnrampRoute(req, res) {
   if (req.url === TRANSCRIBE_PATH) {
-    return handleTranscribeRoute(req, res);
+    return handleTranscribeRoute(req, res, false);
+  }
+  if (req.url === PUBLIC_TRANSCRIBE_PATH) {
+    return handleTranscribeRoute(req, res, true);
   }
 
   if (req.url === INDEX_PATH && req.method === 'GET') {
