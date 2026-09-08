@@ -230,9 +230,10 @@ ${AUDIOS.map(audioBlock).join('\n')}
 
   <div class="card">
     <p class="eyebrow">Try it</p>
-    <h2>One sitting, on something real</h2>
-    <p>Reading about SENSE and doing it are different. This is a chance to do it once, on one real moment from the last few days, with something that responds to what you write and helps you get out of the story and back into the body. It's not me, and it's not therapy. It keeps nothing after you end. About ten minutes.</p>
-    <p><a class="button" href="/book-bonus/try">Try one sitting</a></p>
+    <h2>Try SENSE on something that happened this week</h2>
+    <p>You've read about SENSE. Here you get to do it. Bring one moment from the last few days and either type it or just talk. It listens, it responds, and it walks you through the practice on that moment: slowing the breath, entering the body, naming what's there, staying with it.</p>
+    <p>It's an AI I built from my own work with people, and it does capture a sense of how I work. It's not perfect, and it doesn't have the human touch, which is the main thing. But you can't learn this from reading. You have to practice it, and this is a place to start. It's not me, and it's not therapy. It keeps nothing after you end. About ten minutes.</p>
+    <p><a class="button" href="/book-bonus/try">Try it on something real</a></p>
   </div>
 
   <div class="card">
