@@ -229,6 +229,13 @@ ${AUDIOS.map(audioBlock).join('\n')}
   </div>
 
   <div class="card">
+    <p class="eyebrow">Try it</p>
+    <h2>One sitting, on something real</h2>
+    <p>Reading about SENSE and doing it are different. This is a chance to do it once, on one real moment from the last few days, with something that responds to what you write and helps you get out of the story and back into the body. It's not me, and it's not therapy. It keeps nothing after you end. About ten minutes.</p>
+    <p><a class="button" href="/book-bonus/try">Try one sitting</a></p>
+  </div>
+
+  <div class="card">
     <p class="eyebrow">Print</p>
     <h2>The field guide</h2>
     <p>The appendix from the book as a PDF, in case you'd rather print it.</p>
