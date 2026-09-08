@@ -33,6 +33,12 @@ const STEP_AUDIO_URL = 'https://pub-3e45b3813f2d4b1b81f913aad060a3b8.r2.dev/audi
 // so its copy says that plainly rather than selling it as relief.
 const CRITIC_AUDIO_URL = 'https://pub-3e45b3813f2d4b1b81f913aad060a3b8.r2.dev/audio/inner-critic-full-practice.mp3';
 
+// The short straw breath and The Ache, both recorded 9/7/26. The short one is
+// the in-the-moment version: pause, find the sensation, name it, three breaths.
+// The Ache is the book's central subject and the longest piece here.
+const STRAW_SHORT_AUDIO_URL = 'https://pub-3e45b3813f2d4b1b81f913aad060a3b8.r2.dev/audio/straw-breath-short.mp3';
+const ACHE_AUDIO_URL = 'https://pub-3e45b3813f2d4b1b81f913aad060a3b8.r2.dev/audio/the-ache.mp3';
+
 // The bucket the SENSE recording streams from. Named separately because the
 // Content-Security-Policy below has to list it on media-src: if it is missing
 // there, the browser refuses the audio and the player sits silent with no
@@ -165,7 +171,10 @@ ul li{margin-bottom:8px}
     <audio controls preload="none" src="${STEP_AUDIO_URL}" style="width:100%"></audio>
     <p><strong>The inner critic.</strong> Sixteen minutes. For when the voice sounds like the truth. What it thinks you have to become to deserve love, what it's protecting, and the part of you that's been taking it.</p>
     <audio controls preload="none" src="${CRITIC_AUDIO_URL}" style="width:100%"></audio>
-    <div class="soon">One more is being recorded and will appear here when it's ready: the two-minute straw breath, for the middle of a day.</div>
+    <p><strong>The straw breath, short version.</strong> Three and a half minutes. For the middle of a day: pause, find what's happening in the belly, give it one word, three breaths. Then back to what you were doing.</p>
+    <audio controls preload="none" src="${STRAW_SHORT_AUDIO_URL}" style="width:100%"></audio>
+    <p><strong>The Ache.</strong> Twenty minutes. The one the book is named for. Whatever it is you've been getting around, this is twenty minutes of not getting around it, with a question first about whether today is the day.</p>
+    <audio controls preload="none" src="${ACHE_AUDIO_URL}" style="width:100%"></audio>
   </div>
 
   <div class="card">
