@@ -296,6 +296,10 @@ test('the Week 2 sit streams from R2 and the course page policy allows it', { ti
   const p3 = await w3.json();
   assert.ok(p3.contentHtml.includes('audio/onramp-week3-finding-the-third-option.mp3'), 'Week 3 must carry the recorded sit');
   assert.ok(!p3.contentHtml.includes('Guided audio to come: <em>Finding the Third Option'), 'the Week 3 placeholder is gone');
+  const w4 = await fetch(baseUrl + '/course/on-ramp/api/week-4', { headers: { 'X-Companion-Access': 'w2-check' } });
+  const p4 = await w4.json();
+  assert.ok(p4.contentHtml.includes('audio/onramp-week4-the-sacred-wound.mp3'), 'Week 4 must carry the recorded sit');
+  assert.ok(!p4.contentHtml.includes('Guided audio to come'), 'no sit placeholder remains anywhere in the course');
 });
 
 test('course pages: public overview, gated lesson content, companion links, and the multi-code enrollment list', { timeout: 30000 }, async (t) => {
