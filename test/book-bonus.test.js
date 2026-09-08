@@ -142,7 +142,7 @@ test('the /book-bonus page carries the Google tag AND a policy that lets the tag
   assert.ok(html.includes('/course/on-ramp?source=book-bonus'), 'the course link must say it came from the book');
   assert.ok(!/fraction of working with me/.test(html), 'no price talk on the page');
   assert.ok((html.match(/ download>/g) || []).length === 7, 'every audio must have a download link');
-  assert.ok(html.includes('src="/book-cover-bonus.jpg"'), 'the cover thumbnail must be on the page');
+  assert.ok(html.includes('src="/book-cover-bonus.jpg?v='), 'the cover thumbnail must be on the page, with a version so a browser that cached an older cover fetches this one');
   assert.ok(html.includes('href="#the-ache"'), 'jump links must exist so a phone reader can reach The Ache');
   assert.ok(!/Playfair|Cormorant/.test(html), 'one serif only, per the brand brief');
   assert.ok(html.includes('--rust:#8b3a2a') && !/#8B6B1E/i.test(html), 'rust is the accent; brass is gone');

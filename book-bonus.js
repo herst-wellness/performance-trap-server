@@ -202,7 +202,7 @@ ul li{margin-bottom:8px}
 <body>
 <main class="shell">
   <div class="masthead">
-    <img src="/book-cover-bonus.jpg" alt="The Performance Trap, front cover" width="96">
+    <img src="/book-cover-bonus.jpg?v=knot-2026-09-07" alt="The Performance Trap, front cover" width="96">
     <div>
       <h1>The practices, in one place.</h1>
       <p style="margin:0">If you're here, you've probably read the book, or you're somewhere in the middle of it. Either way, welcome. This page holds the tools from Part Two so you don't have to flip back through chapters to find them.</p>
