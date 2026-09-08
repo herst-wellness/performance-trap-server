@@ -309,7 +309,7 @@ const COURSE_WEEKS = {
 <p>When you stay with a sensation and it softens into something more tender, you're meeting the edge of what the book calls the sacred wound. It's the imprint of all the times you contorted yourself to belong. The reflex to perform, the tightness, the inner critic, those are protectors. They formed around that tender place to keep it safe, and they are good at their job: they run about five or ten steps ahead of you, always scanning, because nothing in the system has ever been prepared to let you feel that wound directly. They are not your defects. They were your survival, and often they became your gifts. Even the aliveness in you got co-opted into keeping you safe.</p>
 <p>The deeper work is turning toward that wound with the kindness it never got, so the protectors don't have to work so hard. That's not a straightaway. It goes better with company, and this course didn't ask you to do it alone. But it's the real doorway, and you've been standing near it all month. As the book puts it: the ache you've been running from isn't the problem. It's the signal, and it's the way back.</p>
 <p class="note">This week, just live the arc. Notice the protectors with a little more kindness. That's the whole assignment.</p>`,
-    meditation: meditationPlaceholder('The Sacred Wound', 12),
+    meditation: meditationPlayer('https://pub-3e45b3813f2d4b1b81f913aad060a3b8.r2.dev/audio/onramp-week4-the-sacred-wound.mp3', 'The Sacred Wound, recorded by Chad. About fourteen minutes. Sit with it most days this week.'),
     practiceCard: `
 <h4>Most days this week</h4>
 <p>Sit with whichever practice from the month served you most. Choosing the one you need is itself part of the practice now. Miss a day, begin again the next.</p>
