@@ -137,6 +137,9 @@ function sendJson(res, status, payload) {
 const videoPlaceholder = (label) =>
   `<div class="placeholder">A short video from Chad goes here: <em>${label}</em>. Its job is to guide the week's experience in his company, not repeat the written lesson. Coming soon; the written lesson below carries this week in the meantime.</div>`;
 
+// Long sits stream from the R2 bucket (range requests, so a listener can
+// scrub). That host MUST be on media-src in the course page policy below;
+// if it is missing the player renders and never sounds, with no error.
 const meditationPlayer = (src, note) =>
   `<p class="small">${note}</p><audio controls preload="none" src="${src}" style="width:100%"></audio>`;
 
@@ -210,10 +213,10 @@ const COURSE_WEEKS = {
 <p>And you're not waiting for the sensation to vanish. You're watching for it to settle. Often that arrives as a deep sigh, or the shoulders dropping. When you feel that shift, the rep is done.</p>
 <p>And here is the part almost everyone gets backwards at first. You are not building the ability to stay perfectly. You will drift, constantly, into your to-do list and this morning's conversation. That drift is not the failure. Noticing you've left and coming back, that is the practice. Not what happens before or after. The return itself.</p>
 <p class="note">This week you have all of SENSE in your hands: Slow the breath, Enter the body, Name, Stay, Equanimity. Practiced on ordinary moments. That's enough.</p>`,
-    meditation: meditationPlaceholder('Keeping It Company', 12),
+    meditation: meditationPlayer('https://pub-3e45b3813f2d4b1b81f913aad060a3b8.r2.dev/audio/onramp-week2-keeping-it-company.mp3', 'Keeping It Company, recorded by Chad. About fifteen minutes. Sit with it most days this week.'),
     practiceCard: `
 <h4>Most days this week</h4>
-<p>Sit about twelve minutes with this week's audio once it's here; until then, sit with the Week 1 breathing recording and practice the staying rhythm on your own. The point is to sit, not to do the hardest version. A missed day is fine. Begin again the next.</p>
+<p>Sit with this week's audio most days. If it feels like too much on a given day, sit with the Week 1 breathing recording instead. The point is to sit, not to do the hardest version. A missed day is fine. Begin again the next.</p>
 <h4>The staying rhythm</h4>
 <p>Touch the sensation on the exhale. Let it go on the inhale. Return. Small doses, not endurance; the name for this is titration. If it gets too big, touch only on the exhale, and if that's still too much, bring your attention into your hands. And you're done with a rep when something settles: a sigh, the shoulders dropping.</p>
 <h4>Through the day, in thirty seconds</h4>
@@ -574,7 +577,7 @@ async function handleCourseRoute(req, res) {
   if (pageMatch) {
     res.writeHead(200, {
       ...noStoreHeaders('text/html; charset=utf-8'),
-      'Content-Security-Policy': "default-src 'self'; img-src 'self' data:; media-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'",
+      'Content-Security-Policy': "default-src 'self'; img-src 'self' data:; media-src 'self' https://pub-3e45b3813f2d4b1b81f913aad060a3b8.r2.dev; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self' 'unsafe-inline'; connect-src 'self'; form-action 'self'; base-uri 'none'; frame-ancestors 'none'",
     });
     res.end(lessonPageShell(Number(pageMatch[1])));
     return true;

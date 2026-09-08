@@ -277,6 +277,23 @@ test('week prompts are scoped to their week and share the core, safety overlay, 
   assert.match(source, /ONRAMP_ACCESS_CODE/);
 });
 
+test('the Week 2 sit streams from R2 and the course page policy allows it', { timeout: 30000 }, async (t) => {
+  const port = await getOpenPort();
+  const child = await startServer(port, { ONRAMP_ACCESS_CODE: 'w2-check' });
+  t.after(() => child.kill());
+  const baseUrl = 'http://127.0.0.1:' + port;
+  // The policy is on the page; the player is in the gated content.
+  const page = await fetch(baseUrl + '/course/on-ramp/week-2');
+  const csp = page.headers.get('content-security-policy') || '';
+  const media = csp.split(';').map((x) => x.trim()).find((x) => x.startsWith('media-src')) || '';
+  assert.ok(media.includes('pub-3e45b3813f2d4b1b81f913aad060a3b8.r2.dev'), 'media-src must allow the bucket, or the player renders and never sounds');
+  const content = await fetch(baseUrl + '/course/on-ramp/api/week-2', { headers: { 'X-Companion-Access': 'w2-check' } });
+  assert.equal(content.status, 200);
+  const payload = await content.json();
+  assert.ok(payload.contentHtml.includes('audio/onramp-week2-keeping-it-company.mp3'), 'Week 2 must carry the recorded sit');
+  assert.ok(!payload.contentHtml.includes('Guided audio to come: <em>Keeping It Company'), 'the Week 2 placeholder is gone');
+});
+
 test('course pages: public overview, gated lesson content, companion links, and the multi-code enrollment list', { timeout: 30000 }, async (t) => {
   const port = await getOpenPort();
   // Two personal codes via the list, none via the singular variable.
