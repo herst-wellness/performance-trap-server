@@ -1223,6 +1223,7 @@ const server = http.createServer(async (req, res) => {
   if (await handleCourseRoute(req, res)) { return; }
   if (handleBonusRoute(req, res, {
     addToMailchimp,
+    sendEmail: sendResendEmail,
     tagSubscriber: (email, tag) => {
       const subscriberHash = require('crypto').createHash('md5').update(email.toLowerCase()).digest('hex');
       const tagBody = JSON.stringify({ tags: [{ name: tag, status: 'active' }] });
