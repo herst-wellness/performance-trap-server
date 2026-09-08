@@ -131,13 +131,13 @@ const AUDIOS = [
   { id: 'breathing',     title: 'The breathing practice', moment: 'The straw breath, and coming back to the body.', length: 'Twelve minutes.', src: '/audio/onramp-breath-12min.mp3',
     copy: '' },
   { id: 'sense',         title: 'SENSE, the full practice', moment: 'For when something is up and you don\'t know what it is yet.', length: 'Sixteen minutes.', src: SENSE_AUDIO_URL,
-    copy: 'Slowing the breath, entering the body, naming, staying, equanimity.' },
+    copy: 'Slowing the breath, entering the body, naming it, staying with it.' },
   { id: 'step',          title: 'STEP, the full practice', moment: 'For after you went quiet or small around someone.', length: 'Sixteen minutes.', src: STEP_AUDIO_URL,
-    copy: 'Bring to mind a moment you went quiet or small around someone, get still, find the trade you were about to make, and find the option that isn\'t say it or swallow it.' },
-  { id: 'inner-critic',  title: 'The inner critic', moment: 'For when the voice sounds like the truth.', length: 'Sixteen minutes.', src: CRITIC_AUDIO_URL,
+    copy: 'Get still, find the trade you were about to make, and look for the option that isn\'t say it or swallow it.' },
+  { id: 'inner-critic',  title: 'The inner critic', moment: 'For when the critic is loud.', length: 'Sixteen minutes.', src: CRITIC_AUDIO_URL,
     copy: 'What it thinks you have to become to deserve love, what it\'s protecting, and the part of you that\'s been taking it.' },
-  { id: 'the-ache',      title: 'The Ache', moment: 'For the thing you\'ve been getting around.', length: 'Twenty minutes.', src: ACHE_AUDIO_URL,
-    copy: 'The one the book is named for. Twenty minutes of not getting around it, with a question first about whether today is the day.' },
+  { id: 'the-ache',      title: 'The Ache', moment: 'For whatever it is that aches.', length: 'Twenty minutes.', src: ACHE_AUDIO_URL,
+    copy: 'The one the book is named for. I ask first whether today is the day.' },
 ];
 
 // Where the review ask points. Amazon and Goodreads links cannot carry a
@@ -208,21 +208,21 @@ ul li{margin-bottom:8px}
       <p style="margin:0">If you're here, you've probably read the book, or you're somewhere in the middle of it. Either way, welcome. This page holds the tools from Part Two so you don't have to flip back through chapters to find them.</p>
     </div>
   </div>
-  <p>Everything here is free. No forms, no catch.</p>
+  <p>Everything here is free. There's no catch.</p>
 
   <div class="card">
     <p class="eyebrow">Listen</p>
     <h2>The guided audios</h2>
-    <p>Reading a practice and doing one are different things. These are me walking you through it, so you can close your eyes and follow along. If you don't know where to start: the short straw breath if you have three minutes, SENSE if you have sixteen.</p>
+    <p>These are me walking you through each one, so you can close your eyes and follow along. If you don't know where to start: the short straw breath if you have three minutes, SENSE if you have sixteen.</p>
     <p class="jump">Jump to: ${AUDIOS.map((a) => `<a href="#${a.id}">${a.title.replace(', the daily practice', ' (daily)').replace(', short version', ' (short)').replace(', the full practice', '')}</a>`).join(' · ')}</p>
-    <p class="small">Each one can be downloaded, so you can listen without a signal. The players remember where you stopped.</p>
+    <p class="small">Each one can be downloaded, and the players remember where you stopped.</p>
 ${AUDIOS.map(audioBlock).join('\n')}
   </div>
 
   <div class="card">
     <p class="eyebrow">Read</p>
     <h2>The one-pagers</h2>
-    <p>Each Part Two practice on a single page. Where it fits, when it hits, and the steps. These are for the moment itself, not for study.</p>
+    <p>Each Part Two practice on a single page, so you can find it when you need it.</p>
     <ul>
       ${ONE_PAGERS.map((p) => `<li><a href="${ONE_PAGER_PREFIX}${p.slug}">${p.title}</a></li>`).join('\n      ')}
     </ul>
@@ -231,22 +231,22 @@ ${AUDIOS.map(audioBlock).join('\n')}
   <div class="card">
     <p class="eyebrow">Print</p>
     <h2>The field guide</h2>
-    <p>The appendix from the book as a PDF. SENSE, STEP, and the short versions of both. Print it if that helps. Some people keep it in a desk drawer.</p>
+    <p>The appendix from the book as a PDF, in case you'd rather print it.</p>
     <p><a class="button" href="/downloads/practices-in-one-place.pdf">Download the practices PDF</a></p>
   </div>
 
   <div class="card">
     <p class="eyebrow">One ask</p>
     <h2>If the book helped</h2>
-    <p>A short review on Amazon or Goodreads is what lets the next person like you find it. A sentence or two about what it was like to read is plenty.</p>
+    <p>Here I am, asking. Would you write an honest review on Amazon or Goodreads? A couple of sentences is plenty. It's the main thing that gets the book to the next person.</p>
     <p><a class="button" href="${AMAZON_REVIEW_URL}">Review it on Amazon</a> <a class="button quiet" href="${GOODREADS_URL}" style="margin-left:8px">Or on Goodreads</a></p>
   </div>
 
   <div class="card">
     <p class="eyebrow">Keep them</p>
     <h2>Want these in your inbox?</h2>
-    <p>I'll send you one email with all seven audios and the five one-pagers as links, so you have them on your phone and don't have to remember this address. You'll also get my newsletter: short stories that hopefully help remind you who you were before the performance.</p>
-    <p>If it's not yours, absolutely no problem. Just unsubscribe.</p>
+    <p>I'll send you one email with all of the links, so you don't have to remember this address. You'll also get my newsletter, which is mostly short stories about the trap, told from inside it.</p>
+    <p>If it's not for you, no problem at all. Just unsubscribe.</p>
     <p><input id="bonusEmail" type="email" placeholder="Your email" aria-label="Your email"> <button id="bonusSignup" class="button" style="margin-top:10px">Send them to me</button></p>
     <p id="bonusSignupNote" class="small"></p>
   </div>
@@ -254,15 +254,14 @@ ${AUDIOS.map(audioBlock).join('\n')}
   <div class="card">
     <p class="eyebrow">Go further</p>
     <h2>If you want to go further</h2>
-    <p>The book shows you the pattern. These practices help you meet it. And some people want more than that. They want help staying with what they found long enough for something to change.</p>
-    <p>That's <a href="/course/on-ramp?source=book-bonus">The Performance Trap Practice</a>: four weeks, about ten minutes a day, one real moment a day, with a written practice companion that works with what you bring, and a private session with me at the end.</p>
-    <p>I'm also thinking about running it as a group. If doing this alongside a few other people interests you, this is the list I'll write to first.</p>
+    <p>After the book, there's a four-week version of this work called <a href="/course/on-ramp?source=book-bonus">The Performance Trap Practice</a>. About ten minutes a day. One moment from your real life each day, something written to work with what comes up, and a session with me at the end. I'm not going to pitch you. It has to feel right.</p>
+    <p>I'm also thinking about running it with a small group, five or six people at a time, so there's some intimacy without it being one on one. If that interests you, leave your email and you'll hear from me first if it happens.</p>
     <p><input id="cohortEmail" type="email" placeholder="Your email" aria-label="Your email for the cohort list"> <button id="cohortSignup" class="button" style="margin-top:10px">Tell me when a cohort forms</button></p>
     <p id="cohortSignupNote" class="small"></p>
-    <p>And if you already know you want to work with me directly, that's <a href="https://herstwellness.com/mind-body-foundations">Mind/Body Foundations</a>. Bi-weekly sessions, built around what's alive in you.</p>
+    <p>And if you already know you want to work with me one on one, that's <a href="https://herstwellness.com/mind-body-foundations">Mind/Body Foundations</a>. Bi-weekly sessions, built around what's alive in you.</p>
   </div>
 
-  <p>That's the whole page. Take the tools. Use them badly at first. That's how it goes.</p>
+  <p>That's the whole page. There's no getting these right. There's just doing what's right for you.</p>
   <div class="footer"><a href="https://herstwellness.com">Herst Wellness</a></div>
 </main>
 <script nonce="${nonce}">
@@ -319,7 +318,7 @@ ${AUDIOS.map((a) => li(a.src.startsWith('/') ? BASE_URL + a.src : a.src, `${a.ti
 <ul style="padding-left:20px">
 ${ONE_PAGERS.map((p) => li(`${BASE_URL}${ONE_PAGER_PREFIX}${p.slug}`, p.title)).join('\n')}
 </ul>
-<p>The page itself is at <a href="${BASE_URL}/book-bonus" style="color:#8b3a2a">${BASE_URL.replace('https://', '')}/book-bonus</a>. Use them badly at first. That's how it goes.</p>
+<p>The page itself is at <a href="${BASE_URL}/book-bonus" style="color:#8b3a2a">${BASE_URL.replace('https://', '')}/book-bonus</a>. There's no getting these right. There's just doing what's right for you.</p>
 <p>Chad</p>
 </div>`;
 }
