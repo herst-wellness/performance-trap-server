@@ -132,6 +132,28 @@ test('the /book-bonus page carries the Google tag AND a policy that lets the tag
   assert.ok(html.includes(`src="${AUDIO_HOST}/audio/straw-breath-short.mp3"`), 'the short straw breath must be on the page');
   assert.ok(html.includes(`src="${AUDIO_HOST}/audio/the-ache.mp3"`), 'The Ache must be on the page');
   assert.ok(!html.includes('class="soon"'), 'nothing is still promised as coming: all seven audios are on the page');
+
+  // 9/7/26 redesign: the page follows the brand brief and asks the reader for
+  // the three things a finished reader can give: a review, an address, and
+  // interest in a cohort. Each is checked by the thing a reader would see.
+  assert.ok(html.includes('amazon.com/review/create-review?asin=B0GX32LDSQ'), 'the review ask must point at the Amazon review form for this book');
+  assert.ok(html.includes('goodreads.com/book/show/254670204'), 'the review ask must point at the Goodreads page');
+  assert.ok(html.includes('id="cohortSignup"') && html.includes("/cohort-interest"), 'the course card must carry the cohort interest signup');
+  assert.ok(html.includes('/course/on-ramp?source=book-bonus'), 'the course link must say it came from the book');
+  assert.ok(!/fraction of working with me/.test(html), 'no price talk on the page');
+  assert.ok((html.match(/ download>/g) || []).length === 7, 'every audio must have a download link');
+  assert.ok(html.includes('src="/book-cover-bonus.jpg"'), 'the cover thumbnail must be on the page');
+  assert.ok(html.includes('href="#the-ache"'), 'jump links must exist so a phone reader can reach The Ache');
+  assert.ok(!/Playfair|Cormorant/.test(html), 'one serif only, per the brand brief');
+  assert.ok(html.includes('--rust:#8b3a2a') && !/#8B6B1E/i.test(html), 'rust is the accent; brass is gone');
+  assert.ok(html.includes('href="https://herstwellness.com">Herst Wellness'), 'the footer wordmark links home');
+  assert.ok(/as they're ready/.test(html) === false, 'the signup no longer promises audios that are already on the page');
+
+  // The cohort route validates like the newsletter route does.
+  const badCohort = await fetch('http://127.0.0.1:' + port + '/cohort-interest', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: 'nope' }),
+  });
+  assert.equal(badCohort.status, 400, 'the cohort list refuses a bad address');
   assert.ok(!/will appear here as they're ready:[^<]*STEP/.test(html), 'STEP must not still be promised as coming once it is on the page');
 
   // 5. The page's own styling survives. Eight inline style attributes carry
@@ -143,7 +165,7 @@ test('the /book-bonus page carries the Google tag AND a policy that lets the tag
   assert.ok(styleSrc.includes("'unsafe-inline'"), "style-src must keep 'unsafe-inline' while the page uses style attributes");
   assert.ok(styleSrc.includes('https://fonts.googleapis.com'), 'style-src must allow the font stylesheet');
   assert.ok(!styleSrc.some((token) => token.startsWith("'nonce-")), 'a nonce in style-src would be ignored alongside unsafe-inline and drop the style attributes');
-  assert.ok(/<h2 style="margin-top:0">/.test(html), 'the inline style attributes this policy accommodates are still in the page');
+  assert.ok(/ style="[^"]+"/.test(html), 'the inline style attributes this policy accommodates are still in the page');
 
   // 6. The protections that were already there are still there.
   assert.equal(res.headers.get('x-frame-options'), 'DENY');
