@@ -570,7 +570,9 @@ test('the book-bonus page serves its promises: field-guide PDF, breath audio, co
   assert.ok(html.includes('/audio/onramp-breath-12min.mp3'));
   assert.ok(html.includes('audio/sense-full-practice.mp3'), 'bonus page must offer the SENSE full walk-through');
   assert.ok(html.includes('/course/on-ramp'), 'the course must be the featured next step');
-  assert.match(html, /being recorded/i, 'unrecorded audios must still be named honestly');
+  // Every audio the page ever promised has been recorded (the last two on 9/7/26),
+  // so the honesty check inverts: the page must no longer say anything is still coming.
+  assert.doesNotMatch(html, /being recorded/i, 'nothing is left to record, so nothing may be promised as coming');
   assert.doesNotMatch(html, /—/);
   // Until 9/4/26 this line asserted the opposite, that this page carried no
   // Google tag. It was written when the page was built and no privacy rule
