@@ -264,7 +264,7 @@ const COURSE_WEEKS = {
 <p>And the measure of the step is not how the other person responds. Saying the true thing, even when they can't meet you there, shows your nervous system that it's possible to stand up for what you value and still hold your ground, no matter what comes back. That's what rewrites the contract. Their response is theirs.</p>
 <p>And you will miss it. Often you'll notice only after you've already reacted. That still counts. These aren't rules to get right. They're a rough map you get better at reading with reps.</p>
 <p class="note">You now have both halves: SENSE to come home to yourself, STEP to bring that home into the room. Practiced on ordinary moments. That's the whole toolkit.</p>`,
-    meditation: meditationPlaceholder('Finding the Third Option', 12),
+    meditation: meditationPlayer('https://pub-3e45b3813f2d4b1b81f913aad060a3b8.r2.dev/audio/onramp-week3-finding-the-third-option.mp3', 'Finding the Third Option, recorded by Chad. About twelve minutes. Sit with it most days this week.'),
     practiceCard: `
 <h4>Most days this week</h4>
 <p>A short sit, then carry it into the day. If a day gets away from you, no problem. Begin again the next.</p>
