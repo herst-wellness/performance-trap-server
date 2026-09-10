@@ -434,7 +434,7 @@ test('PayPal self-serve enrollment: off by default, and a mocked full checkout i
   assert.ok(onHtml.indexOf('id="enrollFields"') < onHtml.indexOf('id="paypalButtons"'), 'fields sit above the PayPal buttons');
   assert.match(onHtml, /timeZone/);
 
-  const buyer = { firstName: 'Test', email: 'buyer@example.com', phone: '', timeZone: 'America/Los_Angeles' };
+  const buyer = { firstName: 'Test', lastName: 'Buyer', email: 'buyer@example.com', phone: '', timeZone: 'America/Los_Angeles' };
   const created = await (await fetch(onBase + '/course/on-ramp/api/paypal/create-order', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -449,7 +449,7 @@ test('PayPal self-serve enrollment: off by default, and a mocked full checkout i
   });
   assert.equal(captured.status, 200);
   const { accessCode } = await captured.json();
-  assert.match(accessCode, /^mb-[a-f0-9]{8}-[a-f0-9]{10}$/);
+  assert.equal(accessCode, 'test-buyer', 'the code is the buyer\'s name');
 
   // The issued code opens lesson content and the companion, without being
   // in any enrollment list.

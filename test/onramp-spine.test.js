@@ -316,14 +316,20 @@ test('yay/nay: links carry a per-person token, answers record last-wins, and the
   assert.equal(normalisePhone('+44 7700 900123'), '+447700900123');
   assert.equal(normalisePhone('555-0100'), null);
   assert.equal(normalisePhone(''), null);
-  assert.equal(validateEnrollment({ firstName: 'A', email: 'not-an-email' }).ok, false);
+  assert.equal(validateEnrollment({ firstName: 'A', lastName: 'B', email: 'not-an-email' }).ok, false);
+  assert.equal(validateEnrollment({ firstName: 'A', email: 'a@b.co' }).ok, false, 'last name is required: the code is made from it');
   assert.equal(validateEnrollment({ firstName: '', email: 'a@b.co' }).ok, false);
-  const v = validateEnrollment({ firstName: '  Ann ', email: 'ann@example.com', phone: '415 555 0100', timeZone: 'Bogus/Zone' });
-  assert.deepEqual(v, { ok: true, firstName: 'Ann', email: 'ann@example.com', phone: '+14155550100', timeZone: 'America/Los_Angeles' });
+  const v = validateEnrollment({ firstName: '  Ann ', lastName: ' Lee ', email: 'ann@example.com', phone: '415 555 0100', timeZone: 'Bogus/Zone' });
+  assert.deepEqual(v, { ok: true, firstName: 'Ann', lastName: 'Lee', email: 'ann@example.com', phone: '+14155550100', timeZone: 'America/Los_Angeles' });
+  assert.equal(store.slugPart('Zoë O\'Brien'), 'zoe-o-brien');
+  const docCodes = { enrollments: [{ code: 'ann-lee' }, { code: 'ann-lee-2' }] };
+  assert.equal(store.nameCode(docCodes, 'Ann', 'Lee'), 'ann-lee-3');
+  assert.equal(store.nameCode({ enrollments: [] }, 'Chad', 'Herst'), 'chad-herst');
+  assert.match(store.nameCode({ enrollments: [] }, '', ''), /^practice-[a-f0-9]{6}$/);
 });
 
 test('emails: every message uses the Mind/Body Foundations wrapper, carries its facts, and carries no placeholder copy', () => {
-  const record = store.newRecord({ code: 'mb-abcd1234-0123456789', email: 'a@example.com', firstName: 'Ann', now: new Date('2026-09-11T03:00:00Z') });
+  const record = store.newRecord({ code: 'ann-lee', email: 'a@example.com', firstName: 'Ann', lastName: 'Lee', now: new Date('2026-09-11T03:00:00Z') });
   const links = yaynay.yayLinks(record, '2026-09-10', emails.BASE_URL);
   const all = {
     enroll: emails.enroll(record),
@@ -339,14 +345,15 @@ test('emails: every message uses the Mind/Body Foundations wrapper, carries its 
     const emDash = String.fromCharCode(0x2014);
     assert.ok(!m.html.includes(emDash) && !m.text.includes(emDash) && !m.subject.includes(emDash), name + ' has no em dash');
   }
-  assert.ok(all.enroll.html.includes('mb-abcd1234-0123456789'), 'the enrollment email carries the code');
+  assert.ok(all.enroll.html.includes('>ann-lee<'), 'the enrollment email carries the name code');
+  assert.ok(!all.enroll.html.includes('We narrow it together'), 'the closing line Chad cut is gone');
   assert.ok(all.enroll.html.includes('https://practice.herstwellness.com/course/on-ramp/week-1'));
   assert.ok(all.enroll.html.includes('/downloads/on-ramp/week-1/whats-bringing-you-here.pdf'));
   for (const [name, m] of Object.entries(all)) {
     assert.ok(!m.html.includes('[[COPY') && !m.text.includes('[[COPY') && !m.subject.includes('[[COPY'), name + ' carries no placeholder copy');
   }
   assert.equal(all.enroll.subject, "You're in. Here's your access code.");
-  assert.ok(all.enroll.html.includes("Glad we're doing this.") && all.enroll.html.includes('We narrow it together.'), 'the enrollment email is in his register');
+  assert.ok(all.enroll.html.includes("Glad we're doing this."), 'the enrollment email is in his register');
   assert.ok(all.enroll.html.includes('font-style:italic;color:#6B5036;">Chad</p>'));
   assert.ok(all.week2.html.includes('/course/on-ramp/week-2') && all.week2.html.includes('Keeping It Company'));
   assert.ok(all.scorecard.html.includes('Days you sat, meaning a recording played most of the way through: 0 of 7') && all.scorecard.html.includes('Not much sitting this week'));
@@ -377,7 +384,7 @@ test('capture refuses a missing email before touching PayPal, admin enroll needs
   const base = 'http://127.0.0.1:' + port;
 
   // No email: 400, and PayPal was never called.
-  const noEmail = await postJson(base + '/course/on-ramp/api/paypal/capture', { orderId: 'ORDER-9', firstName: 'Ann' });
+  const noEmail = await postJson(base + '/course/on-ramp/api/paypal/capture', { orderId: 'ORDER-9', firstName: 'Ann', lastName: 'Lee' });
   assert.equal(noEmail.status, 400);
   assert.match((await noEmail.json()).error, /email/i);
   const noName = await postJson(base + '/course/on-ramp/api/paypal/create-order', { email: 'ann@example.com' });
@@ -385,13 +392,13 @@ test('capture refuses a missing email before touching PayPal, admin enroll needs
   assert.deepEqual(paypal.calls, [], 'PayPal untouched until the details are valid');
 
   // The real flow: details, order, capture, code, email, record.
-  const buyer = { firstName: 'Ann', email: 'ann@example.com', phone: '(415) 555-0100', timeZone: 'America/New_York' };
+  const buyer = { firstName: 'Ann', lastName: 'Lee', email: 'ann@example.com', phone: '(415) 555-0100', timeZone: 'America/New_York' };
   const created = await postJson(base + '/course/on-ramp/api/paypal/create-order', buyer);
   assert.equal(created.status, 200);
   const captured = await postJson(base + '/course/on-ramp/api/paypal/capture', { orderId: 'ORDER-9', ...buyer });
   assert.equal(captured.status, 200);
   const { accessCode } = await captured.json();
-  assert.match(accessCode, /^mb-[a-f0-9]{8}-[a-f0-9]{10}$/);
+  assert.equal(accessCode, 'ann-lee', 'the code is the name');
 
   assert.equal(resend.sent.length, 1, 'one enrollment email went to the Resend stub');
   assert.equal(resend.sent[0].url, '/emails');
@@ -418,16 +425,16 @@ test('capture refuses a missing email before touching PayPal, admin enroll needs
   assert.equal(lesson.status, 200);
 
   // Admin enrollment for comped people.
-  const noCode = await postJson(base + '/course/on-ramp/api/admin/enroll', { firstName: 'Bo', email: 'bo@example.com' });
+  const noCode = await postJson(base + '/course/on-ramp/api/admin/enroll', { firstName: 'Bo', lastName: 'Diaz', email: 'bo@example.com' });
   assert.equal(noCode.status, 401);
-  const wrongCode = await postJson(base + '/course/on-ramp/api/admin/enroll', { firstName: 'Bo', email: 'bo@example.com' }, { 'x-admin-code': 'nope' });
+  const wrongCode = await postJson(base + '/course/on-ramp/api/admin/enroll', { firstName: 'Bo', lastName: 'Diaz', email: 'bo@example.com' }, { 'x-admin-code': 'nope' });
   assert.equal(wrongCode.status, 401);
-  const badBody = await postJson(base + '/course/on-ramp/api/admin/enroll', { firstName: 'Bo' }, { 'x-admin-code': 'admin-pass' });
+  const badBody = await postJson(base + '/course/on-ramp/api/admin/enroll', { firstName: 'Bo', lastName: 'Diaz' }, { 'x-admin-code': 'admin-pass' });
   assert.equal(badBody.status, 400);
-  const comped = await postJson(base + '/course/on-ramp/api/admin/enroll', { firstName: 'Bo', email: 'bo@example.com', phone: 'n/a' }, { 'x-admin-code': 'admin-pass' });
+  const comped = await postJson(base + '/course/on-ramp/api/admin/enroll', { firstName: 'Bo', lastName: 'Diaz', email: 'bo@example.com', phone: 'n/a' }, { 'x-admin-code': 'admin-pass' });
   assert.equal(comped.status, 200);
   const compedBody = await comped.json();
-  assert.match(compedBody.accessCode, /^mb-[a-f0-9]{8}-[a-f0-9]{10}$/);
+  assert.equal(compedBody.accessCode, 'bo-diaz');
   assert.match(compedBody.id, /^enr_[a-f0-9]{12}$/);
   assert.equal(resend.sent.length, 2);
   assert.ok(resend.sent[1].body.html.includes(compedBody.accessCode));
@@ -451,7 +458,7 @@ test('admin enroll is off without COMPANION_ADMIN_CODE, and a failing store stil
   });
   t.after(() => child.kill());
   const base = 'http://127.0.0.1:' + port;
-  const off = await postJson(base + '/course/on-ramp/api/admin/enroll', { firstName: 'Bo', email: 'bo@example.com' }, { 'x-admin-code': 'anything' });
+  const off = await postJson(base + '/course/on-ramp/api/admin/enroll', { firstName: 'Bo', lastName: 'Diaz', email: 'bo@example.com' }, { 'x-admin-code': 'anything' });
   assert.equal(off.status, 503);
 
   const port2 = await getOpenPort();
@@ -464,10 +471,10 @@ test('admin enroll is off without COMPANION_ADMIN_CODE, and a failing store stil
   t.after(() => child2.kill());
   let loud = '';
   child2.stderr.on('data', (c) => { loud += c; });
-  const res = await postJson('http://127.0.0.1:' + port2 + '/course/on-ramp/api/admin/enroll', { firstName: 'Bo', email: 'bo@example.com' }, { 'x-admin-code': 'admin-pass' });
+  const res = await postJson('http://127.0.0.1:' + port2 + '/course/on-ramp/api/admin/enroll', { firstName: 'Bo', lastName: 'Diaz', email: 'bo@example.com' }, { 'x-admin-code': 'admin-pass' });
   assert.equal(res.status, 200, 'the buyer is never lost: the code still comes back');
   const { accessCode } = await res.json();
-  assert.match(accessCode, /^mb-/);
+  assert.match(accessCode, /^mb-[a-f0-9]{8}-[a-f0-9]{10}$/, 'with the store down, a signed code is issued instead of a name');
   assert.equal(resend.sent.length, 1, 'and the email with the code still went out');
   await new Promise((r) => setTimeout(r, 100));
   assert.match(loud, /ON-RAMP ENROLLMENT NOT STORED/);
@@ -486,7 +493,7 @@ test('listen endpoint stores play and complete for an enrolled code; an unknown 
   });
   t.after(() => child.kill());
   const base = 'http://127.0.0.1:' + port;
-  const enrolled = await (await postJson(base + '/course/on-ramp/api/admin/enroll', { firstName: 'Cy', email: 'cy@example.com', timeZone: 'Europe/London' }, { 'x-admin-code': 'admin-pass' })).json();
+  const enrolled = await (await postJson(base + '/course/on-ramp/api/admin/enroll', { firstName: 'Cy', lastName: 'Ng', email: 'cy@example.com', timeZone: 'Europe/London' }, { 'x-admin-code': 'admin-pass' })).json();
 
   const play = await postJson(base + '/course/on-ramp/api/listen', { sit: 'onramp-breath-12min', event: 'play' }, { 'X-Companion-Access': enrolled.accessCode });
   assert.equal(play.status, 204);
@@ -532,7 +539,7 @@ test('the yay link records the answer in the course style; a bad token is a 404'
   });
   t.after(() => child.kill());
   const base = 'http://127.0.0.1:' + port;
-  await postJson(base + '/course/on-ramp/api/admin/enroll', { firstName: 'Di', email: 'di@example.com' }, { 'x-admin-code': 'admin-pass' });
+  await postJson(base + '/course/on-ramp/api/admin/enroll', { firstName: 'Di', lastName: 'Test', email: 'di@example.com' }, { 'x-admin-code': 'admin-pass' });
   const record = (await readDoc(file)).enrollments[0];
   const links = yaynay.yayLinks(record, '2026-09-10', base);
 
@@ -578,7 +585,7 @@ test('inbound SMS: the Twilio signature is checked, yay/nay lands on the most re
   });
   t.after(() => child.kill());
   const base = 'http://127.0.0.1:' + port;
-  await postJson(base + '/course/on-ramp/api/admin/enroll', { firstName: 'Ed', email: 'ed@example.com', phone: '415-555-0199' }, { 'x-admin-code': 'admin-pass' });
+  await postJson(base + '/course/on-ramp/api/admin/enroll', { firstName: 'Ed', lastName: 'Kim', email: 'ed@example.com', phone: '415-555-0199' }, { 'x-admin-code': 'admin-pass' });
 
   const params = { From: '+14155550199', To: '+15555550000', Body: 'Yay' };
   const form = new URLSearchParams(params).toString();

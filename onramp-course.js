@@ -7,8 +7,8 @@
 // until Chad records them; Week 1's slot carries the recorded 12-minute
 // breathing practice.
 const crypto = require('node:crypto');
-const { hasAccess, WEEKS, issueSignedCode } = require('./onramp');
-const { defaultStore, newRecord, findByCode, dayEntry } = require('./onramp-store');
+const { hasAccess, WEEKS, issueSignedCode, setEnrolledCodeCheck } = require('./onramp');
+const { defaultStore, newRecord, findByCode, dayEntry, isEnrolledCode, nameCode } = require('./onramp-store');
 const { normaliseTimeZone, localDateString } = require('./onramp-schedule');
 const { handleYayRoute, handleSmsInbound } = require('./onramp-yaynay');
 const emails = require('./onramp-emails');
@@ -547,10 +547,11 @@ function enrollSection() {
     ? 'founding price $' + p.priceUsd + ' (the regular price will be $' + p.regularPriceUsd + '), for the first small group while the recordings are being finished, in exchange for honest feedback'
     : '$' + p.priceUsd;
   return `<div id="enroll">
-<p><strong>Enroll yourself:</strong> ${priceLine}, once, via PayPal or card. Your personal access code appears the moment payment completes. Save it somewhere safe; it is your key to all four weeks and the practice companion.</p>
+<p><strong>Enroll yourself:</strong> ${priceLine}, once, via PayPal or card. Your personal access code, made from your name, appears the moment payment completes and is emailed to you. It is your key to all four weeks and the practice companion.</p>
 <p class="small">And if you go on to coaching with me within 30 days of your Integration and Next-Step Session, the full amount you paid here is credited toward it.</p>
 <div id="enrollFields" style="margin:14px 0 10px">
 <p style="margin:0 0 10px"><label for="enrollFirstName" class="small">First name</label><br><input id="enrollFirstName" type="text" autocomplete="given-name" maxlength="80" required style="width:100%;border:1px solid #BCA88E;border-radius:10px;background:#FFFDF9;color:#352515;padding:12px 14px;font:16px/1.4 Arial,sans-serif"></p>
+<p style="margin:0 0 10px"><label for="enrollLastName" class="small">Last name</label><br><input id="enrollLastName" type="text" autocomplete="family-name" maxlength="80" required style="width:100%;border:1px solid #BCA88E;border-radius:10px;background:#FFFDF9;color:#352515;padding:12px 14px;font:16px/1.4 Arial,sans-serif"></p>
 <p style="margin:0 0 10px"><label for="enrollEmail" class="small">Email (your access code and the weekly notes go here)</label><br><input id="enrollEmail" type="email" autocomplete="email" maxlength="200" required style="width:100%;border:1px solid #BCA88E;border-radius:10px;background:#FFFDF9;color:#352515;padding:12px 14px;font:16px/1.4 Arial,sans-serif"></p>
 </div>
 <div id="paypalButtons"></div>
@@ -566,10 +567,11 @@ function enrollDetails(){
   var v = function(id){ return (document.getElementById(id).value || '').trim(); };
   var tz = '';
   try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) {}
-  return { firstName: v('enrollFirstName'), email: v('enrollEmail'), timeZone: tz };
+  return { firstName: v('enrollFirstName'), lastName: v('enrollLastName'), email: v('enrollEmail'), timeZone: tz };
 }
 function enrollProblem(d){
   if (!d.firstName) return 'Add your first name first.';
+  if (!d.lastName) return 'Add your last name too. Your access code is made from your name.';
   if (!d.email || d.email.indexOf('@') < 1 || d.email.indexOf('.', d.email.indexOf('@')) < 0) return 'Add the email address your access code should go to.';
   return '';
 }
@@ -668,12 +670,15 @@ function normalisePhone(raw) {
 
 function validateEnrollment(body) {
   const firstName = String(body.firstName || '').trim().slice(0, 80);
+  const lastName = String(body.lastName || '').trim().slice(0, 80);
   const email = String(body.email || '').trim().slice(0, 200);
   if (!firstName) return { ok: false, error: 'Missing first name.' };
+  if (!lastName) return { ok: false, error: 'Missing last name.' };
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { ok: false, error: 'Missing or invalid email.' };
   return {
     ok: true,
     firstName,
+    lastName,
     email,
     phone: normalisePhone(body.phone),
     timeZone: normaliseTimeZone(body.timeZone),
@@ -685,32 +690,57 @@ function validateEnrollment(body) {
 // code is issued may lose the buyer: a failed store write or email is
 // logged loudly and the code is still returned.
 async function enrollPerson(details, source, helpers, store) {
-  const code = issueSignedCode();
-  const record = newRecord({ code, email: details.email, firstName: details.firstName, phone: details.phone, timeZone: details.timeZone, source });
+  // The code is the person's name (chad-herst), made unique against the
+  // store inside the same write that saves the record. If the store is
+  // down the buyer still gets a code: a signed one, which needs no store.
+  let record = null;
+  let stored = false;
+  try {
+    await store.update((doc) => {
+      const code = nameCode(doc, details.firstName, details.lastName);
+      record = newRecord({ code, email: details.email, firstName: details.firstName, lastName: details.lastName, phone: details.phone, timeZone: details.timeZone, source });
+      doc.enrollments.push(record);
+    });
+    stored = true;
+  } catch (error) {
+    record = newRecord({ code: issueSignedCode(), email: details.email, firstName: details.firstName, lastName: details.lastName, phone: details.phone, timeZone: details.timeZone, source });
+    console.error('ON-RAMP ENROLLMENT NOT STORED for ' + record.email + ' (' + source + '); signed code ' + record.code + ' was issued instead:', error.message);
+  }
   if (helpers.sendEmail) {
     try {
       const mail = emails.enroll(record);
       const result = await helpers.sendEmail(record.email, mail.subject, mail.html);
-      if (result && result.ok) record.sent.enroll = new Date().toISOString();
-      else console.error('ON-RAMP ENROLLMENT EMAIL NOT SENT for ' + record.id + ' (' + source + '); code issued, spine will retry');
+      if (result && result.ok) {
+        const at = new Date().toISOString();
+        record.sent.enroll = at;
+        if (stored) await store.update((doc) => { const r = findByCode(doc, record.code); if (r) r.sent.enroll = at; });
+      } else {
+        console.error('ON-RAMP ENROLLMENT EMAIL NOT SENT for ' + record.id + ' (' + source + '); code issued, spine will retry');
+      }
     } catch (error) {
       console.error('ON-RAMP ENROLLMENT EMAIL FAILED for ' + record.id + ' (' + source + '):', error.message);
     }
   }
-  try {
-    await store.update((doc) => { doc.enrollments.push(record); });
-  } catch (error) {
-    console.error('ON-RAMP ENROLLMENT NOT STORED for ' + record.email + ' (' + source + '); code ' + code + ' was issued:', error.message);
-  }
   if (process.env.MAILCHIMP_API_KEY && helpers.addToMailchimp) {
     try {
-      await helpers.addToMailchimp(record.email, record.firstName);
+      await helpers.addToMailchimp(record.email, (record.firstName + ' ' + record.lastName).trim());
       if (helpers.tagSubscriber) helpers.tagSubscriber(record.email, emails.MAILCHIMP_TAG);
     } catch (error) {
       console.error('On-Ramp enrollment: Mailchimp failed:', error.message);
     }
   }
-  return { accessCode: code, id: record.id };
+  return { accessCode: record.code, id: record.id };
+}
+
+// hasAccess() in onramp.js checks name codes through this registry. The
+// first request warms it from the store; every store read or write after
+// that keeps it current.
+let registryStore = null;
+function ensureCodeRegistry(store) {
+  if (registryStore === store) return;
+  registryStore = store;
+  setEnrolledCodeCheck(isEnrolledCode);
+  store.load().catch((error) => console.error('On-Ramp code registry:', error.message));
 }
 
 function adminCodeMatches(req) {
@@ -724,6 +754,7 @@ function adminCodeMatches(req) {
 
 async function handleCourseRoute(req, res, helpers = {}) {
   const store = helpers.store || defaultStore();
+  ensureCodeRegistry(store);
 
   if (req.method === 'POST' && req.url === COURSE_PATH + '/api/paypal/create-order') {
     if (!selfServeEnabled()) { sendJson(res, 503, { error: 'Self-serve enrollment is not enabled.' }); return true; }

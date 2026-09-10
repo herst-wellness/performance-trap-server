@@ -656,11 +656,17 @@ function verifySignedCode(supplied) {
   return codeMatches(signPayload(match[1]), match[2]);
 }
 
+// Enrolled codes are names (chad-herst) held in the enrollment store; the
+// course module registers the lookup so this file needs no store of its own.
+let enrolledCodeCheck = null;
+function setEnrolledCodeCheck(fn) { enrolledCodeCheck = typeof fn === 'function' ? fn : null; }
+
 function hasAccess(req) {
   const codes = validAccessCodes();
   const supplied = String(req.headers['x-companion-access'] || '');
   if (codes.length === 0 && !codeSecret()) return { ok: false, status: 503 };
   if (verifySignedCode(supplied)) return { ok: true, status: 401 };
+  if (enrolledCodeCheck && enrolledCodeCheck(supplied)) return { ok: true, status: 401 };
   return { ok: codes.some((c) => codeMatches(c, supplied)), status: 401 };
 }
 
@@ -1386,6 +1392,7 @@ module.exports = {
   TRY,
   hasAccess,
   issueSignedCode,
+  setEnrolledCodeCheck,
   verifySignedCode,
   WEEKS,
   evaluateDeterministicControls,

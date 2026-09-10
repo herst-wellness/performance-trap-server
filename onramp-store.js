@@ -180,8 +180,8 @@ function createStore(env = process.env) {
   return {
     backend: backend.backend,
     filePath: backend.filePath,
-    load: () => backend.load(),
-    save: (doc) => backend.save(doc),
+    load: () => backend.load().then((doc) => { refreshKnownCodes(doc); return doc; }),
+    save: (doc) => backend.save(doc).then((r) => { refreshKnownCodes(doc); return r; }),
     // Read, let fn change the document (mutate in place or return a new
     // one), write. Calls queue behind each other.
     update(fn) {
@@ -189,6 +189,7 @@ function createStore(env = process.env) {
         const doc = await backend.load();
         const next = (await fn(doc)) || doc;
         await backend.save(next);
+        refreshKnownCodes(next);
         return next;
       });
       chain = run.catch(() => {});
@@ -204,12 +205,13 @@ function defaultStore() {
 }
 
 // ── Records ─────────────────────────────────────────────────────
-function newRecord({ code, email, firstName, phone = null, timeZone = DEFAULT_TIME_ZONE, source = 'paypal', now = new Date() }) {
+function newRecord({ code, email, firstName, lastName = '', phone = null, timeZone = DEFAULT_TIME_ZONE, source = 'paypal', now = new Date() }) {
   return {
     id: 'enr_' + crypto.randomBytes(6).toString('hex'),
     code,
     email,
     firstName,
+    lastName,
     phone: phone || null,
     timeZone,
     enrolledAt: now.toISOString(),
@@ -245,7 +247,46 @@ function dayEntry(record, date) {
   return entry;
 }
 
+// ── Access codes from names ─────────────────────────────────────
+// Chad's rule (9/10/26): the access code is the person's first and last
+// name, like chad-herst. A second chad-herst becomes chad-herst-2. The
+// registry below is what hasAccess() consults, refreshed on every store
+// read and write, so a name code works the moment it is issued and after
+// a restart as soon as the store has been read once.
+const knownCodes = new Set();
+
+function refreshKnownCodes(doc) {
+  knownCodes.clear();
+  for (const r of (doc && doc.enrollments) || []) if (r && r.code) knownCodes.add(String(r.code));
+}
+
+function isEnrolledCode(code) {
+  const c = String(code || '');
+  return c.length > 0 && knownCodes.has(c);
+}
+
+function slugPart(s) {
+  return String(s || '')
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function nameCode(doc, firstName, lastName, taken = []) {
+  const base = [slugPart(firstName), slugPart(lastName)].filter(Boolean).join('-') || 'practice-' + crypto.randomBytes(3).toString('hex');
+  const used = new Set([...((doc && doc.enrollments) || []).map((r) => r.code), ...taken]);
+  if (!used.has(base)) return base;
+  for (let n = 2; n < 1000; n += 1) if (!used.has(base + '-' + n)) return base + '-' + n;
+  return base + '-' + crypto.randomBytes(3).toString('hex');
+}
+
 module.exports = {
+  isEnrolledCode,
+  nameCode,
+  refreshKnownCodes,
+  slugPart,
   DEFAULT_TIME_ZONE,
   OBJECT_KEY,
   createStore,
