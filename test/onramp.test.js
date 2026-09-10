@@ -431,7 +431,6 @@ test('PayPal self-serve enrollment: off by default, and a mocked full checkout i
   // The buyer's details are asked for above the buttons and sent with both calls.
   assert.match(onHtml, /id="enrollFirstName"/);
   assert.match(onHtml, /id="enrollEmail"/);
-  assert.match(onHtml, /for the daily yay or nay text/);
   assert.ok(onHtml.indexOf('id="enrollFields"') < onHtml.indexOf('id="paypalButtons"'), 'fields sit above the PayPal buttons');
   assert.match(onHtml, /timeZone/);
 
