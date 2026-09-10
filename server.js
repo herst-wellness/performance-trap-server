@@ -8,6 +8,7 @@ const { handleMbfRoute } = require('./mbf');
 const { handleAjRoute } = require('./aj');
 const { handleLorenzoRoute } = require('./lorenzo');
 const { handleCourseRoute } = require('./onramp-course');
+const { defaultStore: onrampStore } = require('./onramp-store');
 const { handleBonusRoute } = require('./book-bonus');
 
 const PORT = process.env.PORT || 3000;
@@ -1247,7 +1248,10 @@ function tagSubscriber(email, tag) {
 const server = http.createServer(async (req, res) => {
   if (await handleCompanionRoute(req, res)) { return; }
   req.url = req.url.split('?')[0];
-  if (await handleOnrampRoute(req, res)) { return; }
+  // The enrollment store is shared with the course routes: name codes are
+  // checked against it, and the journal sitting keeps its exchange there
+  // when the person has agreed to that.
+  if (await handleOnrampRoute(req, res, { store: onrampStore() })) { return; }
   if (await handleMbfRoute(req, res)) { return; }
   if (await handleAjRoute(req, res)) { return; }
   if (await handleLorenzoRoute(req, res)) { return; }

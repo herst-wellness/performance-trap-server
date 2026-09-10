@@ -102,6 +102,11 @@ function scheduleFor(record) {
   for (let n = 2; n <= 4; n += 1) {
     items.push({ key: 'week-' + n, kind: 'email', at: zonedInstant(addDays(day0, 7 * (n - 1) + 1), 7, 0, tz), week: n });
   }
+  // The brief for Chad (docs/65): day 28, 6:30 pm, only when the person
+  // has agreed to let him read their journal sittings.
+  if (record.consent === true) {
+    items.push({ key: 'brief', kind: 'brief', at: zonedInstant(addDays(day0, 28), 18, 30, tz) });
+  }
   items.push({ key: 'closing', kind: 'email', at: zonedInstant(addDays(day0, 29), 7, 0, tz) });
   items.sort((a, b) => a.at - b.at);
   return items;
@@ -117,13 +122,21 @@ function dueItems(record, now = new Date()) {
 // helpers above, so a top-level require in both directions would load an
 // empty module.
 function deliverers() {
-  return { yaynay: require('./onramp-yaynay'), emails: require('./onramp-emails') };
+  return { yaynay: require('./onramp-yaynay'), emails: require('./onramp-emails'), brief: require('./onramp-brief') };
 }
 
 async function deliver(item, record, ctx) {
-  const { yaynay, emails } = deliverers();
+  const { yaynay, emails, brief } = deliverers();
   const env = ctx.env || process.env;
   const baseUrl = ctx.baseUrl || emails.BASE_URL;
+  // The brief goes to Chad, not the person: the model writes it from the
+  // saved sittings, then it is emailed. A failure throws, is logged by the
+  // caller, and comes back next tick like any other send.
+  if (item.kind === 'brief') {
+    const text = await brief.generateBrief(record, env);
+    const sent = await brief.sendBrief(record, text, { sendEmail: ctx.sendEmail });
+    return sent.ok;
+  }
   let message;
   if (item.key === 'enroll') message = emails.enroll(record);
   else if (item.key === 'yaynay-intro') message = emails.yayNayIntro(record, yaynay.yayLinks(record, item.date, baseUrl));
