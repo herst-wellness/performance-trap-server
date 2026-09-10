@@ -7,11 +7,12 @@
 // until Chad records them; Week 1's slot carries the recorded 12-minute
 // breathing practice.
 const crypto = require('node:crypto');
-const { hasAccess, WEEKS, issueSignedCode, setEnrolledCodeCheck } = require('./onramp');
-const { defaultStore, newRecord, findByCode, dayEntry, isEnrolledCode, nameCode } = require('./onramp-store');
+const { hasAccess, WEEKS, JOURNAL, issueSignedCode, ensureCodeRegistry } = require('./onramp');
+const { defaultStore, newRecord, findByCode, dayEntry, nameCode } = require('./onramp-store');
 const { normaliseTimeZone, localDateString } = require('./onramp-schedule');
 const { handleYayRoute, handleSmsInbound } = require('./onramp-yaynay');
 const emails = require('./onramp-emails');
+const brief = require('./onramp-brief');
 
 const COURSE_PATH = '/course/on-ramp';
 
@@ -214,15 +215,18 @@ const COURSE_WEEKS = {
 <p>When you feel the toes curl or the stomach knot: don't go to why. Go to what. Where is it? Throat, chest, belly. One word for it. Then a few breaths right into that spot, and see what it does. If the sentence in your head is "I'm anxious," make it "a part of me is anxious."</p>`,
     journal: `
 <p>Three journals this week, each one a printable sheet. When you finish one, tap Mark done. That's how the weekly note knows. Do them in this order, and take a few minutes of breath before any of them. Sit with your eyes closed, let the body settle, then open your eyes and write. A few paragraphs per prompt is plenty. Don't filter. Don't edit.</p>
+<p>When a journal is done, bring it to the journal sitting. The companion reads a few of your own lines back to you, and you notice what happens in the body as you hear them.</p>
+<label class="check"><input type="checkbox" id="journalConsent"> <span>Let Chad read what I write in the journal sittings before our Integration and Next-Step Session.</span></label>
+<p class="small">Ticked: what you bring to the journal sittings is kept for Chad to read, and he gets a short brief before your session. Unticked: nothing is kept.</p>
 <h4>1. What's Bringing You Here (first day or two)</h4>
 <p>You read the book and something in it landed. This one brings that into focus: what's bringing you here, as concretely as you can; what's happening in your body right now as you sit with it; what that feeling would say if it could talk; and, if something older surfaces, the role you learned to play and the unspoken terms. It ends with the two yogis. If it's not a story about positive thinking, what's it about? And what's your Varanasi?</p>
-<p><a class="button" href="/downloads/on-ramp/week-1/whats-bringing-you-here.pdf" data-journal="week-1/whats-bringing-you-here" target="_blank" rel="noopener">Open the journal (PDF)</a> <button type="button" class="button button-quiet" data-journal-done="week-1/whats-bringing-you-here">Mark done</button></p>
+<p><a class="button" href="/downloads/on-ramp/week-1/whats-bringing-you-here.pdf" data-journal="week-1/whats-bringing-you-here" target="_blank" rel="noopener">Open the journal (PDF)</a> <button type="button" class="button button-quiet" data-journal-done="week-1/whats-bringing-you-here">Mark done</button> <a class="button button-quiet" href="${JOURNAL[1].pagePath}?journal=week-1/whats-bringing-you-here">Bring it to the journal sitting</a></p>
 <h4>2. The Breath in Ordinary Hours (all week)</h4>
 <p>Two minutes a day. Yay or nay for each day. Three sits logged the way I check in: the state you started in, the breath you gave it, what was different after. Three breaths before something, twice. One moment when something landed: where, one word, and what it did under attention. And the sentence both ways, <em>I'm anxious</em> and <em>a part of me is anxious</em>, with what changed between them.</p>
-<p><a class="button" href="/downloads/on-ramp/week-1/the-breath-in-ordinary-hours.pdf" data-journal="week-1/the-breath-in-ordinary-hours" target="_blank" rel="noopener">Open the journal (PDF)</a> <button type="button" class="button button-quiet" data-journal-done="week-1/the-breath-in-ordinary-hours">Mark done</button></p>
+<p><a class="button" href="/downloads/on-ramp/week-1/the-breath-in-ordinary-hours.pdf" data-journal="week-1/the-breath-in-ordinary-hours" target="_blank" rel="noopener">Open the journal (PDF)</a> <button type="button" class="button button-quiet" data-journal-done="week-1/the-breath-in-ordinary-hours">Mark done</button> <a class="button button-quiet" href="${JOURNAL[1].pagePath}?journal=week-1/the-breath-in-ordinary-hours">Bring it to the journal sitting</a></p>
 <h4>3. The Formation of a Reaction (end of the week)</h4>
 <p>Map one moment end to end, the way Paul's calendar invite was mapped above. The trigger. The body's first response, right now, as you hold the memory. The story, quoted as you hear it. The reaction then, and the pull now. The spinning. Then find where the opening was. It closes on the two questions I ask at the end of every session: what's one thing you're taking with you, and what's an open question you're left with?</p>
-<p><a class="button" href="/downloads/on-ramp/week-1/the-formation-of-a-reaction.pdf" data-journal="week-1/the-formation-of-a-reaction" target="_blank" rel="noopener">Open the journal (PDF)</a> <button type="button" class="button button-quiet" data-journal-done="week-1/the-formation-of-a-reaction">Mark done</button></p>
+<p><a class="button" href="/downloads/on-ramp/week-1/the-formation-of-a-reaction.pdf" data-journal="week-1/the-formation-of-a-reaction" target="_blank" rel="noopener">Open the journal (PDF)</a> <button type="button" class="button button-quiet" data-journal-done="week-1/the-formation-of-a-reaction">Mark done</button> <a class="button button-quiet" href="${JOURNAL[1].pagePath}?journal=week-1/the-formation-of-a-reaction">Bring it to the journal sitting</a></p>
 <p class="note">Keep what you write. You'll bring a piece of it to your Integration and Next-Step Session at the end of the four weeks.</p>`,
   },
   2: {
@@ -391,6 +395,7 @@ h4{font:600 15px/1.4 Arial,sans-serif;color:var(--gold);margin:20px 0 6px}
 .button{display:inline-block;border:1px solid var(--gold);background:var(--gold);color:#fff;border-radius:999px;padding:12px 22px;font:600 14px/1 Arial,sans-serif;cursor:pointer;text-decoration:none}
 .button-quiet{background:transparent;color:var(--gold)}
 .button-quiet.is-done{background:#EFE6D8;border-color:#EFE6D8;color:#5C4A2A;cursor:default}
+.check{display:flex;gap:10px;align-items:flex-start;font:15px/1.45 Arial,sans-serif;margin:14px 0 6px;cursor:pointer}.check input{margin-top:4px;flex:none}
 .field input{width:100%;border:1px solid #BCA88E;border-radius:10px;background:#FFFDF9;color:var(--ink);padding:13px 14px;font:16px/1.4 Arial,sans-serif}
 .error{color:var(--danger);font:600 14px/1.4 Arial,sans-serif;margin-top:10px}
 .hidden{display:none!important}
@@ -493,6 +498,26 @@ ${COURSE_CSS}
         postJournal(b.getAttribute('data-journal-done'), 'done');
       });
     });
+    // Consent for the journal sittings (Week 1 only): shown from the
+    // record on load, saved the moment the box changes.
+    var consentBox = el('lessonContent').querySelector('#journalConsent');
+    if (consentBox) {
+      consentBox.disabled = true;
+      fetch('${COURSE_PATH}/api/consent', { headers: { 'X-Companion-Access': code }, cache: 'no-store' })
+        .then(function(r){ return r.json(); })
+        .then(function(d){ consentBox.checked = d.consent === true; })
+        .catch(function(){})
+        .then(function(){ consentBox.disabled = false; });
+      consentBox.addEventListener('change', function(){
+        try {
+          fetch('${COURSE_PATH}/api/consent', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Companion-Access': code },
+            body: JSON.stringify({ consent: consentBox.checked })
+          }).catch(function(){});
+        } catch (e) {}
+      });
+    }
   }
   async function unlock(code){
     if (!code) { showError('Enter the access code.'); return; }
@@ -732,17 +757,6 @@ async function enrollPerson(details, source, helpers, store) {
   return { accessCode: record.code, id: record.id };
 }
 
-// hasAccess() in onramp.js checks name codes through this registry. The
-// first request warms it from the store; every store read or write after
-// that keeps it current.
-let registryStore = null;
-function ensureCodeRegistry(store) {
-  if (registryStore === store) return;
-  registryStore = store;
-  setEnrolledCodeCheck(isEnrolledCode);
-  store.load().catch((error) => console.error('On-Ramp code registry:', error.message));
-}
-
 function adminCodeMatches(req) {
   const expected = String(process.env.COMPANION_ADMIN_CODE || '');
   const supplied = String(req.headers['x-admin-code'] || '');
@@ -754,7 +768,10 @@ function adminCodeMatches(req) {
 
 async function handleCourseRoute(req, res, helpers = {}) {
   const store = helpers.store || defaultStore();
-  ensureCodeRegistry(store);
+  // hasAccess() in onramp.js checks name codes through the store's
+  // registry; awaiting the warm-up means a name code works on the first
+  // request after a restart.
+  await ensureCodeRegistry(store);
 
   if (req.method === 'POST' && req.url === COURSE_PATH + '/api/paypal/create-order') {
     if (!selfServeEnabled()) { sendJson(res, 503, { error: 'Self-serve enrollment is not enabled.' }); return true; }
@@ -854,6 +871,62 @@ async function handleCourseRoute(req, res, helpers = {}) {
     } catch (error) {
       console.error('On-Ramp journal:', error.message);
       if (!res.headersSent) sendJson(res, 500, { error: 'Could not record that.' });
+    }
+    return true;
+  }
+  // Consent (docs/65): whether the journal sittings are kept for Chad to
+  // read before the Integration and Next-Step Session. Set from the Week 1
+  // lesson page; read back on every load so the box shows the truth.
+  if (req.url === COURSE_PATH + '/api/consent' && (req.method === 'GET' || req.method === 'POST')) {
+    const access = hasAccess(req);
+    if (!access.ok) { sendJson(res, access.status, { error: 'That code was not recognized.' }); return true; }
+    const code = String(req.headers['x-companion-access'] || '');
+    try {
+      if (req.method === 'GET') {
+        const record = findByCode(await store.load(), code);
+        sendJson(res, 200, { consent: Boolean(record && record.consent === true) });
+        return true;
+      }
+      const body = await readJsonBody(req);
+      if (typeof body.consent !== 'boolean') { sendJson(res, 400, { error: 'consent must be true or false.' }); return true; }
+      let found = false;
+      await store.update((doc) => {
+        const record = findByCode(doc, code);
+        if (!record) return;
+        found = true;
+        record.consent = body.consent;
+        record.consentAt = new Date().toISOString();
+      });
+      // A manual ONRAMP_ACCESS_CODES entry has no record: nothing is kept
+      // for it either way, so the answer is always "not kept".
+      sendJson(res, 200, { consent: found && body.consent });
+    } catch (error) {
+      console.error('On-Ramp consent:', error.message);
+      if (!res.headersSent) sendJson(res, 500, { error: 'Could not record that.' });
+    }
+    return true;
+  }
+  // The brief, on demand: for testing, and for people who book the session
+  // before day 28. Generates it now, emails Chad, and marks it sent so the
+  // ticker does not send a second one.
+  if (req.method === 'POST' && req.url === COURSE_PATH + '/api/admin/brief') {
+    const admin = adminCodeMatches(req);
+    if (!admin.ok) { sendJson(res, admin.status, { error: admin.status === 503 ? 'Admin routes are not enabled.' : 'Not authorised.' }); return true; }
+    try {
+      const body = await readJsonBody(req);
+      const code = String(body.code || '').trim();
+      if (!code) { sendJson(res, 400, { error: 'Missing code.' }); return true; }
+      const record = findByCode(await store.load(), code);
+      if (!record) { sendJson(res, 404, { error: 'No enrollment with that code.' }); return true; }
+      const text = await brief.generateBrief(record);
+      const sent = await brief.sendBrief(record, text, helpers);
+      if (!sent.ok) { sendJson(res, 502, { error: 'The brief was written but the email did not send.' }); return true; }
+      const at = new Date().toISOString();
+      await store.update((doc) => { const r = findByCode(doc, code); if (r) { if (!r.sent) r.sent = {}; r.sent.brief = at; } });
+      sendJson(res, 200, { ok: true, chars: text.length });
+    } catch (error) {
+      console.error('On-Ramp admin brief:', error.message);
+      if (!res.headersSent) sendJson(res, 502, { error: 'Could not write the brief.' });
     }
     return true;
   }

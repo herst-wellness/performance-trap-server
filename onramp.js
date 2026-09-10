@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
+const { defaultStore, findByCode, isEnrolledCode, slugPart } = require('./onramp-store');
 
 const MAX_BODY_BYTES = 100000;
 const MAX_MESSAGE_CHARS = 12000;
@@ -77,6 +78,50 @@ TRY.instructions = [CORE_OPEN, ...TRY.methods, TRY.weekFrame, CORE_CLOSE, TAIL].
 // cap the server answers for it. Eight exchanges is a full Week 1 rep.
 const TRY_SOFT_TURNS = 14;
 const TRY_HARD_TURNS = 22;
+
+// The journal sitting (docs/65, 9/10/26). The person has finished one of the
+// week's written journals and brings the writing; the companion reads a few
+// of their own lines back and the body answers. Same engine, its own method
+// and week frame, kept out of WEEKS so the index and lesson pages never list
+// it as a daily rep. With the person's consent the exchange is kept on their
+// enrollment record for the brief Chad reads before the Integration and
+// Next-Step Session; without it nothing is kept, exactly as the daily rep.
+const JOURNAL_METHOD = readPart('onramp-method-journal.txt');
+const JOURNAL = {
+  1: {
+    journal: true,
+    week: 1,
+    title: 'Week 1: the journal sitting',
+    sub: 'Bring what you wrote. It reads it back, and the body answers.',
+    journals: [
+      { key: 'week-1/whats-bringing-you-here', title: "What's Bringing You Here" },
+      { key: 'week-1/the-breath-in-ordinary-hours', title: 'The Breath in Ordinary Hours' },
+      { key: 'week-1/the-formation-of-a-reaction', title: 'The Formation of a Reaction' },
+    ],
+    methods: [JOURNAL_METHOD],
+    weekFrame: readPart('onramp-journal-week-1.txt'),
+    pagePath: '/practice/on-ramp/journal-1',
+    apiPath: '/api/on-ramp/journal-1',
+  },
+};
+for (const n of Object.keys(JOURNAL)) {
+  const j = JOURNAL[n];
+  j.instructions = [CORE_OPEN, ...j.methods, j.weekFrame, CORE_CLOSE, TAIL].join('\n\n');
+}
+// A journal sitting runs a little longer than the free sitting: the writing
+// itself is the first turn.
+const JOURNAL_SOFT_TURNS = 16;
+const JOURNAL_HARD_TURNS = 24;
+const JOURNAL_PREFIX = 'Journal: ';
+
+// Photographs of handwritten pages are read by the model (vision) and the
+// text lands in the box, editable before it is brought to the sitting.
+const JOURNAL_READ_PATH = '/api/on-ramp/journal-read';
+const MAX_IMAGE_BYTES = 6 * 1024 * 1024;
+const IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
+const JOURNAL_READ_INSTRUCTION =
+  'Transcribe the handwriting on this journal page exactly as written, in reading order, including crossed-out words in [brackets] and a [?] where a word is unreadable. Return only the transcription.';
+const JOURNAL_READ_OUTPUT_TOKENS = 4096;
 
 const SELF_HARM_URGENT =
   /\b(kill myself|suicide|take (?:all |the )?pills|hurt myself|end my life)\b|\bpills\b[\s\S]*\b(?:take them|going to take)\b/i;
@@ -242,7 +287,7 @@ function urgentSelfHarm(country) {
   );
 }
 
-function evaluateDeterministicControls({ message, adultConfirmed, country, provider }) {
+function evaluateDeterministicControls({ message, adultConfirmed, country, provider, journalText = false }) {
   const text = message.trim();
 
   if (!adultConfirmed || MINOR_DISCLOSURE.test(text)) {
@@ -287,6 +332,10 @@ function evaluateDeterministicControls({ message, adultConfirmed, country, provi
       true
     );
   }
+  // A journal brought whole as the first turn is writing, not a request to
+  // the companion: a sentence like "I'm done." in it must not end the
+  // sitting. The safety checks above still apply to it in full.
+  if (journalText) return null;
   if (STOP_REQUEST.test(text)) {
     return result(
       'stop_requested',
@@ -406,20 +455,27 @@ function offlineReflectionResponse(message, history) {
   return 'See if you can let yourself feel the impact of that. Where does it land in your body?';
 }
 
-function cleanHistory(history) {
+// keepFirst (the journal sitting): the first turn is the writing itself and
+// must reach the model whole and on every turn, so it is never trimmed away
+// with the older turns and is not cut at the per-turn cap.
+function cleanHistory(history, opts = {}) {
   if (!Array.isArray(history)) return [];
-  return history
-    .filter(
-      (item) =>
-        item &&
-        (item.role === 'user' || item.role === 'assistant') &&
-        typeof item.content === 'string'
-    )
-    .slice(-16)
-    .map((item) => ({
-      role: item.role,
-      content: item.content.slice(0, 6000),
-    }));
+  const valid = history.filter(
+    (item) =>
+      item &&
+      (item.role === 'user' || item.role === 'assistant') &&
+      typeof item.content === 'string'
+  );
+  const trimmed = (item, cap) => ({ role: item.role, content: item.content.slice(0, cap) });
+  if (opts.keepFirst && valid.length > 0) {
+    const first = trimmed(valid[0], MAX_MESSAGE_CHARS);
+    const rest = valid.slice(1).slice(-15).map((item) => trimmed(item, 6000));
+    // The turn after the writing must be the companion's, so the roles
+    // keep alternating from the first turn on.
+    while (rest.length && rest[0].role !== 'assistant') rest.shift();
+    return [first, ...rest];
+  }
+  return valid.slice(-16).map((item) => trimmed(item, 6000));
 }
 
 function extractOpenAIText(payload) {
@@ -449,10 +505,10 @@ function logIncompleteResponse(fields) {
   console.error('[companion] incomplete response', fields);
 }
 
-async function requestOpenAI(instructions, message, history, maxOutputTokens) {
+async function requestOpenAI(instructions, message, history, maxOutputTokens, opts) {
   const model = process.env.COMPANION_MODEL || process.env.OPENAI_MODEL;
   const input = [
-    ...cleanHistory(history),
+    ...cleanHistory(history, opts),
     { role: 'user', content: message },
   ];
   const openaiUrl = process.env.OPENAI_API_BASE_URL || 'https://api.openai.com/v1/responses';
@@ -485,8 +541,8 @@ async function requestOpenAI(instructions, message, history, maxOutputTokens) {
   };
 }
 
-async function callOpenAI(instructions, message, history) {
-  let attempt = await requestOpenAI(instructions, message, history, NORMAL_OUTPUT_TOKENS);
+async function callOpenAI(instructions, message, history, opts) {
+  let attempt = await requestOpenAI(instructions, message, history, NORMAL_OUTPUT_TOKENS, opts);
   if (attempt.incomplete) {
     logIncompleteResponse({
       provider: 'openai',
@@ -494,7 +550,7 @@ async function callOpenAI(instructions, message, history) {
       requestId: attempt.requestId,
       attempt: 1,
     });
-    attempt = await requestOpenAI(instructions, message, history, RETRY_OUTPUT_TOKENS);
+    attempt = await requestOpenAI(instructions, message, history, RETRY_OUTPUT_TOKENS, opts);
     if (attempt.incomplete) {
       logIncompleteResponse({
         provider: 'openai',
@@ -508,10 +564,10 @@ async function callOpenAI(instructions, message, history) {
   return attempt.text;
 }
 
-async function requestAnthropic(instructions, message, history, maxTokens) {
+async function requestAnthropic(instructions, message, history, maxTokens, opts) {
   const model = process.env.COMPANION_MODEL || process.env.ANTHROPIC_MODEL;
   const messages = [
-    ...cleanHistory(history),
+    ...cleanHistory(history, opts),
     { role: 'user', content: message },
   ];
   const anthropicUrl = process.env.ANTHROPIC_API_BASE_URL || 'https://api.anthropic.com/v1/messages';
@@ -551,8 +607,8 @@ async function requestAnthropic(instructions, message, history, maxTokens) {
   };
 }
 
-async function callAnthropic(instructions, message, history) {
-  let attempt = await requestAnthropic(instructions, message, history, NORMAL_OUTPUT_TOKENS);
+async function callAnthropic(instructions, message, history, opts) {
+  let attempt = await requestAnthropic(instructions, message, history, NORMAL_OUTPUT_TOKENS, opts);
   // A response can complete "successfully" with no visible text at all (seen
   // twice on one evaluation case). Treat empty the same as incomplete: one
   // retry at the higher ceiling, then a plain error, never a blank message.
@@ -564,7 +620,7 @@ async function callAnthropic(instructions, message, history) {
       requestId: attempt.requestId,
       attempt: 1,
     });
-    attempt = await requestAnthropic(instructions, message, history, RETRY_OUTPUT_TOKENS);
+    attempt = await requestAnthropic(instructions, message, history, RETRY_OUTPUT_TOKENS, opts);
     if (!String(attempt.text || '').trim()) {
       throw new Error('Anthropic response was empty after retry');
     }
@@ -577,7 +633,7 @@ async function callAnthropic(instructions, message, history) {
       requestId: attempt.requestId,
       attempt: 1,
     });
-    attempt = await requestAnthropic(instructions, message, history, RETRY_OUTPUT_TOKENS);
+    attempt = await requestAnthropic(instructions, message, history, RETRY_OUTPUT_TOKENS, opts);
     if (attempt.incomplete) {
       logIncompleteResponse({
         provider: 'anthropic',
@@ -596,13 +652,13 @@ function removeEmDashes(text) {
   return String(text || '').replace(/\u2014/g, ',').trim();
 }
 
-async function generateReflection(instructions, message, history, provider) {
+async function generateReflection(instructions, message, history, provider, opts = {}) {
   try {
     if (provider === 'openai') {
-      return { response: removeEmDashes(await callOpenAI(instructions, message, history)), mode: 'openai' };
+      return { response: removeEmDashes(await callOpenAI(instructions, message, history, opts)), mode: 'openai' };
     }
     if (provider === 'anthropic') {
-      return { response: removeEmDashes(await callAnthropic(instructions, message, history)), mode: 'anthropic' };
+      return { response: removeEmDashes(await callAnthropic(instructions, message, history, opts)), mode: 'anthropic' };
     }
     return {
       response: offlineReflectionResponse(message, cleanHistory(history)),
@@ -656,10 +712,27 @@ function verifySignedCode(supplied) {
   return codeMatches(signPayload(match[1]), match[2]);
 }
 
-// Enrolled codes are names (chad-herst) held in the enrollment store; the
-// course module registers the lookup so this file needs no store of its own.
+// Enrolled codes are names (chad-herst) held in the enrollment store.
+// ensureCodeRegistry() points hasAccess() at the store's registry and warms
+// it with one read; every store read or write after that keeps it current.
+// It returns the warm-up promise, so a gated route can await it and a name
+// code works on the very first request after a restart.
 let enrolledCodeCheck = null;
 function setEnrolledCodeCheck(fn) { enrolledCodeCheck = typeof fn === 'function' ? fn : null; }
+
+let registryStore = null;
+let registryReady = Promise.resolve(false);
+function ensureCodeRegistry(store) {
+  if (store && registryStore !== store) {
+    registryStore = store;
+    setEnrolledCodeCheck(isEnrolledCode);
+    registryReady = store.load().then(
+      () => true,
+      (error) => { console.error('On-Ramp code registry:', error.message); return false; }
+    );
+  }
+  return registryReady;
+}
 
 function hasAccess(req) {
   const codes = validAccessCodes();
@@ -694,20 +767,69 @@ function readJsonBody(req) {
   });
 }
 
+// The journal card (journal variant only): which journal, the writing, a
+// photo of the page, and Bring it. Replaces the breath card; the person is
+// arriving with writing, not a live moment.
+function journalCardHtml(week) {
+  const options = week.journals
+    .map((j) => `<option value="${j.key}">${j.title.replace(/'/g, '&#39;')}</option>`)
+    .join('');
+  return `  <section id="journalCard" class="card hidden">
+    <h2>Bring what you wrote</h2>
+    <div class="field">
+      <label for="journalSelect">Which journal</label>
+      <select id="journalSelect">${options}</select>
+    </div>
+    <div class="field">
+      <label for="journalText">What you wrote</label>
+      <textarea id="journalText" maxlength="11000" placeholder="Paste or type what you wrote"></textarea>
+    </div>
+    <input id="journalPhoto" type="file" accept="image/jpeg,image/png,image/webp" class="hidden" aria-hidden="true" tabindex="-1">
+    <div class="row">
+      <button type="button" id="photoButton" class="button secondary">Add a photo of the page</button>
+      <button type="button" id="bringButton" class="button">Bring it</button>
+    </div>
+    <div id="photoStatus" class="speak-status hidden" role="status" aria-live="polite"></div>
+    <div id="journalError" class="error hidden"></div>
+  </section>`;
+}
+
+function breathCardHtml() {
+  return `  <section id="breathCard" class="card hidden">
+    <h2>A little time to breathe</h2>
+    <div id="breathOffer">
+      <p>Before we begin, would you like to breathe together first? This is Chad's twelve-minute guided breathing practice. It is completely optional. We can also simply begin.</p>
+      <div class="row">
+        <button type="button" id="breathListen" class="button secondary">Breathe first, about 12 minutes</button>
+        <button type="button" id="breathSkip" class="button">No, I am ready to begin</button>
+      </div>
+    </div>
+    <div id="breathPlayer" class="hidden">
+      <p class="small">Settle in. When the recording finishes, or whenever you are ready, continue to the practice.</p>
+      <audio id="breathAudio" controls preload="none" src="/audio/onramp-breath-12min.mp3" style="width:100%"></audio>
+      <div class="row" style="margin-top:14px">
+        <button type="button" id="breathDone" class="button">Continue to the practice</button>
+      </div>
+    </div>
+  </section>`;
+}
+
 function companionPage(week) {
+  const journal = Boolean(week.journal);
+  const weekNum = week.pagePath.slice(-1);
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow, noarchive">
-<title>${week.public ? 'Try SENSE on something real' : 'The Daily Rep, ' + week.title.split(":")[0]} | Herst Wellness</title>
+<title>${week.public ? 'Try SENSE on something real' : journal ? 'The Journal Sitting, Week ' + weekNum : 'The Daily Rep, ' + week.title.split(":")[0]} | Herst Wellness</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
 <style>
 :root{--cream:#F4EDE4;--paper:#FBF7F0;--ink:#352515;--gold:#8B6B1E;--line:#D7C7B3;--soft:#EFE6D8;--danger:#8E2F27;--shadow:0 20px 55px rgba(53,37,21,.10)}
-*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:'Cormorant Garamond',Georgia,serif;font-size:19px;line-height:1.55}.shell{width:min(920px,calc(100% - 28px));margin:0 auto;padding:30px 0 54px}.brand{display:flex;justify-content:center;margin-bottom:22px}.brand img{display:block;width:min(520px,100%);height:auto}.rule{height:1px;background:var(--gold);opacity:.65;margin:0 0 30px}.hero{text-align:center;margin:0 auto 28px;max-width:700px}.eyebrow{text-transform:uppercase;letter-spacing:.18em;color:var(--gold);font:600 12px/1.4 Arial,sans-serif}.hero h1{font-family:'Playfair Display',Georgia,serif;font-size:clamp(34px,6vw,54px);line-height:1.08;margin:10px 0 10px}.hero p{font-style:italic;color:#6F5438;margin:0}.card{background:rgba(251,247,240,.94);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:clamp(22px,4vw,38px);max-width:720px;margin:0 auto}.card h2{font-family:'Playfair Display',Georgia,serif;font-size:24px;margin:0 0 10px}.small{font:14px/1.5 Arial,sans-serif;color:#715D49}.notice{padding:17px 18px;background:var(--soft);border-left:3px solid var(--gold);font:14px/1.55 Arial,sans-serif;margin:18px 0}.field{margin:18px 0}.field label{display:block;font:600 13px/1.4 Arial,sans-serif;letter-spacing:.03em;margin-bottom:7px}.field input,.field select,.composer textarea{width:100%;border:1px solid #BCA88E;border-radius:10px;background:#FFFDF9;color:var(--ink);padding:13px 14px;font:16px/1.4 Arial,sans-serif}.field input:focus,.field select:focus,.composer textarea:focus{outline:2px solid rgba(139,107,30,.28);border-color:var(--gold)}.check{display:flex;gap:10px;align-items:flex-start;font:15px/1.45 Arial,sans-serif;margin:13px 0}.check input{margin-top:3px}.button{border:1px solid var(--gold);background:var(--gold);color:white;border-radius:999px;padding:12px 20px;font:600 14px/1 Arial,sans-serif;cursor:pointer}.button:hover{filter:brightness(.95)}.button:disabled{opacity:.5;cursor:not-allowed}.button.secondary{background:transparent;color:var(--gold)}.button.danger{border-color:var(--danger);color:var(--danger);background:transparent}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.hidden{display:none!important}.button.speaking{background:var(--danger);border-color:var(--danger);color:#fff}.speak-status{font:13px/1.45 Arial,sans-serif;color:#715D49;margin-top:9px}.error{color:var(--danger);font:600 14px/1.4 Arial,sans-serif;margin-top:12px}.session{max-width:820px;margin:0 auto;background:var(--paper);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}.session-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 20px;border-bottom:1px solid var(--line);background:#F8F1E8}.session-title{font-family:'Playfair Display',Georgia,serif;font-size:18px}.mode{font:12px/1.3 Arial,sans-serif;color:#715D49}.messages{min-height:390px;max-height:58vh;overflow-y:auto;padding:22px}.message{max-width:84%;padding:13px 15px;border-radius:14px;margin:0 0 14px;white-space:pre-wrap}.message.assistant{background:var(--soft);border-bottom-left-radius:4px}.message.user{background:#DFD0BC;margin-left:auto;border-bottom-right-radius:4px}.speaker{font:700 10px/1.2 Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:5px}.composer{border-top:1px solid var(--line);padding:16px 18px;background:#F8F1E8}.composer textarea{min-height:100px;resize:vertical}.composer-actions{display:flex;justify-content:space-between;gap:12px;margin-top:10px;align-items:center}.thinking{font:italic 16px/1.3 Georgia,serif;color:#715D49}.waiting-status{font:italic 15px/1.4 Georgia,serif;color:#715D49;text-align:center;margin:2px auto 12px}.breath-view{display:flex;flex-direction:column;align-items:center;gap:12px;padding:16px 0 4px}.breath-space{height:110px;display:flex;align-items:center;justify-content:center}.breath-dot{width:64px;height:64px;border-radius:50%;background:var(--gold);opacity:.85;transform:scale(.22);transform-origin:center}.breath-dot.still{transform:scale(.55)}.breath-phase{font-family:'Playfair Display',Georgia,serif;font-size:22px;min-height:28px}.breath-time{font:13px/1.4 Arial,sans-serif;color:#715D49;min-height:18px}.locked{padding:14px 18px;background:#F1DDD7;color:#6E241E;font:14px/1.45 Arial,sans-serif}.footer{text-align:center;margin:24px auto 0;color:#78644F;font:13px/1.5 Arial,sans-serif;max-width:680px}@media(max-width:620px){.shell{padding-top:18px}.card{border-radius:14px}.message{max-width:94%}.session-head{align-items:flex-start;flex-direction:column}.composer-actions{align-items:stretch;flex-direction:column}.composer-actions .row{width:100%}.composer-actions .button{flex:1}}
+*{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:'Cormorant Garamond',Georgia,serif;font-size:19px;line-height:1.55}.shell{width:min(920px,calc(100% - 28px));margin:0 auto;padding:30px 0 54px}.brand{display:flex;justify-content:center;margin-bottom:22px}.brand img{display:block;width:min(520px,100%);height:auto}.rule{height:1px;background:var(--gold);opacity:.65;margin:0 0 30px}.hero{text-align:center;margin:0 auto 28px;max-width:700px}.eyebrow{text-transform:uppercase;letter-spacing:.18em;color:var(--gold);font:600 12px/1.4 Arial,sans-serif}.hero h1{font-family:'Playfair Display',Georgia,serif;font-size:clamp(34px,6vw,54px);line-height:1.08;margin:10px 0 10px}.hero p{font-style:italic;color:#6F5438;margin:0}.card{background:rgba(251,247,240,.94);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:clamp(22px,4vw,38px);max-width:720px;margin:0 auto}.card h2{font-family:'Playfair Display',Georgia,serif;font-size:24px;margin:0 0 10px}.small{font:14px/1.5 Arial,sans-serif;color:#715D49}.notice{padding:17px 18px;background:var(--soft);border-left:3px solid var(--gold);font:14px/1.55 Arial,sans-serif;margin:18px 0}.field{margin:18px 0}.field label{display:block;font:600 13px/1.4 Arial,sans-serif;letter-spacing:.03em;margin-bottom:7px}.field input,.field select,.field textarea,.composer textarea{width:100%;border:1px solid #BCA88E;border-radius:10px;background:#FFFDF9;color:var(--ink);padding:13px 14px;font:16px/1.4 Arial,sans-serif}.field textarea{min-height:220px;resize:vertical}.field input:focus,.field select:focus,.field textarea:focus,.composer textarea:focus{outline:2px solid rgba(139,107,30,.28);border-color:var(--gold)}.check{display:flex;gap:10px;align-items:flex-start;font:15px/1.45 Arial,sans-serif;margin:13px 0}.check input{margin-top:3px}.button{border:1px solid var(--gold);background:var(--gold);color:white;border-radius:999px;padding:12px 20px;font:600 14px/1 Arial,sans-serif;cursor:pointer}.button:hover{filter:brightness(.95)}.button:disabled{opacity:.5;cursor:not-allowed}.button.secondary{background:transparent;color:var(--gold)}.button.danger{border-color:var(--danger);color:var(--danger);background:transparent}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.hidden{display:none!important}.button.speaking{background:var(--danger);border-color:var(--danger);color:#fff}.speak-status{font:13px/1.45 Arial,sans-serif;color:#715D49;margin-top:9px}.error{color:var(--danger);font:600 14px/1.4 Arial,sans-serif;margin-top:12px}.session{max-width:820px;margin:0 auto;background:var(--paper);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}.session-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:16px 20px;border-bottom:1px solid var(--line);background:#F8F1E8}.session-title{font-family:'Playfair Display',Georgia,serif;font-size:18px}.mode{font:12px/1.3 Arial,sans-serif;color:#715D49}.messages{min-height:390px;max-height:58vh;overflow-y:auto;padding:22px}.message{max-width:84%;padding:13px 15px;border-radius:14px;margin:0 0 14px;white-space:pre-wrap}.message.assistant{background:var(--soft);border-bottom-left-radius:4px}.message.user{background:#DFD0BC;margin-left:auto;border-bottom-right-radius:4px}.speaker{font:700 10px/1.2 Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:5px}.composer{border-top:1px solid var(--line);padding:16px 18px;background:#F8F1E8}.composer textarea{min-height:100px;resize:vertical}.composer-actions{display:flex;justify-content:space-between;gap:12px;margin-top:10px;align-items:center}.thinking{font:italic 16px/1.3 Georgia,serif;color:#715D49}.waiting-status{font:italic 15px/1.4 Georgia,serif;color:#715D49;text-align:center;margin:2px auto 12px}.breath-view{display:flex;flex-direction:column;align-items:center;gap:12px;padding:16px 0 4px}.breath-space{height:110px;display:flex;align-items:center;justify-content:center}.breath-dot{width:64px;height:64px;border-radius:50%;background:var(--gold);opacity:.85;transform:scale(.22);transform-origin:center}.breath-dot.still{transform:scale(.55)}.breath-phase{font-family:'Playfair Display',Georgia,serif;font-size:22px;min-height:28px}.breath-time{font:13px/1.4 Arial,sans-serif;color:#715D49;min-height:18px}.locked{padding:14px 18px;background:#F1DDD7;color:#6E241E;font:14px/1.45 Arial,sans-serif}.footer{text-align:center;margin:24px auto 0;color:#78644F;font:13px/1.5 Arial,sans-serif;max-width:680px}@media(max-width:620px){.shell{padding-top:18px}.card{border-radius:14px}.message{max-width:94%}.session-head{align-items:flex-start;flex-direction:column}.composer-actions{align-items:stretch;flex-direction:column}.composer-actions .row{width:100%}.composer-actions .button{flex:1}}
 </style>
 </head>
 <body>
@@ -715,7 +837,7 @@ function companionPage(week) {
   <div class="brand"><img src="/Herst-Wellness-Logo-cropped.jpg" alt="Herst Wellness"></div>
   <nav style="font:13px/1.4 Arial,sans-serif;color:#78644F;margin:-8px 0 14px;text-align:center">${week.public
     ? `<a style="color:var(--gold);text-decoration:none" href="/book-bonus">The book bonus page</a> &rsaquo; <span>One sitting</span>`
-    : `<a style="color:var(--gold);text-decoration:none" href="/course/on-ramp">The Practice</a> &rsaquo; <a style="color:var(--gold);text-decoration:none" href="/course/on-ramp/week-${week.pagePath.slice(-1)}">Week ${week.pagePath.slice(-1)} lesson</a> &rsaquo; <span>The daily rep</span>`}</nav>
+    : `<a style="color:var(--gold);text-decoration:none" href="/course/on-ramp">The Practice</a> &rsaquo; <a style="color:var(--gold);text-decoration:none" href="/course/on-ramp/week-${weekNum}">Week ${weekNum} lesson</a> &rsaquo; <span>${journal ? 'The journal sitting' : 'The daily rep'}</span>`}</nav>
   <div class="rule"></div>
   <header class="hero">
     <div class="eyebrow">${week.public ? 'From the book' : 'The Performance Trap Practice'}</div>
@@ -739,6 +861,8 @@ ${week.public ? `    <h2>Try SENSE on something that happened this week</h2>
     <p>You've read about SENSE in the book. Here you get to do it. Bring one moment from the last few days, the email that tightened your chest, the meeting where you went small, and either type it or just talk. It listens, it responds, and it walks you through the practice on that moment: slowing the breath, entering the body, naming what's there, staying with it.</p>
     <p>It's an AI I built from my own work with people, and it does capture a sense of how I work. It's not perfect, and it doesn't have the human touch, which is the main thing. But you can't learn this from reading. You have to practice it, and this is a place to start. About ten minutes, and it brings itself to a close.</p>
     <p>It's not me, and it's not therapy. It keeps nothing after you end.</p>
+` : journal ? `    <h2>Bring what you wrote</h2>
+    <p>You've finished one of this week's journals. Bring it here. Type it, paste it, or photograph the handwritten pages. It reads a few of your own lines back to you, and you notice what happens in the body as you hear them. That's the whole idea. It's the same companion as the daily rep, built from how I work with people's writing before a session. It's not me, and it's not therapy.</p>
 ` : `    <h2>Welcome to the daily rep</h2>
     <p>If you are here, you have the map: SENSE for coming back to yourself when the pressure hits, STEP for bringing that back into the room with other people. This is where you get the reps. You bring one real moment from your day, and we run the practice on it together.</p>
     <p>The moment does not have to be big: the email that tightened your chest, the meeting where you shrank, the text you almost fired back. Small is the point.</p>
@@ -751,31 +875,16 @@ ${week.public ? `    <h2>Try SENSE on something that happened this week</h2>
     <div id="privacyNotice" class="notice"></div>
     <p class="small">This is a guided practice for adults, not therapy, medical care, diagnosis, or crisis support. You may pause or stop at any time.</p>
     <p class="small">If you speak instead of typing, the sound goes to OpenAI to be turned into words${week.public ? '' : ', the same place your writing already goes'}. This application keeps no recording. OpenAI may hold it in abuse-monitoring logs for up to 30 days.</p>
-    <button id="beginButton" class="button">Begin</button>
+${journal ? `    <p id="keepLine" class="small"></p>
+` : ''}    <button id="beginButton" class="button">Begin</button>
     <div id="consentError" class="error hidden"></div>
   </section>
 
-  <section id="breathCard" class="card hidden">
-    <h2>A little time to breathe</h2>
-    <div id="breathOffer">
-      <p>Before we begin, would you like to breathe together first? This is Chad's twelve-minute guided breathing practice. It is completely optional. We can also simply begin.</p>
-      <div class="row">
-        <button type="button" id="breathListen" class="button secondary">Breathe first, about 12 minutes</button>
-        <button type="button" id="breathSkip" class="button">No, I am ready to begin</button>
-      </div>
-    </div>
-    <div id="breathPlayer" class="hidden">
-      <p class="small">Settle in. When the recording finishes, or whenever you are ready, continue to the practice.</p>
-      <audio id="breathAudio" controls preload="none" src="/audio/onramp-breath-12min.mp3" style="width:100%"></audio>
-      <div class="row" style="margin-top:14px">
-        <button type="button" id="breathDone" class="button">Continue to the practice</button>
-      </div>
-    </div>
-  </section>
+${journal ? journalCardHtml(week) : breathCardHtml()}
 
   <section id="session" class="session hidden">
     <div class="session-head">
-      <div><div class="session-title">${week.public ? 'One sitting' : 'The Daily Rep'}</div><div id="modeLabel" class="mode"></div></div>
+      <div><div class="session-title">${week.public ? 'One sitting' : journal ? 'The journal sitting' : 'The Daily Rep'}</div><div id="modeLabel" class="mode"></div></div>
       <div class="row">
         <button id="copyButton" class="button secondary">Copy</button>
         <button id="downloadButton" class="button secondary">Download</button>
@@ -852,11 +961,17 @@ ${week.public ? `    <h2>Try SENSE on something that happened this week</h2>
     // release the microphone rather than leave it listening.
     if (value) stopListening();
   }
+  var isJournal = ${journal ? 'true' : 'false'};
+  function hideOpeningCard(){
+    if (el('breathAudio')) { try { el('breathAudio').pause(); } catch (e) {} }
+    if (el('breathCard')) el('breathCard').classList.add('hidden');
+    if (el('journalCard')) el('journalCard').classList.add('hidden');
+  }
   function clearSession(){
     pendingSeq++;
     hideWaiting();
-    pauseBreathLoop();
-    el('breathCard').classList.add('hidden');
+    hideOpeningCard();
+    if (el('journalText')) el('journalText').value = '';
     messages = [];
     locked = false;
     accessCode = '';
@@ -881,6 +996,11 @@ ${week.public ? `    <h2>Try SENSE on something that happened this week</h2>
       provider = data.provider;
       el('privacyNotice').textContent = data.notice;
       el('modeLabel').textContent = providerLabel(provider);
+      if (el('keepLine')) {
+        el('keepLine').textContent = data.persistentStorage === true
+          ? "You've asked me to read what you write here before your Integration and Next-Step Session, so this sitting is kept for that. You can change that on the Week 1 lesson page."
+          : 'It keeps nothing after you end.';
+      }
       el('accessCard').classList.add('hidden');
       el('consentCard').classList.remove('hidden');
       try { window.sessionStorage.setItem('onrampCode', accessCode); } catch (e) {}
@@ -921,16 +1041,20 @@ ${week.public ? `    <h2>Try SENSE on something that happened this week</h2>
 
   el('beginButton').addEventListener('click', function(){
     el('consentCard').classList.add('hidden');
+    if (isJournal) {
+      el('journalCard').classList.remove('hidden');
+      el('journalText').focus();
+      return;
+    }
     el('breathCard').classList.remove('hidden');
     el('breathOffer').classList.remove('hidden');
     el('breathPlayer').classList.add('hidden');
   });
 
   function enterSession(){
-    try { el('breathAudio').pause(); } catch (e) {}
-    el('breathCard').classList.add('hidden');
+    hideOpeningCard();
     el('session').classList.remove('hidden');
-    addMessage('assistant', ${JSON.stringify(week.opening)});
+    if (!isJournal) addMessage('assistant', ${JSON.stringify(week.opening || '')});
     el('messageInput').focus();
   }
 
@@ -945,7 +1069,64 @@ ${week.public ? `    <h2>Try SENSE on something that happened this week</h2>
     }
   });
 
-  el('breathSkip').addEventListener('click', enterSession);
+${journal ? `  // The journal card. The select is preset from ?journal=<key> on the
+  // lesson page's link. A photo of the page goes to the server to be read
+  // and its text lands in the box, editable. Bring it sends the writing as
+  // the first turn and opens the chat.
+  (function(){
+    var wanted = '';
+    try { wanted = new URLSearchParams(window.location.search).get('journal') || ''; } catch (e) {}
+    if (!wanted) return;
+    var select = el('journalSelect');
+    for (var i = 0; i < select.options.length; i++) {
+      if (select.options[i].value === wanted) { select.selectedIndex = i; break; }
+    }
+  })();
+  function photoStatus(text){
+    el('photoStatus').textContent = text || '';
+    el('photoStatus').classList.toggle('hidden', !text);
+  }
+  el('photoButton').addEventListener('click', function(){ el('journalPhoto').click(); });
+  el('journalPhoto').addEventListener('change', async function(){
+    var file = el('journalPhoto').files && el('journalPhoto').files[0];
+    el('journalPhoto').value = '';
+    if (!file) return;
+    el('photoButton').disabled = true;
+    el('bringButton').disabled = true;
+    photoStatus('Reading the page\\u2026');
+    try {
+      var response = await fetch('${JOURNAL_READ_PATH}', {
+        method: 'POST',
+        headers: { 'X-Companion-Access': accessCode, 'Content-Type': file.type || 'image/jpeg' },
+        cache: 'no-store',
+        body: file
+      });
+      var data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Could not read that page');
+      var text = String(data.text || '').trim();
+      if (!text) throw new Error('Nothing read');
+      var box = el('journalText');
+      var existing = box.value.replace(/\\s+$/, '');
+      box.value = existing ? existing + '\\n\\n' + text : text;
+      box.scrollTop = box.scrollHeight;
+      photoStatus('');
+    } catch (error) {
+      photoStatus("Couldn't read that page, type it instead");
+    } finally {
+      el('photoButton').disabled = false;
+      el('bringButton').disabled = false;
+    }
+  });
+  el('bringButton').addEventListener('click', function(){
+    var text = el('journalText').value.trim();
+    if (!text) { showError(el('journalError'), 'Bring the writing first. Type it, paste it, or add a photo of the page.'); return; }
+    showError(el('journalError'), '');
+    var select = el('journalSelect');
+    var title = select.options[select.selectedIndex].text;
+    enterSession();
+    sendMessage(${JSON.stringify(JOURNAL_PREFIX)} + title + '\\n\\n' + text);
+  });
+` : `  el('breathSkip').addEventListener('click', enterSession);
   el('breathDone').addEventListener('click', enterSession);
 
   // Optional opening breath: Chad's recorded 12-minute practice. Played
@@ -959,7 +1140,7 @@ ${week.public ? `    <h2>Try SENSE on something that happened this week</h2>
   el('breathAudio').addEventListener('ended', function(){
     enterSession();
   });
-
+`}
   // Speaking instead of typing. The recording goes to OpenAI to be turned
   // into words, then lands in the same box, editable before sending; the
   // companion still answers in writing. Nothing about the audio is kept
@@ -1065,15 +1246,19 @@ ${week.public ? `    <h2>Try SENSE on something that happened this week</h2>
     });
   }
 
-  el('composer').addEventListener('submit', async function(event){
+  el('composer').addEventListener('submit', function(event){
     event.preventDefault();
     if (locked) return;
     stopListening();
     var message = el('messageInput').value.trim();
     if (!message) return;
+    el('messageInput').value = '';
+    sendMessage(message);
+  });
+
+  async function sendMessage(message){
     var history = messages.slice();
     addMessage('user', message);
-    el('messageInput').value = '';
     var seq = ++pendingSeq;
     el('sendButton').disabled = true;
     showWaiting();
@@ -1093,7 +1278,7 @@ ${week.public ? `    <h2>Try SENSE on something that happened this week</h2>
       if (seq === pendingSeq) hideWaiting();
       if (!locked) { el('sendButton').disabled = false; el('messageInput').focus(); }
     }
-  });
+  }
 
   el('stopButton').addEventListener('click', function(){
     pendingSeq++;
@@ -1269,12 +1454,150 @@ async function handleTranscribeRoute(req, res, isPublic) {
   return true;
 }
 
-async function handleOnrampRoute(req, res) {
+// A photograph of a handwritten journal page, read by the model. The image
+// is held in memory for the length of the request only. Same account and
+// model as the companion; ANTHROPIC_API_BASE_URL is honoured so tests can
+// point it at a stub.
+function imageMediaType(contentType) {
+  const base = String(contentType || '').split(';')[0].trim().toLowerCase();
+  return IMAGE_TYPES.has(base) ? base : null;
+}
+
+async function transcribeImage(bytes, mediaType) {
+  const model = process.env.COMPANION_MODEL || process.env.ANTHROPIC_MODEL;
+  const anthropicUrl = process.env.ANTHROPIC_API_BASE_URL || 'https://api.anthropic.com/v1/messages';
+  const response = await fetch(anthropicUrl, {
+    method: 'POST',
+    headers: {
+      'x-api-key': process.env.ANTHROPIC_API_KEY || '',
+      'anthropic-version': '2023-06-01',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: JOURNAL_READ_OUTPUT_TOKENS,
+      messages: [
+        {
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: mediaType, data: bytes.toString('base64') } },
+            { type: 'text', text: JOURNAL_READ_INSTRUCTION },
+          ],
+        },
+      ],
+    }),
+  });
+  if (!response.ok) {
+    // Content-free diagnostic: status only, never the page.
+    console.error('[companion] journal page read failed', { status: response.status });
+    throw new Error('Journal page read failed');
+  }
+  const payload = await response.json();
+  const text = Array.isArray(payload.content)
+    ? payload.content
+        .filter((item) => item.type === 'text' && item.text)
+        .map((item) => item.text)
+        .join('\n')
+        .trim()
+    : '';
+  if (!text) throw new Error('Journal page read returned no text');
+  // Their handwriting, as written: nothing is cleaned up here.
+  return text;
+}
+
+async function handleJournalReadRoute(req, res, helpers) {
+  if (req.method !== 'POST') {
+    sendJson(res, 405, { error: 'Method not allowed' });
+    return true;
+  }
+  await ensureCodeRegistry(helpers.store || defaultStore());
+  const access = hasAccess(req);
+  if (!access.ok) {
+    sendJson(res, access.status, access.status === 503 ? { error: 'This private prototype is not enabled.' } : { error: 'Access denied.' });
+    return true;
+  }
+  if (!process.env.ANTHROPIC_API_KEY || !(process.env.COMPANION_MODEL || process.env.ANTHROPIC_MODEL)) {
+    sendJson(res, 503, { error: 'Reading a photo is not available right now. Type the page instead.' });
+    return true;
+  }
+  let bytes;
+  try {
+    bytes = await readAudioBody(req, MAX_IMAGE_BYTES);
+  } catch (error) {
+    sendJson(res, error.clientStatus || 400, {
+      error: error.clientStatus === 413 ? 'That photo is too large. Keep it under 6 MB.' : 'Could not read the photo.',
+    });
+    return true;
+  }
+  const mediaType = imageMediaType(req.headers['content-type']);
+  if (!mediaType) {
+    sendJson(res, 415, { error: 'Use a JPEG, PNG, or WebP photo.' });
+    return true;
+  }
+  if (!bytes || !bytes.length) {
+    sendJson(res, 400, { error: 'No photo arrived.' });
+    return true;
+  }
+  try {
+    const text = await transcribeImage(bytes, mediaType);
+    sendJson(res, 200, { text });
+  } catch (error) {
+    sendJson(res, 502, { error: "Couldn't read that page, type it instead." });
+  }
+  return true;
+}
+
+// The journal sitting's first turn names the journal: "Journal: <title>",
+// a blank line, then the writing. The title picks the record key.
+function journalTitleOf(firstMessage) {
+  const firstLine = String(firstMessage || '').split('\n')[0];
+  return firstLine.startsWith(JOURNAL_PREFIX) ? firstLine.slice(JOURNAL_PREFIX.length).trim() : '';
+}
+
+function journalKeyFor(week, title) {
+  const known = week.journals.find((j) => j.title === title);
+  if (known) return known.key;
+  return 'week-' + week.week + '/' + (slugPart(title).slice(0, 60) || 'other');
+}
+
+// Only well-formed turns are kept, each capped at the message limit.
+function storableHistory(history) {
+  if (!Array.isArray(history)) return [];
+  return history
+    .filter((item) => item && (item.role === 'user' || item.role === 'assistant') && typeof item.content === 'string')
+    .map((item) => ({ role: item.role, content: item.content.slice(0, MAX_MESSAGE_CHARS) }));
+}
+
+// With consent the whole exchange so far is written to the record, replaced
+// on every turn. The consent flag is checked again inside the write, so a
+// box unticked mid-sitting stops the saving at once.
+async function saveJournalTurn(store, code, week, history, message, response) {
+  const kept = storableHistory(history);
+  const first = kept.length ? kept[0].content : message;
+  const title = journalTitleOf(first);
+  const key = journalKeyFor(week, title);
+  await store.update((doc) => {
+    const record = findByCode(doc, code);
+    if (!record || record.consent !== true) return;
+    if (!record.journalSessions) record.journalSessions = {};
+    record.journalSessions[key] = {
+      updatedAt: new Date().toISOString(),
+      journalTitle: title,
+      history: [...kept, { role: 'user', content: message }, { role: 'assistant', content: response }],
+    };
+  });
+}
+
+async function handleOnrampRoute(req, res, helpers = {}) {
   if (req.url === TRANSCRIBE_PATH) {
+    await ensureCodeRegistry(helpers.store || defaultStore());
     return handleTranscribeRoute(req, res, false);
   }
   if (req.url === PUBLIC_TRANSCRIBE_PATH) {
     return handleTranscribeRoute(req, res, true);
+  }
+  if (req.url === JOURNAL_READ_PATH) {
+    return handleJournalReadRoute(req, res, helpers);
   }
 
   if (req.url === INDEX_PATH && req.method === 'GET') {
@@ -1283,7 +1606,7 @@ async function handleOnrampRoute(req, res) {
     return true;
   }
 
-  const week = [...Object.values(WEEKS), TRY].find(
+  const week = [...Object.values(WEEKS), TRY, ...Object.values(JOURNAL)].find(
     (w) => req.url === w.pagePath || req.url === w.apiPath
   );
   if (!week) return false;
@@ -1303,6 +1626,8 @@ async function handleOnrampRoute(req, res) {
     return true;
   }
 
+  const store = week.public ? null : helpers.store || defaultStore();
+  if (store) await ensureCodeRegistry(store);
   const access = week.public ? { ok: true } : hasAccess(req);
   if (!access.ok) {
     sendJson(
@@ -1315,12 +1640,25 @@ async function handleOnrampRoute(req, res) {
     return true;
   }
 
+  // The journal sitting keeps the exchange only when the person's record
+  // says so. A manual ONRAMP_ACCESS_CODES entry has no record: never kept.
+  const code = String(req.headers['x-companion-access'] || '');
+  let consent = false;
+  if (week.journal) {
+    try {
+      const record = findByCode(await store.load(), code);
+      consent = Boolean(record && record.consent === true);
+    } catch (error) {
+      console.error('On-Ramp journal sitting: store read failed:', error.message);
+    }
+  }
+
   const provider = getActiveProvider();
   if (req.method === 'GET') {
     sendJson(res, 200, {
       provider,
       notice: getProviderNotice(provider),
-      persistentStorage: false,
+      persistentStorage: consent,
       transcriptAccess: false,
       marketingUse: false,
     });
@@ -1344,20 +1682,37 @@ async function handleOnrampRoute(req, res) {
       sendJson(res, 413, { error: 'The message is too long.' });
       return true;
     }
+    const turns = Array.isArray(body.history) ? body.history.length : 0;
+    if (week.journal && turns === 0 && !body.message.startsWith(JOURNAL_PREFIX)) {
+      sendJson(res, 400, { error: 'Bring the journal first.' });
+      return true;
+    }
+    // Every answer of the journal sitting goes through here so the record,
+    // with consent, always carries the whole exchange.
+    const answer = async (payload) => {
+      if (week.journal && consent) {
+        try {
+          await saveJournalTurn(store, code, week, body.history, body.message, payload.response);
+        } catch (error) {
+          console.error('On-Ramp journal sitting: store write failed:', error.message);
+        }
+      }
+      sendJson(res, 200, payload);
+    };
 
     const deterministic = evaluateDeterministicControls({
       message: body.message,
       adultConfirmed: body.adultConfirmed === true,
       country: body.country,
       provider,
+      journalText: Boolean(week.journal) && /^Journal: /.test(body.message),
     });
     if (deterministic) {
-      sendJson(res, 200, { ...deterministic, provider });
+      await answer({ ...deterministic, provider });
       return true;
     }
 
     let instructions = week.instructions;
-    const turns = Array.isArray(body.history) ? body.history.length : 0;
     if (week.public && turns >= TRY_HARD_TURNS) {
       sendJson(res, 200, {
         route: 'continue_reflection',
@@ -1371,8 +1726,26 @@ async function handleOnrampRoute(req, res) {
     if (week.public && turns >= TRY_SOFT_TURNS) {
       instructions += '\n\nCLOSE NOW. This is the last exchange of the sitting. Finish the beat the person is in, then do the close, briefly, and the single sentence about the daily version. Do not open anything new.';
     }
-    const generated = await generateReflection(instructions, body.message, body.history, provider);
-    sendJson(res, 200, {
+    if (week.journal) {
+      instructions += consent
+        ? '\n\nCONSENT: The person has agreed to let Chad read this sitting before their Integration and Next-Step Session.'
+        : '\n\nCONSENT: The person has not agreed to let Chad read this sitting. Say nothing about it being kept.';
+      if (turns >= JOURNAL_HARD_TURNS) {
+        await answer({
+          route: 'continue_reflection',
+          response: 'This is where we stop for today. You can copy or download what is here. Keep what surfaced; the next journal is another way in.',
+          lockSession: true,
+          handledBy: 'turn-cap',
+          provider,
+        });
+        return true;
+      }
+      if (turns >= JOURNAL_SOFT_TURNS) {
+        instructions += '\n\nCLOSE NOW. This is the last exchange of the sitting. Finish the beat the person is in, then do the close: what are they leaving with, first in the body, then in general, and the writing prompt built from what surfaced. Do not open anything new.';
+      }
+    }
+    const generated = await generateReflection(instructions, body.message, body.history, provider, { keepFirst: Boolean(week.journal) });
+    await answer({
       route: 'continue_reflection',
       response: generated.response,
       lockSession: false,
@@ -1389,9 +1762,16 @@ async function handleOnrampRoute(req, res) {
 
 module.exports = {
   INDEX_PATH,
+  JOURNAL,
+  JOURNAL_PREFIX,
+  JOURNAL_READ_PATH,
   TRY,
+  cleanHistory,
+  ensureCodeRegistry,
   hasAccess,
   issueSignedCode,
+  journalKeyFor,
+  journalTitleOf,
   setEnrolledCodeCheck,
   verifySignedCode,
   WEEKS,
