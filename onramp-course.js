@@ -6,7 +6,12 @@
 // the public page source. Video and most meditation slots are placeholders
 // until Chad records them; Week 1's slot carries the recorded 12-minute
 // breathing practice.
+const crypto = require('node:crypto');
 const { hasAccess, WEEKS, issueSignedCode } = require('./onramp');
+const { defaultStore, newRecord, findByCode, dayEntry } = require('./onramp-store');
+const { normaliseTimeZone, localDateString } = require('./onramp-schedule');
+const { handleYayRoute, handleSmsInbound } = require('./onramp-yaynay');
+const emails = require('./onramp-emails');
 
 const COURSE_PATH = '/course/on-ramp';
 
@@ -140,8 +145,11 @@ const videoPlaceholder = (label) =>
 // Long sits stream from the R2 bucket (range requests, so a listener can
 // scrub). That host MUST be on media-src in the course page policy below;
 // if it is missing the player renders and never sounds, with no error.
+// data-sit names the recording for listen tracking (the file name without
+// its extension); the page script posts play/complete events under it.
+const sitName = (src) => String(src).split('/').pop().replace(/\.[a-z0-9]+$/i, '');
 const meditationPlayer = (src, note) =>
-  `<p class="small">${note}</p><audio controls preload="none" src="${src}" style="width:100%"></audio>`;
+  `<p class="small">${note}</p><audio controls preload="none" src="${src}" data-sit="${sitName(src)}" style="width:100%"></audio>`;
 
 const meditationPlaceholder = (title, minutes) =>
   `<div class="placeholder">Guided audio to come: <em>${title}</em>, about ${minutes} minutes. Until it is recorded, use the written rhythm in the practice card below, or the Week 1 breathing recording.</div>`;
@@ -149,51 +157,73 @@ const meditationPlaceholder = (title, minutes) =>
 const COURSE_WEEKS = {
   1: {
     title: 'Week 1: From the Book to the Body',
-    sub: 'Slow the Breath and Enter the Body. The first half of SENSE.',
-    intro: `This week rebuilds one thing: the ability to leave your thoughts and come back to what your body is actually doing. No depth yet. Just contact. Everything else in SENSE and STEP stands on this.`,
+    sub: "Slow the breath. Enter the body. The first two moves of SENSE, and the ground everything else stands on.",
+    intro: `You've read the book, so you know the trap and you know the map. This week we start putting it in the body, because that's where the trap lives. Two moves. Slow the breath, and enter the body. That's the whole week, and it's plenty.`,
     video: videoPlaceholder('Welcome. You already have the map.'),
     teaching: `
 <h3>Slow the Breath, Enter the Body</h3>
-<p>You can't do any of this work from inside fight-or-flight. The mind that's braced for the next thing can't also feel what's here. So we start where the body actually gives you a lever: the breath.</p>
-<h4>S. Slow the Breath</h4>
-<p>The practice is called the straw breath. Inhale slowly through the nose for a count of five. Then purse your lips, as if you were breathing out through a straw, and exhale slowly for a count of seven. The longer exhale is the whole point. It isn't about big, deep breaths. It's about a slow, smooth, continuous flow, no strain, no holding.</p>
-<p>You aren't trying to relax. Each long exhale is a little way of saying to the body and mind: we're safe here. The mechanics run through the vagus nerve, which travels from the brainstem down through the organs and reports back up, and when the exhale is long and smooth, the report says calm. Heart rate eases. And the parts of you that only come online in a settled state, the curiosity, the ability to feel, come back within reach.</p>
-<p>What this means is that you have a lever for your own state. The breath is the lever. Not the only one, attention is another, but the breath is one of the most powerful, because it can move you out of jumpy and agitated, or dull and heavy, toward calm and clear. That's why this is first. Not because calm is the goal, but because contact isn't possible without it.</p>
-<h4>E. Enter the Body</h4>
-<p>Once you've settled, the second move is a U-turn. When you're caught in a story about a feeling, the mind wants to keep talking about it. Entering the body is turning around and going to where the feeling actually lives. Not analyzing why it's there. Just locating it. Throat, chest, belly. Then noticing its quality: tight, hot, heavy, hollow, buzzing, dull. Then you surround it with attention and breathe right into the region, not to push it out, just to see how it responds to being noticed.</p>
-<p>The story is your mind's interpretation. The body is what's actually happening. Going to the body is how you get underneath the commentary to the thing itself.</p>
-<h4>The small rephrase</h4>
-<p>There's a linguistic version of the same move, and it's the one to carry into your day. Take the sentence <em>I am anxious</em> and turn it into <em>a part of me is anxious</em>. <em>I'm a failure</em> becomes <em>a part of me feels like I'm failing</em>. Say both out loud and notice what changes in your body. The first is a verdict. The second is an observation.</p>
-<p>Here's why it matters. When you're identified with a feeling, when the butterflies are you, you only have two options: push them down or ignore them. Neither works. Stepping back gives you a third. You can turn toward the feeling and say: this thing that's arising, it's not all of me. It's a part of me. That small step back is the whole foundation. Everything we build sits on it.</p>
-<p class="note">This week you're practicing three letters of SENSE already: S, E, and the start of N. That's plenty. Stay with it.</p>`,
+<h4>Why the breath comes first</h4>
+<p>Before you can meet yourself with any curiosity, before you can hear what your body has been trying to tell you, the nervous system has to settle. You can't do this work in fight or flight. You can't approach what's tender from inside the panic that's trying to outrun it.</p>
+<p>That's where the breath comes in. The breath is the doorway. It's the lever your nervous system gives you to shift, in real time, from the speed of survival into the room where presence becomes possible. We always have access to it. Few of us ever learn how to use it. I certainly didn't. It took me fifty years and a lot of intense breathing practices to discover that the breath I actually needed, that most of us need, isn't long holds or anything dramatic. It's slow, smooth, continuous breathing.</p>
+<h4>The straw breath</h4>
+<p>Breathe in through the nose for a count of five. Then purse your lips, like you're blowing out through a straw, and breathe out for a count of seven. Not too much pressure on the lips. Just a little restriction, so the air can't come out all at once. That's what lets the out breath get long.</p>
+<p>The longer exhale is the key. This isn't about deep breaths or filling your lungs. It's about the slow, smooth, continuous flow, no strain, no holding. You aren't trying to relax. You're sending a signal to your nervous system that it's safe to slow down.</p>
+<h4>What's actually happening in there</h4>
+<p>Let me give you a little anatomy, because "just breathe" gets said so often it's become dismissive, and this isn't that.</p>
+<p>You have a diaphragm, the muscle that separates the chest from the belly. Picture it as a parachute. The top of the parachute is tied to the pericardium, the muscle that surrounds the heart. The edges go around the lower ribs. When you breathe in, the parachute descends. It presses the contents of the belly down, so the belly expands, and it pulls on the heart. When you breathe out, it rises back up into the chest. Up and down, all day, every breath.</p>
+<p>As it moves, it massages the organs underneath it. The liver, the stomach, the spleen, the intestines, the kidneys. And running right through the middle of that parachute is a nerve called the vagus nerve. It travels from the brainstem down through the lungs, the heart, the gut, and it reports back up. When the exhale is long and smooth, the report it sends is: we're not under attack. The system can downshift. Heart rate eases. Blood pressure eases. The parts of you that only come online in a settled state, the curiosity, the ability to feel what's here, come back within reach.</p>
+<p>This shift isn't instant. Over five to ten minutes of slow, smooth breathing, the biology actually changes. The mind, which had been running on the assumption of threat, starts to find that the threat isn't there. That's the moment the work becomes possible.</p>
+<p>If you like the technical name, this pace, about five breaths a minute, is what researchers call resonance breathing. It's the rate at which the heart and the breath synchronize. You don't need the term. It's there if you want to look it up, and James Nestor's book Breath is the best popular telling of the whole story.</p>
+<h4>Fitting the breath to the state you're in</h4>
+<p>Here's the part the app can't do for you. Five in and seven out calms the system. That's right when you're jumpy and agitated. But some days you're not jumpy. You're dull and heavy, flat, half asleep. On those days a long exhale sedates you further, which is the wrong direction. So you lengthen the inhale instead, or you pick the pace up, three seconds in, three seconds out, just to bring some life force back. And if you're already even and steady, keep it even. Five and five, six and six.</p>
+<p>That's why we start every sit the same way. Notice the quality of mind you're beginning with. Is it calm and clear in there? Jumpy and agitated? Dull and heavy? And notice the breath that goes with it, because the two are correlated. Deep or shallow. Rough or smooth. Fast or slow. Then you choose the breath the state actually needs. The point isn't a ratio. The point is that you have a lever, and you're learning how to use it.</p>
+<p>One more thing about the exhale. At the very end of the out breath, when you squeeze the last of the air out, there's a cleansing to it. When you've cooked something with garlic and onions and you want to make something lighter in the same pan, you clean the pan. That squeeze at the end of the exhale does that for the system. It's a little unpleasant. It's also where a lot of the release happens.</p>
+<h4>The mind is a mirror of the breath</h4>
+<p>People figured this out a long time ago. In the yoga tradition I come from, Krishnamacharya, the teacher nearly every school of modern yoga descends from, taught that the breath is a mirror for the mind. When the breath is scattered, the mind is agitated. When you regulate the breath, lengthening it and smoothing it, the mind steadies with it. Everything you'll do in this program, from the straw breath you'll start today to the harder staying-with we'll get to in week two, sits on top of that one principle.</p>
+<h4>The second move: the U-turn</h4>
+<p>Once the system has settled some, the second move is entering the body. You go from your brain and you make a U-turn back into your body. For most of us the seat of the emotion is somewhere in the throat, the chest, or the belly, or a combination, and it is where a self is felt, not thought.</p>
+<p>Here's why the turn is hard. When we were kids, when we couldn't fight back, we couldn't run, and we couldn't ask for help, the only thing available to us was to dissociate, to leave our bodies and go to our heads. We learned it young, and ever since we tend not to be very curious about our interior experience. We tend to look the other way. The body isn't the most pleasant place to be. But it is the place that's the most honest.</p>
+<p>Here's what usually happens when something lands wrong. A meeting shows up on your calendar you weren't expecting. Before you've even read the invite, your toes curl. Your stomach knots. Your chest tightens. The mind hasn't arrived yet to explain what's happening, but the body has already declared this unpleasant.</p>
+<p>Then the mind arrives with the story. An unexpected meeting means I'm being laid off. It might be right. It might be wrong. The system doesn't care. It reacts to the story as if it were reality. And then the reaction: a switch gets thrown somewhere below your control. You go numb. You hide. You doom-scroll. You over-complicate a work project so you have somewhere to put the charge. Or you go the other way: you jimmy up solutions, you chase the next thing, you work harder to make the feeling stop. Two flavors of the same loop. One goes away from the feeling. One goes to get something that will make it stop. Neither one touches the thing in the belly.</p>
+<p>The whole run, from the trigger to the spinning afterward, takes about a second.</p>
+<p>Now here's the point. By the time you notice the reaction, it's too late. By the time you're arguing with the story, the body has already locked in. The opening is earlier. It's at the feeling tone, the curling toes, the knot, the tightness, which arrive before the story does and sit there for a beat before the switch flips. That beat is the razor-thin space we're going to learn to work in. Not by arguing with the thought. By feeling the body before the mind gets there, and staying with it while it's there.</p>
+<p>So the move is a U-turn. The mind wants to keep talking about the feeling, and above all it wants to know why. Why is a booby trap. Why keeps you in the story. The question that opens things up is what. What's happening in the body right now? Where does it live? Throat, chest, belly. Not why it's there. Just where. Then the quality of it. Tight. Heavy. Hot. Hollow. Buzzing. Numb. Put one word to it. Then check the word against the body: does that capture the whole of it? If it doesn't, find the word that does. You'll know when you land on it, because the body gives a little, or the sensation gets a little clearer, and something in you goes, yes, that's it.</p>
+<p>Then you surround it with a little attention, and a little breath. Not to break it apart. Not to make it go away. Just to explore it, like a beginner, like you've never felt this before. And you see how it responds to being noticed.</p>
+<p>The story is what the mind adds. The sensation is what's actually there. Trust the body over the mind. Believe the feeling, not the thought. When your attention is in that whole center region, your gut, your upper belly, your solar plexus, you can't entertain the thoughts. It interrupts the storyline. Just keep coming back, over and over again. Sometimes that's the whole meditation.</p>
+<p>If an area is blank and you can't feel much there, that's fine. It just needs practice. If what you find is numbness, stay near it. Underneath numbness there is usually discomfort, and that is information too. And whatever is there, you still have hands, you still have breath, another place to hang out.</p>
+<h4>A part of me</h4>
+<p>There's a way of saying this that you can carry into the rest of your day. Instead of "I'm anxious," try "a part of me is anxious." Instead of "I'm a failure," "a part of me feels like I'm failing." Say both out loud and notice what changes in the body.</p>
+<p>When you're identified with a feeling, when the butterflies are you, you only have two options. Push them down or ignore them. Neither works. You're either with the part or inside the part. Being with it is what gives you room to move. This thing that's arising, it's not all of me. It's a part of me. That's the whole foundation of the four weeks, and you're already doing it.</p>
+<h4>The two yogis</h4>
+<p>One last thing, a story I tell almost everyone in the first session. Start with this: it is not a story about positive thinking. Most people hear it that way, and that's not what it's about.</p>
+<p>Two yogis are walking from Varanasi to Rishikesh, a day apart. Varanasi is the ancient city on the Ganges where people go to die. Rishikesh is where you go to find a teacher and study. The first yogi comes upon a farmer at the side of the road and asks him, sir, can you tell me, what are the people like in Rishikesh, where I'm going? And the farmer gets a little reflective and asks him, well, what were the people like in Varanasi, where you've come from? The yogi says, terrible. Liars and cheats. I got pickpocketed. I'm glad to be leaving. And the farmer says, I'm sorry, sir, but I'm afraid the people in Rishikesh are very much the way you found the people in Varanasi. And with a heavy head, the first yogi goes on his way.</p>
+<p>The next day the second yogi comes along and asks the farmer the same question. The farmer asks him the same thing back. And this one says, oh, an amazing group of people. The kindest, most thoughtful people I've met. A lot of people dying there, and still the spirit of the place was so alive. I'm sad to be leaving. And the farmer says, well, I'm happy to tell you, the people in Rishikesh are very much the way you found the people in Varanasi.</p>
+<p>So if it's not about positive thinking, what's it about? I'll leave that with you for the week. Here's the part I'll give you. Your Varanasi is your past. It's the conditioned mind you're carrying with you into your Rishikesh, which is your future, which is the next meeting, the next conversation, the next time you walk in the door at home. That mind comes from somewhere. It has a cause. And it shapes what you find, because it's what you're looking for. If you walk into your week carrying "not good enough," you'll find the people who confirm it.</p>
+<p>That's the reason we start with the breath, and why you check the quality of mind before every sit. Not to make it positive. To see what you're carrying in. So this week, when something starts to fire, the question is: what am I carrying in right now? Then come back to the body and find out what's actually here.</p>`,
     meditation: meditationPlayer('/audio/onramp-breath-12min.mp3', 'The breathing practice, recorded by Chad. About twelve minutes. Sit with it most days this week.'),
     practiceCard: `
-<h4>Most days this week</h4>
-<p>Sit for about ten minutes with the breathing recording above. Eyes closed. Same time each day if you can; early morning and late evening tend to be the pockets that survive a full calendar. If a day gets away from you, that's fine. Begin again the next.</p>
-<h4>Through the day, whenever you remember</h4>
-<p>Three deliberate straw breaths before a meeting, a hard email, a conversation you've been avoiding. Slow the inhale, lengthen the exhale. Each long exhale tells the body: we're safe here.</p>
-<h4>The rephrase</h4>
-<p>When you catch yourself thinking <em>I am [anxious, angry, behind, not enough]</em>, turn it into <em>a part of me is [anxious, angry]</em>. Notice what changes.</p>
-<h4>The two-minute version (for when you're activated)</h4>
-<ol>
-<li><strong>Slow the Breath.</strong> Three straw breaths. Longer out than in.</li>
-<li><strong>Enter the Body.</strong> Drop the story. Where do you feel it? Throat, chest, belly?</li>
-<li><strong>Name it.</strong> One word. Tight. Hot. Heavy. Then let it be there for a few breaths.</li>
-</ol>
-<h4>Your daily log</h4>
-<p>One line a day: <em>Where did the old pattern show up today, and what did I do?</em> That's the whole entry. You're building the habit of noticing, nothing more. Skip a day and you start again the next one. No streak, no shame.</p>`,
+<h4>Every day this week</h4>
+<p>Ten to fifteen minutes with the breathing recording above, eyes closed. Back upright but not stiff, feet on the floor, hands resting. Not lying down; the body reads that as sleep. If you're just starting, five minutes today is fine. Build up over the week.</p>
+<p>The first five minutes are the body settling. The next ten are where it opens up.</p>
+<p>Before you start, take a second to notice the state you're in, and let the breath fit it. Jumpy and agitated: five in, seven out, or even four in, eight out. Dull and heavy: lengthen the inhale, or pick the pace up. Steady already: keep it even.</p>
+<h4>Yay or nay</h4>
+<p>That's the only question at the end of the day. Did you sit or didn't you. No shame either way. It's just data. If the mind wandered the whole time, you still sat. The drift and the return is the practice. Self-judgment is not part of the work.</p>
+<h4>Through the day</h4>
+<p>Three straw breaths before a meeting, a hard email, a conversation you've been putting off. Slow the inhale, lengthen the exhale. You don't need an app for this.</p>
+<h4>When something lands</h4>
+<p>When you feel the toes curl or the stomach knot: don't go to why. Go to what. Where is it? Throat, chest, belly. One word for it. Then a few breaths right into that spot, and see what it does. If the sentence in your head is "I'm anxious," make it "a part of me is anxious."</p>`,
     journal: `
-<h4>The daily line (2 minutes a day)</h4>
-<p>At the end of each day, write one sentence: where did the old pattern show up, and what did you do? You don't need to have handled it well. Noticing after the fact still counts. You're training your attention to catch it a little earlier each time. And a missed day isn't a failure. Just begin again when you remember.</p>
-<h4>End of week: one real moment (15 minutes)</h4>
-<p>Pick one moment from this week when you felt the pull to perform, fix, please, or disappear. Not the biggest one. Just a clear one. Then walk it through on the page:</p>
-<ol>
-<li>What happened, in a few plain sentences. Who, what, the moment the pressure hit.</li>
-<li>Where did you feel it in your body? Throat, chest, belly, somewhere else? What was the quality, tight, hot, heavy, hollow?</li>
-<li>What did you automatically do, or want to do? The old move.</li>
-<li>Now write the verdict you told yourself: <em>I am ___.</em> Then rewrite it as an observation: <em>A part of me is ___.</em> Read both out loud. Note what shifts.</li>
-</ol>
-<p class="note">Keep it to a few paragraphs. This is practice, not excavation. If something bigger surfaces and wants more room, that's exactly the work we'll talk about in your Integration and Next-Step Session.</p>`,
+<p>Three journals this week, each one a printable sheet. Do them in this order, and take a few minutes of breath before any of them. Sit with your eyes closed, let the body settle, then open your eyes and write. A few paragraphs per prompt is plenty. Don't filter. Don't edit.</p>
+<h4>1. What's Bringing You Here (first day or two)</h4>
+<p>You read the book and something in it landed. This one brings that into focus: what's bringing you here, as concretely as you can; what's happening in your body right now as you sit with it; what that feeling would say if it could talk; and, if something older surfaces, the role you learned to play and the unspoken terms. It ends with the two yogis. If it's not a story about positive thinking, what's it about? And what's your Varanasi?</p>
+<p><a class="button" href="/downloads/on-ramp/week-1/whats-bringing-you-here.pdf">Open the journal (PDF)</a></p>
+<h4>2. The Breath in Ordinary Hours (all week)</h4>
+<p>Two minutes a day. Yay or nay for each day. Three sits logged the way I check in: the state you started in, the breath you gave it, what was different after. Three breaths before something, twice. One moment when something landed: where, one word, and what it did under attention. And the sentence both ways, <em>I'm anxious</em> and <em>a part of me is anxious</em>, with what changed between them.</p>
+<p><a class="button" href="/downloads/on-ramp/week-1/the-breath-in-ordinary-hours.pdf">Open the journal (PDF)</a></p>
+<h4>3. The Formation of a Reaction (end of the week)</h4>
+<p>Map one moment end to end, the way Paul's calendar invite was mapped above. The trigger. The body's first response, right now, as you hold the memory. The story, quoted as you hear it. The reaction then, and the pull now. The spinning. Then find where the opening was. It closes on the two questions I ask at the end of every session: what's one thing you're taking with you, and what's an open question you're left with?</p>
+<p><a class="button" href="/downloads/on-ramp/week-1/the-formation-of-a-reaction.pdf">Open the journal (PDF)</a></p>
+<p class="note">Keep what you write. You'll bring a piece of it to your Integration and Next-Step Session at the end of the four weeks.</p>`,
   },
   2: {
     title: 'Week 2: Staying With It',
@@ -344,22 +374,8 @@ const COURSE_WEEKS = {
   },
 };
 
-function lessonPageShell(weekNum) {
-  const c = COURSE_WEEKS[weekNum];
-  const prev = weekNum > 1 ? `<a href="${COURSE_PATH}/week-${weekNum - 1}">&larr; Week ${weekNum - 1}</a>` : `<a href="${COURSE_PATH}">&larr; Overview</a>`;
-  const next = weekNum < 4 ? `<a href="${COURSE_PATH}/week-${weekNum + 1}">Week ${weekNum + 1} &rarr;</a>` : '';
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="robots" content="noindex, nofollow, noarchive">
-<title>${c.title} | The Performance Trap Practice</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
-<style>
-:root{--cream:#F4EDE4;--paper:#FBF7F0;--ink:#352515;--gold:#8B6B1E;--line:#D7C7B3;--soft:#EFE6D8;--danger:#8E2F27}
+// The course look, shared with the yay/nay answer pages in onramp-yaynay.js.
+const COURSE_CSS = `:root{--cream:#F4EDE4;--paper:#FBF7F0;--ink:#352515;--gold:#8B6B1E;--line:#D7C7B3;--soft:#EFE6D8;--danger:#8E2F27}
 *{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:'Cormorant Garamond',Georgia,serif;font-size:19px;line-height:1.6}
 .shell{width:min(760px,calc(100% - 28px));margin:0 auto;padding:34px 0 70px}
 .eyebrow{text-transform:uppercase;letter-spacing:.18em;color:var(--gold);font:600 12px/1.4 Arial,sans-serif;text-align:center}
@@ -381,7 +397,24 @@ h4{font:600 15px/1.4 Arial,sans-serif;color:var(--gold);margin:20px 0 6px}
 .crumbs{font:13px/1.4 Arial,sans-serif;color:#78644F;margin:0 0 16px}
 .crumbs a{color:var(--gold);text-decoration:none}
 .footer{text-align:center;margin:26px auto 0;color:#78644F;font:13px/1.5 Arial,sans-serif}
-ol li{margin-bottom:8px}
+ol li{margin-bottom:8px}`;
+
+function lessonPageShell(weekNum) {
+  const c = COURSE_WEEKS[weekNum];
+  const prev = weekNum > 1 ? `<a href="${COURSE_PATH}/week-${weekNum - 1}">&larr; Week ${weekNum - 1}</a>` : `<a href="${COURSE_PATH}">&larr; Overview</a>`;
+  const next = weekNum < 4 ? `<a href="${COURSE_PATH}/week-${weekNum + 1}">Week ${weekNum + 1} &rarr;</a>` : '';
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>${c.title} | The Performance Trap Practice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+${COURSE_CSS}
 </style>
 </head>
 <body>
@@ -410,6 +443,30 @@ ol li{margin-bottom:8px}
   var stored = '';
   try { stored = window.sessionStorage.getItem('onrampCode') || ''; } catch (e) {}
   function showError(msg){ var n = el('accessError'); n.textContent = msg; n.classList.toggle('hidden', !msg); }
+  // Listen tracking: each sit posts a play event once per page load and a
+  // complete event once when playback passes 80 percent. The server keeps
+  // it only for enrolled codes; it never blocks playback or the unlock.
+  function attachListenTracking(code){
+    var players = el('lessonContent').querySelectorAll('audio[data-sit]');
+    Array.prototype.forEach.call(players, function(audio){
+      var sit = audio.getAttribute('data-sit');
+      var played = false, completed = false;
+      function post(event){
+        try {
+          fetch('${COURSE_PATH}/api/listen', {
+            method: 'POST', keepalive: true,
+            headers: { 'Content-Type': 'application/json', 'X-Companion-Access': code },
+            body: JSON.stringify({ sit: sit, event: event })
+          }).catch(function(){});
+        } catch (e) {}
+      }
+      audio.addEventListener('play', function(){ if (!played) { played = true; post('play'); } });
+      audio.addEventListener('timeupdate', function(){
+        if (!completed && audio.duration && audio.currentTime / audio.duration >= 0.8) { completed = true; post('complete'); }
+      });
+      audio.addEventListener('ended', function(){ if (!completed) { completed = true; post('complete'); } });
+    });
+  }
   async function unlock(code){
     if (!code) { showError('Enter the access code.'); return; }
     showError('');
@@ -424,6 +481,7 @@ ol li{margin-bottom:8px}
       el('lessonContent').classList.remove('hidden');
       el('unlockCard').classList.add('hidden');
       try { window.sessionStorage.setItem('onrampCode', code); } catch (e) {}
+      try { attachListenTracking(code); } catch (e) {}
     } catch (error) {
       try { window.sessionStorage.removeItem('onrampCode'); } catch (e) {}
       showError(error.message || 'Access denied');
@@ -464,32 +522,64 @@ function enrollSection() {
   return `<div id="enroll">
 <p><strong>Enroll yourself:</strong> ${priceLine}, once, via PayPal or card. Your personal access code appears the moment payment completes. Save it somewhere safe; it is your key to all four weeks and the practice companion.</p>
 <p class="small">And if you go on to coaching with me within 30 days of your Integration and Next-Step Session, the full amount you paid here is credited toward it.</p>
+<div id="enrollFields" style="margin:14px 0 10px">
+<p style="margin:0 0 10px"><label for="enrollFirstName" class="small">First name</label><br><input id="enrollFirstName" type="text" autocomplete="given-name" maxlength="80" required style="width:100%;border:1px solid #BCA88E;border-radius:10px;background:#FFFDF9;color:#352515;padding:12px 14px;font:16px/1.4 Arial,sans-serif"></p>
+<p style="margin:0 0 10px"><label for="enrollEmail" class="small">Email (your access code and the weekly notes go here)</label><br><input id="enrollEmail" type="email" autocomplete="email" maxlength="200" required style="width:100%;border:1px solid #BCA88E;border-radius:10px;background:#FFFDF9;color:#352515;padding:12px 14px;font:16px/1.4 Arial,sans-serif"></p>
+<p style="margin:0 0 4px"><label for="enrollPhone" class="small">Mobile number, optional, for the daily yay or nay text</label><br><input id="enrollPhone" type="tel" autocomplete="tel" maxlength="30" style="width:100%;border:1px solid #BCA88E;border-radius:10px;background:#FFFDF9;color:#352515;padding:12px 14px;font:16px/1.4 Arial,sans-serif"></p>
+</div>
 <div id="paypalButtons"></div>
 <div id="enrollDone" style="display:none;background:#EFE6D8;border-left:3px solid #8B6B1E;padding:16px 18px;margin-top:14px">
 <p style="margin:0 0 8px"><strong>You're in.</strong> Your access code:</p>
 <p id="issuedCode" style="font-size:24px;font-family:monospace;margin:0 0 8px"></p>
-<p style="margin:0" class="small">Write it down or screenshot it now; it is shown only once and cannot be looked up later. Then open <a href="${COURSE_PATH}/week-1">Week 1</a>.</p>
+<p style="margin:0" class="small">Write it down or screenshot it now; it is shown only once here. It is also in the email on its way to you. Then open <a href="${COURSE_PATH}/week-1">Week 1</a>.</p>
 </div>
 <div id="enrollError" class="small" style="display:none;color:#8E2F27"></div>
 <script src="${p.sdkBase}?client-id=${encodeURIComponent(p.clientId)}&currency=USD"></script>
 <script>
+function enrollDetails(){
+  var v = function(id){ return (document.getElementById(id).value || '').trim(); };
+  var tz = '';
+  try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) {}
+  return { firstName: v('enrollFirstName'), email: v('enrollEmail'), phone: v('enrollPhone'), timeZone: tz };
+}
+function enrollProblem(d){
+  if (!d.firstName) return 'Add your first name first.';
+  if (!d.email || d.email.indexOf('@') < 1 || d.email.indexOf('.', d.email.indexOf('@')) < 0) return 'Add the email address your access code should go to.';
+  return '';
+}
+function showEnrollError(msg){
+  var n = document.getElementById('enrollError');
+  n.textContent = msg; n.style.display = msg ? 'block' : 'none';
+}
 paypal.Buttons({
+  onClick: function(data, actions){
+    var problem = enrollProblem(enrollDetails());
+    showEnrollError(problem);
+    if (problem) return actions.reject();
+    return actions.resolve();
+  },
   createOrder: function(){
-    return fetch('${COURSE_PATH}/api/paypal/create-order', {method:'POST'}).then(function(r){
+    var d = enrollDetails();
+    return fetch('${COURSE_PATH}/api/paypal/create-order', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(d)
+    }).then(function(r){
       if (!r.ok) throw new Error('Could not start checkout');
       return r.json();
     }).then(function(d){ return d.orderId; });
   },
   onApprove: function(data){
+    var d = enrollDetails();
+    d.orderId = data.orderID;
     return fetch('${COURSE_PATH}/api/paypal/capture', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({orderId: data.orderID})
+      body: JSON.stringify(d)
     }).then(function(r){ return r.json().then(function(d){ return {ok: r.ok, d: d}; }); })
     .then(function(res){
       if (!res.ok || !res.d.accessCode) throw new Error(res.d.error || 'Payment could not be confirmed');
       document.getElementById('issuedCode').textContent = res.d.accessCode;
       document.getElementById('enrollDone').style.display = 'block';
       document.getElementById('paypalButtons').style.display = 'none';
+      document.getElementById('enrollFields').style.display = 'none';
       try { window.sessionStorage.setItem('onrampCode', res.d.accessCode); } catch (e) {}
     });
   },
@@ -536,10 +626,84 @@ ${selfServeEnabled() ? enrollSection() : '<p>Enrollment is personal: Chad sets y
 </html>`;
 }
 
-async function handleCourseRoute(req, res) {
+// ── Enrollment details ──────────────────────────────────────────
+// Phone numbers become E.164 (+14155551234) or are dropped: ten digits
+// are taken as US, eleven starting with 1 likewise, a leading + with 8 to
+// 15 digits is kept as given.
+function normalisePhone(raw) {
+  const s = String(raw || '').trim();
+  if (!s) return null;
+  const digits = s.replace(/[^0-9]/g, '');
+  if (s.startsWith('+') && digits.length >= 8 && digits.length <= 15) return '+' + digits;
+  if (digits.length === 10) return '+1' + digits;
+  if (digits.length === 11 && digits.startsWith('1')) return '+' + digits;
+  return null;
+}
+
+function validateEnrollment(body) {
+  const firstName = String(body.firstName || '').trim().slice(0, 80);
+  const email = String(body.email || '').trim().slice(0, 200);
+  if (!firstName) return { ok: false, error: 'Missing first name.' };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { ok: false, error: 'Missing or invalid email.' };
+  return {
+    ok: true,
+    firstName,
+    email,
+    phone: normalisePhone(body.phone),
+    timeZone: normaliseTimeZone(body.timeZone),
+  };
+}
+
+// Creates the record, sends the enrollment email, adds the person to
+// Mailchimp with the course tag, and returns the code. Nothing after the
+// code is issued may lose the buyer: a failed store write or email is
+// logged loudly and the code is still returned.
+async function enrollPerson(details, source, helpers, store) {
+  const code = issueSignedCode();
+  const record = newRecord({ code, email: details.email, firstName: details.firstName, phone: details.phone, timeZone: details.timeZone, source });
+  if (helpers.sendEmail) {
+    try {
+      const mail = emails.enroll(record);
+      const result = await helpers.sendEmail(record.email, mail.subject, mail.html);
+      if (result && result.ok) record.sent.enroll = new Date().toISOString();
+      else console.error('ON-RAMP ENROLLMENT EMAIL NOT SENT for ' + record.id + ' (' + source + '); code issued, spine will retry');
+    } catch (error) {
+      console.error('ON-RAMP ENROLLMENT EMAIL FAILED for ' + record.id + ' (' + source + '):', error.message);
+    }
+  }
+  try {
+    await store.update((doc) => { doc.enrollments.push(record); });
+  } catch (error) {
+    console.error('ON-RAMP ENROLLMENT NOT STORED for ' + record.email + ' (' + source + '); code ' + code + ' was issued:', error.message);
+  }
+  if (process.env.MAILCHIMP_API_KEY && helpers.addToMailchimp) {
+    try {
+      await helpers.addToMailchimp(record.email, record.firstName);
+      if (helpers.tagSubscriber) helpers.tagSubscriber(record.email, emails.MAILCHIMP_TAG);
+    } catch (error) {
+      console.error('On-Ramp enrollment: Mailchimp failed:', error.message);
+    }
+  }
+  return { accessCode: code, id: record.id };
+}
+
+function adminCodeMatches(req) {
+  const expected = String(process.env.COMPANION_ADMIN_CODE || '');
+  const supplied = String(req.headers['x-admin-code'] || '');
+  if (!expected) return { ok: false, status: 503 };
+  const a = Buffer.from(expected);
+  const b = Buffer.from(supplied);
+  return { ok: a.length === b.length && crypto.timingSafeEqual(a, b), status: 401 };
+}
+
+async function handleCourseRoute(req, res, helpers = {}) {
+  const store = helpers.store || defaultStore();
+
   if (req.method === 'POST' && req.url === COURSE_PATH + '/api/paypal/create-order') {
     if (!selfServeEnabled()) { sendJson(res, 503, { error: 'Self-serve enrollment is not enabled.' }); return true; }
     try {
+      const details = validateEnrollment(await readJsonBody(req));
+      if (!details.ok) { sendJson(res, 400, { error: details.error }); return true; }
       sendJson(res, 200, { orderId: await paypalCreateOrder() });
     } catch (error) {
       console.error('On-Ramp checkout create-order:', error.message);
@@ -552,21 +716,70 @@ async function handleCourseRoute(req, res) {
     try {
       const body = await readJsonBody(req);
       if (!body.orderId || typeof body.orderId !== 'string') { sendJson(res, 400, { error: 'Missing order.' }); return true; }
+      const details = validateEnrollment(body);
+      if (!details.ok) { sendJson(res, 400, { error: details.error }); return true; }
       const result = await paypalCaptureOrder(body.orderId);
       if (!result.completed) {
         console.error('On-Ramp checkout capture: order not completed (status/amount mismatch)');
         sendJson(res, 402, { error: 'Payment was not completed.' });
         return true;
       }
-      sendJson(res, 200, { accessCode: issueSignedCode() });
+      const enrolled = await enrollPerson(details, 'paypal', helpers, store);
+      sendJson(res, 200, { accessCode: enrolled.accessCode });
     } catch (error) {
       console.error('On-Ramp checkout capture:', error.message);
       sendJson(res, 502, { error: 'Payment could not be confirmed.' });
     }
     return true;
   }
+  if (req.method === 'POST' && req.url === COURSE_PATH + '/api/admin/enroll') {
+    const admin = adminCodeMatches(req);
+    if (!admin.ok) { sendJson(res, admin.status, { error: admin.status === 503 ? 'Admin enrollment is not enabled.' : 'Not authorised.' }); return true; }
+    if (!process.env.ONRAMP_CODE_SECRET) { sendJson(res, 503, { error: 'ONRAMP_CODE_SECRET is not set.' }); return true; }
+    try {
+      const details = validateEnrollment(await readJsonBody(req));
+      if (!details.ok) { sendJson(res, 400, { error: details.error }); return true; }
+      sendJson(res, 200, await enrollPerson(details, 'admin', helpers, store));
+    } catch (error) {
+      console.error('On-Ramp admin enroll:', error.message);
+      sendJson(res, 500, { error: 'Enrollment failed.' });
+    }
+    return true;
+  }
+  if (req.method === 'POST' && req.url === COURSE_PATH + '/api/listen') {
+    const access = hasAccess(req);
+    if (!access.ok) { sendJson(res, access.status, { error: 'That code was not recognized.' }); return true; }
+    try {
+      const body = await readJsonBody(req);
+      const sit = String(body.sit || '').trim().slice(0, 60);
+      const event = body.event === 'complete' ? 'complete' : body.event === 'play' ? 'play' : '';
+      if (!sit || !event) { sendJson(res, 400, { error: 'Missing sit or event.' }); return true; }
+      const code = String(req.headers['x-companion-access'] || '');
+      const now = new Date();
+      let found = false;
+      await store.update((doc) => {
+        const record = findByCode(doc, code);
+        if (!record) return;
+        found = true;
+        const today = localDateString(now, normaliseTimeZone(record.timeZone));
+        dayEntry(record, today).listens.push({ sit, at: now.toISOString(), complete: event === 'complete' });
+      });
+      // A manual ONRAMP_ACCESS_CODES entry has no record: nothing stored,
+      // same 204 either way so the page never learns which kind it holds.
+      if (!found && process.env.ONRAMP_LISTEN_DEBUG) console.log('On-Ramp listen: no record for this code');
+      res.writeHead(204, noStoreHeaders('application/json; charset=utf-8'));
+      res.end();
+    } catch (error) {
+      console.error('On-Ramp listen:', error.message);
+      if (!res.headersSent) sendJson(res, 500, { error: 'Could not record that.' });
+    }
+    return true;
+  }
+  if (await handleSmsInbound(req, res, { store })) return true;
 
   if (req.method !== 'GET') return false;
+
+  if (await handleYayRoute(req, res, { store, css: COURSE_CSS })) return true;
 
   if (req.url === COURSE_PATH) {
     res.writeHead(200, noStoreHeaders('text/html; charset=utf-8'));
@@ -604,4 +817,4 @@ async function handleCourseRoute(req, res) {
   return false;
 }
 
-module.exports = { COURSE_PATH, COURSE_WEEKS, handleCourseRoute, lessonContentHtml };
+module.exports = { COURSE_CSS, COURSE_PATH, COURSE_WEEKS, handleCourseRoute, lessonContentHtml, normalisePhone, validateEnrollment };

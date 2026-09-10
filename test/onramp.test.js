@@ -12,6 +12,7 @@ const { spawn } = require('node:child_process');
 const fs = require('node:fs/promises');
 const fsSync = require('node:fs');
 const net = require('node:net');
+const os = require('node:os');
 const path = require('node:path');
 const test = require('node:test');
 
@@ -397,6 +398,16 @@ test('PayPal self-serve enrollment: off by default, and a mocked full checkout i
   assert.match(offHtml, /Chad sets you up directly/);
   assert.doesNotMatch(offHtml, /paypalButtons/);
 
+  // The enrollment email goes to a local Resend stub, never the real API.
+  const resendStub = http.createServer((req, res) => {
+    req.resume();
+    req.on('end', () => { res.setHeader('Content-Type', 'application/json'); res.end('{"id":"stub"}'); });
+  });
+  await new Promise((resolve) => resendStub.listen(0, '127.0.0.1', resolve));
+  t.after(() => resendStub.close());
+  const dataDir = await fs.mkdtemp(path.join(os.tmpdir(), 'onramp-paypal-'));
+  t.after(() => fs.rm(dataDir, { recursive: true, force: true }));
+
   // With full config: the overview offers checkout, and the flow issues a code.
   const portOn = await getOpenPort();
   const childOn = await startServer(portOn, {
@@ -405,6 +416,9 @@ test('PayPal self-serve enrollment: off by default, and a mocked full checkout i
     PAYPAL_CLIENT_ID: 'mock-client',
     PAYPAL_CLIENT_SECRET: 'mock-secret',
     PAYPAL_BASE_URL: paypalUrl,
+    RESEND_API_BASE_URL: 'http://127.0.0.1:' + resendStub.address().port,
+    MAILCHIMP_API_KEY: '',
+    ONRAMP_DATA_FILE: path.join(dataDir, 'enrollments.json'),
   });
   t.after(() => childOn.kill());
   const onBase = 'http://127.0.0.1:' + portOn;
@@ -414,14 +428,25 @@ test('PayPal self-serve enrollment: off by default, and a mocked full checkout i
   assert.match(onHtml, /\$299/);
   assert.match(onHtml, /paypalButtons/);
   assert.match(onHtml, /shown only once/);
+  // The buyer's details are asked for above the buttons and sent with both calls.
+  assert.match(onHtml, /id="enrollFirstName"/);
+  assert.match(onHtml, /id="enrollEmail"/);
+  assert.match(onHtml, /for the daily yay or nay text/);
+  assert.ok(onHtml.indexOf('id="enrollFields"') < onHtml.indexOf('id="paypalButtons"'), 'fields sit above the PayPal buttons');
+  assert.match(onHtml, /timeZone/);
 
-  const created = await (await fetch(onBase + '/course/on-ramp/api/paypal/create-order', { method: 'POST' })).json();
+  const buyer = { firstName: 'Test', email: 'buyer@example.com', phone: '', timeZone: 'America/Los_Angeles' };
+  const created = await (await fetch(onBase + '/course/on-ramp/api/paypal/create-order', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(buyer),
+  })).json();
   assert.equal(created.orderId, 'ORDER-123');
 
   const captured = await fetch(onBase + '/course/on-ramp/api/paypal/capture', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ orderId: 'ORDER-123' }),
+    body: JSON.stringify({ orderId: 'ORDER-123', ...buyer }),
   });
   assert.equal(captured.status, 200);
   const { accessCode } = await captured.json();
