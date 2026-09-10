@@ -213,16 +213,16 @@ const COURSE_WEEKS = {
 <h4>When something lands</h4>
 <p>When you feel the toes curl or the stomach knot: don't go to why. Go to what. Where is it? Throat, chest, belly. One word for it. Then a few breaths right into that spot, and see what it does. If the sentence in your head is "I'm anxious," make it "a part of me is anxious."</p>`,
     journal: `
-<p>Three journals this week, each one a printable sheet. Do them in this order, and take a few minutes of breath before any of them. Sit with your eyes closed, let the body settle, then open your eyes and write. A few paragraphs per prompt is plenty. Don't filter. Don't edit.</p>
+<p>Three journals this week, each one a printable sheet. When you finish one, tap Mark done. That's how the weekly note knows. Do them in this order, and take a few minutes of breath before any of them. Sit with your eyes closed, let the body settle, then open your eyes and write. A few paragraphs per prompt is plenty. Don't filter. Don't edit.</p>
 <h4>1. What's Bringing You Here (first day or two)</h4>
 <p>You read the book and something in it landed. This one brings that into focus: what's bringing you here, as concretely as you can; what's happening in your body right now as you sit with it; what that feeling would say if it could talk; and, if something older surfaces, the role you learned to play and the unspoken terms. It ends with the two yogis. If it's not a story about positive thinking, what's it about? And what's your Varanasi?</p>
-<p><a class="button" href="/downloads/on-ramp/week-1/whats-bringing-you-here.pdf">Open the journal (PDF)</a></p>
+<p><a class="button" href="/downloads/on-ramp/week-1/whats-bringing-you-here.pdf" data-journal="week-1/whats-bringing-you-here" target="_blank" rel="noopener">Open the journal (PDF)</a> <button type="button" class="button button-quiet" data-journal-done="week-1/whats-bringing-you-here">Mark done</button></p>
 <h4>2. The Breath in Ordinary Hours (all week)</h4>
 <p>Two minutes a day. Yay or nay for each day. Three sits logged the way I check in: the state you started in, the breath you gave it, what was different after. Three breaths before something, twice. One moment when something landed: where, one word, and what it did under attention. And the sentence both ways, <em>I'm anxious</em> and <em>a part of me is anxious</em>, with what changed between them.</p>
-<p><a class="button" href="/downloads/on-ramp/week-1/the-breath-in-ordinary-hours.pdf">Open the journal (PDF)</a></p>
+<p><a class="button" href="/downloads/on-ramp/week-1/the-breath-in-ordinary-hours.pdf" data-journal="week-1/the-breath-in-ordinary-hours" target="_blank" rel="noopener">Open the journal (PDF)</a> <button type="button" class="button button-quiet" data-journal-done="week-1/the-breath-in-ordinary-hours">Mark done</button></p>
 <h4>3. The Formation of a Reaction (end of the week)</h4>
 <p>Map one moment end to end, the way Paul's calendar invite was mapped above. The trigger. The body's first response, right now, as you hold the memory. The story, quoted as you hear it. The reaction then, and the pull now. The spinning. Then find where the opening was. It closes on the two questions I ask at the end of every session: what's one thing you're taking with you, and what's an open question you're left with?</p>
-<p><a class="button" href="/downloads/on-ramp/week-1/the-formation-of-a-reaction.pdf">Open the journal (PDF)</a></p>
+<p><a class="button" href="/downloads/on-ramp/week-1/the-formation-of-a-reaction.pdf" data-journal="week-1/the-formation-of-a-reaction" target="_blank" rel="noopener">Open the journal (PDF)</a> <button type="button" class="button button-quiet" data-journal-done="week-1/the-formation-of-a-reaction">Mark done</button></p>
 <p class="note">Keep what you write. You'll bring a piece of it to your Integration and Next-Step Session at the end of the four weeks.</p>`,
   },
   2: {
@@ -389,6 +389,8 @@ h4{font:600 15px/1.4 Arial,sans-serif;color:var(--gold);margin:20px 0 6px}
 .note{font-style:italic;color:#6F5438}
 .placeholder{padding:16px 18px;background:var(--soft);border-left:3px solid var(--gold);font:14px/1.55 Arial,sans-serif;margin:12px 0}
 .button{display:inline-block;border:1px solid var(--gold);background:var(--gold);color:#fff;border-radius:999px;padding:12px 22px;font:600 14px/1 Arial,sans-serif;cursor:pointer;text-decoration:none}
+.button-quiet{background:transparent;color:var(--gold)}
+.button-quiet.is-done{background:#EFE6D8;border-color:#EFE6D8;color:#5C4A2A;cursor:default}
 .field input{width:100%;border:1px solid #BCA88E;border-radius:10px;background:#FFFDF9;color:var(--ink);padding:13px 14px;font:16px/1.4 Arial,sans-serif}
 .error{color:var(--danger);font:600 14px/1.4 Arial,sans-serif;margin-top:10px}
 .hidden{display:none!important}
@@ -466,6 +468,31 @@ ${COURSE_CSS}
       });
       audio.addEventListener('ended', function(){ if (!completed) { completed = true; post('complete'); } });
     });
+    // Journal tracking: opening the PDF and tapping Mark done are recorded
+    // the same way, so the weekly note can say which journals got done.
+    function postJournal(journal, event, done){
+      try {
+        return fetch('${COURSE_PATH}/api/journal', {
+          method: 'POST', keepalive: true,
+          headers: { 'Content-Type': 'application/json', 'X-Companion-Access': code },
+          body: JSON.stringify({ journal: journal, event: event })
+        }).then(function(){ if (done) done(); }).catch(function(){ if (done) done(); });
+      } catch (e) { if (done) done(); }
+    }
+    var links = el('lessonContent').querySelectorAll('a[data-journal]');
+    Array.prototype.forEach.call(links, function(a){
+      a.addEventListener('click', function(){ postJournal(a.getAttribute('data-journal'), 'opened'); });
+    });
+    var doneButtons = el('lessonContent').querySelectorAll('button[data-journal-done]');
+    Array.prototype.forEach.call(doneButtons, function(b){
+      var key = 'onrampJournalDone:' + b.getAttribute('data-journal-done');
+      try { if (window.localStorage.getItem(key)) { b.textContent = 'Done'; b.classList.add('is-done'); b.disabled = true; } } catch (e) {}
+      b.addEventListener('click', function(){
+        b.disabled = true; b.textContent = 'Done'; b.classList.add('is-done');
+        try { window.localStorage.setItem(key, '1'); } catch (e) {}
+        postJournal(b.getAttribute('data-journal-done'), 'done');
+      });
+    });
   }
   async function unlock(code){
     if (!code) { showError('Enter the access code.'); return; }
@@ -525,7 +552,6 @@ function enrollSection() {
 <div id="enrollFields" style="margin:14px 0 10px">
 <p style="margin:0 0 10px"><label for="enrollFirstName" class="small">First name</label><br><input id="enrollFirstName" type="text" autocomplete="given-name" maxlength="80" required style="width:100%;border:1px solid #BCA88E;border-radius:10px;background:#FFFDF9;color:#352515;padding:12px 14px;font:16px/1.4 Arial,sans-serif"></p>
 <p style="margin:0 0 10px"><label for="enrollEmail" class="small">Email (your access code and the weekly notes go here)</label><br><input id="enrollEmail" type="email" autocomplete="email" maxlength="200" required style="width:100%;border:1px solid #BCA88E;border-radius:10px;background:#FFFDF9;color:#352515;padding:12px 14px;font:16px/1.4 Arial,sans-serif"></p>
-<p style="margin:0 0 4px"><label for="enrollPhone" class="small">Mobile number, optional, for the daily yay or nay text</label><br><input id="enrollPhone" type="tel" autocomplete="tel" maxlength="30" style="width:100%;border:1px solid #BCA88E;border-radius:10px;background:#FFFDF9;color:#352515;padding:12px 14px;font:16px/1.4 Arial,sans-serif"></p>
 </div>
 <div id="paypalButtons"></div>
 <div id="enrollDone" style="display:none;background:#EFE6D8;border-left:3px solid #8B6B1E;padding:16px 18px;margin-top:14px">
@@ -540,7 +566,7 @@ function enrollDetails(){
   var v = function(id){ return (document.getElementById(id).value || '').trim(); };
   var tz = '';
   try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) {}
-  return { firstName: v('enrollFirstName'), email: v('enrollEmail'), phone: v('enrollPhone'), timeZone: tz };
+  return { firstName: v('enrollFirstName'), email: v('enrollEmail'), timeZone: tz };
 }
 function enrollProblem(d){
   if (!d.firstName) return 'Add your first name first.';
@@ -771,6 +797,31 @@ async function handleCourseRoute(req, res, helpers = {}) {
       res.end();
     } catch (error) {
       console.error('On-Ramp listen:', error.message);
+      if (!res.headersSent) sendJson(res, 500, { error: 'Could not record that.' });
+    }
+    return true;
+  }
+  if (req.method === 'POST' && req.url === COURSE_PATH + '/api/journal') {
+    const access = hasAccess(req);
+    if (!access.ok) { sendJson(res, access.status, { error: 'That code was not recognized.' }); return true; }
+    try {
+      const body = await readJsonBody(req);
+      const journal = String(body.journal || '').trim();
+      const event = body.event === 'done' ? 'done' : body.event === 'opened' ? 'opened' : '';
+      if (!/^week-[1-4]\/[a-z0-9-]{1,60}$/.test(journal) || !event) { sendJson(res, 400, { error: 'Missing journal or event.' }); return true; }
+      const code = String(req.headers['x-companion-access'] || '');
+      const now = new Date().toISOString();
+      await store.update((doc) => {
+        const record = findByCode(doc, code);
+        if (!record) return;
+        if (!record.journals) record.journals = {};
+        if (!record.journals[journal]) record.journals[journal] = {};
+        if (!record.journals[journal][event]) record.journals[journal][event] = now;
+      });
+      res.writeHead(204, noStoreHeaders('application/json; charset=utf-8'));
+      res.end();
+    } catch (error) {
+      console.error('On-Ramp journal:', error.message);
       if (!res.headersSent) sendJson(res, 500, { error: 'Could not record that.' });
     }
     return true;

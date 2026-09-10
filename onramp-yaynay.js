@@ -66,26 +66,32 @@ function scorecard(record, week) {
   const days = record.days || {};
   const dates = [];
   for (let i = 0; i < 7; i += 1) dates.push(addDays(day0, 7 * (week - 1) + i));
+  const satOn = (entry) => Boolean(entry && Array.isArray(entry.listens) && entry.listens.some((l) => l && l.complete));
   let daysSat = 0;
-  let daysAnswered = 0;
+  let sitsStarted = 0;
   let sitsCompleted = 0;
   let longestRun = 0;
   let run = 0;
   for (const date of dates) {
     const entry = days[date];
-    const yay = entry ? entry.yay : null;
-    if (yay === true || yay === false) daysAnswered += 1;
-    if (yay === true) {
+    if (satOn(entry)) {
       daysSat += 1;
       run += 1;
       if (run > longestRun) longestRun = run;
     } else {
       run = 0;
     }
-    if (entry && Array.isArray(entry.listens)) sitsCompleted += entry.listens.filter((l) => l && l.complete).length;
+    if (entry && Array.isArray(entry.listens)) {
+      sitsStarted += entry.listens.filter((l) => l && !l.complete).length;
+      sitsCompleted += entry.listens.filter((l) => l && l.complete).length;
+    }
   }
-  const totalDaysSat = Object.values(days).filter((e) => e && e.yay === true).length;
-  return { week, dates, daysSat, daysAnswered, sitsCompleted, longestRun, totalDaysSat };
+  const journals = record.journals || {};
+  const weekKeys = Object.keys(journals).filter((k) => k.startsWith('week-' + week + '/'));
+  const journalsDone = weekKeys.filter((k) => journals[k] && journals[k].done).length;
+  const journalsOpened = weekKeys.filter((k) => journals[k] && journals[k].opened).length;
+  const totalDaysSat = Object.values(days).filter(satOn).length;
+  return { week, dates, daysSat, sitsStarted, sitsCompleted, journalsDone, journalsOpened, longestRun, totalDaysSat };
 }
 
 // ── Twilio ──────────────────────────────────────────────────────

@@ -205,65 +205,56 @@ test('store: the SigV4 signer reproduces the AWS published GET Object signature 
 
 // ── Schedule ────────────────────────────────────────────────────
 test('schedule: due items follow the enrollee day by day in their own time zone and never repeat', () => {
-  // Enrolled at 8:00 pm Pacific on Sept 10, 2026 (03:00Z on the 11th):
-  // past 7:30 pm, so the intro is due at once alongside the enroll email.
+  // Enrolled at 8:00 pm Pacific on Sept 10, 2026 (03:00Z on the 11th).
   const record = store.newRecord({ code: 'mb-x', email: 'x@example.com', firstName: 'X', timeZone: 'America/Los_Angeles', now: new Date('2026-09-11T03:00:00Z') });
   const keys = (items) => items.map((i) => i.key);
-  assert.deepEqual(keys(schedule.dueItems(record, new Date('2026-09-11T03:00:00Z'))), ['enroll', 'yaynay-intro']);
-  assert.equal(schedule.dueItems(record, new Date('2026-09-11T03:00:00Z'))[1].date, '2026-09-10');
+  assert.deepEqual(keys(schedule.dueItems(record, new Date('2026-09-11T03:00:00Z'))), ['enroll']);
 
   record.sent.enroll = '2026-09-11T03:00:05Z';
-  record.sent['yaynay-intro'] = '2026-09-11T03:00:05Z';
   assert.deepEqual(keys(schedule.dueItems(record, new Date('2026-09-11T03:01:00Z'))), [], 'nothing is returned twice');
 
-  // Day 1, 7:29 local: not yet. 7:30 local (14:30Z): yaynay-1, about day 0.
-  assert.deepEqual(keys(schedule.dueItems(record, new Date('2026-09-11T14:29:00Z'))), []);
-  const day1 = schedule.dueItems(record, new Date('2026-09-11T14:30:00Z'));
-  assert.deepEqual(keys(day1), ['yaynay-1']);
-  assert.equal(day1[0].kind, 'text-or-email');
-  assert.equal(day1[0].date, '2026-09-10');
-  record.sent['yaynay-1'] = 'x';
+  // No daily ask any more: day 1 morning is quiet.
+  assert.deepEqual(keys(schedule.dueItems(record, new Date('2026-09-11T14:30:00Z'))), []);
 
-  // Day 7 at 6 pm local: the first scorecard, after yaynay-7 that morning.
+  // Day 7 at 5:59 pm local: not yet. 6 pm local (01:00Z on the 18th): the first scorecard.
+  assert.deepEqual(keys(schedule.dueItems(record, new Date('2026-09-18T00:59:00Z'))), []);
   const day7 = schedule.dueItems(record, new Date('2026-09-18T01:00:00Z'));
-  assert.deepEqual(keys(day7), ['yaynay-2', 'yaynay-3', 'yaynay-4', 'yaynay-5', 'yaynay-6', 'yaynay-7', 'scorecard-1']);
-  for (const item of day7) record.sent[item.key] = 'x';
+  assert.deepEqual(keys(day7), ['scorecard-1']);
+  assert.equal(day7[0].kind, 'email');
+  assert.equal(day7[0].week, 1);
+  record.sent['scorecard-1'] = 'x';
 
-  // Day 8, 7:00 local: week-2 opens, before that day's 7:30 yay/nay.
+  // Day 8, 7:00 local: week-2 opens.
+  assert.deepEqual(keys(schedule.dueItems(record, new Date('2026-09-18T13:59:00Z'))), []);
   const day8 = schedule.dueItems(record, new Date('2026-09-18T14:00:00Z'));
   assert.deepEqual(keys(day8), ['week-2']);
   assert.equal(day8[0].kind, 'email');
   assert.equal(day8[0].week, 2);
   record.sent['week-2'] = 'x';
-  assert.deepEqual(keys(schedule.dueItems(record, new Date('2026-09-18T14:30:00Z'))), ['yaynay-8']);
+  assert.deepEqual(keys(schedule.dueItems(record, new Date('2026-09-18T14:30:00Z'))), []);
 
   // The whole run, in order, ends with closing on day 29 at 7:00 local.
   const all = schedule.scheduleFor(record);
-  assert.equal(all.length, 1 + 1 + 28 + 4 + 3 + 1);
-  assert.equal(all[all.length - 1].key, 'closing');
+  assert.equal(all.length, 1 + 4 + 3 + 1);
+  assert.deepEqual(keys(all), ['enroll', 'scorecard-1', 'week-2', 'scorecard-2', 'week-3', 'scorecard-3', 'week-4', 'scorecard-4', 'closing']);
   assert.equal(all[all.length - 1].at.toISOString(), '2026-10-09T14:00:00.000Z');
   assert.equal(all.find((i) => i.key === 'scorecard-4').at.toISOString(), '2026-10-09T01:00:00.000Z');
   assert.equal(all.find((i) => i.key === 'week-4').at.toISOString(), '2026-10-02T14:00:00.000Z');
 
-  // Time zone respected: an Eastern enrollee at 04:30 Pacific (07:30
-  // Eastern) is due; a Pacific enrollee at the same instant is not.
+  // Time zone respected: an Eastern enrollee at 04:00 Pacific on day 8
+  // (07:00 Eastern) gets Week 2; a Pacific enrollee at the same instant does not.
   const eastern = store.newRecord({ code: 'mb-e', email: 'e@example.com', firstName: 'E', timeZone: 'America/New_York', now: new Date('2026-09-10T16:00:00Z') });
   const pacific = store.newRecord({ code: 'mb-p', email: 'p@example.com', firstName: 'P', timeZone: 'America/Los_Angeles', now: new Date('2026-09-10T16:00:00Z') });
-  for (const r of [eastern, pacific]) { r.sent.enroll = 'x'; r.sent['yaynay-intro'] = 'x'; }
-  const instant = new Date('2026-09-11T11:30:00Z');
-  assert.deepEqual(keys(schedule.dueItems(eastern, instant)), ['yaynay-1']);
+  for (const r of [eastern, pacific]) { r.sent.enroll = 'x'; r.sent['scorecard-1'] = 'x'; }
+  const instant = new Date('2026-09-18T11:00:00Z');
+  assert.deepEqual(keys(schedule.dueItems(eastern, instant)), ['week-2']);
   assert.deepEqual(keys(schedule.dueItems(pacific, instant)), []);
 
-  // An enrollee at 10 am local gets the intro that evening, not at once.
-  const morning = store.newRecord({ code: 'mb-m', email: 'm@example.com', firstName: 'M', timeZone: 'America/Los_Angeles', now: new Date('2026-09-10T17:00:00Z') });
-  assert.deepEqual(keys(schedule.dueItems(morning, new Date('2026-09-10T17:00:00Z'))), ['enroll']);
-  assert.deepEqual(keys(schedule.dueItems(morning, new Date('2026-09-11T02:30:00Z'))), ['enroll', 'yaynay-intro']);
-
-  // Daylight saving: a 7:30 local send stays 7:30 local across the change.
+  // Daylight saving: a 7:00 local send stays 7:00 local across the change.
   const dst = store.newRecord({ code: 'mb-d', email: 'd@example.com', firstName: 'D', timeZone: 'America/Los_Angeles', now: new Date('2026-10-25T20:00:00Z') });
   const items = schedule.scheduleFor(dst);
-  assert.equal(items.find((i) => i.key === 'yaynay-5').at.toISOString(), '2026-10-30T14:30:00.000Z');
-  assert.equal(items.find((i) => i.key === 'yaynay-8').at.toISOString(), '2026-11-02T15:30:00.000Z');
+  assert.equal(items.find((i) => i.key === 'week-2').at.toISOString(), '2026-11-02T15:00:00.000Z');
+  assert.equal(items.find((i) => i.key === 'scorecard-1').at.toISOString(), '2026-11-02T02:00:00.000Z');
 
   assert.equal(schedule.normaliseTimeZone('Not/AZone'), 'America/Los_Angeles');
   assert.equal(schedule.normaliseTimeZone('Europe/London'), 'Europe/London');
@@ -287,15 +278,19 @@ test('yay/nay: links carry a per-person token, answers record last-wins, and the
   store.dayEntry(record, '2026-09-12').listens.push({ sit: 'onramp-breath-12min', at: 'x', complete: true }, { sit: 'onramp-breath-12min', at: 'x', complete: false });
   store.dayEntry(record, '2026-09-20').listens.push({ sit: 'onramp-week2-keeping-it-company', at: 'x', complete: true });
   yaynay.recordAnswer(record, '2026-09-20', true);
+  record.journals = { 'week-1/whats-bringing-you-here': { opened: 'x', done: 'x' }, 'week-1/the-breath-in-ordinary-hours': { opened: 'x' }, 'week-2/the-protector': { done: 'x' } };
+  store.dayEntry(record, '2026-09-13').listens.push({ sit: 'onramp-breath-12min', at: 'x', complete: true });
   const week1 = yaynay.scorecard(record, 1);
   assert.deepEqual(
-    { daysSat: week1.daysSat, daysAnswered: week1.daysAnswered, sitsCompleted: week1.sitsCompleted, longestRun: week1.longestRun, totalDaysSat: week1.totalDaysSat },
-    { daysSat: 4, daysAnswered: 6, sitsCompleted: 1, longestRun: 3, totalDaysSat: 5 }
+    { daysSat: week1.daysSat, sitsStarted: week1.sitsStarted, sitsCompleted: week1.sitsCompleted, journalsDone: week1.journalsDone, journalsOpened: week1.journalsOpened, longestRun: week1.longestRun, totalDaysSat: week1.totalDaysSat },
+    { daysSat: 2, sitsStarted: 1, sitsCompleted: 2, journalsDone: 1, journalsOpened: 2, longestRun: 2, totalDaysSat: 3 },
+    'a day counts as sat when a recording played most of the way through; answers to the old daily ask do not count'
   );
   assert.deepEqual(week1.dates, ['2026-09-10', '2026-09-11', '2026-09-12', '2026-09-13', '2026-09-14', '2026-09-15', '2026-09-16']);
   const week2 = yaynay.scorecard(record, 2);
   assert.equal(week2.daysSat, 1);
   assert.equal(week2.sitsCompleted, 1);
+  assert.equal(week2.journalsDone, 1);
 
   // Inbound text parsing and the day it lands on.
   assert.equal(yaynay.parseAnswer('Yay!'), true);
@@ -332,8 +327,6 @@ test('emails: every message uses the Mind/Body Foundations wrapper, carries its 
   const links = yaynay.yayLinks(record, '2026-09-10', emails.BASE_URL);
   const all = {
     enroll: emails.enroll(record),
-    intro: emails.yayNayIntro(record, links),
-    yaynay: emails.yayNay(record, '2026-09-10', links),
     week2: emails.weekOpen(record, 2),
     scorecard: emails.scorecard(record, 1, yaynay.scorecard(record, 1)),
     closing: emails.closing(record),
@@ -355,15 +348,10 @@ test('emails: every message uses the Mind/Body Foundations wrapper, carries its 
   assert.equal(all.enroll.subject, "You're in. Here's your access code.");
   assert.ok(all.enroll.html.includes("Glad we're doing this.") && all.enroll.html.includes('We narrow it together.'), 'the enrollment email is in his register');
   assert.ok(all.enroll.html.includes('font-style:italic;color:#6B5036;">Chad</p>'));
-  assert.equal(all.yaynay.subject, 'Yay or nay?');
-  assert.ok(all.yaynay.html.includes(links.yay) && all.yaynay.html.includes(links.nay));
-  assert.ok(all.yaynay.text.startsWith('Yay or nay, Ann?') && all.yaynay.text.includes('Reply YAY or NAY'), 'the daily text asks the question and how to answer');
-  assert.ok(all.yaynay.text.includes(links.yay) && all.yaynay.text.includes(links.nay), 'the daily text carries the tap links too');
-  assert.ok(all.intro.text.includes('Reply YAY or NAY') && all.intro.text.length <= 320, 'the intro text (the SMS body) explains the daily ask in two segments at most');
   assert.ok(all.week2.html.includes('/course/on-ramp/week-2') && all.week2.html.includes('Keeping It Company'));
-  assert.ok(all.scorecard.html.includes('Days you sat: 0 of 7') && all.scorecard.html.includes('Not much sitting this week'));
-  assert.ok(emails.scorecard(record, 2, { daysSat: 6, daysAnswered: 7, sitsCompleted: 5, longestRun: 6, totalDaysSat: 9 }).html.includes("That's a real week"));
-  assert.ok(emails.scorecard(record, 4, { daysSat: 3, daysAnswered: 7, sitsCompleted: 2, longestRun: 2, totalDaysSat: 15 }).html.includes('closes the month'));
+  assert.ok(all.scorecard.html.includes('Days you sat, meaning a recording played most of the way through: 0 of 7') && all.scorecard.html.includes('Not much sitting this week'));
+  assert.ok(emails.scorecard(record, 2, { daysSat: 6, sitsStarted: 0, sitsCompleted: 5, journalsDone: 3, longestRun: 6, totalDaysSat: 9 }).html.includes("That's a real week"));
+  assert.ok(emails.scorecard(record, 4, { daysSat: 3, sitsStarted: 1, sitsCompleted: 2, journalsDone: 2, longestRun: 2, totalDaysSat: 15 }).html.includes('closes the month'));
   assert.ok(all.closing.html.includes(emails.BOOKING_URL));
   assert.ok(!all.closing.html.includes('badge') && !all.scorecard.html.includes('streak'), 'no badges, no streak shaming');
 });
@@ -508,6 +496,13 @@ test('listen endpoint stores play and complete for an enrolled code; an unknown 
   assert.equal(bad.status, 400);
   const denied = await postJson(base + '/course/on-ramp/api/listen', { sit: 'x', event: 'play' }, { 'X-Companion-Access': 'wrong' });
   assert.equal(denied.status, 401);
+  // Journals: opening the PDF and tapping Mark done are recorded once each.
+  const opened = await postJson(base + '/course/on-ramp/api/journal', { journal: 'week-1/whats-bringing-you-here', event: 'opened' }, { 'X-Companion-Access': enrolled.accessCode });
+  assert.equal(opened.status, 204);
+  const done = await postJson(base + '/course/on-ramp/api/journal', { journal: 'week-1/whats-bringing-you-here', event: 'done' }, { 'X-Companion-Access': enrolled.accessCode });
+  assert.equal(done.status, 204);
+  const badJournal = await postJson(base + '/course/on-ramp/api/journal', { journal: '../etc', event: 'done' }, { 'X-Companion-Access': enrolled.accessCode });
+  assert.equal(badJournal.status, 400);
 
   const doc = await readDoc(file);
   const record = store.findByCode(doc, enrolled.accessCode);
@@ -515,6 +510,7 @@ test('listen endpoint stores play and complete for an enrolled code; an unknown 
   assert.ok(record.days[today], 'stored under today in the record\'s own time zone');
   assert.deepEqual(record.days[today].listens.map((l) => [l.sit, l.complete]), [['onramp-breath-12min', false], ['onramp-breath-12min', true]]);
   assert.equal(record.days[today].yay, null);
+  assert.ok(record.journals['week-1/whats-bringing-you-here'].opened && record.journals['week-1/whats-bringing-you-here'].done, 'the journal is recorded as opened and done');
 
   // A manual ONRAMP_ACCESS_CODES entry has no record: 204 and nothing stored.
   const manual = await postJson(base + '/course/on-ramp/api/listen', { sit: 'onramp-breath-12min', event: 'play' }, { 'X-Companion-Access': 'manual-code-1' });
@@ -614,7 +610,7 @@ test('inbound SMS: the Twilio signature is checked, yay/nay lands on the most re
   assert.equal((await readDoc(file)).enrollments.length, 1);
 });
 
-test('the ticker sends what is due once, marks it sent, and prefers a text when Twilio is configured and the person gave a phone', async (t) => {
+test('the ticker sends what is due once, marks it sent, retries a failed send, and never texts', async (t) => {
   const file = await tempDataFile(t);
   const s = store.createStore({ ONRAMP_DATA_FILE: file });
   const emailed = [];
@@ -633,39 +629,36 @@ test('the ticker sends what is due once, marks it sent, and prefers a text when 
     now: new Date('2026-09-11T03:05:00Z'),
   };
   const first = await schedule.runSpineTick(ctx);
-  assert.deepEqual(first.map((d) => d.key).sort(), ['enroll', 'yaynay-intro', 'yaynay-intro']);
-  assert.equal(texted.length, 1, 'Ann, with a phone, is texted');
-  assert.equal(texted[0].to, '+14155550100');
-  assert.ok(/yay or nay/i.test(texted[0].body) && texted[0].body.includes('Reply YAY or NAY'), 'the intro text explains the daily ask');
-  assert.equal(emailed.length, 2, 'Bo gets his enrollment email and the intro by email');
-  assert.deepEqual(emailed.map((e) => e.to), ['bo@example.com', 'bo@example.com']);
+  assert.deepEqual(first.map((d) => d.key), ['enroll']);
+  assert.equal(texted.length, 0, 'nothing is texted even with Twilio configured and a phone on file');
+  assert.equal(emailed.length, 1, 'Bo gets his enrollment email');
+  assert.equal(emailed[0].to, 'bo@example.com');
   assert.ok(emailed[0].html.includes('mb-bo'));
+  assert.ok(emailed[0].html.includes('keeps track of when you play the recordings'), 'the enrollment email says the recordings and journals are tracked');
   const saved = await s.load();
-  assert.ok(store.findById(saved, ann.id).sent['yaynay-intro']);
-  assert.ok(store.findById(saved, bo.id).sent.enroll && store.findById(saved, bo.id).sent['yaynay-intro']);
+  assert.ok(store.findById(saved, bo.id).sent.enroll);
 
   const second = await schedule.runSpineTick(ctx);
   assert.deepEqual(second, [], 'nothing goes twice');
 
-  // Day 1 morning: two yay/nay asks. A failed text falls back to email.
+  // Day 1 morning: quiet. No daily ask.
   ctx.now = new Date('2026-09-11T14:30:00Z');
-  ctx.sendSms = async () => ({ ok: false });
-  const third = await schedule.runSpineTick(ctx);
-  assert.deepEqual(third.map((d) => d.key), ['yaynay-1', 'yaynay-1']);
-  assert.equal(emailed.length, 4);
-  assert.equal(emailed[2].subject, 'Yay or nay?');
-  assert.equal(emailed[2].to, 'ann@example.com');
+  assert.deepEqual(await schedule.runSpineTick(ctx), []);
 
-  // A send that fails is not marked and comes back next tick.
+  // Day 7, 6 pm local: the scorecard. A send that fails is not marked and comes back next tick.
   ctx.now = new Date('2026-09-18T01:00:00Z');
   ctx.sendEmail = async () => ({ ok: false });
   const failed = await schedule.runSpineTick(ctx);
   assert.deepEqual(failed, []);
   ctx.sendEmail = async (to, subject, html) => { emailed.push({ to, subject, html }); return { ok: true }; };
   const retried = await schedule.runSpineTick(ctx);
-  assert.ok(retried.some((d) => d.key === 'scorecard-1'));
-  assert.ok(emailed.some((e) => e.html.includes('Days you sat:')));
+  assert.deepEqual(retried.map((d) => d.key), ['scorecard-1', 'scorecard-1']);
+  const card = emailed.find((e) => e.subject === 'Week 1: what it looked like');
+  assert.ok(card && card.html.includes('Days you sat, meaning a recording played most of the way through: 0 of 7'));
+  assert.ok(card.html.includes('Journals marked done: 0 of 3'));
+  assert.ok(texted.length === 0);
 });
+
 
 test('lesson pages keep their policy and gain listen tracking; the sits carry data-sit names', { timeout: 30000 }, async (t) => {
   const port = await getOpenPort();

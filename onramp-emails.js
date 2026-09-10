@@ -139,7 +139,7 @@ function enroll(record) {
     p('Week 1 is here: ' + link(weekUrl(1), 'Week 1: From the Book to the Body') + '. Open it today. Read the lesson, then sit with the breathing recording once before you do anything else. Ten minutes is plenty the first time.') +
     p("The three journals for the week are in the lesson, and each one says when to do it. What's Bringing You Here is for the first day or two. The Breath in Ordinary Hours runs all week. The Formation of a Reaction is for the weekend, once you've caught a moment or two in real life.", 'margin-bottom:0.5em;') +
     journalLinks(1) +
-    p("Starting tomorrow morning you'll get a short note from me each day asking yay or nay about your practice. Tonight I'll send a note explaining what that's about.") +
+    p("One thing to know up front. The site keeps track of when you play the recordings and when you tap Mark done on a journal. Not to grade you. At the end of each week I'll send you what the week looked like: how many days you sat, which sits you finished, which journals you got to. No shame either way. It's just data, and it's yours.") +
     p("If anything's unclear or feels like too much, reply to this email. We narrow it together.") +
     signOff();
   return message("You're in. Here's your access code.", body);
@@ -226,8 +226,9 @@ function scorecard(record, w, stats) {
     greeting(record) +
     p("Here's Week " + w + '.') +
     list([
-      'Days you sat: ' + stats.daysSat + ' of 7',
-      'Sits you listened to all the way through: ' + stats.sitsCompleted,
+      'Days you sat, meaning a recording played most of the way through: ' + stats.daysSat + ' of 7',
+      'Sits you finished: ' + stats.sitsCompleted + (stats.sitsStarted ? ', and ' + stats.sitsStarted + ' you started and left' : ''),
+      'Journals marked done: ' + stats.journalsDone + ' of 3',
       'Longest run of days in a row: ' + stats.longestRun,
       'Days sat since you started: ' + stats.totalDaysSat,
     ]) +

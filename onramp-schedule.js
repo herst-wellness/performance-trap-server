@@ -94,11 +94,8 @@ function scheduleFor(record) {
   const enrolledAt = new Date(record.enrolledAt);
   const { tz, day0 } = enrollmentDay0(record);
   const items = [{ key: 'enroll', kind: 'email', at: enrolledAt }];
-  const intro = zonedInstant(day0, 19, 30, tz);
-  items.push({ key: 'yaynay-intro', kind: 'text-or-email', at: intro < enrolledAt ? enrolledAt : intro, date: day0 });
-  for (let d = 1; d <= 28; d += 1) {
-    items.push({ key: 'yaynay-' + d, kind: 'text-or-email', at: zonedInstant(addDays(day0, d), 7, 30, tz), date: addDays(day0, d - 1) });
-  }
+  // No daily ask (Chad, 9/10/26): the recordings and the journals are
+  // tracked on the site, and the weekly scorecard reports them.
   for (let w = 1; w <= 4; w += 1) {
     items.push({ key: 'scorecard-' + w, kind: 'email', at: zonedInstant(addDays(day0, 7 * w), 18, 0, tz), week: w });
   }
