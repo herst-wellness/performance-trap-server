@@ -644,15 +644,16 @@ test('a journal that contains "I\'m done." or "stop" is writing, not a stop requ
   assert.ok(urgent && urgent.route !== 'continue_reflection', 'urgent self-harm in a journal still routes to safety');
 });
 
-test('the Week 1 lens (beginner\'s mind through S and E) sits in both the daily rep and the journal sitting, and in no other week', () => {
+test('the Week 1 lens (Slow the breath, Enter the body) sits in both the daily rep and the journal sitting, and in no other week', () => {
   const { WEEKS } = require('../onramp.js');
   const onramp = require('../onramp.js');
-  const lensLine = 'The lens this week: beginner';
+  const lensLine = 'The lens this week: Slow the breath, Enter the body';
   assert.ok(WEEKS[1].instructions.includes(lensLine), 'Week 1 daily rep carries the lens');
   assert.ok(WEEKS[1].instructions.indexOf(lensLine) < WEEKS[1].instructions.indexOf('## This week: Week 1'), 'lens comes before the week frame');
   for (const n of [2, 3, 4]) assert.ok(!WEEKS[n].instructions.includes(lensLine), 'week ' + n + ' has no Week 1 lens');
   const journal = (onramp.JOURNAL && onramp.JOURNAL[1]) || null;
   if (journal) assert.ok(journal.instructions.includes(lensLine), 'the journal sitting carries the lens');
-  assert.ok(WEEKS[1].instructions.includes('Let\'s not go to why. What\'s actually happening, right now?'));
+  assert.ok(WEEKS[1].instructions.includes('oil from a ladle') && WEEKS[1].instructions.includes('U-turn'));
+  assert.ok(!WEEKS[1].instructions.includes("beginner's mind question"), 'the lens is the two moves, not beginner\'s mind');
   assert.ok(!WEEKS[1].instructions.includes(String.fromCharCode(0x2014)));
 });
