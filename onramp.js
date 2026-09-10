@@ -287,7 +287,7 @@ function urgentSelfHarm(country) {
   );
 }
 
-function evaluateDeterministicControls({ message, adultConfirmed, country, provider }) {
+function evaluateDeterministicControls({ message, adultConfirmed, country, provider, journalText = false }) {
   const text = message.trim();
 
   if (!adultConfirmed || MINOR_DISCLOSURE.test(text)) {
@@ -332,6 +332,10 @@ function evaluateDeterministicControls({ message, adultConfirmed, country, provi
       true
     );
   }
+  // A journal brought whole as the first turn is writing, not a request to
+  // the companion: a sentence like "I'm done." in it must not end the
+  // sitting. The safety checks above still apply to it in full.
+  if (journalText) return null;
   if (STOP_REQUEST.test(text)) {
     return result(
       'stop_requested',
@@ -1701,6 +1705,7 @@ async function handleOnrampRoute(req, res, helpers = {}) {
       adultConfirmed: body.adultConfirmed === true,
       country: body.country,
       provider,
+      journalText: Boolean(week.journal) && /^Journal: /.test(body.message),
     });
     if (deterministic) {
       await answer({ ...deterministic, provider });

@@ -634,3 +634,12 @@ test('no em dash in any of the new copy or code', async () => {
     assert.ok(!text.includes(EM_DASH), name + ' has no em dash');
   }
 });
+
+test('a journal that contains "I\'m done." or "stop" is writing, not a stop request; the safety routes still fire on it', () => {
+  const { evaluateDeterministicControls } = require('../onramp.js');
+  const base = { adultConfirmed: true, country: 'US', provider: 'anthropic' };
+  assert.equal(evaluateDeterministicControls({ ...base, message: "Journal: The Formation of a Reaction\n\nI'm done. I told her to stop.", journalText: true }), null);
+  assert.equal(evaluateDeterministicControls({ ...base, message: "I'm done.", journalText: false }).route, 'stop_requested');
+  const urgent = evaluateDeterministicControls({ ...base, message: 'Journal: What\'s Bringing You Here\n\nI am going to kill myself tonight.', journalText: true });
+  assert.ok(urgent && urgent.route !== 'continue_reflection', 'urgent self-harm in a journal still routes to safety');
+});
