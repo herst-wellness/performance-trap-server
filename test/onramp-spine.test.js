@@ -327,7 +327,7 @@ test('yay/nay: links carry a per-person token, answers record last-wins, and the
   assert.deepEqual(v, { ok: true, firstName: 'Ann', email: 'ann@example.com', phone: '+14155550100', timeZone: 'America/Los_Angeles' });
 });
 
-test('emails: every message uses the Mind/Body Foundations wrapper, carries its facts, and marks the copy still to write', () => {
+test('emails: every message uses the Mind/Body Foundations wrapper, carries its facts, and carries no placeholder copy', () => {
   const record = store.newRecord({ code: 'mb-abcd1234-0123456789', email: 'a@example.com', firstName: 'Ann', now: new Date('2026-09-11T03:00:00Z') });
   const links = yaynay.yayLinks(record, '2026-09-10', emails.BASE_URL);
   const all = {
@@ -349,14 +349,21 @@ test('emails: every message uses the Mind/Body Foundations wrapper, carries its 
   assert.ok(all.enroll.html.includes('mb-abcd1234-0123456789'), 'the enrollment email carries the code');
   assert.ok(all.enroll.html.includes('https://practice.herstwellness.com/course/on-ramp/week-1'));
   assert.ok(all.enroll.html.includes('/downloads/on-ramp/week-1/whats-bringing-you-here.pdf'));
-  assert.ok(all.enroll.html.includes('[[COPY: enroll]]'), 'the copy is a marked placeholder until Chad writes it');
+  for (const [name, m] of Object.entries(all)) {
+    assert.ok(!m.html.includes('[[COPY') && !m.text.includes('[[COPY') && !m.subject.includes('[[COPY'), name + ' carries no placeholder copy');
+  }
+  assert.equal(all.enroll.subject, "You're in. Here's your access code.");
+  assert.ok(all.enroll.html.includes("Glad we're doing this.") && all.enroll.html.includes('We narrow it together.'), 'the enrollment email is in his register');
   assert.ok(all.enroll.html.includes('font-style:italic;color:#6B5036;">Chad</p>'));
   assert.equal(all.yaynay.subject, 'Yay or nay?');
   assert.ok(all.yaynay.html.includes(links.yay) && all.yaynay.html.includes(links.nay));
-  assert.equal(all.yaynay.text, 'Yay or nay? Yay: ' + links.yay + ' Nay: ' + links.nay);
-  assert.ok(all.intro.text.includes(links.yay), 'the intro text (the SMS body) carries the links');
-  assert.ok(all.week2.html.includes('/course/on-ramp/week-2') && all.week2.html.includes('[[COPY: journals-week-2]]'));
-  assert.ok(all.scorecard.html.includes('Days you sat this week: 0 of 7'));
+  assert.ok(all.yaynay.text.startsWith('Yay or nay, Ann?') && all.yaynay.text.includes('Reply YAY or NAY'), 'the daily text asks the question and how to answer');
+  assert.ok(all.yaynay.text.includes(links.yay) && all.yaynay.text.includes(links.nay), 'the daily text carries the tap links too');
+  assert.ok(all.intro.text.includes('Reply YAY or NAY') && all.intro.text.length <= 320, 'the intro text (the SMS body) explains the daily ask in two segments at most');
+  assert.ok(all.week2.html.includes('/course/on-ramp/week-2') && all.week2.html.includes('Keeping It Company'));
+  assert.ok(all.scorecard.html.includes('Days you sat: 0 of 7') && all.scorecard.html.includes('Not much sitting this week'));
+  assert.ok(emails.scorecard(record, 2, { daysSat: 6, daysAnswered: 7, sitsCompleted: 5, longestRun: 6, totalDaysSat: 9 }).html.includes("That's a real week"));
+  assert.ok(emails.scorecard(record, 4, { daysSat: 3, daysAnswered: 7, sitsCompleted: 2, longestRun: 2, totalDaysSat: 15 }).html.includes('closes the month'));
   assert.ok(all.closing.html.includes(emails.BOOKING_URL));
   assert.ok(!all.closing.html.includes('badge') && !all.scorecard.html.includes('streak'), 'no badges, no streak shaming');
 });
@@ -629,7 +636,7 @@ test('the ticker sends what is due once, marks it sent, and prefers a text when 
   assert.deepEqual(first.map((d) => d.key).sort(), ['enroll', 'yaynay-intro', 'yaynay-intro']);
   assert.equal(texted.length, 1, 'Ann, with a phone, is texted');
   assert.equal(texted[0].to, '+14155550100');
-  assert.ok(texted[0].body.includes('/course/on-ramp/y/' + ann.id + '/'));
+  assert.ok(/yay or nay/i.test(texted[0].body) && texted[0].body.includes('Reply YAY or NAY'), 'the intro text explains the daily ask');
   assert.equal(emailed.length, 2, 'Bo gets his enrollment email and the intro by email');
   assert.deepEqual(emailed.map((e) => e.to), ['bo@example.com', 'bo@example.com']);
   assert.ok(emailed[0].html.includes('mb-bo'));
@@ -657,7 +664,7 @@ test('the ticker sends what is due once, marks it sent, and prefers a text when 
   ctx.sendEmail = async (to, subject, html) => { emailed.push({ to, subject, html }); return { ok: true }; };
   const retried = await schedule.runSpineTick(ctx);
   assert.ok(retried.some((d) => d.key === 'scorecard-1'));
-  assert.ok(emailed.some((e) => e.html.includes('Days you sat this week')));
+  assert.ok(emailed.some((e) => e.html.includes('Days you sat:')));
 });
 
 test('lesson pages keep their policy and gain listen tracking; the sits carry data-sit names', { timeout: 30000 }, async (t) => {
