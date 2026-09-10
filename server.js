@@ -1024,6 +1024,18 @@ function textToHtml(text) {
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const FROM_EMAIL = 'Chad Herst <chad@herstwellness.com>';
 
+// RESEND_API_BASE_URL exists so tests can point sending at a local stub;
+// unset, it is the real Resend API and nothing else changes.
+function resendTarget() {
+  const base = new URL(String(process.env.RESEND_API_BASE_URL || 'https://api.resend.com'));
+  return {
+    transport: base.protocol === 'http:' ? http : https,
+    hostname: base.hostname,
+    port: base.port || undefined,
+    path: base.pathname.replace(/\/$/, '') + '/emails',
+  };
+}
+
 function sendResendEmail(to, subject, html) {
   return new Promise((resolve, reject) => {
     const body = JSON.stringify({
@@ -1032,9 +1044,11 @@ function sendResendEmail(to, subject, html) {
       subject: subject,
       html: html
     });
-    const req = https.request({
-      hostname: 'api.resend.com',
-      path: '/emails',
+    const target = resendTarget();
+    const req = target.transport.request({
+      hostname: target.hostname,
+      port: target.port,
+      path: target.path,
       method: 'POST',
       headers: {
         'Authorization': 'Bearer ' + RESEND_API_KEY,
@@ -1213,6 +1227,23 @@ async function sendNurtureSequence(email) {
   }
 }
 
+// Adds a Mailchimp tag to an existing subscriber. Shared by the book-bonus
+// signup and course enrollment; fire and forget, errors only logged.
+function tagSubscriber(email, tag) {
+  const subscriberHash = require('crypto').createHash('md5').update(email.toLowerCase()).digest('hex');
+  const tagBody = JSON.stringify({ tags: [{ name: tag, status: 'active' }] });
+  const tagAuth = Buffer.from(`anystring:${MAILCHIMP_KEY}`).toString('base64');
+  const tagReq = https.request({
+    hostname: `${MAILCHIMP_SERVER}.api.mailchimp.com`,
+    path: `/3.0/lists/${MAILCHIMP_LIST_ID}/members/${subscriberHash}/tags`,
+    method: 'POST',
+    headers: { 'Authorization': `Basic ${tagAuth}`, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(tagBody) },
+  }, (tagRes) => { tagRes.resume(); });
+  tagReq.on('error', (e) => console.log('Tag error:', e.message));
+  tagReq.write(tagBody);
+  tagReq.end();
+}
+
 const server = http.createServer(async (req, res) => {
   if (await handleCompanionRoute(req, res)) { return; }
   req.url = req.url.split('?')[0];
@@ -1220,25 +1251,8 @@ const server = http.createServer(async (req, res) => {
   if (await handleMbfRoute(req, res)) { return; }
   if (await handleAjRoute(req, res)) { return; }
   if (await handleLorenzoRoute(req, res)) { return; }
-  if (await handleCourseRoute(req, res)) { return; }
-  if (handleBonusRoute(req, res, {
-    addToMailchimp,
-    sendEmail: sendResendEmail,
-    tagSubscriber: (email, tag) => {
-      const subscriberHash = require('crypto').createHash('md5').update(email.toLowerCase()).digest('hex');
-      const tagBody = JSON.stringify({ tags: [{ name: tag, status: 'active' }] });
-      const tagAuth = Buffer.from(`anystring:${MAILCHIMP_KEY}`).toString('base64');
-      const tagReq = https.request({
-        hostname: `${MAILCHIMP_SERVER}.api.mailchimp.com`,
-        path: `/3.0/lists/${MAILCHIMP_LIST_ID}/members/${subscriberHash}/tags`,
-        method: 'POST',
-        headers: { 'Authorization': `Basic ${tagAuth}`, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(tagBody) },
-      }, (tagRes) => { tagRes.resume(); });
-      tagReq.on('error', (e) => console.log('Tag error:', e.message));
-      tagReq.write(tagBody);
-      tagReq.end();
-    },
-  })) { return; }
+  if (await handleCourseRoute(req, res, { addToMailchimp, sendEmail: sendResendEmail, tagSubscriber })) { return; }
+  if (handleBonusRoute(req, res, { addToMailchimp, sendEmail: sendResendEmail, tagSubscriber })) { return; }
   // ── STATIC FILES (logo, etc.) ────────────────────────────────
   if (req.method === 'GET' && serveStatic(req, res)) { return; }
 
@@ -2786,3 +2800,11 @@ RESPOND WITH ONLY VALID JSON, no markdown fences, nothing before or after:
 });
 
 server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+// The Performance Trap Practice email spine: off until ONRAMP_EMAIL_SPINE=on,
+// so nothing is sent by the live site or by tests until Chad flips it.
+if (process.env.ONRAMP_EMAIL_SPINE === 'on') {
+  const { startSpineTicker } = require('./onramp-schedule');
+  const { defaultStore } = require('./onramp-store');
+  startSpineTicker({ store: defaultStore(), sendEmail: sendResendEmail, baseUrl: BASE_URL });
+}

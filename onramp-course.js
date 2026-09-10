@@ -6,7 +6,12 @@
 // the public page source. Video and most meditation slots are placeholders
 // until Chad records them; Week 1's slot carries the recorded 12-minute
 // breathing practice.
+const crypto = require('node:crypto');
 const { hasAccess, WEEKS, issueSignedCode } = require('./onramp');
+const { defaultStore, newRecord, findByCode, dayEntry } = require('./onramp-store');
+const { normaliseTimeZone, localDateString } = require('./onramp-schedule');
+const { handleYayRoute, handleSmsInbound } = require('./onramp-yaynay');
+const emails = require('./onramp-emails');
 
 const COURSE_PATH = '/course/on-ramp';
 
@@ -140,8 +145,11 @@ const videoPlaceholder = (label) =>
 // Long sits stream from the R2 bucket (range requests, so a listener can
 // scrub). That host MUST be on media-src in the course page policy below;
 // if it is missing the player renders and never sounds, with no error.
+// data-sit names the recording for listen tracking (the file name without
+// its extension); the page script posts play/complete events under it.
+const sitName = (src) => String(src).split('/').pop().replace(/\.[a-z0-9]+$/i, '');
 const meditationPlayer = (src, note) =>
-  `<p class="small">${note}</p><audio controls preload="none" src="${src}" style="width:100%"></audio>`;
+  `<p class="small">${note}</p><audio controls preload="none" src="${src}" data-sit="${sitName(src)}" style="width:100%"></audio>`;
 
 const meditationPlaceholder = (title, minutes) =>
   `<div class="placeholder">Guided audio to come: <em>${title}</em>, about ${minutes} minutes. Until it is recorded, use the written rhythm in the practice card below, or the Week 1 breathing recording.</div>`;
@@ -344,22 +352,8 @@ const COURSE_WEEKS = {
   },
 };
 
-function lessonPageShell(weekNum) {
-  const c = COURSE_WEEKS[weekNum];
-  const prev = weekNum > 1 ? `<a href="${COURSE_PATH}/week-${weekNum - 1}">&larr; Week ${weekNum - 1}</a>` : `<a href="${COURSE_PATH}">&larr; Overview</a>`;
-  const next = weekNum < 4 ? `<a href="${COURSE_PATH}/week-${weekNum + 1}">Week ${weekNum + 1} &rarr;</a>` : '';
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="robots" content="noindex, nofollow, noarchive">
-<title>${c.title} | The Performance Trap Practice</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
-<style>
-:root{--cream:#F4EDE4;--paper:#FBF7F0;--ink:#352515;--gold:#8B6B1E;--line:#D7C7B3;--soft:#EFE6D8;--danger:#8E2F27}
+// The course look, shared with the yay/nay answer pages in onramp-yaynay.js.
+const COURSE_CSS = `:root{--cream:#F4EDE4;--paper:#FBF7F0;--ink:#352515;--gold:#8B6B1E;--line:#D7C7B3;--soft:#EFE6D8;--danger:#8E2F27}
 *{box-sizing:border-box}body{margin:0;background:var(--cream);color:var(--ink);font-family:'Cormorant Garamond',Georgia,serif;font-size:19px;line-height:1.6}
 .shell{width:min(760px,calc(100% - 28px));margin:0 auto;padding:34px 0 70px}
 .eyebrow{text-transform:uppercase;letter-spacing:.18em;color:var(--gold);font:600 12px/1.4 Arial,sans-serif;text-align:center}
@@ -381,7 +375,24 @@ h4{font:600 15px/1.4 Arial,sans-serif;color:var(--gold);margin:20px 0 6px}
 .crumbs{font:13px/1.4 Arial,sans-serif;color:#78644F;margin:0 0 16px}
 .crumbs a{color:var(--gold);text-decoration:none}
 .footer{text-align:center;margin:26px auto 0;color:#78644F;font:13px/1.5 Arial,sans-serif}
-ol li{margin-bottom:8px}
+ol li{margin-bottom:8px}`;
+
+function lessonPageShell(weekNum) {
+  const c = COURSE_WEEKS[weekNum];
+  const prev = weekNum > 1 ? `<a href="${COURSE_PATH}/week-${weekNum - 1}">&larr; Week ${weekNum - 1}</a>` : `<a href="${COURSE_PATH}">&larr; Overview</a>`;
+  const next = weekNum < 4 ? `<a href="${COURSE_PATH}/week-${weekNum + 1}">Week ${weekNum + 1} &rarr;</a>` : '';
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>${c.title} | The Performance Trap Practice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+${COURSE_CSS}
 </style>
 </head>
 <body>
@@ -410,6 +421,30 @@ ol li{margin-bottom:8px}
   var stored = '';
   try { stored = window.sessionStorage.getItem('onrampCode') || ''; } catch (e) {}
   function showError(msg){ var n = el('accessError'); n.textContent = msg; n.classList.toggle('hidden', !msg); }
+  // Listen tracking: each sit posts a play event once per page load and a
+  // complete event once when playback passes 80 percent. The server keeps
+  // it only for enrolled codes; it never blocks playback or the unlock.
+  function attachListenTracking(code){
+    var players = el('lessonContent').querySelectorAll('audio[data-sit]');
+    Array.prototype.forEach.call(players, function(audio){
+      var sit = audio.getAttribute('data-sit');
+      var played = false, completed = false;
+      function post(event){
+        try {
+          fetch('${COURSE_PATH}/api/listen', {
+            method: 'POST', keepalive: true,
+            headers: { 'Content-Type': 'application/json', 'X-Companion-Access': code },
+            body: JSON.stringify({ sit: sit, event: event })
+          }).catch(function(){});
+        } catch (e) {}
+      }
+      audio.addEventListener('play', function(){ if (!played) { played = true; post('play'); } });
+      audio.addEventListener('timeupdate', function(){
+        if (!completed && audio.duration && audio.currentTime / audio.duration >= 0.8) { completed = true; post('complete'); }
+      });
+      audio.addEventListener('ended', function(){ if (!completed) { completed = true; post('complete'); } });
+    });
+  }
   async function unlock(code){
     if (!code) { showError('Enter the access code.'); return; }
     showError('');
@@ -424,6 +459,7 @@ ol li{margin-bottom:8px}
       el('lessonContent').classList.remove('hidden');
       el('unlockCard').classList.add('hidden');
       try { window.sessionStorage.setItem('onrampCode', code); } catch (e) {}
+      try { attachListenTracking(code); } catch (e) {}
     } catch (error) {
       try { window.sessionStorage.removeItem('onrampCode'); } catch (e) {}
       showError(error.message || 'Access denied');
@@ -464,32 +500,64 @@ function enrollSection() {
   return `<div id="enroll">
 <p><strong>Enroll yourself:</strong> ${priceLine}, once, via PayPal or card. Your personal access code appears the moment payment completes. Save it somewhere safe; it is your key to all four weeks and the practice companion.</p>
 <p class="small">And if you go on to coaching with me within 30 days of your Integration and Next-Step Session, the full amount you paid here is credited toward it.</p>
+<div id="enrollFields" style="margin:14px 0 10px">
+<p style="margin:0 0 10px"><label for="enrollFirstName" class="small">First name</label><br><input id="enrollFirstName" type="text" autocomplete="given-name" maxlength="80" required style="width:100%;border:1px solid #BCA88E;border-radius:10px;background:#FFFDF9;color:#352515;padding:12px 14px;font:16px/1.4 Arial,sans-serif"></p>
+<p style="margin:0 0 10px"><label for="enrollEmail" class="small">Email (your access code and the weekly notes go here)</label><br><input id="enrollEmail" type="email" autocomplete="email" maxlength="200" required style="width:100%;border:1px solid #BCA88E;border-radius:10px;background:#FFFDF9;color:#352515;padding:12px 14px;font:16px/1.4 Arial,sans-serif"></p>
+<p style="margin:0 0 4px"><label for="enrollPhone" class="small">Mobile number, optional, for the daily yay or nay text</label><br><input id="enrollPhone" type="tel" autocomplete="tel" maxlength="30" style="width:100%;border:1px solid #BCA88E;border-radius:10px;background:#FFFDF9;color:#352515;padding:12px 14px;font:16px/1.4 Arial,sans-serif"></p>
+</div>
 <div id="paypalButtons"></div>
 <div id="enrollDone" style="display:none;background:#EFE6D8;border-left:3px solid #8B6B1E;padding:16px 18px;margin-top:14px">
 <p style="margin:0 0 8px"><strong>You're in.</strong> Your access code:</p>
 <p id="issuedCode" style="font-size:24px;font-family:monospace;margin:0 0 8px"></p>
-<p style="margin:0" class="small">Write it down or screenshot it now; it is shown only once and cannot be looked up later. Then open <a href="${COURSE_PATH}/week-1">Week 1</a>.</p>
+<p style="margin:0" class="small">Write it down or screenshot it now; it is shown only once here. It is also in the email on its way to you. Then open <a href="${COURSE_PATH}/week-1">Week 1</a>.</p>
 </div>
 <div id="enrollError" class="small" style="display:none;color:#8E2F27"></div>
 <script src="${p.sdkBase}?client-id=${encodeURIComponent(p.clientId)}&currency=USD"></script>
 <script>
+function enrollDetails(){
+  var v = function(id){ return (document.getElementById(id).value || '').trim(); };
+  var tz = '';
+  try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) {}
+  return { firstName: v('enrollFirstName'), email: v('enrollEmail'), phone: v('enrollPhone'), timeZone: tz };
+}
+function enrollProblem(d){
+  if (!d.firstName) return 'Add your first name first.';
+  if (!d.email || d.email.indexOf('@') < 1 || d.email.indexOf('.', d.email.indexOf('@')) < 0) return 'Add the email address your access code should go to.';
+  return '';
+}
+function showEnrollError(msg){
+  var n = document.getElementById('enrollError');
+  n.textContent = msg; n.style.display = msg ? 'block' : 'none';
+}
 paypal.Buttons({
+  onClick: function(data, actions){
+    var problem = enrollProblem(enrollDetails());
+    showEnrollError(problem);
+    if (problem) return actions.reject();
+    return actions.resolve();
+  },
   createOrder: function(){
-    return fetch('${COURSE_PATH}/api/paypal/create-order', {method:'POST'}).then(function(r){
+    var d = enrollDetails();
+    return fetch('${COURSE_PATH}/api/paypal/create-order', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(d)
+    }).then(function(r){
       if (!r.ok) throw new Error('Could not start checkout');
       return r.json();
     }).then(function(d){ return d.orderId; });
   },
   onApprove: function(data){
+    var d = enrollDetails();
+    d.orderId = data.orderID;
     return fetch('${COURSE_PATH}/api/paypal/capture', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({orderId: data.orderID})
+      body: JSON.stringify(d)
     }).then(function(r){ return r.json().then(function(d){ return {ok: r.ok, d: d}; }); })
     .then(function(res){
       if (!res.ok || !res.d.accessCode) throw new Error(res.d.error || 'Payment could not be confirmed');
       document.getElementById('issuedCode').textContent = res.d.accessCode;
       document.getElementById('enrollDone').style.display = 'block';
       document.getElementById('paypalButtons').style.display = 'none';
+      document.getElementById('enrollFields').style.display = 'none';
       try { window.sessionStorage.setItem('onrampCode', res.d.accessCode); } catch (e) {}
     });
   },
@@ -536,10 +604,84 @@ ${selfServeEnabled() ? enrollSection() : '<p>Enrollment is personal: Chad sets y
 </html>`;
 }
 
-async function handleCourseRoute(req, res) {
+// ── Enrollment details ──────────────────────────────────────────
+// Phone numbers become E.164 (+14155551234) or are dropped: ten digits
+// are taken as US, eleven starting with 1 likewise, a leading + with 8 to
+// 15 digits is kept as given.
+function normalisePhone(raw) {
+  const s = String(raw || '').trim();
+  if (!s) return null;
+  const digits = s.replace(/[^0-9]/g, '');
+  if (s.startsWith('+') && digits.length >= 8 && digits.length <= 15) return '+' + digits;
+  if (digits.length === 10) return '+1' + digits;
+  if (digits.length === 11 && digits.startsWith('1')) return '+' + digits;
+  return null;
+}
+
+function validateEnrollment(body) {
+  const firstName = String(body.firstName || '').trim().slice(0, 80);
+  const email = String(body.email || '').trim().slice(0, 200);
+  if (!firstName) return { ok: false, error: 'Missing first name.' };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return { ok: false, error: 'Missing or invalid email.' };
+  return {
+    ok: true,
+    firstName,
+    email,
+    phone: normalisePhone(body.phone),
+    timeZone: normaliseTimeZone(body.timeZone),
+  };
+}
+
+// Creates the record, sends the enrollment email, adds the person to
+// Mailchimp with the course tag, and returns the code. Nothing after the
+// code is issued may lose the buyer: a failed store write or email is
+// logged loudly and the code is still returned.
+async function enrollPerson(details, source, helpers, store) {
+  const code = issueSignedCode();
+  const record = newRecord({ code, email: details.email, firstName: details.firstName, phone: details.phone, timeZone: details.timeZone, source });
+  if (helpers.sendEmail) {
+    try {
+      const mail = emails.enroll(record);
+      const result = await helpers.sendEmail(record.email, mail.subject, mail.html);
+      if (result && result.ok) record.sent.enroll = new Date().toISOString();
+      else console.error('ON-RAMP ENROLLMENT EMAIL NOT SENT for ' + record.id + ' (' + source + '); code issued, spine will retry');
+    } catch (error) {
+      console.error('ON-RAMP ENROLLMENT EMAIL FAILED for ' + record.id + ' (' + source + '):', error.message);
+    }
+  }
+  try {
+    await store.update((doc) => { doc.enrollments.push(record); });
+  } catch (error) {
+    console.error('ON-RAMP ENROLLMENT NOT STORED for ' + record.email + ' (' + source + '); code ' + code + ' was issued:', error.message);
+  }
+  if (process.env.MAILCHIMP_API_KEY && helpers.addToMailchimp) {
+    try {
+      await helpers.addToMailchimp(record.email, record.firstName);
+      if (helpers.tagSubscriber) helpers.tagSubscriber(record.email, emails.MAILCHIMP_TAG);
+    } catch (error) {
+      console.error('On-Ramp enrollment: Mailchimp failed:', error.message);
+    }
+  }
+  return { accessCode: code, id: record.id };
+}
+
+function adminCodeMatches(req) {
+  const expected = String(process.env.COMPANION_ADMIN_CODE || '');
+  const supplied = String(req.headers['x-admin-code'] || '');
+  if (!expected) return { ok: false, status: 503 };
+  const a = Buffer.from(expected);
+  const b = Buffer.from(supplied);
+  return { ok: a.length === b.length && crypto.timingSafeEqual(a, b), status: 401 };
+}
+
+async function handleCourseRoute(req, res, helpers = {}) {
+  const store = helpers.store || defaultStore();
+
   if (req.method === 'POST' && req.url === COURSE_PATH + '/api/paypal/create-order') {
     if (!selfServeEnabled()) { sendJson(res, 503, { error: 'Self-serve enrollment is not enabled.' }); return true; }
     try {
+      const details = validateEnrollment(await readJsonBody(req));
+      if (!details.ok) { sendJson(res, 400, { error: details.error }); return true; }
       sendJson(res, 200, { orderId: await paypalCreateOrder() });
     } catch (error) {
       console.error('On-Ramp checkout create-order:', error.message);
@@ -552,21 +694,70 @@ async function handleCourseRoute(req, res) {
     try {
       const body = await readJsonBody(req);
       if (!body.orderId || typeof body.orderId !== 'string') { sendJson(res, 400, { error: 'Missing order.' }); return true; }
+      const details = validateEnrollment(body);
+      if (!details.ok) { sendJson(res, 400, { error: details.error }); return true; }
       const result = await paypalCaptureOrder(body.orderId);
       if (!result.completed) {
         console.error('On-Ramp checkout capture: order not completed (status/amount mismatch)');
         sendJson(res, 402, { error: 'Payment was not completed.' });
         return true;
       }
-      sendJson(res, 200, { accessCode: issueSignedCode() });
+      const enrolled = await enrollPerson(details, 'paypal', helpers, store);
+      sendJson(res, 200, { accessCode: enrolled.accessCode });
     } catch (error) {
       console.error('On-Ramp checkout capture:', error.message);
       sendJson(res, 502, { error: 'Payment could not be confirmed.' });
     }
     return true;
   }
+  if (req.method === 'POST' && req.url === COURSE_PATH + '/api/admin/enroll') {
+    const admin = adminCodeMatches(req);
+    if (!admin.ok) { sendJson(res, admin.status, { error: admin.status === 503 ? 'Admin enrollment is not enabled.' : 'Not authorised.' }); return true; }
+    if (!process.env.ONRAMP_CODE_SECRET) { sendJson(res, 503, { error: 'ONRAMP_CODE_SECRET is not set.' }); return true; }
+    try {
+      const details = validateEnrollment(await readJsonBody(req));
+      if (!details.ok) { sendJson(res, 400, { error: details.error }); return true; }
+      sendJson(res, 200, await enrollPerson(details, 'admin', helpers, store));
+    } catch (error) {
+      console.error('On-Ramp admin enroll:', error.message);
+      sendJson(res, 500, { error: 'Enrollment failed.' });
+    }
+    return true;
+  }
+  if (req.method === 'POST' && req.url === COURSE_PATH + '/api/listen') {
+    const access = hasAccess(req);
+    if (!access.ok) { sendJson(res, access.status, { error: 'That code was not recognized.' }); return true; }
+    try {
+      const body = await readJsonBody(req);
+      const sit = String(body.sit || '').trim().slice(0, 60);
+      const event = body.event === 'complete' ? 'complete' : body.event === 'play' ? 'play' : '';
+      if (!sit || !event) { sendJson(res, 400, { error: 'Missing sit or event.' }); return true; }
+      const code = String(req.headers['x-companion-access'] || '');
+      const now = new Date();
+      let found = false;
+      await store.update((doc) => {
+        const record = findByCode(doc, code);
+        if (!record) return;
+        found = true;
+        const today = localDateString(now, normaliseTimeZone(record.timeZone));
+        dayEntry(record, today).listens.push({ sit, at: now.toISOString(), complete: event === 'complete' });
+      });
+      // A manual ONRAMP_ACCESS_CODES entry has no record: nothing stored,
+      // same 204 either way so the page never learns which kind it holds.
+      if (!found && process.env.ONRAMP_LISTEN_DEBUG) console.log('On-Ramp listen: no record for this code');
+      res.writeHead(204, noStoreHeaders('application/json; charset=utf-8'));
+      res.end();
+    } catch (error) {
+      console.error('On-Ramp listen:', error.message);
+      if (!res.headersSent) sendJson(res, 500, { error: 'Could not record that.' });
+    }
+    return true;
+  }
+  if (await handleSmsInbound(req, res, { store })) return true;
 
   if (req.method !== 'GET') return false;
+
+  if (await handleYayRoute(req, res, { store, css: COURSE_CSS })) return true;
 
   if (req.url === COURSE_PATH) {
     res.writeHead(200, noStoreHeaders('text/html; charset=utf-8'));
@@ -604,4 +795,4 @@ async function handleCourseRoute(req, res) {
   return false;
 }
 
-module.exports = { COURSE_PATH, COURSE_WEEKS, handleCourseRoute, lessonContentHtml };
+module.exports = { COURSE_CSS, COURSE_PATH, COURSE_WEEKS, handleCourseRoute, lessonContentHtml, normalisePhone, validateEnrollment };
