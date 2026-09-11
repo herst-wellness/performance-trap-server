@@ -24,7 +24,13 @@ const BRIEF_TEXT = 'What brought them\n\nIn her words: "I am tired of bracing be
 // A 1 by 1 transparent PNG.
 const TINY_PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
 const JOURNAL_TEXT = "I came to this because I am tired of bracing before every meeting. When I sit with it now my chest is tight and my jaw is set. If the feeling could talk it would say: do not let them see you slip.";
+// The older one-journal form, still accepted and still keyed by journal.
 const FIRST_TURN = "Journal: What's Bringing You Here\n\n" + JOURNAL_TEXT;
+// The week form (docs/65 revision): every journal brought, each under its
+// own heading, in one message.
+const BREATH_TEXT = 'Mon yay. Tue nay. Wed yay, jumpy before, steadier after.';
+const WEEK_TURN = "Journals, Week 1\n\n## What's Bringing You Here\n" + JOURNAL_TEXT + '\n\n## The Breath in Ordinary Hours\n' + BREATH_TEXT;
+const METHOD_LINE = 'One sitting for the week, and the opening comes from the writing';
 
 function getOpenPort() {
   return new Promise((resolve, reject) => {
@@ -159,29 +165,60 @@ test('the journal page carries its own copy, no breath card, the journal card, a
     "You've asked me to read what you write here before your Integration and Next-Step Session, so this sitting is kept for that. You can change that on the Week 1 lesson page.",
     'It keeps nothing after you end.',
     'id="journalCard"',
-    'id="journalSelect"',
+    'Any of the three, or all of them.',
     'Paste or type what you wrote',
     'Add a photo of the page',
     'accept="image/jpeg,image/png,image/webp"',
     'Reading the page',
     "Couldn't read that page, type it instead",
     '>Bring it<',
+    'Bring at least one journal.',
     '/api/on-ramp/journal-read',
     "fetch('/api/on-ramp/journal-1'",
     'window.location.search',
-    'value="week-1/whats-bringing-you-here"',
-    'value="week-1/the-breath-in-ordinary-hours"',
-    'value="week-1/the-formation-of-a-reaction"',
+    "'onrampJournal:'",
+    'localStorage.setItem',
+    'localStorage.getItem',
+    'function buildJournalMessage(weekNum, parts)',
+    'var journalWeek = 1;',
+    'data-journal="week-1/whats-bringing-you-here"',
+    'data-journal="week-1/the-breath-in-ordinary-hours"',
+    'data-journal="week-1/the-formation-of-a-reaction"',
+    'data-title="What&#39;s Bringing You Here"',
+    '<label for="journalText1">What&#39;s Bringing You Here</label>',
+    '<label for="journalText2">The Breath in Ordinary Hours</label>',
+    '<label for="journalText3">The Formation of a Reaction</label>',
+    'id="journalText1"',
+    'id="journalText2"',
+    'id="journalText3"',
+    'data-target="journalText3"',
     'The journal sitting</span>',
     'id="speakButton"',
     'id="downloadButton"',
   ]) {
     assert.ok(html.includes(piece), 'journal page carries: ' + piece);
   }
-  for (const absent of ['id="breathCard"', 'onramp-breath-12min.mp3', 'A little time to breathe', 'Welcome to the daily rep', 'pauseBreathLoop']) {
+  for (const absent of ['id="breathCard"', 'onramp-breath-12min.mp3', 'A little time to breathe', 'Welcome to the daily rep', 'pauseBreathLoop', 'journalSelect', 'Which journal', 'id="journalText"']) {
     assert.ok(!html.includes(absent), 'journal page must not carry: ' + absent);
   }
+  assert.equal((html.match(/>Bring it</g) || []).length, 1, 'one Bring it for all three boxes');
+  assert.equal((html.match(/>Add a photo of the page</g) || []).length, 3, 'a photo button per box');
+  assert.equal((html.match(/class="field journal-box"/g) || []).length, 3, 'three boxes');
+  assert.ok(html.includes('<textarea id="journalText1" maxlength="13133"'), 'the three boxes together stay under the first-turn cap');
   assert.ok(!html.includes(EM_DASH), 'no em dash on the journal page');
+
+  // The message the page builds is the exported function, inlined verbatim,
+  // so this is the same code the browser runs.
+  assert.ok(html.includes(onramp.buildJournalMessage.toString()), 'the page carries the very same builder');
+  const parts = (a, b, c) => [
+    { title: "What's Bringing You Here", text: a },
+    { title: 'The Breath in Ordinary Hours', text: b },
+    { title: 'The Formation of a Reaction', text: c },
+  ];
+  assert.equal(onramp.buildJournalMessage(1, parts('', '  \n', '')), '', 'all boxes empty: nothing to bring');
+  assert.equal(onramp.buildJournalMessage(1, parts(JOURNAL_TEXT + '\n', ' ' + BREATH_TEXT, '')), WEEK_TURN, 'only the boxes with writing, in order, trimmed');
+  assert.equal(onramp.buildJournalMessage(1, parts('', '', 'Only the third.')), 'Journals, Week 1\n\n## The Formation of a Reaction\nOnly the third.');
+  assert.ok(onramp.isJournalFirstTurn(WEEK_TURN) && onramp.isJournalFirstTurn(FIRST_TURN) && !onramp.isJournalFirstTurn('hello'));
 
   // The daily-rep pages are unchanged in shape and still have the breath card.
   const week1 = await (await fetch(base + '/practice/on-ramp/week-1')).text();
@@ -197,23 +234,33 @@ test('the journal page carries its own copy, no breath card, the journal card, a
   assert.equal(j.pagePath, '/practice/on-ramp/journal-1');
   assert.equal(j.apiPath, '/api/on-ramp/journal-1');
   assert.deepEqual(j.journals.map((x) => x.key), ['week-1/whats-bringing-you-here', 'week-1/the-breath-in-ordinary-hours', 'week-1/the-formation-of-a-reaction']);
-  assert.ok(j.instructions.includes('The opening is chosen from the writing, never from a script'));
+  assert.ok(j.instructions.includes(METHOD_LINE));
+  assert.ok(j.instructions.includes("I'd like\nto start here, but correct me if I'm wrong."), 'the opening is checked with the person');
+  assert.ok(j.instructions.includes('They may\nbring any or all of them, under these headings:'));
   assert.ok(j.instructions.includes('This week: Week 1, From the Book to the Body'));
   assert.ok(j.instructions.includes('PRODUCT-SAFETY OVERLAY'));
   assert.ok(j.instructions.indexOf('The journal sitting') < j.instructions.indexOf('This week: Week 1'), 'method before week frame');
   assert.ok(!j.instructions.includes(EM_DASH));
+  assert.equal(onramp.JOURNALS_PREFIX, 'Journals, Week ');
+  assert.equal(onramp.JOURNAL_FIRST_TURN_CHARS, 40000);
   assert.equal(onramp.journalKeyFor(j, "What's Bringing You Here"), 'week-1/whats-bringing-you-here');
   assert.equal(onramp.journalKeyFor(j, 'Something Else'), 'week-1/something-else');
   assert.equal(onramp.journalTitleOf(FIRST_TURN), "What's Bringing You Here");
   assert.equal(onramp.journalTitleOf('no prefix'), '');
+  assert.deepEqual(onramp.journalTitlesOf(WEEK_TURN), ["What's Bringing You Here", 'The Breath in Ordinary Hours']);
+  assert.deepEqual(onramp.journalTitlesOf(FIRST_TURN), []);
+  assert.deepEqual(onramp.journalSessionFor(j, WEEK_TURN), { key: 'week-1', journalTitles: ["What's Bringing You Here", 'The Breath in Ordinary Hours'] });
+  assert.deepEqual(onramp.journalSessionFor(j, FIRST_TURN), { key: 'week-1/whats-bringing-you-here', journalTitle: "What's Bringing You Here" });
 
-  // The writing is never trimmed out of the model's view of the exchange.
-  const long = 'x'.repeat(9000);
-  const history = [{ role: 'user', content: 'Journal: T\n\n' + long }];
+  // The writing is never trimmed out of the model's view of the exchange,
+  // even when all three journals run well past the per-turn limit.
+  const long = 'x'.repeat(30000);
+  const history = [{ role: 'user', content: 'Journals, Week 1\n\n## T\n' + long }];
   for (let i = 0; i < 20; i += 1) history.push({ role: i % 2 === 0 ? 'assistant' : 'user', content: 'turn ' + i });
   const kept = onramp.cleanHistory(history, { keepFirst: true });
   assert.ok(kept.length === 16 || kept.length === 15);
-  assert.equal(kept[0].content.length, 'Journal: T\n\n'.length + 9000, 'the journal is kept whole');
+  assert.equal(kept[0].content.length, 'Journals, Week 1\n\n## T\n'.length + 30000, 'the journals are kept whole, past the per-turn limit');
+  assert.equal(onramp.cleanHistory([{ role: 'user', content: 'Journals, Week 1\n\n## T\n' + 'y'.repeat(45000) }], { keepFirst: true })[0].content.length, 40000, 'and capped at the first-turn limit');
   assert.equal(kept[1].role, 'assistant', 'turns still alternate after the journal');
   assert.equal(kept[kept.length - 1].content, 'turn 19');
   const plain = onramp.cleanHistory(history);
@@ -248,7 +295,7 @@ test('the journal API is gated, needs the journal first, passes the method and W
   assert.equal((await early.json()).error, 'Bring the journal first.');
   assert.equal(anthropic.requests.length, 0, 'nothing reached the model');
 
-  const first = await journalTurn(base, FIRST_TURN, [], 'ann-lee');
+  const first = await journalTurn(base, WEEK_TURN, [], 'ann-lee');
   assert.equal(first.status, 200);
   const firstBody = await first.json();
   assert.equal(firstBody.response, STUB_TEXT);
@@ -258,22 +305,42 @@ test('the journal API is gated, needs the journal first, passes the method and W
   const sent = anthropic.requests[0];
   assert.equal(sent.apiKey, 'anthropic-test-key');
   assert.equal(sent.body.model, 'test-model');
-  assert.ok(sent.body.system.includes('The opening is chosen from the writing, never from a script'), 'the journal method is in the system prompt');
+  assert.ok(sent.body.system.includes(METHOD_LINE), 'the journal method is in the system prompt');
   assert.ok(sent.body.system.includes('This week: Week 1, From the Book to the Body'), 'the Week 1 frame is in the system prompt');
   assert.ok(sent.body.system.includes('The person has not agreed to let Chad read this sitting'));
   assert.ok(!sent.body.system.includes('CLOSE NOW'));
-  assert.deepEqual(sent.body.messages, [{ role: 'user', content: FIRST_TURN }]);
+  assert.deepEqual(sent.body.messages, [{ role: 'user', content: WEEK_TURN }]);
 
-  // Later turns: the journal stays first and whole.
-  const history = [{ role: 'user', content: FIRST_TURN }, { role: 'assistant', content: STUB_TEXT }];
+  // The older one-journal form still opens a sitting.
+  const old = await journalTurn(base, FIRST_TURN, [], 'ann-lee');
+  assert.equal(old.status, 200);
+  assert.deepEqual(anthropic.requests[1].body.messages, [{ role: 'user', content: FIRST_TURN }]);
+
+  // The first turn may run to 40,000 characters (all three journals); one
+  // more is refused. Later turns keep the ordinary limit.
+  const head = 'Journals, Week 1\n\n## The Formation of a Reaction\n';
+  const full = head + 'z'.repeat(40000 - head.length);
+  assert.equal(full.length, 40000);
+  const big = await journalTurn(base, full, [], 'ann-lee');
+  assert.equal(big.status, 200, 'a 40,000 character first turn is accepted');
+  assert.equal(anthropic.requests[2].body.messages[0].content.length, 40000, 'and reaches the model whole');
+  const over = await journalTurn(base, head + 'z'.repeat(41000 - head.length), [], 'ann-lee');
+  assert.equal(over.status, 413);
+  assert.equal((await over.json()).error, 'The message is too long.');
+  const laterOver = await journalTurn(base, 'z'.repeat(12001), [{ role: 'user', content: WEEK_TURN }, { role: 'assistant', content: STUB_TEXT }], 'ann-lee');
+  assert.equal(laterOver.status, 413, 'a later turn keeps the ordinary limit');
+  assert.equal(anthropic.requests.length, 3, 'neither oversized message reached the model');
+
+  // Later turns: the journals stay first and whole.
+  const history = [{ role: 'user', content: WEEK_TURN }, { role: 'assistant', content: STUB_TEXT }];
   const second = await journalTurn(base, 'It gets tighter. Like a hand on my sternum.', history, 'ann-lee');
   assert.equal(second.status, 200);
-  assert.equal(anthropic.requests[1].body.messages[0].content, FIRST_TURN);
-  assert.equal(anthropic.requests[1].body.messages.length, 3);
+  assert.equal(anthropic.requests[3].body.messages[0].content, WEEK_TURN);
+  assert.equal(anthropic.requests[3].body.messages.length, 3);
 
   // Soft close at 16 stored turns, hard cap at 24 without a model call.
   const long = [];
-  while (long.length < 16) long.push({ role: long.length % 2 === 0 ? 'user' : 'assistant', content: long.length === 0 ? FIRST_TURN : 'turn ' + long.length });
+  while (long.length < 16) long.push({ role: long.length % 2 === 0 ? 'user' : 'assistant', content: long.length === 0 ? WEEK_TURN : 'turn ' + long.length });
   const soft = await journalTurn(base, 'still here', long, 'ann-lee');
   assert.equal(soft.status, 200);
   const softSystem = anthropic.requests[anthropic.requests.length - 1].body.system;
@@ -325,20 +392,21 @@ test('consent round-trips from the lesson page, and with consent the journal exc
   // The journal API now reports the storage truthfully and keeps the exchange.
   const info = await (await fetch(base + '/api/on-ramp/journal-1', { headers })).json();
   assert.equal(info.persistentStorage, true);
-  const first = await journalTurn(base, FIRST_TURN, [], 'ann-lee');
+  const first = await journalTurn(base, WEEK_TURN, [], 'ann-lee');
   assert.equal(first.status, 200);
   assert.ok(anthropic.requests[0].body.system.includes('The person has agreed to let Chad read this sitting'));
   record = store.findByCode(await readDoc(file), 'ann-lee');
-  const key = 'week-1/whats-bringing-you-here';
-  assert.ok(record.journalSessions && record.journalSessions[key], 'the sitting is kept under the journal key');
-  assert.equal(record.journalSessions[key].journalTitle, "What's Bringing You Here");
+  const key = 'week-1';
+  assert.ok(record.journalSessions && record.journalSessions[key], 'the sitting is kept under the week key');
+  assert.deepEqual(record.journalSessions[key].journalTitles, ["What's Bringing You Here", 'The Breath in Ordinary Hours'], 'the titles come from the headings');
+  assert.equal(record.journalSessions[key].journalTitle, undefined);
   assert.match(record.journalSessions[key].updatedAt, /^\d{4}-\d{2}-\d{2}T/);
   assert.deepEqual(record.journalSessions[key].history, [
-    { role: 'user', content: FIRST_TURN },
+    { role: 'user', content: WEEK_TURN },
     { role: 'assistant', content: STUB_TEXT },
   ]);
 
-  const history = [{ role: 'user', content: FIRST_TURN }, { role: 'assistant', content: STUB_TEXT }];
+  const history = [{ role: 'user', content: WEEK_TURN }, { role: 'assistant', content: STUB_TEXT }];
   const reply = 'It gets tighter. Like a hand on my sternum.';
   const second = await journalTurn(base, reply, history, 'ann-lee');
   assert.equal(second.status, 200);
@@ -347,18 +415,40 @@ test('consent round-trips from the lesson page, and with consent the journal exc
   assert.equal(record.journalSessions[key].history[2].content, reply);
   assert.equal(record.journalSessions[key].history[3].content, STUB_TEXT);
 
-  // A second journal is kept under its own key; the first stays.
-  const breath = await journalTurn(base, 'Journal: The Breath in Ordinary Hours\n\nMon yay. Tue nay. Wed yay, jumpy before, steadier after.', [], 'ann-lee');
+  // A first turn past the ordinary limit is kept whole on the record too.
+  const head = 'Journals, Week 1\n\n## The Formation of a Reaction\n';
+  const full = head + 'z'.repeat(40000 - head.length);
+  assert.equal((await journalTurn(base, full, [], 'ann-lee')).status, 200);
+  const afterFull = await journalTurn(base, 'still here', [{ role: 'user', content: full }, { role: 'assistant', content: STUB_TEXT }], 'ann-lee');
+  assert.equal(afterFull.status, 200);
+  record = store.findByCode(await readDoc(file), 'ann-lee');
+  assert.equal(record.journalSessions[key].history[0].content.length, 40000, 'the long first turn is stored whole');
+  assert.deepEqual(record.journalSessions[key].journalTitles, ['The Formation of a Reaction']);
+
+  // Coming back later in the week and bringing more is a fresh sitting that
+  // replaces the week's saved one: the latest sitting is what the brief sees.
+  const again = await journalTurn(base, WEEK_TURN + '\n\n## The Formation of a Reaction\nShe asked and I said yes before I had checked.', [], 'ann-lee');
+  assert.equal(again.status, 200);
+  record = store.findByCode(await readDoc(file), 'ann-lee');
+  assert.deepEqual(Object.keys(record.journalSessions), [key], 'one saved sitting per week');
+  assert.deepEqual(record.journalSessions[key].journalTitles, ["What's Bringing You Here", 'The Breath in Ordinary Hours', 'The Formation of a Reaction']);
+  assert.equal(record.journalSessions[key].history.length, 2, 'the earlier exchange is replaced');
+
+  // The older one-journal form is still kept under its own journal key, so
+  // nothing already saved breaks; the week sitting stays.
+  const breath = await journalTurn(base, 'Journal: The Breath in Ordinary Hours\n\n' + BREATH_TEXT, [], 'ann-lee');
   assert.equal(breath.status, 200);
   record = store.findByCode(await readDoc(file), 'ann-lee');
-  assert.deepEqual(Object.keys(record.journalSessions).sort(), ['week-1/the-breath-in-ordinary-hours', key]);
+  assert.deepEqual(Object.keys(record.journalSessions).sort(), [key, 'week-1/the-breath-in-ordinary-hours']);
+  assert.equal(record.journalSessions['week-1/the-breath-in-ordinary-hours'].journalTitle, 'The Breath in Ordinary Hours');
+  assert.equal(record.journalSessions['week-1/the-breath-in-ordinary-hours'].journalTitles, undefined);
 
   // Untick: the box is honoured at once, and what was kept stays until Chad reads it.
   await postJson(base + '/course/on-ramp/api/consent', { consent: false }, headers);
   const third = await journalTurn(base, 'more', [...history, { role: 'user', content: reply }, { role: 'assistant', content: STUB_TEXT }], 'ann-lee');
   assert.equal(third.status, 200);
   record = store.findByCode(await readDoc(file), 'ann-lee');
-  assert.equal(record.journalSessions[key].history.length, 4, 'nothing more is written once the box is unticked');
+  assert.equal(record.journalSessions[key].history.length, 2, 'nothing more is written once the box is unticked');
   assert.equal((await (await fetch(base + '/api/on-ramp/journal-1', { headers })).json()).persistentStorage, false);
 });
 
@@ -478,6 +568,31 @@ test('buildBriefInput carries the name, the practice numbers by week, each saved
   assert.ok(input.includes('Companion: Stay with tighter for a breath.'));
   assert.ok(!input.includes('No journal sittings were saved'));
   assert.deepEqual(brief.splitJournalTurn(FIRST_TURN), { title: "What's Bringing You Here", text: JOURNAL_TEXT });
+
+  // The week shape: one sitting, each journal labelled by its heading.
+  record.journalSessions = {
+    'week-1': {
+      updatedAt: '2026-09-14T20:00:00.000Z',
+      journalTitles: ["What's Bringing You Here", 'The Breath in Ordinary Hours'],
+      history: [
+        { role: 'user', content: WEEK_TURN },
+        { role: 'assistant', content: STUB_TEXT },
+        { role: 'user', content: 'It gets tighter.' },
+      ],
+    },
+  };
+  const weekInput = brief.buildBriefInput(record);
+  assert.ok(weekInput.includes('--- Week 1 journal sitting, 2026-09-14 ---'));
+  assert.ok(weekInput.includes("THE WRITING:\n[What's Bringing You Here]\n" + JOURNAL_TEXT + '\n\n[The Breath in Ordinary Hours]\n' + BREATH_TEXT + '\n\nTHE EXCHANGE:\nCompanion: ' + STUB_TEXT + '\nPerson: It gets tighter.'), 'each journal under its own title, then the exchange');
+  assert.ok(!weekInput.includes('Journals, Week 1') && !weekInput.includes('## '), 'the wire headings are not passed through');
+  assert.deepEqual(brief.splitWeekTurn(WEEK_TURN), { week: 1, journals: [{ title: "What's Bringing You Here", text: JOURNAL_TEXT }, { title: 'The Breath in Ordinary Hours', text: BREATH_TEXT }] });
+  assert.equal(brief.splitWeekTurn(FIRST_TURN), null);
+
+  // Both shapes on one record (someone who brought a journal the old way
+  // before the week sitting existed) are both read, in key order.
+  record.journalSessions['week-1/whats-bringing-you-here'] = { updatedAt: '2026-09-12T20:00:00.000Z', journalTitle: "What's Bringing You Here", history: [{ role: 'user', content: FIRST_TURN }, { role: 'assistant', content: STUB_TEXT }] };
+  const both = brief.buildBriefInput(record);
+  assert.ok(both.indexOf('--- Week 1 journal sitting') < both.indexOf("--- What's Bringing You Here (Week 1)"));
   assert.equal(brief.briefSubject(record), 'Before your session with Ann Lee: the month in brief');
   assert.equal(brief.BRIEF_TO, 'chad@herstwellness.com');
   assert.ok(brief.BRIEF_PROMPT.includes('private brief for Chad Herst'));
@@ -496,10 +611,10 @@ test('the admin brief route needs the admin code, builds the input from the reco
     consent: true,
     consentAt: '2026-09-11T04:00:00.000Z',
     journalSessions: {
-      'week-1/whats-bringing-you-here': {
+      'week-1': {
         updatedAt: '2026-09-12T20:00:00.000Z',
-        journalTitle: "What's Bringing You Here",
-        history: [{ role: 'user', content: FIRST_TURN }, { role: 'assistant', content: STUB_TEXT }, { role: 'user', content: 'It gets tighter.' }, { role: 'assistant', content: 'Stay with tighter for a breath.' }],
+        journalTitles: ["What's Bringing You Here", 'The Breath in Ordinary Hours'],
+        history: [{ role: 'user', content: WEEK_TURN }, { role: 'assistant', content: STUB_TEXT }, { role: 'user', content: 'It gets tighter.' }, { role: 'assistant', content: 'Stay with tighter for a breath.' }],
       },
     },
   });
@@ -539,7 +654,9 @@ test('the admin brief route needs the admin code, builds the input from the reco
   assert.equal(req.body.messages.length, 1);
   const input = req.body.messages[0].content;
   assert.ok(input.includes('First name: Ann'));
-  assert.ok(input.includes(JOURNAL_TEXT), 'the saved journal text is in the input');
+  assert.ok(input.includes("[What's Bringing You Here]\n" + JOURNAL_TEXT), 'the saved journal text is in the input under its title');
+  assert.ok(input.includes('[The Breath in Ordinary Hours]\n' + BREATH_TEXT));
+  assert.ok(input.includes('--- Week 1 journal sitting, 2026-09-12 ---'));
   assert.ok(input.includes('Person: It gets tighter.'));
   assert.ok(input.includes('Week 1: days sat 2 of 7, sits finished 2, journals done 1 of 3'), 'the practice numbers are in the input');
 
@@ -639,6 +756,7 @@ test('a journal that contains "I\'m done." or "stop" is writing, not a stop requ
   const { evaluateDeterministicControls } = require('../onramp.js');
   const base = { adultConfirmed: true, country: 'US', provider: 'anthropic' };
   assert.equal(evaluateDeterministicControls({ ...base, message: "Journal: The Formation of a Reaction\n\nI'm done. I told her to stop.", journalText: true }), null);
+  assert.equal(evaluateDeterministicControls({ ...base, message: "Journals, Week 1\n\n## The Formation of a Reaction\nI'm done. I told her to stop.", journalText: true }), null);
   assert.equal(evaluateDeterministicControls({ ...base, message: "I'm done.", journalText: false }).route, 'stop_requested');
   const urgent = evaluateDeterministicControls({ ...base, message: 'Journal: What\'s Bringing You Here\n\nI am going to kill myself tonight.', journalText: true });
   assert.ok(urgent && urgent.route !== 'continue_reflection', 'urgent self-harm in a journal still routes to safety');
