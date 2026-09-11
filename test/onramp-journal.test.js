@@ -159,7 +159,7 @@ test('the journal page carries its own copy, no breath card, the journal card, a
   for (const piece of [
     'Week 1: the journal sitting',
     'Bring what you wrote. It reads it back, and the body answers.',
-    "You've finished one of this week's journals. Bring it here. Type it, paste it, or photograph the handwritten pages.",
+    "Bring what you wrote this week. One journal, two, or all three. Type it, paste it, or photograph the handwritten pages.",
     "It's the same companion as the daily rep, built from how I work with people's writing before a session. It's not me, and it's not therapy.",
     'id="keepLine"',
     "You've asked me to read what you write here before your Integration and Next-Step Session, so this sitting is kept for that. You can change that on the Week 1 lesson page.",
