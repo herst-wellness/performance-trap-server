@@ -25,7 +25,10 @@ const JOURNALS = {
     { title: 'The Trade', slug: 'the-trade' },
     { title: 'The Third Option', slug: 'the-third-option' },
   ],
-  4: [],
+  4: [
+    { title: 'The Sacred Wound', slug: 'the-sacred-wound' },
+    { title: "What You're Taking With You", slug: 'what-youre-taking-with-you' },
+  ],
 };
 
 function esc(s) {
@@ -208,7 +211,7 @@ const WEEK_OPEN = {
     paras: [
       "This is the week that pulls it together, and it's also the week we go a layer deeper than we have. Underneath the tightness you've been learning to stay with, there's usually something more tender. The ache of all the ways you had to override yourself to belong. I call it the sacred wound, and we spend the week with it.",
       "The sit is The Sacred Wound. About fourteen minutes. Go slowly. If it's too much on a given day, that's information, not failure. Go back to the breathing recording and come back to it tomorrow.",
-      "Three journals. The Sacred Wound, early in the week. The Month in Ordinary Hours, all week. What You're Taking With You, at the end. That last one is what you'll bring to our session.",
+      "Two journals. The Sacred Wound, early in the week, after a sit. What You're Taking With You, at the end. That last one is what you'll bring to our session, so do it whatever else you skip.",
     ],
   },
 };
