@@ -459,9 +459,14 @@ test('the Week 1 lesson carries the consent box and a Bring it link per journal;
   }
   assert.equal((w1.match(/Bring it to the journal sitting/g) || []).length, 3);
   assert.ok(!w1.includes(EM_DASH));
-  for (const n of [2, 3, 4]) {
+  const w2 = lessonContentHtml(2);
+  for (const key of ['week-2/the-protector', 'week-2/the-return']) {
+    assert.ok(w2.includes('href="/practice/on-ramp/journal-2?journal=' + key + '">Bring it to the journal sitting</a>'), 'Bring it link for ' + key);
+  }
+  assert.ok(!w2.includes('journalConsent'), 'the consent box lives on Week 1 only');
+  for (const n of [3, 4]) {
     const html = lessonContentHtml(n);
-    assert.ok(!html.includes('journalConsent') && !html.includes('journal-1'), 'week ' + n + ' has no journal sitting yet');
+    assert.ok(!html.includes('journalConsent') && !html.includes('journal-1') && !html.includes('journal-2'), 'week ' + n + ' has no journal sitting yet');
   }
 });
 
@@ -765,6 +770,11 @@ test('the Week 1 lens (Slow the breath, Enter the body) sits in both the daily r
   assert.ok(WEEKS[1].instructions.includes(lensLine), 'Week 1 daily rep carries the lens');
   assert.ok(WEEKS[1].instructions.indexOf(lensLine) < WEEKS[1].instructions.indexOf('## This week: Week 1'), 'lens comes before the week frame');
   for (const n of [2, 3, 4]) assert.ok(!WEEKS[n].instructions.includes(lensLine), 'week ' + n + ' has no Week 1 lens');
+  const lens2 = "The lens this week: Name what's there, Stay, Equanimity";
+  assert.ok(WEEKS[2].instructions.includes(lens2), 'Week 2 daily rep carries the Week 2 lens');
+  assert.ok(onramp.JOURNAL[2] && onramp.JOURNAL[2].instructions.includes(lens2), 'the Week 2 journal sitting carries the Week 2 lens');
+  assert.deepEqual(onramp.JOURNAL[2].journals.map((x) => x.key), ['week-2/the-protector', 'week-2/the-return']);
+  for (const n of [1, 3, 4]) assert.ok(!WEEKS[n].instructions.includes(lens2), 'week ' + n + ' has no Week 2 lens');
   const journal = (onramp.JOURNAL && onramp.JOURNAL[1]) || null;
   if (journal) assert.ok(journal.instructions.includes(lensLine), 'the journal sitting carries the lens');
   assert.ok(WEEKS[1].instructions.includes('oil from a ladle') && WEEKS[1].instructions.includes('U-turn'));

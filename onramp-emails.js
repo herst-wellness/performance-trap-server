@@ -17,7 +17,10 @@ const JOURNALS = {
     { title: "What's Bringing You Here", slug: 'whats-bringing-you-here' },
     { title: 'The Formation of a Reaction', slug: 'the-formation-of-a-reaction' },
   ],
-  2: [],
+  2: [
+    { title: 'The Protector', slug: 'the-protector' },
+    { title: 'The Return', slug: 'the-return' },
+  ],
   3: [],
   4: [],
 };
@@ -183,7 +186,7 @@ const WEEK_OPEN = {
     paras: [
       "Week 1 was about getting to the body. Slow the breath, enter, find the sensation, put a word on it. This week you stay. Most of us can find the tightness. Very few of us can keep it company for more than a second or two before we're back in the story about it. That's the whole week.",
       "The sit is called Keeping It Company. About fifteen minutes. Sit with it most days. Keep the breathing recording for the days you're jumpy and need to settle first.",
-      'Three journals again, and the lesson says when. The Protector, early in the week. Staying in Ordinary Hours, all week. The Return, at the end.',
+      'Two journals, and the lesson says when. The Protector, early in the week, after a sit. The Return, at the end. Do one or both.',
     ],
   },
   3: {
