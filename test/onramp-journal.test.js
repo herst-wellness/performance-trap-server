@@ -28,8 +28,8 @@ const JOURNAL_TEXT = "I came to this because I am tired of bracing before every 
 const FIRST_TURN = "Journal: What's Bringing You Here\n\n" + JOURNAL_TEXT;
 // The week form (docs/65 revision): every journal brought, each under its
 // own heading, in one message.
-const BREATH_TEXT = 'Mon yay. Tue nay. Wed yay, jumpy before, steadier after.';
-const WEEK_TURN = "Journals, Week 1\n\n## What's Bringing You Here\n" + JOURNAL_TEXT + '\n\n## The Breath in Ordinary Hours\n' + BREATH_TEXT;
+const BREATH_TEXT = 'The invite landed and my toes curled. The story was: I am being laid off.';
+const WEEK_TURN = "Journals, Week 1\n\n## What's Bringing You Here\n" + JOURNAL_TEXT + '\n\n## The Formation of a Reaction\n' + BREATH_TEXT;
 const METHOD_LINE = 'One sitting for the week, and the opening comes from the writing';
 
 function getOpenPort() {
@@ -159,13 +159,13 @@ test('the journal page carries its own copy, no breath card, the journal card, a
   for (const piece of [
     'Week 1: the journal sitting',
     'Bring what you wrote. It reads it back, and the body answers.',
-    "Bring what you wrote this week. One journal, two, or all three. Type it, paste it, or photograph the handwritten pages.",
+    "Bring what you wrote this week. One journal or both. Type it, paste it, or photograph the handwritten pages.",
     "It's the same companion as the daily rep, built from how I work with people's writing before a session. It's not me, and it's not therapy.",
     'id="keepLine"',
     "You've asked me to read what you write here before your Integration and Next-Step Session, so this sitting is kept for that. You can change that on the Week 1 lesson page.",
     'It keeps nothing after you end.',
     'id="journalCard"',
-    'Any of the three, or all of them.',
+    'Either one, or both.',
     'Paste or type what you wrote',
     'Add a photo of the page',
     'accept="image/jpeg,image/png,image/webp"',
@@ -182,16 +182,13 @@ test('the journal page carries its own copy, no breath card, the journal card, a
     'function buildJournalMessage(weekNum, parts)',
     'var journalWeek = 1;',
     'data-journal="week-1/whats-bringing-you-here"',
-    'data-journal="week-1/the-breath-in-ordinary-hours"',
     'data-journal="week-1/the-formation-of-a-reaction"',
     'data-title="What&#39;s Bringing You Here"',
     '<label for="journalText1">What&#39;s Bringing You Here</label>',
-    '<label for="journalText2">The Breath in Ordinary Hours</label>',
-    '<label for="journalText3">The Formation of a Reaction</label>',
+    '<label for="journalText2">The Formation of a Reaction</label>',
     'id="journalText1"',
     'id="journalText2"',
-    'id="journalText3"',
-    'data-target="journalText3"',
+    'data-target="journalText2"',
     'The journal sitting</span>',
     'id="speakButton"',
     'id="downloadButton"',
@@ -201,23 +198,22 @@ test('the journal page carries its own copy, no breath card, the journal card, a
   for (const absent of ['id="breathCard"', 'onramp-breath-12min.mp3', 'A little time to breathe', 'Welcome to the daily rep', 'pauseBreathLoop', 'journalSelect', 'Which journal', 'id="journalText"']) {
     assert.ok(!html.includes(absent), 'journal page must not carry: ' + absent);
   }
-  assert.equal((html.match(/>Bring it</g) || []).length, 1, 'one Bring it for all three boxes');
-  assert.equal((html.match(/>Add a photo of the page</g) || []).length, 3, 'a photo button per box');
-  assert.equal((html.match(/class="field journal-box"/g) || []).length, 3, 'three boxes');
-  assert.ok(html.includes('<textarea id="journalText1" maxlength="13133"'), 'the three boxes together stay under the first-turn cap');
+  assert.equal((html.match(/>Bring it</g) || []).length, 1, 'one Bring it for both boxes');
+  assert.equal((html.match(/>Add a photo of the page</g) || []).length, 2, 'a photo button per box');
+  assert.equal((html.match(/class="field journal-box"/g) || []).length, 2, 'two boxes');
+  assert.ok(html.includes('<textarea id="journalText1" maxlength="19800"'), 'the two boxes together stay under the first-turn cap');
   assert.ok(!html.includes(EM_DASH), 'no em dash on the journal page');
 
   // The message the page builds is the exported function, inlined verbatim,
   // so this is the same code the browser runs.
   assert.ok(html.includes(onramp.buildJournalMessage.toString()), 'the page carries the very same builder');
-  const parts = (a, b, c) => [
+  const parts = (a, b) => [
     { title: "What's Bringing You Here", text: a },
-    { title: 'The Breath in Ordinary Hours', text: b },
-    { title: 'The Formation of a Reaction', text: c },
+    { title: 'The Formation of a Reaction', text: b },
   ];
-  assert.equal(onramp.buildJournalMessage(1, parts('', '  \n', '')), '', 'all boxes empty: nothing to bring');
-  assert.equal(onramp.buildJournalMessage(1, parts(JOURNAL_TEXT + '\n', ' ' + BREATH_TEXT, '')), WEEK_TURN, 'only the boxes with writing, in order, trimmed');
-  assert.equal(onramp.buildJournalMessage(1, parts('', '', 'Only the third.')), 'Journals, Week 1\n\n## The Formation of a Reaction\nOnly the third.');
+  assert.equal(onramp.buildJournalMessage(1, parts('', '  \n')), '', 'all boxes empty: nothing to bring');
+  assert.equal(onramp.buildJournalMessage(1, parts(JOURNAL_TEXT + '\n', ' ' + BREATH_TEXT)), WEEK_TURN, 'only the boxes with writing, in order, trimmed');
+  assert.equal(onramp.buildJournalMessage(1, parts('', 'Only the second.')), 'Journals, Week 1\n\n## The Formation of a Reaction\nOnly the second.');
   assert.ok(onramp.isJournalFirstTurn(WEEK_TURN) && onramp.isJournalFirstTurn(FIRST_TURN) && !onramp.isJournalFirstTurn('hello'));
 
   // The daily-rep pages are unchanged in shape and still have the breath card.
@@ -233,7 +229,7 @@ test('the journal page carries its own copy, no breath card, the journal card, a
   const j = onramp.JOURNAL[1];
   assert.equal(j.pagePath, '/practice/on-ramp/journal-1');
   assert.equal(j.apiPath, '/api/on-ramp/journal-1');
-  assert.deepEqual(j.journals.map((x) => x.key), ['week-1/whats-bringing-you-here', 'week-1/the-breath-in-ordinary-hours', 'week-1/the-formation-of-a-reaction']);
+  assert.deepEqual(j.journals.map((x) => x.key), ['week-1/whats-bringing-you-here', 'week-1/the-formation-of-a-reaction']);
   assert.ok(j.instructions.includes(METHOD_LINE));
   assert.ok(j.instructions.includes("I'd like\nto start here, but correct me if I'm wrong."), 'the opening is checked with the person');
   assert.ok(j.instructions.includes('They may\nbring any or all of them, under these headings:'));
@@ -247,13 +243,13 @@ test('the journal page carries its own copy, no breath card, the journal card, a
   assert.equal(onramp.journalKeyFor(j, 'Something Else'), 'week-1/something-else');
   assert.equal(onramp.journalTitleOf(FIRST_TURN), "What's Bringing You Here");
   assert.equal(onramp.journalTitleOf('no prefix'), '');
-  assert.deepEqual(onramp.journalTitlesOf(WEEK_TURN), ["What's Bringing You Here", 'The Breath in Ordinary Hours']);
+  assert.deepEqual(onramp.journalTitlesOf(WEEK_TURN), ["What's Bringing You Here", 'The Formation of a Reaction']);
   assert.deepEqual(onramp.journalTitlesOf(FIRST_TURN), []);
-  assert.deepEqual(onramp.journalSessionFor(j, WEEK_TURN), { key: 'week-1', journalTitles: ["What's Bringing You Here", 'The Breath in Ordinary Hours'] });
+  assert.deepEqual(onramp.journalSessionFor(j, WEEK_TURN), { key: 'week-1', journalTitles: ["What's Bringing You Here", 'The Formation of a Reaction'] });
   assert.deepEqual(onramp.journalSessionFor(j, FIRST_TURN), { key: 'week-1/whats-bringing-you-here', journalTitle: "What's Bringing You Here" });
 
   // The writing is never trimmed out of the model's view of the exchange,
-  // even when all three journals run well past the per-turn limit.
+  // even when both journals run well past the per-turn limit.
   const long = 'x'.repeat(30000);
   const history = [{ role: 'user', content: 'Journals, Week 1\n\n## T\n' + long }];
   for (let i = 0; i < 20; i += 1) history.push({ role: i % 2 === 0 ? 'assistant' : 'user', content: 'turn ' + i });
@@ -316,7 +312,7 @@ test('the journal API is gated, needs the journal first, passes the method and W
   assert.equal(old.status, 200);
   assert.deepEqual(anthropic.requests[1].body.messages, [{ role: 'user', content: FIRST_TURN }]);
 
-  // The first turn may run to 40,000 characters (all three journals); one
+  // The first turn may run to 40,000 characters (both journals); one
   // more is refused. Later turns keep the ordinary limit.
   const head = 'Journals, Week 1\n\n## The Formation of a Reaction\n';
   const full = head + 'z'.repeat(40000 - head.length);
@@ -398,7 +394,7 @@ test('consent round-trips from the lesson page, and with consent the journal exc
   record = store.findByCode(await readDoc(file), 'ann-lee');
   const key = 'week-1';
   assert.ok(record.journalSessions && record.journalSessions[key], 'the sitting is kept under the week key');
-  assert.deepEqual(record.journalSessions[key].journalTitles, ["What's Bringing You Here", 'The Breath in Ordinary Hours'], 'the titles come from the headings');
+  assert.deepEqual(record.journalSessions[key].journalTitles, ["What's Bringing You Here", 'The Formation of a Reaction'], 'the titles come from the headings');
   assert.equal(record.journalSessions[key].journalTitle, undefined);
   assert.match(record.journalSessions[key].updatedAt, /^\d{4}-\d{2}-\d{2}T/);
   assert.deepEqual(record.journalSessions[key].history, [
@@ -427,16 +423,16 @@ test('consent round-trips from the lesson page, and with consent the journal exc
 
   // Coming back later in the week and bringing more is a fresh sitting that
   // replaces the week's saved one: the latest sitting is what the brief sees.
-  const again = await journalTurn(base, WEEK_TURN + '\n\n## The Formation of a Reaction\nShe asked and I said yes before I had checked.', [], 'ann-lee');
+  const again = await journalTurn(base, WEEK_TURN.replace(BREATH_TEXT, 'She asked and I said yes before I had checked.'), [], 'ann-lee');
   assert.equal(again.status, 200);
   record = store.findByCode(await readDoc(file), 'ann-lee');
   assert.deepEqual(Object.keys(record.journalSessions), [key], 'one saved sitting per week');
-  assert.deepEqual(record.journalSessions[key].journalTitles, ["What's Bringing You Here", 'The Breath in Ordinary Hours', 'The Formation of a Reaction']);
+  assert.deepEqual(record.journalSessions[key].journalTitles, ["What's Bringing You Here", 'The Formation of a Reaction']);
   assert.equal(record.journalSessions[key].history.length, 2, 'the earlier exchange is replaced');
 
   // The older one-journal form is still kept under its own journal key, so
   // nothing already saved breaks; the week sitting stays.
-  const breath = await journalTurn(base, 'Journal: The Breath in Ordinary Hours\n\n' + BREATH_TEXT, [], 'ann-lee');
+  const breath = await journalTurn(base, 'Journal: The Breath in Ordinary Hours\n\n' + 'Mon yay. Tue nay.', [], 'ann-lee');
   assert.equal(breath.status, 200);
   record = store.findByCode(await readDoc(file), 'ann-lee');
   assert.deepEqual(Object.keys(record.journalSessions).sort(), [key, 'week-1/the-breath-in-ordinary-hours']);
@@ -458,7 +454,7 @@ test('the Week 1 lesson carries the consent box and a Bring it link per journal;
   assert.ok(w1.includes('Let Chad read what I write in the journal sittings before our Integration and Next-Step Session.'));
   assert.ok(w1.includes('Ticked: what you bring to the journal sittings is kept for Chad to read, and he gets a short brief before your session. Unticked: nothing is kept.'));
   assert.ok(w1.indexOf('id="journalConsent"') < w1.indexOf('1. What&#39;s Bringing You Here') || w1.indexOf('id="journalConsent"') < w1.indexOf("1. What's Bringing You Here"), 'the box sits above the journals');
-  for (const key of ['week-1/whats-bringing-you-here', 'week-1/the-breath-in-ordinary-hours', 'week-1/the-formation-of-a-reaction']) {
+  for (const key of ['week-1/whats-bringing-you-here', 'week-1/the-formation-of-a-reaction']) {
     assert.ok(w1.includes('href="/practice/on-ramp/journal-1?journal=' + key + '">Bring it to the journal sitting</a>'), 'Bring it link for ' + key);
   }
   assert.equal((w1.match(/Bring it to the journal sitting/g) || []).length, 3);
@@ -573,7 +569,7 @@ test('buildBriefInput carries the name, the practice numbers by week, each saved
   record.journalSessions = {
     'week-1': {
       updatedAt: '2026-09-14T20:00:00.000Z',
-      journalTitles: ["What's Bringing You Here", 'The Breath in Ordinary Hours'],
+      journalTitles: ["What's Bringing You Here", 'The Formation of a Reaction'],
       history: [
         { role: 'user', content: WEEK_TURN },
         { role: 'assistant', content: STUB_TEXT },
@@ -583,9 +579,9 @@ test('buildBriefInput carries the name, the practice numbers by week, each saved
   };
   const weekInput = brief.buildBriefInput(record);
   assert.ok(weekInput.includes('--- Week 1 journal sitting, 2026-09-14 ---'));
-  assert.ok(weekInput.includes("THE WRITING:\n[What's Bringing You Here]\n" + JOURNAL_TEXT + '\n\n[The Breath in Ordinary Hours]\n' + BREATH_TEXT + '\n\nTHE EXCHANGE:\nCompanion: ' + STUB_TEXT + '\nPerson: It gets tighter.'), 'each journal under its own title, then the exchange');
+  assert.ok(weekInput.includes("THE WRITING:\n[What's Bringing You Here]\n" + JOURNAL_TEXT + '\n\n[The Formation of a Reaction]\n' + BREATH_TEXT + '\n\nTHE EXCHANGE:\nCompanion: ' + STUB_TEXT + '\nPerson: It gets tighter.'), 'each journal under its own title, then the exchange');
   assert.ok(!weekInput.includes('Journals, Week 1') && !weekInput.includes('## '), 'the wire headings are not passed through');
-  assert.deepEqual(brief.splitWeekTurn(WEEK_TURN), { week: 1, journals: [{ title: "What's Bringing You Here", text: JOURNAL_TEXT }, { title: 'The Breath in Ordinary Hours', text: BREATH_TEXT }] });
+  assert.deepEqual(brief.splitWeekTurn(WEEK_TURN), { week: 1, journals: [{ title: "What's Bringing You Here", text: JOURNAL_TEXT }, { title: 'The Formation of a Reaction', text: BREATH_TEXT }] });
   assert.equal(brief.splitWeekTurn(FIRST_TURN), null);
 
   // Both shapes on one record (someone who brought a journal the old way
@@ -613,7 +609,7 @@ test('the admin brief route needs the admin code, builds the input from the reco
     journalSessions: {
       'week-1': {
         updatedAt: '2026-09-12T20:00:00.000Z',
-        journalTitles: ["What's Bringing You Here", 'The Breath in Ordinary Hours'],
+        journalTitles: ["What's Bringing You Here", 'The Formation of a Reaction'],
         history: [{ role: 'user', content: WEEK_TURN }, { role: 'assistant', content: STUB_TEXT }, { role: 'user', content: 'It gets tighter.' }, { role: 'assistant', content: 'Stay with tighter for a breath.' }],
       },
     },
@@ -655,7 +651,7 @@ test('the admin brief route needs the admin code, builds the input from the reco
   const input = req.body.messages[0].content;
   assert.ok(input.includes('First name: Ann'));
   assert.ok(input.includes("[What's Bringing You Here]\n" + JOURNAL_TEXT), 'the saved journal text is in the input under its title');
-  assert.ok(input.includes('[The Breath in Ordinary Hours]\n' + BREATH_TEXT));
+  assert.ok(input.includes('[The Formation of a Reaction]\n' + BREATH_TEXT));
   assert.ok(input.includes('--- Week 1 journal sitting, 2026-09-12 ---'));
   assert.ok(input.includes('Person: It gets tighter.'));
   assert.ok(input.includes('Week 1: days sat 2 of 7, sits finished 2, journals done 1 of 3'), 'the practice numbers are in the input');
