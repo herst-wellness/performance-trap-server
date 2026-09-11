@@ -15,13 +15,15 @@ const BRIEF_TO = 'chad@herstwellness.com';
 const BRIEF_PROMPT = fs.readFileSync(path.join(__dirname, 'onramp-brief-prompt.txt'), 'utf8').trim();
 const BRIEF_MAX_TOKENS = 2500;
 const JOURNAL_PREFIX = 'Journal: ';
+const JOURNALS_PREFIX = 'Journals, Week ';
+const JOURNAL_HEADING = '## ';
 
 function removeEmDashes(text) {
   return String(text || '').replace(/\u2014/g, ',').trim();
 }
 
-// The first turn of a saved sitting is "Journal: <title>", a blank line,
-// then the writing.
+// The first turn of a saved sitting in the older one-journal form is
+// "Journal: <title>", a blank line, then the writing.
 function splitJournalTurn(content) {
   const s = String(content || '');
   const firstLine = s.split('\n')[0];
@@ -29,8 +31,36 @@ function splitJournalTurn(content) {
   return { title: firstLine.slice(JOURNAL_PREFIX.length).trim(), text: s.slice(firstLine.length).trim() };
 }
 
+// The week form (docs/65 revision): "Journals, Week 1", then each journal
+// the person brought under a "## <title>" heading. Returns the journals in
+// the order they were brought.
+function splitWeekTurn(content) {
+  const s = String(content || '');
+  const lines = s.split('\n');
+  const m = /^Journals, Week (\d+)/.exec(lines[0] || '');
+  if (!m) return null;
+  const journals = [];
+  let current = null;
+  for (const line of lines.slice(1)) {
+    if (line.startsWith(JOURNAL_HEADING)) {
+      current = { title: line.slice(JOURNAL_HEADING.length).trim(), lines: [] };
+      journals.push(current);
+    } else if (current) {
+      current.lines.push(line);
+    }
+  }
+  return {
+    week: Number(m[1]),
+    journals: journals.map((j) => ({ title: j.title, text: j.lines.join('\n').trim() })),
+  };
+}
+
+function isWeekTurn(content) {
+  return String(content || '').startsWith(JOURNALS_PREFIX);
+}
+
 function weekOfKey(key) {
-  const m = /^week-(\d)\//.exec(String(key || ''));
+  const m = /^week-(\d)(?:\/|$)/.exec(String(key || ''));
   return m ? Number(m[1]) : null;
 }
 
@@ -57,13 +87,30 @@ function buildBriefInput(record) {
   for (const key of keys) {
     const session = sessions[key] || {};
     const history = Array.isArray(session.history) ? session.history : [];
-    const first = history.length ? splitJournalTurn(history[0].content) : { title: '', text: '' };
-    const title = session.journalTitle || first.title || key;
-    const week = weekOfKey(key);
+    const firstContent = history.length ? history[0].content : '';
+    const when = session.updatedAt ? ', ' + String(session.updatedAt).slice(0, 10) : '';
     lines.push('');
-    lines.push('--- ' + title + (week ? ' (Week ' + week + ')' : '') + (session.updatedAt ? ', ' + String(session.updatedAt).slice(0, 10) : '') + ' ---');
-    lines.push('THE WRITING:');
-    lines.push(first.text || '(nothing)');
+    if (isWeekTurn(firstContent)) {
+      // One sitting for the week: every journal brought, each under its
+      // own title, then the one exchange.
+      const split = splitWeekTurn(firstContent);
+      const week = split.week || weekOfKey(key);
+      lines.push('--- Week ' + week + ' journal sitting' + when + ' ---');
+      lines.push('THE WRITING:');
+      if (!split.journals.length) lines.push('(nothing)');
+      split.journals.forEach((j, i) => {
+        if (i > 0) lines.push('');
+        lines.push('[' + j.title + ']');
+        lines.push(j.text || '(nothing)');
+      });
+    } else {
+      const first = splitJournalTurn(firstContent);
+      const title = session.journalTitle || first.title || key;
+      const week = weekOfKey(key);
+      lines.push('--- ' + title + (week ? ' (Week ' + week + ')' : '') + when + ' ---');
+      lines.push('THE WRITING:');
+      lines.push(first.text || '(nothing)');
+    }
     lines.push('');
     lines.push('THE EXCHANGE:');
     if (history.length < 2) lines.push('(no exchange)');
@@ -140,4 +187,5 @@ module.exports = {
   generateBrief,
   sendBrief,
   splitJournalTurn,
+  splitWeekTurn,
 };

@@ -121,7 +121,35 @@ for (const n of Object.keys(JOURNAL)) {
 // itself is the first turn.
 const JOURNAL_SOFT_TURNS = 16;
 const JOURNAL_HARD_TURNS = 24;
+// One sitting per week (docs/65 revision, 9/10/26 night): the first turn is
+// "Journals, Week 1", then each journal the person brought under a "## "
+// heading with its title. The older one-journal form, "Journal: <title>",
+// is still accepted so nothing already saved breaks.
 const JOURNAL_PREFIX = 'Journal: ';
+const JOURNALS_PREFIX = 'Journals, Week ';
+const JOURNAL_HEADING = '## ';
+// All the week's journals arrive in one message, so the first turn of the
+// journal sitting may run well past the per-turn limit. Later turns keep it.
+const JOURNAL_FIRST_TURN_CHARS = 40000;
+
+// The first message of the sitting, built from the boxes on the page. Runs
+// in the browser too (its source is inlined into the page), so plain
+// JavaScript only: no template strings, no arrow functions.
+function buildJournalMessage(weekNum, parts) {
+  var blocks = [];
+  for (var i = 0; i < parts.length; i += 1) {
+    var text = String(parts[i].text || '').trim();
+    if (!text) continue;
+    blocks.push('## ' + parts[i].title + '\n' + text);
+  }
+  if (!blocks.length) return '';
+  return 'Journals, Week ' + weekNum + '\n\n' + blocks.join('\n\n');
+}
+
+function isJournalFirstTurn(message) {
+  const s = String(message || '');
+  return s.startsWith(JOURNAL_PREFIX) || s.startsWith(JOURNALS_PREFIX);
+}
 
 // Photographs of handwritten pages are read by the model (vision) and the
 // text lands in the box, editable before it is brought to the sitting.
@@ -477,7 +505,7 @@ function cleanHistory(history, opts = {}) {
   );
   const trimmed = (item, cap) => ({ role: item.role, content: item.content.slice(0, cap) });
   if (opts.keepFirst && valid.length > 0) {
-    const first = trimmed(valid[0], MAX_MESSAGE_CHARS);
+    const first = trimmed(valid[0], JOURNAL_FIRST_TURN_CHARS);
     const rest = valid.slice(1).slice(-15).map((item) => trimmed(item, 6000));
     // The turn after the writing must be the companion's, so the roles
     // keep alternating from the first turn on.
@@ -776,29 +804,34 @@ function readJsonBody(req) {
   });
 }
 
-// The journal card (journal variant only): which journal, the writing, a
-// photo of the page, and Bring it. Replaces the breath card; the person is
-// arriving with writing, not a live moment.
+// The journal card (journal variant only): one box per journal this week,
+// each with its own photo button, and one Bring it for all of them. Any box
+// may be left empty; at least one must have writing. Replaces the breath
+// card; the person is arriving with writing, not a live moment.
 function journalCardHtml(week) {
-  const options = week.journals
-    .map((j) => `<option value="${j.key}">${j.title.replace(/'/g, '&#39;')}</option>`)
-    .join('');
+  const perBox = Math.floor(JOURNAL_FIRST_TURN_CHARS / week.journals.length) - 200;
+  const boxes = week.journals
+    .map((j, i) => {
+      const id = 'journalText' + (i + 1);
+      const title = j.title.replace(/'/g, '&#39;');
+      return `    <div class="field journal-box" data-journal="${j.key}" data-title="${title}">
+      <label for="${id}">${title}</label>
+      <textarea id="${id}" maxlength="${perBox}" placeholder="Paste or type what you wrote"></textarea>
+      <div class="row" style="margin-top:8px">
+        <button type="button" class="button secondary photo-button" data-target="${id}">Add a photo of the page</button>
+      </div>
+      <div class="speak-status hidden photo-status" role="status" aria-live="polite"></div>
+    </div>`;
+    })
+    .join('\n');
   return `  <section id="journalCard" class="card hidden">
     <h2>Bring what you wrote</h2>
-    <div class="field">
-      <label for="journalSelect">Which journal</label>
-      <select id="journalSelect">${options}</select>
-    </div>
-    <div class="field">
-      <label for="journalText">What you wrote</label>
-      <textarea id="journalText" maxlength="11000" placeholder="Paste or type what you wrote"></textarea>
-    </div>
+    <p class="small">Any of the three, or all of them. Leave a box empty if you have not done that one yet. What you type stays in this browser so it is still here if you come back later in the week.</p>
+${boxes}
     <input id="journalPhoto" type="file" accept="image/jpeg,image/png,image/webp" class="hidden" aria-hidden="true" tabindex="-1">
     <div class="row">
-      <button type="button" id="photoButton" class="button secondary">Add a photo of the page</button>
       <button type="button" id="bringButton" class="button">Bring it</button>
     </div>
-    <div id="photoStatus" class="speak-status hidden" role="status" aria-live="polite"></div>
     <div id="journalError" class="error hidden"></div>
   </section>`;
 }
@@ -871,7 +904,7 @@ ${week.public ? `    <h2>Try SENSE on something that happened this week</h2>
     <p>It's an AI I built from my own work with people, and it does capture a sense of how I work. It's not perfect, and it doesn't have the human touch, which is the main thing. But you can't learn this from reading. You have to practice it, and this is a place to start. About ten minutes, and it brings itself to a close.</p>
     <p>It's not me, and it's not therapy. It keeps nothing after you end.</p>
 ` : journal ? `    <h2>Bring what you wrote</h2>
-    <p>You've finished one of this week's journals. Bring it here. Type it, paste it, or photograph the handwritten pages. It reads a few of your own lines back to you, and you notice what happens in the body as you hear them. That's the whole idea. It's the same companion as the daily rep, built from how I work with people's writing before a session. It's not me, and it's not therapy.</p>
+    <p>Bring what you wrote this week. One journal, two, or all three. Type it, paste it, or photograph the handwritten pages. It reads everything and finds the place with the most charge, then checks with you before it starts there. It reads a few of your own lines back to you, and you notice what happens in the body as you hear them. That's the whole idea. It's the same companion as the daily rep, built from how I work with people's writing before a session. It's not me, and it's not therapy.</p>
 ` : `    <h2>Welcome to the daily rep</h2>
     <p>If you are here, you have the map: SENSE for coming back to yourself when the pressure hits, STEP for bringing that back into the room with other people. This is where you get the reps. You bring one real moment from your day, and we run the practice on it together.</p>
     <p>The moment does not have to be big: the email that tightened your chest, the meeting where you shrank, the text you almost fired back. Small is the point.</p>
@@ -980,7 +1013,6 @@ ${journal ? journalCardHtml(week) : breathCardHtml()}
     pendingSeq++;
     hideWaiting();
     hideOpeningCard();
-    if (el('journalText')) el('journalText').value = '';
     messages = [];
     locked = false;
     accessCode = '';
@@ -1052,7 +1084,7 @@ ${journal ? journalCardHtml(week) : breathCardHtml()}
     el('consentCard').classList.add('hidden');
     if (isJournal) {
       el('journalCard').classList.remove('hidden');
-      el('journalText').focus();
+      focusJournalBox();
       return;
     }
     el('breathCard').classList.remove('hidden');
@@ -1078,31 +1110,61 @@ ${journal ? journalCardHtml(week) : breathCardHtml()}
     }
   });
 
-${journal ? `  // The journal card. The select is preset from ?journal=<key> on the
-  // lesson page's link. A photo of the page goes to the server to be read
-  // and its text lands in the box, editable. Bring it sends the writing as
-  // the first turn and opens the chat.
-  (function(){
+${journal ? `  // The journal card: one box per journal. Each box is kept in this
+  // browser's localStorage so a person coming back mid-week still has the
+  // earlier journals in place. ?journal=<key> from the lesson page's link
+  // only chooses which box gets focus. A photo of a page goes to the server
+  // to be read and its text lands in that box, editable. Bring it sends
+  // everything with writing as the first turn and opens the chat.
+  var journalWeek = ${week.week};
+  var journalBoxes = Array.prototype.slice.call(document.querySelectorAll('.journal-box'));
+  function boxKey(box){ return 'onrampJournal:' + box.getAttribute('data-journal'); }
+  function boxText(box){ return box.querySelector('textarea'); }
+  journalBoxes.forEach(function(box){
+    var area = boxText(box);
+    try { area.value = localStorage.getItem(boxKey(box)) || ''; } catch (e) {}
+    area.addEventListener('input', function(){
+      try {
+        if (area.value.trim()) localStorage.setItem(boxKey(box), area.value);
+        else localStorage.removeItem(boxKey(box));
+      } catch (e) {}
+    });
+  });
+  function focusJournalBox(){
     var wanted = '';
     try { wanted = new URLSearchParams(window.location.search).get('journal') || ''; } catch (e) {}
-    if (!wanted) return;
-    var select = el('journalSelect');
-    for (var i = 0; i < select.options.length; i++) {
-      if (select.options[i].value === wanted) { select.selectedIndex = i; break; }
+    var target = null;
+    for (var i = 0; i < journalBoxes.length; i++) {
+      if (journalBoxes[i].getAttribute('data-journal') === wanted) { target = journalBoxes[i]; break; }
     }
-  })();
-  function photoStatus(text){
-    el('photoStatus').textContent = text || '';
-    el('photoStatus').classList.toggle('hidden', !text);
+    if (!target) target = journalBoxes[0];
+    if (!target) return;
+    try { target.scrollIntoView({ block: 'start', behavior: 'smooth' }); } catch (e) {}
+    boxText(target).focus();
   }
-  el('photoButton').addEventListener('click', function(){ el('journalPhoto').click(); });
+  var photoTarget = null;
+  function photoStatus(box, text){
+    var status = box.querySelector('.photo-status');
+    status.textContent = text || '';
+    status.classList.toggle('hidden', !text);
+  }
+  function setPhotoButtons(disabled){
+    journalBoxes.forEach(function(box){ box.querySelector('.photo-button').disabled = disabled; });
+    el('bringButton').disabled = disabled;
+  }
+  journalBoxes.forEach(function(box){
+    box.querySelector('.photo-button').addEventListener('click', function(){
+      photoTarget = box;
+      el('journalPhoto').click();
+    });
+  });
   el('journalPhoto').addEventListener('change', async function(){
     var file = el('journalPhoto').files && el('journalPhoto').files[0];
     el('journalPhoto').value = '';
-    if (!file) return;
-    el('photoButton').disabled = true;
-    el('bringButton').disabled = true;
-    photoStatus('Reading the page\\u2026');
+    var box = photoTarget || journalBoxes[0];
+    if (!file || !box) return;
+    setPhotoButtons(true);
+    photoStatus(box, 'Reading the page\\u2026');
     try {
       var response = await fetch('${JOURNAL_READ_PATH}', {
         method: 'POST',
@@ -1114,26 +1176,28 @@ ${journal ? `  // The journal card. The select is preset from ?journal=<key> on 
       if (!response.ok) throw new Error(data.error || 'Could not read that page');
       var text = String(data.text || '').trim();
       if (!text) throw new Error('Nothing read');
-      var box = el('journalText');
-      var existing = box.value.replace(/\\s+$/, '');
-      box.value = existing ? existing + '\\n\\n' + text : text;
-      box.scrollTop = box.scrollHeight;
-      photoStatus('');
+      var area = boxText(box);
+      var existing = area.value.replace(/\\s+$/, '');
+      area.value = existing ? existing + '\\n\\n' + text : text;
+      area.scrollTop = area.scrollHeight;
+      area.dispatchEvent(new Event('input'));
+      photoStatus(box, '');
     } catch (error) {
-      photoStatus("Couldn't read that page, type it instead");
+      photoStatus(box, "Couldn't read that page, type it instead");
     } finally {
-      el('photoButton').disabled = false;
-      el('bringButton').disabled = false;
+      setPhotoButtons(false);
     }
   });
+  ${buildJournalMessage.toString()}
   el('bringButton').addEventListener('click', function(){
-    var text = el('journalText').value.trim();
-    if (!text) { showError(el('journalError'), 'Bring the writing first. Type it, paste it, or add a photo of the page.'); return; }
+    var parts = journalBoxes.map(function(box){
+      return { title: box.getAttribute('data-title'), text: boxText(box).value };
+    });
+    var message = buildJournalMessage(journalWeek, parts);
+    if (!message) { showError(el('journalError'), 'Bring at least one journal.'); return; }
     showError(el('journalError'), '');
-    var select = el('journalSelect');
-    var title = select.options[select.selectedIndex].text;
     enterSession();
-    sendMessage(${JSON.stringify(JOURNAL_PREFIX)} + title + '\\n\\n' + text);
+    sendMessage(message);
   });
 ` : `  el('breathSkip').addEventListener('click', enterSession);
   el('breathDone').addEventListener('click', enterSession);
@@ -1569,12 +1633,36 @@ function journalKeyFor(week, title) {
   return 'week-' + week.week + '/' + (slugPart(title).slice(0, 60) || 'other');
 }
 
-// Only well-formed turns are kept, each capped at the message limit.
+// The week form: "Journals, Week 1", then each journal under a "## <title>"
+// heading. The titles are what the brief labels the pieces by.
+function journalTitlesOf(firstMessage) {
+  const s = String(firstMessage || '');
+  if (!s.startsWith(JOURNALS_PREFIX)) return [];
+  return s
+    .split('\n')
+    .filter((line) => line.startsWith(JOURNAL_HEADING))
+    .map((line) => line.slice(JOURNAL_HEADING.length).trim())
+    .filter(Boolean);
+}
+
+// Where a sitting is kept on the record: by week for the week form, by
+// journal for the older one-journal form.
+function journalSessionFor(week, firstMessage) {
+  const first = String(firstMessage || '');
+  if (first.startsWith(JOURNALS_PREFIX)) {
+    return { key: 'week-' + week.week, journalTitles: journalTitlesOf(first) };
+  }
+  const title = journalTitleOf(first);
+  return { key: journalKeyFor(week, title), journalTitle: title };
+}
+
+// Only well-formed turns are kept. The first turn is the writing and keeps
+// its larger cap; every later turn is capped at the message limit.
 function storableHistory(history) {
   if (!Array.isArray(history)) return [];
   return history
     .filter((item) => item && (item.role === 'user' || item.role === 'assistant') && typeof item.content === 'string')
-    .map((item) => ({ role: item.role, content: item.content.slice(0, MAX_MESSAGE_CHARS) }));
+    .map((item, i) => ({ role: item.role, content: item.content.slice(0, i === 0 ? JOURNAL_FIRST_TURN_CHARS : MAX_MESSAGE_CHARS) }));
 }
 
 // With consent the whole exchange so far is written to the record, replaced
@@ -1583,17 +1671,18 @@ function storableHistory(history) {
 async function saveJournalTurn(store, code, week, history, message, response) {
   const kept = storableHistory(history);
   const first = kept.length ? kept[0].content : message;
-  const title = journalTitleOf(first);
-  const key = journalKeyFor(week, title);
+  const session = journalSessionFor(week, first);
   await store.update((doc) => {
     const record = findByCode(doc, code);
     if (!record || record.consent !== true) return;
     if (!record.journalSessions) record.journalSessions = {};
-    record.journalSessions[key] = {
+    const saved = {
       updatedAt: new Date().toISOString(),
-      journalTitle: title,
       history: [...kept, { role: 'user', content: message }, { role: 'assistant', content: response }],
     };
+    if (session.journalTitles) saved.journalTitles = session.journalTitles;
+    else saved.journalTitle = session.journalTitle;
+    record.journalSessions[session.key] = saved;
   });
 }
 
@@ -1687,12 +1776,14 @@ async function handleOnrampRoute(req, res, helpers = {}) {
       sendJson(res, 400, { error: 'A message is required.' });
       return true;
     }
-    if (body.message.length > MAX_MESSAGE_CHARS) {
+    const turns = Array.isArray(body.history) ? body.history.length : 0;
+    // The journal sitting's first turn carries the week's writing whole.
+    const messageCap = week.journal && turns === 0 ? JOURNAL_FIRST_TURN_CHARS : MAX_MESSAGE_CHARS;
+    if (body.message.length > messageCap) {
       sendJson(res, 413, { error: 'The message is too long.' });
       return true;
     }
-    const turns = Array.isArray(body.history) ? body.history.length : 0;
-    if (week.journal && turns === 0 && !body.message.startsWith(JOURNAL_PREFIX)) {
+    if (week.journal && turns === 0 && !isJournalFirstTurn(body.message)) {
       sendJson(res, 400, { error: 'Bring the journal first.' });
       return true;
     }
@@ -1714,7 +1805,7 @@ async function handleOnrampRoute(req, res, helpers = {}) {
       adultConfirmed: body.adultConfirmed === true,
       country: body.country,
       provider,
-      journalText: Boolean(week.journal) && /^Journal: /.test(body.message),
+      journalText: Boolean(week.journal) && isJournalFirstTurn(body.message),
     });
     if (deterministic) {
       await answer({ ...deterministic, provider });
@@ -1772,15 +1863,21 @@ async function handleOnrampRoute(req, res, helpers = {}) {
 module.exports = {
   INDEX_PATH,
   JOURNAL,
+  JOURNAL_FIRST_TURN_CHARS,
   JOURNAL_PREFIX,
   JOURNAL_READ_PATH,
+  JOURNALS_PREFIX,
   TRY,
+  buildJournalMessage,
   cleanHistory,
   ensureCodeRegistry,
   hasAccess,
+  isJournalFirstTurn,
   issueSignedCode,
   journalKeyFor,
+  journalSessionFor,
   journalTitleOf,
+  journalTitlesOf,
   setEnrolledCodeCheck,
   verifySignedCode,
   WEEKS,
