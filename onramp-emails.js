@@ -139,6 +139,7 @@ function enroll(record) {
     p('Week 1 is here: ' + link(weekUrl(1), 'Week 1: From the Book to the Body') + '. Open it today. Read the lesson, then sit with the breathing recording once before you do anything else. Ten minutes is plenty the first time.') +
     p("The three journals for the week are in the lesson, and each one says when to do it. What's Bringing You Here is for the first day or two. The Breath in Ordinary Hours runs all week. The Formation of a Reaction is for the weekend, once you've caught a moment or two in real life.", 'margin-bottom:0.5em;') +
     journalLinks(1) +
+    p("When you've written, bring it to the journal sitting, from the lesson page. It reads what you wrote, finds the line with the most charge, checks with you, and then reads it back so you can notice what the body does. Not me, and not therapy. It's how I work with people's writing, built into the site.") +
     p("One thing to know up front. The site keeps track of when you play the recordings and when you tap Mark done on a journal. Not to grade you. At the end of each week I'll send you what the week looked like: how many days you sat, which sits you finished, which journals you got to. No shame either way. It's just data, and it's yours.") +
     signOff();
   return message("You're in. Here's your access code.", body);
