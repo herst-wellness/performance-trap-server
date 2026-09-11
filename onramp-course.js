@@ -261,8 +261,7 @@ const COURSE_WEEKS = {
 <h4>Summary</h4>
 <ul><li>The loop: stimulus, feeling tone, story, reaction, and then the proliferation that makes it all bigger. It runs in a second, in the body, before you get a vote.</li><li>You can't outthink it, because the body has already locked in, and putting out the fire only brings the next fire.</li><li>The opening is at the feeling tone, before the story. Go to the body there, and the storyline can't take.</li><li>Follow the feeling tone to the end and the story quiets with it. What's left is data. That's the conditioning changing.</li><li>Trust the body more than the mind. The second arrow is optional. The first practice is to see the loop, not to fix it.</li></ul>
 <h4>Action</h4>
-<p>Toward the end of the week, once you've caught a moment or two in real life, do the second journal, One Moment, Mapped. Pick one moment and walk it through the steps, then look for where the opening was. Bring it to the journal sitting.</p>
-<p>---</p>`,
+<p>Toward the end of the week, once you've caught a moment or two in real life, do the second journal, One Moment, Mapped. Pick one moment and walk it through the steps, then look for where the opening was. Bring it to the journal sitting.</p>`,
     meditation: meditationPlayer('/audio/onramp-breath-12min.mp3', 'The breathing practice, recorded by Chad. About twelve minutes. Sit with it most days this week.'),
     practiceCard: `
 <h4>Most days this week</h4>
@@ -398,8 +397,7 @@ const COURSE_WEEKS = {
 <h4>Summary</h4>
 <ul><li>Equanimity is not non-attachment. You're in the feeling and, at the same time, you can see that it's temporary.</li><li>Everything arises, stays, and passes away. Clinging and pushing away make it stay longer.</li><li>In reactivity your only options are fight, run, play dead, or appease. Equanimity is how you get the gap between what happens and what you do, and the gap is where the new choice is.</li><li>Follow the feeling tone to the end and the story ends with it. What's left is data. That's a new pattern.</li><li>The second arrow is optional. No shame.</li></ul>
 <h4>Action</h4>
-<p>Near the end of the week, do the second journal, The Return. Ride one wave on the page with a timer, write what surfaced, and then turn toward whatever is there and say what you'd say to it. Bring it to the journal sitting.</p>
-<p>---</p>`,
+<p>Near the end of the week, do the second journal, The Return. Ride one wave on the page with a timer, write what surfaced, and then turn toward whatever is there and say what you'd say to it. Bring it to the journal sitting.</p>`,
     meditation: meditationPlayer('https://pub-3e45b3813f2d4b1b81f913aad060a3b8.r2.dev/audio/onramp-week2-keeping-it-company.mp3', 'Keeping It Company, recorded by Chad. About fifteen minutes. Sit with it most days this week.'),
     practiceCard: `
 <h4>Most days this week</h4>
@@ -516,8 +514,7 @@ const COURSE_WEEKS = {
 <h4>Summary</h4>
 <ul><li>In fight or flight there are two options, and you lose either way. Settled, there's a third: honor them without cutting contact with yourself.</li><li>The why: you stop running two tracks. One channel, one truth. The gap between what you sense and what you say closes.</li><li>The third option is being with: I feel this, and I can respond from there. Wait, ask one clean question, say less.</li><li>Practice is one small honest move, and then the agreement that comes next. Say what you do want. Say it live.</li><li>The measure is not how they respond. You'll miss it. Noticing afterward counts.</li></ul>
 <h4>Action</h4>
-<p>Near the end of the week, do the second journal, The Third Option. Take one interaction from this week, find the two options the trap offered, find the trade, and write the one honest sentence you could still say, or could say next time. Bring it to the journal sitting.</p>
-<p>---</p>`,
+<p>Near the end of the week, do the second journal, The Third Option. Take one interaction from this week, find the two options the trap offered, find the trade, and write the one honest sentence you could still say, or could say next time. Bring it to the journal sitting.</p>`,
     meditation: meditationPlayer('https://pub-3e45b3813f2d4b1b81f913aad060a3b8.r2.dev/audio/onramp-week3-finding-the-third-option.mp3', 'Finding the Third Option, recorded by Chad. About twelve minutes. Sit with it most days this week.'),
     practiceCard: `
 <h4>Most days this week</h4>
@@ -624,8 +621,7 @@ const COURSE_WEEKS = {
 <h4>Summary</h4>
 <ul><li>The hour names the month: the pattern, where it lives in the body, the trade, one next step. It's yours either way, and it's where we both kick the tire.</li><li>The deeper work is a loving, embodied appreciation for the sacred wound, two thirds relating to the part that wants to feel enough, one third new choices. That's Mind/Body Foundations, eight sessions over about six months.</li><li>You'll know it's time when you can feel the trigger, ride the wave, and have started changing the contracts in small ways.</li><li>If not now, fifteen minutes of breath a day, and the door is open.</li></ul>
 <h4>Action</h4>
-<p>At the end of the week, do the second journal, What You're Taking With You. Bring it to your Integration and Next-Step Session. That's the one we'll start from.</p>
-<p>---</p>`,
+<p>At the end of the week, do the second journal, What You're Taking With You. Bring it to your Integration and Next-Step Session. That's the one we'll start from.</p>`,
     meditation: meditationPlayer('https://pub-3e45b3813f2d4b1b81f913aad060a3b8.r2.dev/audio/onramp-week4-the-sacred-wound.mp3', 'The Sacred Wound, recorded by Chad. About fourteen minutes. Sit with it most days this week.'),
     practiceCard: `
 <h4>Most days this week</h4>
