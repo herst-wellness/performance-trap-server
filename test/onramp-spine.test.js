@@ -278,7 +278,7 @@ test('yay/nay: links carry a per-person token, answers record last-wins, and the
   store.dayEntry(record, '2026-09-12').listens.push({ sit: 'onramp-breath-12min', at: 'x', complete: true }, { sit: 'onramp-breath-12min', at: 'x', complete: false });
   store.dayEntry(record, '2026-09-20').listens.push({ sit: 'onramp-week2-keeping-it-company', at: 'x', complete: true });
   yaynay.recordAnswer(record, '2026-09-20', true);
-  record.journals = { 'week-1/whats-bringing-you-here': { opened: 'x', done: 'x' }, 'week-1/the-formation-of-a-reaction': { opened: 'x' }, 'week-2/the-protector': { done: 'x' } };
+  record.journals = { 'week-1/whats-bringing-you-here': { opened: 'x', done: 'x' }, 'week-1/one-moment-mapped': { opened: 'x' }, 'week-2/the-protector': { done: 'x' } };
   store.dayEntry(record, '2026-09-13').listens.push({ sit: 'onramp-breath-12min', at: 'x', complete: true });
   const week1 = yaynay.scorecard(record, 1);
   assert.deepEqual(
