@@ -464,9 +464,14 @@ test('the Week 1 lesson carries the consent box and a Bring it link per journal;
     assert.ok(w2.includes('href="/practice/on-ramp/journal-2?journal=' + key + '">Bring it to the journal sitting</a>'), 'Bring it link for ' + key);
   }
   assert.ok(!w2.includes('journalConsent'), 'the consent box lives on Week 1 only');
-  for (const n of [3, 4]) {
+  const w3 = lessonContentHtml(3);
+  for (const key of ['week-3/the-trade', 'week-3/the-third-option']) {
+    assert.ok(w3.includes('href="/practice/on-ramp/journal-3?journal=' + key + '">Bring it to the journal sitting</a>'), 'Bring it link for ' + key);
+  }
+  assert.ok(!w3.includes('journalConsent'), 'the consent box lives on Week 1 only');
+  for (const n of [4]) {
     const html = lessonContentHtml(n);
-    assert.ok(!html.includes('journalConsent') && !html.includes('journal-1') && !html.includes('journal-2'), 'week ' + n + ' has no journal sitting yet');
+    assert.ok(!html.includes('journalConsent') && !html.includes('journal-1') && !html.includes('journal-2') && !html.includes('journal-3'), 'week ' + n + ' has no journal sitting yet');
   }
 });
 
@@ -775,6 +780,11 @@ test('the Week 1 lens (Slow the breath, Enter the body) sits in both the daily r
   assert.ok(onramp.JOURNAL[2] && onramp.JOURNAL[2].instructions.includes(lens2), 'the Week 2 journal sitting carries the Week 2 lens');
   assert.deepEqual(onramp.JOURNAL[2].journals.map((x) => x.key), ['week-2/the-protector', 'week-2/the-return']);
   for (const n of [1, 3, 4]) assert.ok(!WEEKS[n].instructions.includes(lens2), 'week ' + n + ' has no Week 2 lens');
+  const lens3 = 'The lens this week: Still, Tune in to the Trade, The Third Option';
+  assert.ok(WEEKS[3].instructions.includes(lens3), 'Week 3 daily rep carries the Week 3 lens');
+  assert.ok(onramp.JOURNAL[3] && onramp.JOURNAL[3].instructions.includes(lens3), 'the Week 3 journal sitting carries the Week 3 lens');
+  assert.deepEqual(onramp.JOURNAL[3].journals.map((x) => x.key), ['week-3/the-trade', 'week-3/the-third-option']);
+  for (const n of [1, 2, 4]) assert.ok(!WEEKS[n].instructions.includes(lens3), 'week ' + n + ' has no Week 3 lens');
   const journal = (onramp.JOURNAL && onramp.JOURNAL[1]) || null;
   if (journal) assert.ok(journal.instructions.includes(lensLine), 'the journal sitting carries the lens');
   assert.ok(WEEKS[1].instructions.includes('oil from a ladle') && WEEKS[1].instructions.includes('U-turn'));

@@ -125,6 +125,20 @@ const JOURNAL = {
     pagePath: '/practice/on-ramp/journal-2',
     apiPath: '/api/on-ramp/journal-2',
   },
+  3: {
+    journal: true,
+    week: 3,
+    title: 'Week 3: the journal sitting',
+    sub: 'Bring what you wrote. It reads it back, and the body answers.',
+    journals: [
+      { key: 'week-3/the-trade', title: 'The Trade' },
+      { key: 'week-3/the-third-option', title: 'The Third Option' },
+    ],
+    methods: [JOURNAL_METHOD],
+    weekFrame: readPart('onramp-journal-week-3.txt'),
+    pagePath: '/practice/on-ramp/journal-3',
+    apiPath: '/api/on-ramp/journal-3',
+  },
 };
 for (const n of Object.keys(JOURNAL)) {
   const j = JOURNAL[n];
