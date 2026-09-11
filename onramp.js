@@ -145,7 +145,7 @@ const JOURNAL = {
     title: 'Week 4: the journal sitting',
     sub: 'Bring what you wrote. It reads it back, and the body answers.',
     journals: [
-      { key: 'week-4/the-sacred-wound', title: 'The Sacred Wound' },
+      { key: 'week-4/whats-still-running', title: "What's Still Running" },
       { key: 'week-4/what-youre-taking-with-you', title: "What You're Taking With You" },
     ],
     methods: [JOURNAL_METHOD],
