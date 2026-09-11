@@ -104,7 +104,6 @@ const JOURNAL = {
     sub: 'Bring what you wrote. It reads it back, and the body answers.',
     journals: [
       { key: 'week-1/whats-bringing-you-here', title: "What's Bringing You Here" },
-      { key: 'week-1/the-breath-in-ordinary-hours', title: 'The Breath in Ordinary Hours' },
       { key: 'week-1/the-formation-of-a-reaction', title: 'The Formation of a Reaction' },
     ],
     methods: [JOURNAL_METHOD],
@@ -826,7 +825,7 @@ function journalCardHtml(week) {
     .join('\n');
   return `  <section id="journalCard" class="card hidden">
     <h2>Bring what you wrote</h2>
-    <p class="small">Any of the three, or all of them. Leave a box empty if you have not done that one yet. What you type stays in this browser so it is still here if you come back later in the week.</p>
+    <p class="small">Either one, or both. Leave a box empty if you have not done that one yet. What you type stays in this browser so it is still here if you come back later in the week.</p>
 ${boxes}
     <input id="journalPhoto" type="file" accept="image/jpeg,image/png,image/webp" class="hidden" aria-hidden="true" tabindex="-1">
     <div class="row">
@@ -904,7 +903,7 @@ ${week.public ? `    <h2>Try SENSE on something that happened this week</h2>
     <p>It's an AI I built from my own work with people, and it does capture a sense of how I work. It's not perfect, and it doesn't have the human touch, which is the main thing. But you can't learn this from reading. You have to practice it, and this is a place to start. About ten minutes, and it brings itself to a close.</p>
     <p>It's not me, and it's not therapy. It keeps nothing after you end.</p>
 ` : journal ? `    <h2>Bring what you wrote</h2>
-    <p>Bring what you wrote this week. One journal, two, or all three. Type it, paste it, or photograph the handwritten pages. It reads everything and finds the place with the most charge, then checks with you before it starts there. It reads a few of your own lines back to you, and you notice what happens in the body as you hear them. That's the whole idea. It's the same companion as the daily rep, built from how I work with people's writing before a session. It's not me, and it's not therapy.</p>
+    <p>Bring what you wrote this week. One journal or both. Type it, paste it, or photograph the handwritten pages. It reads everything and finds the place with the most charge, then checks with you before it starts there. It reads a few of your own lines back to you, and you notice what happens in the body as you hear them. That's the whole idea. It's the same companion as the daily rep, built from how I work with people's writing before a session. It's not me, and it's not therapy.</p>
 ` : `    <h2>Welcome to the daily rep</h2>
     <p>If you are here, you have the map: SENSE for coming back to yourself when the pressure hits, STEP for bringing that back into the room with other people. This is where you get the reps. You bring one real moment from your day, and we run the practice on it together.</p>
     <p>The moment does not have to be big: the email that tightened your chest, the meeting where you shrank, the text you almost fired back. Small is the point.</p>

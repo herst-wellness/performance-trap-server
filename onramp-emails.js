@@ -9,13 +9,12 @@ const BASE_URL = 'https://practice.herstwellness.com';
 const BOOKING_URL = 'https://chadherst.as.me/integration-and-next-step-session';
 const MAILCHIMP_TAG = 'Performance Trap Practice';
 
-// Journal PDFs live at /downloads/on-ramp/week-N/<slug>.pdf. Week 1's three
+// Journal PDFs live at /downloads/on-ramp/week-N/<slug>.pdf. Week 1's two
 // are drafted in docs/onramp-journals; the other weeks are placeholders
 // until their journals exist.
 const JOURNALS = {
   1: [
     { title: "What's Bringing You Here", slug: 'whats-bringing-you-here' },
-    { title: 'The Breath in Ordinary Hours', slug: 'the-breath-in-ordinary-hours' },
     { title: 'The Formation of a Reaction', slug: 'the-formation-of-a-reaction' },
   ],
   2: [],
@@ -122,6 +121,11 @@ function greeting(record) {
   return p('Hi ' + esc(record.firstName || 'there') + ',');
 }
 
+// Journals per week: the rebuilt weeks carry two; the placeholders still say three.
+function journalCount(n) {
+  return (JOURNALS[n] || []).length || 3;
+}
+
 function journalLinks(n) {
   const items = JOURNALS[n] || [];
   if (!items.length) return p(placeholder('journals-week-' + n));
@@ -137,7 +141,7 @@ function enroll(record) {
     p("Glad we're doing this.") +
     p('Your access code is <strong style="font-family:monospace;font-size:20px;">' + esc(record.code) + '</strong>. It unlocks all four weeks and the practice companion. Save it somewhere you\'ll find it again.') +
     p('Week 1 is here: ' + link(weekUrl(1), 'Week 1: From the Book to the Body') + '. Open it today. Read the lesson, then sit with the breathing recording once before you do anything else. Ten minutes is plenty the first time.') +
-    p("The three journals for the week are in the lesson, and each one says when to do it. What's Bringing You Here is for the first day or two. The Breath in Ordinary Hours runs all week. The Formation of a Reaction is for the weekend, once you've caught a moment or two in real life.", 'margin-bottom:0.5em;') +
+    p("The two journals for the week are in the lesson, and each one says when to do it. What's Bringing You Here is for the first day or two. The Formation of a Reaction is for the end of the week, once you've caught a moment or two in real life. Do one or both.") +
     journalLinks(1) +
     p("When you've written, bring it to the journal sitting, from the lesson page. It reads what you wrote, finds the line with the most charge, checks with you, and then reads it back so you can notice what the body does. Not me, and not therapy. It's how I work with people's writing, built into the site.") +
     p("One thing to know up front. The site keeps track of when you play the recordings and when you tap Mark done on a journal. Not to grade you. At the end of each week I'll send you what the week looked like: how many days you sat, which sits you finished, which journals you got to. No shame either way. It's just data, and it's yours.") +
@@ -228,7 +232,7 @@ function scorecard(record, w, stats) {
     list([
       'Days you sat, meaning a recording played most of the way through: ' + stats.daysSat + ' of 7',
       'Sits you finished: ' + stats.sitsCompleted + (stats.sitsStarted ? ', and ' + stats.sitsStarted + ' you started and left' : ''),
-      'Journals marked done: ' + stats.journalsDone + ' of 3',
+      'Journals marked done: ' + stats.journalsDone + ' of ' + journalCount(w),
       'Longest run of days in a row: ' + stats.longestRun,
       'Days sat since you started: ' + stats.totalDaysSat,
     ]) +
