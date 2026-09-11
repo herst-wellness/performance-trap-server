@@ -104,7 +104,7 @@ const JOURNAL = {
     sub: 'Bring what you wrote. It reads it back, and the body answers.',
     journals: [
       { key: 'week-1/whats-bringing-you-here', title: "What's Bringing You Here" },
-      { key: 'week-1/the-formation-of-a-reaction', title: 'The Formation of a Reaction' },
+      { key: 'week-1/one-moment-mapped', title: 'One Moment, Mapped' },
     ],
     methods: [JOURNAL_METHOD],
     weekFrame: readPart('onramp-journal-week-1.txt'),

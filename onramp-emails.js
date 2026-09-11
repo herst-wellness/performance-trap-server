@@ -15,7 +15,7 @@ const MAILCHIMP_TAG = 'Performance Trap Practice';
 const JOURNALS = {
   1: [
     { title: "What's Bringing You Here", slug: 'whats-bringing-you-here' },
-    { title: 'The Formation of a Reaction', slug: 'the-formation-of-a-reaction' },
+    { title: 'One Moment, Mapped', slug: 'one-moment-mapped' },
   ],
   2: [
     { title: 'The Protector', slug: 'the-protector' },
@@ -150,7 +150,7 @@ function enroll(record) {
     p("Glad we're doing this.") +
     p('Your access code is <strong style="font-family:monospace;font-size:20px;">' + esc(record.code) + '</strong>. It unlocks all four weeks and the practice companion. Save it somewhere you\'ll find it again.') +
     p('Week 1 is here: ' + link(weekUrl(1), 'Week 1: From the Book to the Body') + '. Open it today. Read the lesson, then sit with the breathing recording once before you do anything else. Ten minutes is plenty the first time.') +
-    p("The two journals for the week are in the lesson, and each one says when to do it. What's Bringing You Here is for the first day or two. The Formation of a Reaction is for the end of the week, once you've caught a moment or two in real life. Do one or both.") +
+    p("The two journals for the week are in the lesson, and each one says when to do it. What's Bringing You Here is for the first day or two. One Moment, Mapped is for the end of the week, once you've caught a moment or two in real life. Do one or both.") +
     journalLinks(1) +
     p("When you've written, bring it to the journal sitting, from the lesson page. It reads what you wrote, finds the line with the most charge, checks with you, and then reads it back so you can notice what the body does. Not me, and not therapy. It's how I work with people's writing, built into the site.") +
     p("One thing to know up front. The site keeps track of when you play the recordings and when you tap Mark done on a journal. Not to grade you. At the end of each week I'll send you what the week looked like: how many days you sat, which sits you finished, which journals you got to. No shame either way. It's just data, and it's yours.") +
