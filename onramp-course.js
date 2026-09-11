@@ -215,7 +215,7 @@ const COURSE_WEEKS = {
 <p>When you feel the toes curl or the stomach knot: don't go to why. Go to what. Where is it? Throat, chest, belly. One word for it. Then a few breaths right into that spot, and see what it does. If the sentence in your head is "I'm anxious," make it "a part of me is anxious."</p>`,
     journal: `
 <p>Three journals this week, each one a printable sheet. When you finish one, tap Mark done. That's how the weekly note knows. Do them in this order, and take a few minutes of breath before any of them. Sit with your eyes closed, let the body settle, then open your eyes and write. A few paragraphs per prompt is plenty. Don't filter. Don't edit.</p>
-<p>When a journal is done, bring it to the journal sitting. The companion reads a few of your own lines back to you, and you notice what happens in the body as you hear them.</p>
+<p>Then, once or twice in the week, bring what you've written to the journal sitting. Bring one journal, two, or all three. It reads everything, finds the place with the most charge, and checks with you before it starts there. Then it reads a few of your own lines back to you, and you notice what happens in the body as you hear them, with the breath. That's what I do with people's writing before a session, and this is the closest thing to it between now and ours.</p>
 <label class="check"><input type="checkbox" id="journalConsent"> <span>Let Chad read what I write in the journal sittings before our Integration and Next-Step Session.</span></label>
 <p class="small">Ticked: what you bring to the journal sittings is kept for Chad to read, and he gets a short brief before your session. Unticked: nothing is kept.</p>
 <h4>1. What's Bringing You Here (first day or two)</h4>
