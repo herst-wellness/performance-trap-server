@@ -21,7 +21,10 @@ const JOURNALS = {
     { title: 'The Protector', slug: 'the-protector' },
     { title: 'The Return', slug: 'the-return' },
   ],
-  3: [],
+  3: [
+    { title: 'The Trade', slug: 'the-trade' },
+    { title: 'The Third Option', slug: 'the-third-option' },
+  ],
   4: [],
 };
 
@@ -196,7 +199,7 @@ const WEEK_OPEN = {
       'The first two weeks were SENSE. Getting to the body and staying there. This week is STEP, which is what becomes possible once you can stay.',
       "Here's the shape of it. Something lands, and the nervous system hands you two bad choices. Say the true thing and lose the relationship, or keep the peace and lose yourself. Take the call at ten at night, or be the one who let the team down. Almost every time, the two choices are the trap, not the truth. There's a third option the bind told you wasn't available. This week is about finding it, and then practicing it in small moments before the big ones.",
       "The sit is Finding the Third Option. About sixteen minutes. Bring a real bind to it, one that's live this week.",
-      'Three journals. The Bind, early in the week. The Third Option in Ordinary Hours, all week. Practice, Not Rehearsal, at the end.',
+      "Two journals, and the lesson says when. The Trade, once you've caught a moment where the old pull was there. The Third Option, at the end. Do one or both.",
     ],
   },
   4: {
