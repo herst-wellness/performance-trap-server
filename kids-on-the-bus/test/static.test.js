@@ -158,8 +158,8 @@ test('the companion is framed as Start Anywhere with notice and optional sharing
 });
 
 test('completion offers three intentional next steps with clear newsletter disclosure', () => {
-  assert.ok(html.indexOf('Explore further with Chad') < html.indexOf('Get Chapter One'));
-  assert.ok(html.indexOf('Get Chapter One') < html.indexOf('Explore Foundations'));
+  assert.ok(html.indexOf('Explore further with Chad') < html.indexOf('SEND ME CHAPTER ONE'));
+  assert.ok(html.indexOf('SEND ME CHAPTER ONE') < html.indexOf('Explore Foundations'));
   assert.match(html, /When you enter your email, you will also receive Chad's newsletter\. Unsubscribe at any time\./);
   assert.match(html, /data-event="conversationClick" href="https:\/\/chadherst\.as\.me\/30-minute-consult-chad-herst"/);
   assert.match(html, /data-event="chapterClick" href="https:\/\/practice\.herstwellness\.com\/listen\/chapter-one"/);
