@@ -11,6 +11,16 @@ const {
   renderJournalText,
   answeredCount,
 } = require('../mbf-delivery');
+const os = require('node:os');
+const fsp = require('node:fs');
+const pathMod = require('node:path');
+
+// Every test that touches the store gets its own file, so nothing written
+// by one test is visible to another and nothing lands in the repository.
+function freshStoreFile() {
+  const dir = fsp.mkdtempSync(pathMod.join(os.tmpdir(), 'mbf-test-'));
+  return pathMod.join(dir, 'journals.json');
+}
 
 function startServer() {
   const server = http.createServer(async (req, res) => {
@@ -89,13 +99,16 @@ test('an override fixes a folder the code cannot spell', () => {
   delete process.env.MBF_CLIENT_NAMES;
 });
 
-test('the Dropbox path lands in the client module folder', () => {
+test('the Dropbox path lands in the client module folder, under one stable name', () => {
   const journal = findJournal(1, 'beginners-mind');
-  const path = dropboxPath(journal, 'Danny Lowenthal', new Date('2026-09-13T12:00:00Z'));
+  const path = dropboxPath(journal, 'Danny Lowenthal');
   assert.strictEqual(
     path,
-    '/clients/Mind:Body Foundations/Danny Lowenthal/Module 1/Module 1 - Beginner’s Mind - Danny Lowenthal - 2026-09-13.txt'
+    '/clients/Mind:Body Foundations/Danny Lowenthal/Module 1/Module 1 - Beginner’s Mind - Danny Lowenthal.txt'
   );
+  // The same client and journal must always resolve to the same file, so
+  // the file is updated rather than duplicated as they write.
+  assert.strictEqual(dropboxPath(journal, 'Danny Lowenthal'), path);
 });
 
 test('the written journal carries every prompt, answered or not', () => {
@@ -109,6 +122,12 @@ test('the written journal carries every prompt, answered or not', () => {
   assert.match(text, /Something has to change at work\./);
   assert.match(text, /\(not answered\)/);
   assert.match(text, /Your Turning Point/);
+  // An unfinished journal says so, so Chad never mistakes a first pass for
+  // the whole thing.
+  assert.match(text, /Still being written/);
+  assert.match(text, /1 of 5 answered/);
+  const done = renderJournalText(journal, {}, 'Danny Lowenthal', new Date('2026-09-13T12:00:00Z'), { finished: true });
+  assert.match(done, /Finished 2026-09-13/);
 });
 
 test('agreements count as answered when yes or no is chosen', () => {
@@ -213,6 +232,7 @@ test('a finished journal goes to Dropbox, to the client, and as a notice to Chad
       journal,
       answers: { 'bm-1': { text: 'The loudest story is that I am behind.' } },
       clientEmail: 'danny@example.com',
+      finished: true,
       now: new Date('2026-09-13T12:00:00Z'),
     },
     fakeFetch
@@ -233,7 +253,7 @@ test('a finished journal goes to Dropbox, to the client, and as a notice to Chad
   assert.match(toClient.text, /The loudest story is that I am behind\./);
   assert.doesNotMatch(toChad.text, /The loudest story is that I am behind\./);
   assert.match(toChad.text, /1 of 12 prompts answered/);
-  assert.match(toChad.subject, /^Danny Lowenthal sent /);
+  assert.match(toChad.subject, /^Danny Lowenthal finished /);
 
   delete process.env.DROPBOX_APP_KEY;
   delete process.env.DROPBOX_APP_SECRET;
@@ -254,7 +274,7 @@ test('without Dropbox, Chad still gets the journal itself', async () => {
   };
   const journal = findJournal(1, 'your-turning-point');
   const outcome = await deliverJournal(
-    { code: 'danny-lowenthal', journal, answers: { 'tp-1': { text: 'Work has to change.' } }, clientEmail: null },
+    { code: 'danny-lowenthal', journal, answers: { 'tp-1': { text: 'Work has to change.' } }, clientEmail: null, finished: true },
     fakeFetch
   );
   assert.strictEqual(outcome.savedTo, null);
