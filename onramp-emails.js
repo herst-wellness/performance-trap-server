@@ -152,7 +152,7 @@ function enroll(record) {
     p('Week 1 is here: ' + link(weekUrl(1), 'Week 1: From the Book to the Body') + '. Open it today. Read the lesson, then sit with the breathing recording once before you do anything else. Ten minutes is plenty the first time.') +
     p("The two journals for the week are in the lesson, and each one says when to do it. What's Bringing You Here is for the first day or two. One Moment, Mapped is for the end of the week, once you've caught a moment or two in real life. Do one or both.") +
     journalLinks(1) +
-    p("When you've written, bring it to the journal sitting, from the lesson page. It reads what you wrote, finds the line with the most charge, checks with you, and then reads it back so you can notice what the body does. Not me, and not therapy. It's how I work with people's writing, built into the site.") +
+    p("When you've written, bring it to the journal sitting on the lesson page. It reads what you wrote, finds the line with the most charge, checks with you, and reads it back so you can notice what the body does. Not me, and not therapy.") +
     p("One thing to know up front. The site keeps track of when you play the recordings and when you tap Mark done on a journal. Not to grade you. At the end of each week I'll send you what the week looked like: how many days you sat, which sits you finished, which journals you got to. No shame either way. It's just data, and it's yours.") +
     signOff();
   return message("You're in. Here's your access code.", body);
@@ -163,8 +163,8 @@ function yayNayIntro(record, links) {
     greeting(record) +
     p("Every morning for the next four weeks you'll get a note from me with one question. Yay or nay? Did you sit yesterday, or didn't you.") +
     p("Tap one. That's the whole job.") +
-    p("Here's why. This work doesn't happen in the reading. It happens in the ten or fifteen minutes a day when you sit down with the breath. The days add up or they don't, and either way you're better off knowing. So this isn't a streak, and nobody is keeping score against you. No shame either way. It's just data.") +
-    p("At the end of each week I'll send you what the week looked like: how many days you sat, which sits you listened to. That's yours to look at the way you'd look at anything else that's true about your life.") +
+    p("This work doesn't happen in the reading. It happens in the ten or fifteen minutes a day when you sit down with the breath. The days add up or they don't. This isn't a streak, and nobody is keeping score against you. No shame either way. It's just data.") +
+    p("At the end of each week I'll send you what the week looked like: how many days you sat, which sits you listened to. That's yours to look at like anything else that's true about your life.") +
     p("If you miss a day, you didn't fail. Begin again the next one. The drift and the return is the practice.") +
     signOff();
   const built = message('Yay or nay', body);
@@ -200,7 +200,7 @@ const WEEK_OPEN = {
     title: 'Week 3: Turning Contact Into Choice',
     paras: [
       'The first two weeks were SENSE. Getting to the body and staying there. This week is STEP, which is what becomes possible once you can stay.',
-      "Here's the shape of it. Something lands, and the nervous system hands you two bad choices. Say the true thing and lose the relationship, or keep the peace and lose yourself. Take the call at ten at night, or be the one who let the team down. Almost every time, the two choices are the trap, not the truth. There's a third option the bind told you wasn't available. This week is about finding it, and then practicing it in small moments before the big ones.",
+      "Something lands, and the nervous system hands you two bad choices. Say the true thing and lose the relationship, or keep the peace and lose yourself. Take the call at ten at night, or be the one who let the team down. Most of the time, the two choices are the trap, not the truth. There's a third option the bind told you wasn't available. This week is about finding it, and practicing it in small moments before the big ones.",
       "The sit is Finding the Third Option. About sixteen minutes. Bring a real bind to it, one that's live this week.",
       "Two journals, and the lesson says when. The Trade, once you've caught a moment where the old pull was there. The Third Option, at the end. Do one or both.",
     ],
@@ -209,7 +209,7 @@ const WEEK_OPEN = {
     subject: 'Week 4: the last week',
     title: 'Week 4: Integration and the Doorway',
     paras: [
-      "This is the week that pulls it together, and it's also the week we go a layer deeper than we have. Underneath the tightness you've been learning to stay with, there's usually something more tender. The ache of all the ways you had to override yourself to belong. I call it the sacred wound, and we spend the week with it.",
+      "This week pulls it together, and we go a layer deeper than we have. Underneath the tightness you've been learning to stay with, there's usually something more tender. The ache of all the ways you had to override yourself to belong. I call it the sacred wound, and we spend the week with it.",
       "The sit is The Sacred Wound. About fourteen minutes. Go slowly. If it's too much on a given day, that's information, not failure. Go back to the breathing recording and come back to it tomorrow.",
       "Two journals. What's Still Running, early in the week, after a sit. What You're Taking With You, at the end. That last one is what you'll bring to our session, so do it whatever else you skip.",
     ],
@@ -229,7 +229,7 @@ function weekOpen(record, n) {
 }
 
 function scorecardNote(daysSat) {
-  if (daysSat >= 5) return "That's a real week. The body knows the difference between reading about this and doing it, and you did it.";
+  if (daysSat >= 5) return "That's a real week. The body knows the difference between reading about this and doing it.";
   if (daysSat >= 2) return "Some days in, some days out. That's most weeks for most people. The days you sat count. So do the days you noticed you didn't.";
   return "Not much sitting this week. No shame. This is the useful kind of data, because the question now isn't whether you're disciplined. It's what got in the way. Look at that the way you'd look at anything in the body. Where does it live? What's it protecting?";
 }
@@ -255,7 +255,7 @@ function closing(record) {
   const body =
     greeting(record) +
     p("Four weeks. Whatever it looked like, you did it, and the month is in your body now in a way it wasn't before.") +
-    p("The last piece is a session with me. An hour on Zoom. It's part of what you paid for. We'll name what the month surfaced, what got easier, and what's still asking for attention. Then I'll tell you honestly whether deeper one-on-one work fits where you are, or whether what you have now is enough to keep going on your own. Either answer is a good one.") +
+    p("The last piece is a session with me. An hour on Zoom. It's part of what you paid for. We'll name what the month surfaced, what got easier, and what's still asking for attention. Then I'll tell you whether one-on-one work fits where you are, or whether what you have now is enough to keep going on your own. Either answer is a good one.") +
     p('Book it here: ' + link(BOOKING_URL, 'Integration and Next-Step Session') + '. Pick a time in the next two or three weeks, while the month is still close.') +
     p("Before we meet, do the last journal, What You're Taking With You, and bring it. If you didn't get to everything, bring what you have. We'll work with what's there.") +
     signOff();
