@@ -53,7 +53,11 @@ body{
 
 .prompt{margin:0 0 34px;padding:0 0 26px;border-bottom:1px solid var(--soft)}
 .prompt:last-child{border-bottom:0;padding-bottom:0;margin-bottom:0}
-.promptlabel,legend{display:block;font:700 20px/1.35 'Playfair Display',Georgia,serif;color:var(--ink);margin:0 0 8px;padding:0}
+.promptlabel{display:block;font:700 20px/1.35 'Playfair Display',Georgia,serif;color:var(--ink);margin:0 0 8px;padding:0}
+/* No display property on the legend: changing it detaches the legend from
+   its fieldset in some browsers, and a screen reader then stops announcing
+   the question when the radio gets focus. */
+legend{font:700 20px/1.35 'Playfair Display',Georgia,serif;color:var(--ink);margin:0 0 8px;padding:0;width:100%}
 .question{margin:0 0 12px;color:var(--muted)}
 textarea,input[type=text],input[type=email],input[type=password],input[type=file]{
   width:100%;
