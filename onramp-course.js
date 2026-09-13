@@ -175,7 +175,8 @@ const COURSE_WEEKS = {
 <p>So if it's not about positive thinking, what's it about? I'll leave that with you for the week. Here's the part I'll give you. We bring a quality of mind to whatever it is we do. A set of beliefs, some conscious and some not, that inform all of our experience. Those beliefs come from our past. They're your Varanasi. The next meeting, the next conversation, the next time you walk in the door at home, that's your Rishikesh. You know your future is predicated on your past. What you're unaware of is how predicated it is. This week, when something starts to fire, the question is: what am I carrying in right now? Then come back to the body and find out what's actually here. Go sit. I'm right here with you.</p>
 <h3>Something from my own life</h3>
 <p>I was nineteen or twenty. My brother had died the year before, by suicide, and I was anxious in a way I could not get underneath.</p>
-<p>I was seeing a Jungian therapist. He was good. Everything we did stayed in my head. I had been in therapy and done group therapy and spoken all about this grief. I could talk about my feelings. I had command of them as concepts.</p>
+<p>I started therapy a few months after he died, with a woman named Beverly. She was sharp, laser-focused, a Jungian who worked through symbols and archetypes. I would describe some inner knot and she would track it back to me with a precision that felt, the first few times, like being seen. She was good at it. She is the one who gave me the kids on the bus, which I still use with people thirty-five years later.</p>
+<p>And I turned it into a performance. I analyzed every metaphor like it was another puzzle to solve, another task to master. I had been in therapy and done group therapy and spoken all about this grief. I could talk about my feelings. I had command of them as concepts. The tight, burning knot in my chest never moved.</p>
 <p>A friend invited me to Hawaii to study with a yoga teacher. I was standing in paradise and could not feel any of it.</p>
 <p>The first day, the teacher took me through ten sun salutations. I remember being terribly stiff and breathless. Then he had me lie down, and he said something I have never forgotten. Lie on the floor. Try not to think. You have a pharmacy inside of you, and if you let yourself feel what's happening in your body, all of the healing properties will go to the different places inside your body.</p>
 <p>For the first three or four minutes, nothing happened. I kept my attention in my body. Then I felt a vice like quality in my chest. I felt it crack open, and it felt like a sparrow rising up from my chest up to my eyes, and these tears pouring down my cheeks.</p>
@@ -480,16 +481,13 @@ const COURSE_WEEKS = {
 <p>Same shape as before. Three pieces, one on each part of the move, early in the week. Two journals, and you can do one or both. The Trade, once you've caught one moment where the old pull was there. The Third Option, near the end of the week. Bring what you write to the journal sitting once or twice. And the sit this week is Finding the Third Option, about twelve minutes, most days. If you can only do a few things: sit, read The Trade, and do one journal.</p>
 <p>One thing to expect, and please hear this kindly. Most days you'll catch the moment only afterward. That counts fully. Nobody gets this in one clean shot. Oh wait, that was a moment I could have turned toward. That noticing is how you start catching it sooner, and I'll be glad to hear about it either way. Go find one moment this week. Be gentle with yourself while you look.</p>
 <h3>Something from my own life</h3>
-<p>It was during the lockdowns. I was on a video call with a senior executive who was panicking about layoffs. I played my part. Calm, steady, the one he could trust.</p>
-<p>Inside, my mind was foggy. My gut twisted when I shifted in my chair. My jaw was clenched. My hands were sweating. My ears were ringing. I had not slept in days.</p>
-<p>Then he paused, looked at me through the screen and asked, Is everything all right there? He said it casually, almost offhand, but it cut through me.</p>
-<p>My body froze. I could feel my face tighten, and a wave of heat rushed up my face.</p>
-<p>Shit, I thought, he sees what's happening. Don't blink, just smile. Do not let him see this crack.</p>
-<p>But then there was a split second where I thought, maybe I'll tell him the truth. That no, I'm not all right. My gut's in pain. I haven't slept in days. I'm so tired I can't even think straight.</p>
-<p>The default kicked in immediately, and I said, Yeah, just a rough night. All's good here.</p>
-<p>He nodded and kept going. That moment passed, but not really for me.</p>
-<p>And that was the first time someone saw through me, even just a little.</p>
-<p>The trade did not happen in the lie. It happened in the split second before it, when I saw the option and the old thing was faster.</p>
+<p>I had just arrived in India. I was meeting a friend for lunch, and she saw me drinking from a sealed plastic water bottle.</p>
+<p>You're so American, she scoffed. Everybody in my store drinks water from the tap. Drop the bottle, you don't need it.</p>
+<p>Wanting to prove I wasn't soft, that I belonged with all the other yoga students, I did the dumbest thing imaginable. I chucked the bottle into the garbage and began drinking water from the tap.</p>
+<p>I remember it tasting metallic, but I still swallowed it down.</p>
+<p>Nobody made me do it. She did not even ask twice. I knew what was in the tap. What I wanted more than safe water was to not be the American with the bottle.</p>
+<p>I got giardia that afternoon. What the next two years cost me is in the book, and you have read it.</p>
+<p>The whole trade took about four seconds.</p>
 <h3>Still</h3>
 <p>Someone near the end of our work together told me about a series of messages that had come in from a parent. "They felt overwhelming. And this part of me said, just take a moment. You can take a moment. You don't have to engage with this right now. Your needs matter. Respond when it feels better for you."</p>
 <p>So finish the story, I said.</p>
