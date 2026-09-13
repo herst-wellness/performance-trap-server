@@ -1,0 +1,105 @@
+/* The journal pages. Same palette as the companion, deliberately not the
+   same body face: the companion sets its text in Cormorant Garamond, which
+   is thin and low contrast and hard work at length. A journal is read
+   slowly and answered, sometimes by someone whose eyes are tired, so the
+   body is set in Georgia at 20px and the boxes in a plain sans. Headings
+   keep Playfair Display so the page still looks like Chad's. */
+:root{
+  --cream:#F4EDE4;
+  --paper:#FBF7F0;
+  --ink:#2A1D10;
+  --muted:#5C4A36;
+  --gold:#7A5C14;
+  --line:#C9B69D;
+  --soft:#EFE6D8;
+  --danger:#7C2620;
+  --shadow:0 14px 40px rgba(42,29,16,.09);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  background:var(--cream);
+  color:var(--ink);
+  font:20px/1.65 Georgia,'Iowan Old Style',serif;
+}
+.skip{position:absolute;left:-9999px;top:0;background:var(--gold);color:#fff;padding:12px 18px;z-index:10}
+.skip:focus{left:8px;top:8px}
+.shell{width:min(760px,calc(100% - 28px));margin:0 auto;padding:28px 0 72px}
+.brand{display:flex;justify-content:center;margin-bottom:14px}
+.brand img{display:block;width:min(420px,100%);height:auto}
+.crumbs{font:16px/1.5 Georgia,serif;color:var(--muted);text-align:center;margin:0 0 14px}
+.crumbs a{color:var(--gold)}
+.rule{height:1px;background:var(--gold);opacity:.55;margin:0 0 28px}
+.hero{text-align:center;margin:0 auto 26px}
+.eyebrow{text-transform:uppercase;letter-spacing:.16em;color:var(--gold);font:700 13px/1.4 Georgia,serif;margin:0}
+.hero h1{font-family:'Playfair Display',Georgia,serif;font-size:clamp(30px,5.5vw,42px);line-height:1.15;margin:10px 0}
+.hero .sub{font-style:italic;color:var(--muted);margin:0}
+.card{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:14px;
+  box-shadow:var(--shadow);
+  padding:clamp(20px,4vw,32px);
+  margin:0 0 22px;
+}
+.card h2{font-family:'Playfair Display',Georgia,serif;font-size:26px;line-height:1.25;margin:0 0 12px}
+.card p{margin:0 0 14px}
+.small{font-size:17px;color:var(--muted)}
+.sectionnote{font-style:italic;color:var(--muted)}
+.progress{position:sticky;top:0;z-index:5;padding:14px 20px;margin-bottom:22px}
+.progress p{margin:0}
+#progressText{font-weight:700}
+
+.prompt{margin:0 0 34px;padding:0 0 26px;border-bottom:1px solid var(--soft)}
+.prompt:last-child{border-bottom:0;padding-bottom:0;margin-bottom:0}
+.promptlabel,legend{display:block;font:700 20px/1.35 'Playfair Display',Georgia,serif;color:var(--ink);margin:0 0 8px;padding:0}
+.question{margin:0 0 12px;color:var(--muted)}
+textarea,input[type=text],input[type=email],input[type=password],input[type=file]{
+  width:100%;
+  border:2px solid #A98F6B;
+  border-radius:10px;
+  background:#FFFDF9;
+  color:var(--ink);
+  padding:14px 15px;
+  font:18px/1.6 -apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;
+}
+textarea{resize:vertical;min-height:120px}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+fieldset{border:0;padding:0;margin:0}
+.choices{gap:22px;margin:6px 0 14px}
+.choice{font-size:19px;display:inline-flex;align-items:center;gap:8px;cursor:pointer;padding:6px 0}
+.choice input{width:22px;height:22px}
+.notelabel{display:block;font-size:17px;color:var(--muted);margin:0 0 6px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.tools{margin-top:10px}
+.button{
+  border:2px solid var(--gold);
+  background:var(--gold);
+  color:#fff;
+  border-radius:999px;
+  padding:13px 24px;
+  font:700 17px/1 Georgia,serif;
+  cursor:pointer;
+}
+.button:hover{filter:brightness(.93)}
+.button:disabled{opacity:.55;cursor:not-allowed}
+.button.secondary{background:transparent;color:var(--gold)}
+.button.small-button{padding:9px 18px;font-size:16px}
+.button.speaking{background:var(--danger);border-color:var(--danger)}
+.speak-status{font-size:17px;color:var(--muted);margin:8px 0 0;min-height:1.2em}
+.status{font-size:18px;color:var(--muted);margin:14px 0 0;min-height:1.2em}
+.error{color:var(--danger);font-weight:700;margin:12px 0 0}
+.field{margin:16px 0}
+.field label{display:block;font-weight:700;font-size:18px;margin:0 0 6px}
+details.alt{margin-top:20px;border-top:1px solid var(--soft);padding-top:16px}
+details.alt summary{cursor:pointer;font-weight:700;color:var(--gold);padding:6px 0}
+.footer{text-align:center;color:var(--muted);font-size:17px;margin:26px auto 0}
+a{color:var(--gold)}
+@media(max-width:620px){
+  body{font-size:19px}
+  .shell{padding-top:16px}
+  .progress{position:static}
+  .row .button{width:100%}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
