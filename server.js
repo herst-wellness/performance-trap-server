@@ -6,6 +6,8 @@ const { handleCompanionRoute, initializeCompanion } = require('./companion');
 const { handleOnrampRoute } = require('./onramp');
 const { handleMbfRoute } = require('./mbf');
 const { handleMbfJournalRoute } = require('./mbf-journal');
+const { handleDropboxSetupRoute } = require('./mbf-dropbox-setup');
+const { startTicker: startMbfDelivery } = require('./mbf-schedule');
 const { handleAjRoute } = require('./aj');
 const { handleLorenzoRoute } = require('./lorenzo');
 const { handleCourseRoute } = require('./onramp-course');
@@ -1253,6 +1255,7 @@ const server = http.createServer(async (req, res) => {
   // checked against it, and the journal sitting keeps its exchange there
   // when the person has agreed to that.
   if (await handleOnrampRoute(req, res, { store: onrampStore() })) { return; }
+  if (await handleDropboxSetupRoute(req, res)) { return; }
   if (await handleMbfJournalRoute(req, res)) { return; }
   if (await handleMbfRoute(req, res)) { return; }
   if (await handleAjRoute(req, res)) { return; }
@@ -2870,4 +2873,12 @@ if (process.env.ONRAMP_EMAIL_SPINE === 'on') {
   const { startSpineTicker } = require('./onramp-schedule');
   const { defaultStore } = require('./onramp-store');
   startSpineTicker({ store: defaultStore(), sendEmail: sendResendEmail, baseUrl: BASE_URL });
+}
+
+// Mind/Body Foundations journals go into Chad's Dropbox folders on their
+// own, without a client pressing anything. On by default and harmless
+// before Dropbox is connected, because the ticker checks that first and
+// does nothing. MBF_AUTO_DELIVERY=off stops it.
+if (process.env.MBF_AUTO_DELIVERY !== 'off') {
+  startMbfDelivery({ log: (line) => console.log(line) });
 }

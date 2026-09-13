@@ -27,12 +27,26 @@ const DROPBOX_UPLOAD_URL = 'https://content.dropboxapi.com/2/files/upload';
 // not a code change.
 const DEFAULT_ROOT = '/clients/Mind:Body Foundations';
 
-function dropboxConfigured() {
-  return Boolean(
-    process.env.DROPBOX_APP_KEY &&
-      process.env.DROPBOX_APP_SECRET &&
-      process.env.DROPBOX_REFRESH_TOKEN
-  );
+// Credentials come from the connection Chad made in his browser, which is
+// kept in the journal store, and fall back to settings for anyone running
+// this locally. Reading them is a store read, so everything that needs them
+// is async.
+async function dropboxCredentials() {
+  const { loadCredentials } = require('./mbf-dropbox-setup');
+  const stored = await loadCredentials();
+  if (stored && stored.refreshToken) return stored;
+  if (process.env.DROPBOX_APP_KEY && process.env.DROPBOX_APP_SECRET && process.env.DROPBOX_REFRESH_TOKEN) {
+    return {
+      appKey: process.env.DROPBOX_APP_KEY,
+      appSecret: process.env.DROPBOX_APP_SECRET,
+      refreshToken: process.env.DROPBOX_REFRESH_TOKEN,
+    };
+  }
+  return null;
+}
+
+async function dropboxConfigured() {
+  return Boolean(await dropboxCredentials());
 }
 
 // Access codes are issued as the client's own name, "danny-lowenthal", so
@@ -62,17 +76,18 @@ function safeSegment(s) {
   return String(s).replace(/[\\/:?*<>|"]/g, '-').replace(/\s+/g, ' ').trim();
 }
 
-function journalFileName(journal, clientName, now) {
-  const date = now.toISOString().slice(0, 10);
-  return safeSegment(
-    'Module ' + journal.module + ' - ' + journal.title + ' - ' + clientName + ' - ' + date
-  ) + '.txt';
+// One stable name per client per journal. The file is overwritten as the
+// client writes, so Chad's folder holds the current state of the work
+// rather than a pile of dated fragments, and the file itself says whether
+// it is finished.
+function journalFileName(journal, clientName) {
+  return safeSegment('Module ' + journal.module + ' - ' + journal.title + ' - ' + clientName) + '.txt';
 }
 
-function dropboxPath(journal, clientName, now) {
+function dropboxPath(journal, clientName) {
   const root = String(process.env.MBF_DROPBOX_ROOT || DEFAULT_ROOT).replace(/\/$/, '');
   return (
-    root + '/' + safeSegment(clientName) + '/Module ' + journal.module + '/' + journalFileName(journal, clientName, now)
+    root + '/' + safeSegment(clientName) + '/Module ' + journal.module + '/' + journalFileName(journal, clientName)
   );
 }
 
@@ -80,12 +95,18 @@ function dropboxPath(journal, clientName, now) {
 // Plain text, prompt then answer, in the journal's own order. Plain text
 // because it reads correctly in a screen reader, searches in an inbox, and
 // opens on anything, which a PDF does none of well.
-function renderJournalText(journal, answers, clientName, now) {
+function renderJournalText(journal, answers, clientName, now, state = {}) {
+  const counts = answeredCount(journal, answers);
   const lines = [];
   lines.push(journal.title);
   lines.push('Mind/Body Foundations, Module ' + journal.module + ', ' + journal.code);
   lines.push(clientName);
-  lines.push(now.toISOString().slice(0, 10));
+  lines.push(
+    state.finished
+      ? 'Finished ' + now.toISOString().slice(0, 10)
+      : 'Still being written. This is where it stood on ' + now.toISOString().slice(0, 10) + '.'
+  );
+  lines.push(counts.answered + ' of ' + counts.total + ' answered.');
   lines.push('');
   for (const section of journal.sections) {
     if (section.heading) {
@@ -134,13 +155,13 @@ function answeredCount(journal, answers) {
 
 // ── Dropbox ─────────────────────────────────────────────────────
 async function dropboxAccessToken(fetchImpl = fetch) {
+  const creds = await dropboxCredentials();
+  if (!creds) throw new Error('Dropbox is not connected.');
   const body = new URLSearchParams({
     grant_type: 'refresh_token',
-    refresh_token: String(process.env.DROPBOX_REFRESH_TOKEN || ''),
+    refresh_token: String(creds.refreshToken),
   });
-  const basic = Buffer.from(
-    String(process.env.DROPBOX_APP_KEY || '') + ':' + String(process.env.DROPBOX_APP_SECRET || '')
-  ).toString('base64');
+  const basic = Buffer.from(String(creds.appKey) + ':' + String(creds.appSecret)).toString('base64');
   const response = await fetchImpl(DROPBOX_TOKEN_URL, {
     method: 'POST',
     headers: {
@@ -163,7 +184,9 @@ async function uploadBytesToDropbox(path, bytes, fetchImpl = fetch) {
       Authorization: 'Bearer ' + token,
       'Content-Type': 'application/octet-stream',
       // autorename keeps a second send from overwriting the first.
-      'Dropbox-API-Arg': JSON.stringify({ path, mode: 'add', autorename: true, mute: true }),
+      // Overwrite: one file per journal that keeps up with the client's
+      // writing, rather than a new copy every time they pause.
+      'Dropbox-API-Arg': JSON.stringify({ path, mode: 'overwrite', autorename: false, mute: true }),
     },
     body: Buffer.isBuffer(bytes) ? bytes : Buffer.from(String(bytes), 'utf8'),
   });
@@ -196,21 +219,43 @@ async function sendEmail({ to, subject, text }, fetchImpl = fetch) {
 }
 
 // ── The whole delivery ──────────────────────────────────────────
+// Two shapes, one function.
+//
+// While a journal is being written, only the Dropbox file is updated, over
+// and over, quietly. Chad can open it at any point and read where the
+// person has got to. No email goes out for that, because an email every
+// time somebody pauses would be worse than useless.
+//
+// When the client says they are finished, the file is written once more,
+// they get their own copy by email, and Chad gets a short notice telling
+// him it is done. Only then.
 async function deliverJournal(options, fetchImpl = fetch) {
-  const { code, journal, answers, clientEmail } = options;
+  const { code, journal, answers, clientEmail, finished } = options;
   const now = options.now || new Date();
-  const clientName = clientNameFromCode(code);
-  const text = renderJournalText(journal, answers, clientName, now);
+  const clientName = options.clientName || clientNameFromCode(code);
+  const text = renderJournalText(journal, answers, clientName, now, { finished });
   const counts = answeredCount(journal, answers);
   const chadTo = process.env.MBF_REPORT_TO || process.env.COMPANION_REPORT_TO || '';
   const outcome = { clientName, savedTo: null, copiedTo: null, notified: false, problems: [] };
 
-  if (dropboxConfigured()) {
+  if (await dropboxConfigured()) {
     try {
-      outcome.savedTo = await uploadToDropbox(dropboxPath(journal, clientName, now), text, fetchImpl);
+      outcome.savedTo = await uploadToDropbox(dropboxPath(journal, clientName), text, fetchImpl);
     } catch (error) {
       outcome.problems.push('dropbox');
     }
+  }
+
+  if (!finished) {
+    // An in-progress save that could not reach Dropbox is not an error the
+    // client should see. It stays unmarked in the store and the ticker
+    // tries again on its next pass.
+    if (!outcome.savedTo) {
+      const err = new Error('Dropbox did not take the file.');
+      err.clientStatus = 502;
+      throw err;
+    }
+    return outcome;
   }
 
   if (clientEmail) {
@@ -220,7 +265,7 @@ async function deliverJournal(options, fetchImpl = fetch) {
           to: clientEmail,
           subject: 'Your copy: ' + journal.title + ' (Module ' + journal.module + ')',
           text:
-            'Here is your own copy of the journal you just sent to Chad. Keep this email. Later modules ask you to look back at what you wrote earlier, and this is where you will find it.\n\n' +
+            'Here is your own copy of the journal you just finished. Keep this email. Later modules ask you to look back at what you wrote earlier, and this is where you will find it.\n\n' +
             '--------\n\n' +
             text,
         },
@@ -240,14 +285,14 @@ async function deliverJournal(options, fetchImpl = fetch) {
       await sendEmail(
         {
           to: chadTo,
-          subject: clientName + ' sent ' + journal.title + ' (Module ' + journal.module + ')',
+          subject: clientName + ' finished ' + journal.title + ' (Module ' + journal.module + ')',
           text:
             clientName +
-            ' finished ' +
+            ' marked ' +
             journal.title +
             ', Module ' +
             journal.module +
-            '.\n' +
+            ', finished.\n' +
             counts.answered +
             ' of ' +
             counts.total +
@@ -275,6 +320,7 @@ async function deliverJournal(options, fetchImpl = fetch) {
 
 module.exports = {
   clientNameFromCode,
+  dropboxCredentials,
   uploadBytesToDropbox,
   dropboxConfigured,
   dropboxPath,

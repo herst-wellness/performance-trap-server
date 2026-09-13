@@ -9,6 +9,14 @@
 // is still there for anyone who prefers it. They download the document,
 // fill it in, and upload it here rather than attaching it to an email.
 //
+// What Chad changed on 2026-09-13: the journal no longer waits for the
+// client to press anything. The page saves to his storage as they write,
+// and the ticker in mbf-schedule.js keeps a file in his Dropbox folder up
+// to date with wherever they have got to. Pressing Finished still matters,
+// it tells him the work is done and sends the client their own copy, but he
+// no longer depends on it. The page says all of this in plain words before
+// anyone writes a line.
+//
 // A structural sibling of mbf.js rather than an extension of it, for the
 // same reason mbf.js is a sibling of onramp.js: the companion carries a
 // deterministic safety layer that must stay independently readable, and
@@ -16,6 +24,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { findJournal, journalsForModule } = require('./mbf-journal-content');
+const { defaultStore, findRecord, upsertRecord } = require('./mbf-store');
 const {
   deliverJournal,
   clientNameFromCode,
@@ -29,6 +38,7 @@ const MAX_BODY_BYTES = 400000;
 const MAX_UPLOAD_BYTES = 20 * 1024 * 1024;
 const PAGE_ROUTE = /^\/practice\/mbf\/module-(\d)\/journal\/([a-z0-9-]+)$/;
 const CONTENT_ROUTE = /^\/api\/mbf\/journal\/(\d)\/([a-z0-9-]+)$/;
+const SAVE_PATH = '/api/mbf/journal/save';
 const SEND_PATH = '/api/mbf/journal/send';
 const UPLOAD_PATH = '/api/mbf/journal/upload';
 
@@ -60,10 +70,14 @@ function suppliedCode(req) {
   return String(req.headers['x-companion-access'] || '');
 }
 
-function hasAccess(req) {
+function accessForCode(code) {
   const codes = validAccessCodes();
   if (codes.length === 0) return { ok: false, status: 503 };
-  return { ok: codes.some((c) => codeMatches(c, suppliedCode(req))), status: 401 };
+  return { ok: codes.some((c) => codeMatches(c, code)), status: 401 };
+}
+
+function hasAccess(req) {
+  return accessForCode(suppliedCode(req));
 }
 
 // ── Small helpers ───────────────────────────────────────────────
@@ -166,7 +180,7 @@ function journalPage(moduleNumber, slug, journal) {
       <h2 id="introHeading">Before you start</h2>
       <div id="introText"></div>
       <div id="audioSlot"></div>
-      <p class="small">Your answers save in this browser as you type, so you can close this and come back. Nothing leaves this page until you press Send at the bottom.</p>
+      <p class="small">Your answers save as you type, both in this browser and to Chad's own files, so you can close this and come back, or start on one device and finish on another. You do not have to send anything. Chad can see wherever you have got to, and would rather have half of it than nothing.</p>
       <details class="alt">
         <summary>I would rather write in Word</summary>
         <p>That works. Download the document, write in it the way you always have, then bring it back here instead of attaching it to an email.</p>
@@ -188,21 +202,21 @@ function journalPage(moduleNumber, slug, journal) {
     <form id="journalForm" novalidate></form>
 
     <section class="card send" aria-labelledby="sendHeading">
-      <h2 id="sendHeading">When you are ready</h2>
-      <p>Send it to Chad so he has it before your next session. A copy comes to you as well, which is the record you keep. You can send an unfinished journal; he would rather have one honest pass than nothing.</p>
+      <h2 id="sendHeading">When you are finished</h2>
+      <p>Chad already has what you have written. This button tells him you are done with it, and sends you your own copy to keep, which is what later modules ask you to look back at.</p>
       <div class="field">
         <label for="clientEmail">Your email, for your own copy</label>
         <input id="clientEmail" type="email" autocomplete="email" spellcheck="false">
       </div>
       <div class="row">
-        <button id="sendButton" class="button" type="button">Send to Chad</button>
+        <button id="sendButton" class="button" type="button">I am finished with this journal</button>
         <button id="downloadButton" class="button secondary" type="button">Download a copy</button>
       </div>
       <p id="sendStatus" class="status" role="status"></p>
     </section>
   </div>
 
-  <p class="footer">Mind/Body Foundations. Your answers are held in this browser only until you send them. This page does not keep them afterwards.</p>
+  <p class="footer">Mind/Body Foundations. What you write here is kept with the rest of your work in Chad's files, the same as the journals you used to email him. Nobody else sees it.</p>
 </main>
 <script>
 (function(){
@@ -214,6 +228,8 @@ function journalPage(moduleNumber, slug, journal) {
   var accessCode = '';
   var answers = {};
   var saveTimer = null;
+  var serverTimer = null;
+  var serverState = 'idle';
   var recorder = null, micStream = null, chunks = [], listeningFor = null;
 
   function el(id){ return document.getElementById(id); }
@@ -227,14 +243,42 @@ function journalPage(moduleNumber, slug, journal) {
 
   function save(){
     var s = store(); if (!s) return;
-    try { s.setItem(STORAGE_KEY, JSON.stringify(answers)); el('saveState').textContent = 'Saved on this device.'; }
-    catch(e) { el('saveState').textContent = 'This browser will not let the page save your place. Download a copy before you close the tab.'; }
+    try { s.setItem(STORAGE_KEY, JSON.stringify(answers)); }
+    catch(e) { saveState('This browser will not let the page save your place. Download a copy before you close the tab.'); }
+  }
+
+  function saveState(message){
+    el('saveState').textContent = message;
+  }
+
+  // Two saves, on two clocks. The browser's own copy is instant and is what
+  // protects against a closed tab. The copy on Chad's side follows a few
+  // seconds later and is what means the client never has to send anything.
+  async function saveToServer(){
+    if (!journal) return;
+    serverState = 'saving';
+    try {
+      var response = await fetch('${SAVE_PATH}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Companion-Access': accessCode },
+        cache: 'no-store',
+        body: JSON.stringify({ module: MODULE, slug: SLUG, answers: answers })
+      });
+      if (!response.ok) throw new Error('save failed');
+      serverState = 'saved';
+      saveState('Saved. Chad has this.');
+    } catch (error) {
+      serverState = 'offline';
+      saveState('Saved on this device. It has not reached Chad yet, and will when you are back online.');
+    }
   }
 
   function queueSave(){
-    el('saveState').textContent = 'Saving.';
+    saveState('Saving.');
     clearTimeout(saveTimer);
     saveTimer = setTimeout(save, 600);
+    clearTimeout(serverTimer);
+    serverTimer = setTimeout(saveToServer, 4000);
   }
 
   function counts(){
@@ -506,7 +550,7 @@ function journalPage(moduleNumber, slug, journal) {
     var c = counts();
     if (c.answered === 0) { el('sendStatus').textContent = 'There is nothing written yet.'; return; }
     el('sendButton').disabled = true;
-    el('sendStatus').textContent = 'Sending.';
+    el('sendStatus').textContent = 'One moment.';
     try {
       var response = await fetch('${SEND_PATH}', {
         method: 'POST',
@@ -517,10 +561,10 @@ function journalPage(moduleNumber, slug, journal) {
       var data = await response.json();
       if (!response.ok) throw new Error(data.error || 'It did not send.');
       el('sendStatus').textContent = data.copiedTo
-        ? 'Chad has it. A copy is on its way to ' + data.copiedTo + '.'
-        : 'Chad has it.';
+        ? 'Done. Chad knows you have finished it, and your own copy is on its way to ' + data.copiedTo + '.'
+        : 'Done. Chad knows you have finished it.';
     } catch (error) {
-      el('sendStatus').textContent = (error.message || 'It did not send.') + ' Your writing is still here. Try again, or download a copy.';
+      el('sendStatus').textContent = (error.message || 'That did not go through.') + ' Your writing is safe and Chad still has it. You can try this again, or just leave it.';
     } finally {
       el('sendButton').disabled = false;
     }
@@ -572,7 +616,17 @@ function journalPage(moduleNumber, slug, journal) {
       el('accessCard').hidden = true;
       el('journalWrap').hidden = false;
       load();
+      // What Chad's side holds wins over what this browser holds, so a
+      // client who wrote half of it on a laptop opens the phone and finds
+      // it there. The browser copy is only the offline safety net.
+      if (data.saved && data.saved.answers && Object.keys(data.saved.answers).length) {
+        answers = data.saved.answers;
+        save();
+      }
       render();
+      if (data.saved && data.saved.finishedAt) {
+        el('sendStatus').textContent = 'You marked this one finished. You can still change it, and Chad will see the change.';
+      }
       el('introCard').scrollIntoView();
       el('introCard').focus();
     } catch (error) {
@@ -586,6 +640,15 @@ function journalPage(moduleNumber, slug, journal) {
   el('unlockButton').addEventListener('click', unlock);
   el('accessCode').addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); unlock(); } });
   window.addEventListener('beforeunload', function(){ if (journal) save(); });
+  // A tab closing or a phone being put down is the commonest end of a
+  // sitting, and neither fires a reliable fetch. sendBeacon does.
+  document.addEventListener('visibilitychange', function(){
+    if (document.visibilityState !== 'hidden' || !journal) return;
+    clearTimeout(serverTimer);
+    var payload = JSON.stringify({ module: MODULE, slug: SLUG, answers: answers, code: accessCode });
+    try { navigator.sendBeacon('${SAVE_PATH}?beacon=1', new Blob([payload], { type: 'application/json' })); }
+    catch (e) { saveToServer(); }
+  });
 })();
 </script>
 </body>
@@ -625,7 +688,55 @@ async function handleMbfJournalRoute(req, res) {
       });
       return true;
     }
-    sendJson(res, 200, { journal, pdfHref: pdfHrefFor(journal) });
+    let saved = null;
+    try {
+      const doc = await defaultStore().load();
+      const record = findRecord(doc, suppliedCode(req), journal.module, journal.slug);
+      if (record) saved = { answers: record.answers || {}, updatedAt: record.updatedAt, finishedAt: record.finishedAt };
+    } catch (error) {
+      // A store that cannot be read must not stop someone writing. They
+      // fall back to whatever their own browser kept.
+      saved = null;
+    }
+    sendJson(res, 200, { journal, pdfHref: pdfHrefFor(journal), saved });
+    return true;
+  }
+
+  if (url === SAVE_PATH) {
+    if (req.method !== 'POST') {
+      sendJson(res, 405, { error: 'Method not allowed' });
+      return true;
+    }
+    try {
+      const body = await readJsonBody(req);
+      // A page being closed saves through sendBeacon, which cannot set a
+      // header, so the code may arrive in the body instead. It is the same
+      // credential either way and is checked the same way.
+      const code = suppliedCode(req) || String(body.code || '');
+      const access = accessForCode(code);
+      if (!access.ok) {
+        sendJson(res, access.status, { error: 'That code did not work.' });
+        return true;
+      }
+      const journal = findJournal(body.module, body.slug);
+      if (!journal) {
+        sendJson(res, 400, { error: 'That journal does not exist.' });
+        return true;
+      }
+      await defaultStore().update((doc) => {
+        upsertRecord(doc, {
+          code,
+          clientName: clientNameFromCode(code),
+          moduleNumber: journal.module,
+          slug: journal.slug,
+          answers: body.answers || {},
+        });
+        return doc;
+      });
+      sendJson(res, 200, { saved: true });
+    } catch (error) {
+      sendJson(res, 502, { error: 'That did not save.' });
+    }
     return true;
   }
 
@@ -646,11 +757,36 @@ async function handleMbfJournalRoute(req, res) {
         sendJson(res, 400, { error: 'That journal does not exist.' });
         return true;
       }
+      const code = suppliedCode(req);
+      const clientName = clientNameFromCode(code);
+      await defaultStore().update((doc) => {
+        upsertRecord(doc, {
+          code,
+          clientName,
+          moduleNumber: journal.module,
+          slug: journal.slug,
+          answers: body.answers || {},
+          finished: true,
+        });
+        return doc;
+      });
       const outcome = await deliverJournal({
-        code: suppliedCode(req),
+        code,
+        clientName,
         journal,
         answers: body.answers || {},
         clientEmail: String(body.clientEmail || '').trim() || null,
+        finished: true,
+      });
+      const now = new Date().toISOString();
+      await defaultStore().update((doc) => {
+        const record = findRecord(doc, code, journal.module, journal.slug);
+        if (record && outcome.savedTo) {
+          record.deliveredAt = now;
+          record.deliveredPath = outcome.savedTo;
+          record.deliveryProblem = null;
+        }
+        return doc;
       });
       sendJson(res, 200, { sent: true, copiedTo: outcome.copiedTo, savedTo: Boolean(outcome.savedTo) });
     } catch (error) {
@@ -698,12 +834,12 @@ async function handleMbfJournalRoute(req, res) {
 // place. Without Dropbox configured the client is told plainly that the
 // file route is not open yet rather than being told it arrived.
 async function saveUpload(journal, clientName, filename, bytes) {
-  if (!dropboxConfigured()) {
+  if (!(await dropboxConfigured())) {
     const err = new Error('Uploading is not connected yet. Email the file to Chad for now.');
     err.clientStatus = 503;
     throw err;
   }
-  const base = dropboxPath(journal, clientName, new Date()).replace(/[^/]+$/, '');
+  const base = dropboxPath(journal, clientName).replace(/[^/]+$/, '');
   const date = new Date().toISOString().slice(0, 10);
   const dot = filename.lastIndexOf('.');
   const stem = dot > 0 ? filename.slice(0, dot) : filename;
