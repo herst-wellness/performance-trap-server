@@ -5,6 +5,7 @@ const path = require('path');
 const { handleCompanionRoute, initializeCompanion } = require('./companion');
 const { handleOnrampRoute } = require('./onramp');
 const { handleMbfRoute } = require('./mbf');
+const { handleMbfJournalRoute } = require('./mbf-journal');
 const { handleAjRoute } = require('./aj');
 const { handleLorenzoRoute } = require('./lorenzo');
 const { handleCourseRoute } = require('./onramp-course');
@@ -1252,6 +1253,7 @@ const server = http.createServer(async (req, res) => {
   // checked against it, and the journal sitting keeps its exchange there
   // when the person has agreed to that.
   if (await handleOnrampRoute(req, res, { store: onrampStore() })) { return; }
+  if (await handleMbfJournalRoute(req, res)) { return; }
   if (await handleMbfRoute(req, res)) { return; }
   if (await handleAjRoute(req, res)) { return; }
   if (await handleLorenzoRoute(req, res)) { return; }

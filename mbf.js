@@ -1153,25 +1153,64 @@ function companionPage(mod) {
 }
 
 function indexPage() {
-  const links = Object.keys(MODULES)
-    .map((n) => `<li><a href="${MODULES[n].pagePath}">${MODULES[n].title}</a>, ${MODULES[n].sub}</li>`)
-    .join('\n      ');
+  const { journalsForModule } = require('./mbf-journal-content');
+  const blocks = Object.keys(MODULES)
+    .map((n) => {
+      const mod = MODULES[n];
+      const journals = journalsForModule(n);
+      const journalList = journals.length
+        ? '<p class="label">Journals</p><ul>' +
+          journals
+            .map(
+              (j) =>
+                `<li><a href="/practice/mbf/module-${j.module}/journal/${j.slug}">${j.title}</a><span class="note">${j.blurb}</span></li>`
+            )
+            .join('') +
+          '</ul>'
+        : '<p class="note">The journals for this module are still the PDFs Chad sends you.</p>';
+      return `<section class="module">
+  <h2>${mod.title}</h2>
+  <p class="sub">${mod.sub}</p>
+  ${journalList}
+  <p class="label">Or talk it through</p>
+  <ul><li><a href="${mod.pagePath}">The ${mod.title.replace(/^Module \d+: /, '')} companion</a><span class="note">A conversation instead of a form, covering the same ground.</span></li></ul>
+</section>`;
+    })
+    .join('\n');
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex, nofollow, noarchive">
-<title>Mind/Body Foundations Companion | Herst Wellness</title>
-<style>body{margin:0 auto;max-width:680px;padding:48px 24px;background:#F4EDE4;color:#352515;font-family:Georgia,serif;font-size:19px;line-height:1.6}h1{font-size:30px}a{color:#8B6B1E}li{margin-bottom:12px}</style>
+<title>Mind/Body Foundations | Herst Wellness</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F4EDE4;color:#2A1D10;font:20px/1.65 Georgia,serif}
+main{max-width:740px;margin:0 auto;padding:40px 20px 72px}
+h1{font-family:'Playfair Display',Georgia,serif;font-size:38px;line-height:1.15;margin:0 0 10px;text-align:center}
+.lede{text-align:center;color:#5C4A36;font-style:italic;margin:0 0 32px}
+.module{background:#FBF7F0;border:1px solid #C9B69D;border-radius:14px;padding:24px 26px;margin:0 0 20px;box-shadow:0 14px 40px rgba(42,29,16,.08)}
+.module h2{font-family:'Playfair Display',Georgia,serif;font-size:24px;margin:0 0 4px}
+.sub{color:#5C4A36;font-style:italic;margin:0 0 16px}
+.label{text-transform:uppercase;letter-spacing:.14em;font:700 13px/1.4 Georgia,serif;color:#7A5C14;margin:16px 0 6px}
+ul{margin:0;padding-left:20px}
+li{margin-bottom:10px}
+a{color:#7A5C14}
+:focus-visible{outline:3px solid #7A5C14;outline-offset:2px}
+.note{display:block;color:#5C4A36;font-size:17px}
+.foot{color:#5C4A36;font-size:17px;text-align:center;margin-top:28px}
+</style>
 </head>
 <body>
-<h1>Mind/Body Foundations Companion</h1>
-<p>The between-session practice companion, one page per module. Open the module you are in.</p>
-<ul>
-      ${links}
-</ul>
-<p style="font-size:14px;color:#78644F">Herst Wellness. Each page asks for your access code.</p>
+<main>
+<h1>Mind/Body Foundations</h1>
+<p class="lede">Your work between sessions. Open the module you are in.</p>
+${blocks}
+<p class="foot">Every page asks for the access code Chad gave you.</p>
+</main>
 </body>
 </html>`;
 }
