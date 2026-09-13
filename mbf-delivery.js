@@ -266,7 +266,7 @@ async function deliverJournal(options, fetchImpl = fetch) {
   }
 
   if (!outcome.savedTo && !outcome.notified) {
-    const err = new Error('Nothing could be delivered.');
+    const err = new Error('That did not reach Chad.');
     err.clientStatus = 502;
     throw err;
   }

@@ -183,3 +183,82 @@ test('no em dash anywhere a client can read it', () => {
     assert.ok(!text.includes('—'), 'em dash found in ' + file);
   }
 });
+
+test('a finished journal goes to Dropbox, to the client, and as a notice to Chad', async () => {
+  const { deliverJournal } = require('../mbf-delivery');
+  process.env.DROPBOX_APP_KEY = 'key';
+  process.env.DROPBOX_APP_SECRET = 'secret';
+  process.env.DROPBOX_REFRESH_TOKEN = 'refresh';
+  process.env.RESEND_API_KEY = 'resend';
+  process.env.MBF_REPORT_FROM = 'practice@example.com';
+  process.env.MBF_REPORT_TO = 'chad@example.com';
+
+  const calls = [];
+  const fakeFetch = async (url, options) => {
+    calls.push({ url, options });
+    if (url.includes('oauth2/token')) {
+      return { ok: true, json: async () => ({ access_token: 'token' }) };
+    }
+    if (url.includes('files/upload')) {
+      const arg = JSON.parse(options.headers['Dropbox-API-Arg']);
+      return { ok: true, json: async () => ({ path_display: arg.path }) };
+    }
+    return { ok: true, json: async () => ({ id: 'sent' }) };
+  };
+
+  const journal = findJournal(1, 'beginners-mind');
+  const outcome = await deliverJournal(
+    {
+      code: 'danny-lowenthal',
+      journal,
+      answers: { 'bm-1': { text: 'The loudest story is that I am behind.' } },
+      clientEmail: 'danny@example.com',
+      now: new Date('2026-09-13T12:00:00Z'),
+    },
+    fakeFetch
+  );
+
+  assert.strictEqual(outcome.clientName, 'Danny Lowenthal');
+  assert.match(outcome.savedTo, /Danny Lowenthal\/Module 1\//);
+  assert.strictEqual(outcome.copiedTo, 'danny@example.com');
+  assert.strictEqual(outcome.notified, true);
+  assert.deepStrictEqual(outcome.problems, []);
+
+  const emails = calls.filter((c) => c.url.includes('resend')).map((c) => JSON.parse(c.options.body));
+  assert.strictEqual(emails.length, 2);
+  const toClient = emails.find((e) => e.to[0] === 'danny@example.com');
+  const toChad = emails.find((e) => e.to[0] === 'chad@example.com');
+  // The client's copy carries the writing. Chad's notice does not, because
+  // the journal is already in his Dropbox.
+  assert.match(toClient.text, /The loudest story is that I am behind\./);
+  assert.doesNotMatch(toChad.text, /The loudest story is that I am behind\./);
+  assert.match(toChad.text, /1 of 12 prompts answered/);
+  assert.match(toChad.subject, /^Danny Lowenthal sent /);
+
+  delete process.env.DROPBOX_APP_KEY;
+  delete process.env.DROPBOX_APP_SECRET;
+  delete process.env.DROPBOX_REFRESH_TOKEN;
+  delete process.env.RESEND_API_KEY;
+});
+
+test('without Dropbox, Chad still gets the journal itself', async () => {
+  const { deliverJournal } = require('../mbf-delivery');
+  delete process.env.DROPBOX_REFRESH_TOKEN;
+  process.env.RESEND_API_KEY = 'resend';
+  process.env.MBF_REPORT_FROM = 'practice@example.com';
+  process.env.MBF_REPORT_TO = 'chad@example.com';
+  const sent = [];
+  const fakeFetch = async (url, options) => {
+    sent.push(JSON.parse(options.body));
+    return { ok: true, json: async () => ({ id: 'sent' }) };
+  };
+  const journal = findJournal(1, 'your-turning-point');
+  const outcome = await deliverJournal(
+    { code: 'danny-lowenthal', journal, answers: { 'tp-1': { text: 'Work has to change.' } }, clientEmail: null },
+    fakeFetch
+  );
+  assert.strictEqual(outcome.savedTo, null);
+  assert.strictEqual(outcome.notified, true);
+  assert.match(sent[0].text, /Work has to change\./);
+  delete process.env.RESEND_API_KEY;
+});
