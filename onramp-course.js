@@ -6,7 +6,8 @@
 // the public page source. Video and most meditation slots are placeholders
 // until Chad records them; Week 1's slot carries the recorded 12-minute
 // breathing practice. Week 1 is in the Mind/Body Foundations shape (docs/68,
-// 9/11/26): an introduction, three pieces, a practice card, two journals.
+// 9/14/26): an introduction, the sit first, one piece to read, a practice
+// card, one journal, and the rest of the reading behind a fold.
 const crypto = require('node:crypto');
 const { hasAccess, WEEKS, JOURNAL, issueSignedCode, ensureCodeRegistry } = require('./onramp');
 const { defaultStore, newRecord, findByCode, dayEntry, nameCode } = require('./onramp-store');
@@ -16,6 +17,9 @@ const emails = require('./onramp-emails');
 const brief = require('./onramp-brief');
 
 const COURSE_PATH = '/course/on-ramp';
+// The hour with Chad is split, thirty minutes before Week 1 and thirty at the
+// end; the opening half is the first thing a new person does.
+const OPENING_BOOKING_URL = emails.OPENING_BOOKING_URL;
 
 // PayPal configuration, all via environment; PAYPAL_BASE_URL exists for
 // tests to point at a mock. Self-serve enrollment is enabled only when
@@ -167,8 +171,9 @@ const COURSE_WEEKS = {
 <p>I call you friend because I don't want to set up a hierarchy. I'm just a guy. I've been doing this for a number of years, and I have some expertise. I'm not pretending to have more than that, and I don't know what it's like to be inside your experience. I'm a fellow traveler, going through similar shit and struggling just like everybody else. Take what I say and try it on. If it sounds right, use it. If it doesn't sound quite right, say so. That's what friend means here.</p>
 <p>You've read the book, so you know the trap and you know the map. This week we start putting it in the body, because that's where the trap lives. Slow the breath, and enter the body. That's the whole week.</p>
 <p>At the core of the things you're bumping up against, the work, the relationships, the health, there's a kind of core tenderness, a core anxiety or grief, that we spend a lifetime trying to fix, ignore, or outrun. That's the ache the book is about. Me too, by the way. It stays hidden from us because we can't access it in the head. We have to learn to access it in the body. The point isn't fixing. If you haven't fixed yourself by now, fixing just becomes one more reason to shame yourself, and we don't do shame here. Over these four weeks, what I'm hoping for you is enough clarity around what's stuck in there that you start to have some freedom to make new choices. Not a total overhaul. Ten percent better has a lot in it.</p>
-<p>When you go to university and prepare for a lecture, you do the reading and the writing first, so you come into the room ready for the real conversation. That's the shape of each week here. Three short pieces to read, on slowing the breath, on entering the body, and on why they matter. Two journals, and you can do one or both. Then you bring what you wrote to the journal sitting, where it gets read back to you and the body gets to answer. The reading prepares the writing, the writing prepares the conversation, and all of it prepares the hour you and I get to spend together at the end.</p>
-<p>Your daily commitment is the sit. Ten to fifteen minutes with this week's breathing recording, most days. If you're just starting, five minutes today is fine. The site keeps track of when you play the recordings and when you mark a journal done, and at the end of the week I'll send you what the week looked like. Just data, and it's yours. Plan on the three pieces early in the week, a piece a day. Do What's Bringing You Here in the first day or two. Do One Moment, Mapped toward the end of the week, once you've caught a moment or two in real life. If you can only do a few things: sit, read The Breath, and do one journal. That's enough. You're doing great already.</p>
+<p>When you go to university and prepare for a lecture, you do the reading and the writing first, so you come into the room ready for the real conversation. That's the shape of each week here, and the order matters. You sit first, because this week is not more understanding. Then one piece to read, on slowing the breath. Then one journal. Then you bring what you wrote to the journal sitting, where it gets read back to you and the body gets to answer. Two more pieces sit further down the page if you want them, and they are not homework. The reading prepares the writing, the writing prepares the conversation, and all of it prepares the time you and I spend together, thirty minutes before you start and thirty at the end.</p>
+<p>Two things worth deciding before you go any further, because they carry more than willpower does. What time of day are you going to sit, and what already happens at that time. Hooking the sit onto something already in your day, the first coffee, the dog, closing the laptop at night, holds better than deciding to be disciplined about it. And before you miss a day, which you will: one missed day costs you close to nothing. A missed week is the one that matters. So when a day goes by, begin again the next one and don't make it mean anything about you.</p>
+<p>Your daily commitment is the sit. Ten to fifteen minutes with this week's breathing recording, most days. If you're just starting, five minutes today is fine. Read The Breath when you've sat at least once, and do What's Bringing You Here in the first day or two. That's the week. Sit, read the one piece, write the one journal. The site keeps track of when you play the recordings and when you mark a journal done, and at the end of the week I'll send you what the week looked like. Just data, and it's yours. That's enough. You're doing great already.</p>
 <p>One story before you start. It is not a story about positive thinking.</p>
 <p>Two yogis are walking from Varanasi to Rishikesh, a day apart. Varanasi is the ancient city on the Ganges where people go to die. Rishikesh is where you go to find a teacher and study. The first yogi comes upon a farmer at the side of the road and asks him, sir, can you tell me, what are the people like in Rishikesh, where I'm going? And the farmer gets a little reflective and asks him, well, what were the people like in Varanasi, where you've come from? The yogi says, terrible. Liars and cheats. I got pickpocketed. I'm glad to be leaving. And the farmer says, I'm sorry, sir, but I'm afraid the people in Rishikesh are very much the way you found the people in Varanasi. And with a heavy head, the first yogi goes on his way.</p>
 <p>The next day the second yogi comes along and asks the farmer the same question. The farmer asks him the same thing back. And this one says, oh, an amazing group of people. The kindest, most thoughtful people I've met. I'm sad to be leaving. And the farmer says, well, fear not, sir. The people in Rishikesh are very much the way you found the people in Varanasi.</p>
@@ -276,7 +281,7 @@ const COURSE_WEEKS = {
 <h4>Summary</h4>
 <ul><li>The loop: stimulus, feeling tone, story, reaction, and then the proliferation that makes it all bigger. It runs in a second, in the body, before you get a vote.</li><li>You can't outthink it, because the body has already locked in, and putting out the fire only brings the next fire.</li><li>The opening is at the feeling tone, before the story. Go to the body there, and the storyline can't take.</li><li>Follow the feeling tone to the end and the story quiets with it. What's left is data. That's the conditioning changing.</li><li>Trust the body more than the mind. The second arrow is optional. The first practice is to see the loop, not to fix it.</li></ul>
 <h4>Action</h4>
-<p>Toward the end of the week, once you've caught a moment or two in real life, do the second journal, One Moment, Mapped. Pick one moment and walk it through the steps, then look for where the opening was. Bring it to the journal sitting.</p>
+<p>If you want it, One Moment, Mapped is on the lesson page. Pick one moment and walk it through the steps, then look for where the opening was. It isn't this week's journal, and it isn't a smaller version of one. It's here if the mapping is the part you want.</p>
 <h3>One person's story</h3>
 <p>Someone I worked with came to me having already done a great deal of work on themselves. They had read about their own pattern. They had it named years earlier by a professional. They owned the tools, and the tools were not working.</p>
 <p>Before we began they wrote down what happens, and I read it back to them. "A situation I find myself in frequently is anxiety and overwhelm with work, then problem solving by focusing on saving money so I don't have to work so intensely." And: "I feel anxiety when I'm not online for all the working hours, as if my new bosses will think I'm slacking." And then this: "I feel critical of myself that I'm exhausted at the end of working and don't have the energy for meditation or exercise."</p>
@@ -294,6 +299,7 @@ const COURSE_WEEKS = {
 <p>And this one, which is the old pattern running backwards. Their workplace is slow. They know exactly how to make it fast. They won't. "Their processes are slow, and I know how to make them very fast, but then everyone's got to work a lot, and I don't want to do that."</p>
 <p>The old thing is still there. They said that too. "It feels like a younger version of me, less intense, but clearly it's still around." And: "I still sometimes fall back on feeling like I'm supposed to handle it all, which definitely causes unnecessary stress, and I probably don't have to handle it all." Rest still costs them something: "If I do rest, it's almost like I feel badly for resting."</p>
 <p>Not all of their change came from this practice, and they said so themselves. Some of it was a therapist years ago. Some of it was a better job they went out and found. What the practice did was make a feeling stop being sticky. That's a small claim and it's the true one.</p>`,
+    sitLead: `Before you read anything below, put the recording on once. This week is not more understanding. It's getting the thing into the body, and the reading makes more sense from the other side of a sit. When it ends, give it two minutes in <a href="/practice/on-ramp/week-1/journal/the-breath-in-ordinary-hours">The Breath in Ordinary Hours</a>: where you started, where you landed, anything that moved.`,
     meditation: meditationPlayer('/audio/onramp-breath-12min.mp3', 'The breathing practice, recorded by Chad. About twelve minutes. Sit with it most days this week.'),
     practiceCard: `
 <h4>Most days this week</h4>
@@ -306,17 +312,23 @@ const COURSE_WEEKS = {
 <h4>A line a day, if you want one</h4>
 <p>Did I sit, and did something land today? Where was it? That's the whole entry. The site already keeps track of the recordings you play and the journals you mark done, so this line is for you, not for me.</p>`,
     journal: `
-<p>Two journals this week, each one a printable sheet. Do one or both. When you finish one, tap Mark done. That's how the weekly note knows. Take a few minutes of breath before either of them. Sit with your eyes closed, let the body settle, then open your eyes and write. A few paragraphs per prompt is plenty. Don't filter. Don't edit.</p>
-<p>Then, once or twice in the week, bring what you've written to the journal sitting. Bring one journal or both. It reads everything, finds the place with the most charge, and checks with you before it starts there. Then it reads a few of your own lines back to you, and you notice what happens in the body as you hear them, with the breath. That's what I do with people's writing before a session, and this is the closest thing to it between now and ours.</p>
+<p>One journal this week: <strong>What’s Bringing You Here</strong>. That’s the week. When you finish it, tap Mark done.</p>
+<p>Take a few minutes of breath before you write. Sit with your eyes closed, let the body settle, then open your eyes and write. A few paragraphs per prompt is plenty. Don’t filter. Don’t edit.</p>
+<p class="note">Writing about something tender usually feels worse before it feels better. That’s ordinary and it settles. You can stop at any point and come back to it. Nothing here has to be finished in one go; the page keeps what you’ve written.</p>
+<p>Then, once in the week, bring what you’ve written to the journal sitting. It reads everything, finds the place with the most charge, and checks with you before it starts there. Then it reads a few of your own lines back to you, and you notice what happens in the body as you hear them, with the breath. That’s what I do with people’s writing before a session, and it’s what I’ll have read before ours.</p>
 <label class="check"><input type="checkbox" id="journalConsent"> <span>Let Chad read what I write in the journal sittings before our Integration and Next-Step Session.</span></label>
 <p class="small">Ticked: what you bring to the journal sittings is kept for Chad to read, and he gets a short brief before your session. Unticked: nothing is kept.</p>
-<h4>1. What's Bringing You Here (first day or two)</h4>
-<p>You read the book and something in it landed. This one brings that into focus: what's bringing you here, as concretely as you can; what's happening in your body right now as you sit with it; what that feeling would say if it could talk; and, if something older surfaces, the role you learned to play and the unspoken terms. It ends with the two yogis. If it's not a story about positive thinking, what's it about? And what's your Varanasi?</p>
-<p><a class="button" href="/downloads/on-ramp/week-1/whats-bringing-you-here.pdf" data-journal="week-1/whats-bringing-you-here" target="_blank" rel="noopener">Open the journal (PDF)</a> <button type="button" class="button button-quiet" data-journal-done="week-1/whats-bringing-you-here">Mark done</button> <a class="button button-quiet" href="${JOURNAL[1].pagePath}?journal=week-1/whats-bringing-you-here">Bring it to the journal sitting</a></p>
-<h4>2. One Moment, Mapped (end of the week)</h4>
-<p>Map one moment end to end, the way the third piece lays it out. The trigger. The body's first response, right now, as you hold the memory. The story, quoted as you hear it. The reaction then, and the pull now. The spinning. Then find where the opening was. It closes on the two questions I ask at the end of every session: what's one thing you're taking with you, and what's an open question you're left with?</p>
-<p><a class="button" href="/downloads/on-ramp/week-1/one-moment-mapped.pdf" data-journal="week-1/one-moment-mapped" target="_blank" rel="noopener">Open the journal (PDF)</a> <button type="button" class="button button-quiet" data-journal-done="week-1/one-moment-mapped">Mark done</button> <a class="button button-quiet" href="${JOURNAL[1].pagePath}?journal=week-1/one-moment-mapped">Bring it to the journal sitting</a></p>
-<p class="note">Keep what you write. You'll bring a piece of it to your Integration and Next-Step Session at the end of the four weeks.</p>`,
+<h4>This week: What’s Bringing You Here</h4>
+<p>First day or two, after a sit. Twenty to thirty minutes. You read the book and something in it landed. This one brings that into focus: what’s bringing you here, as concretely as you can; what’s happening in your body right now as you sit with it; what that feeling would say if it could talk; and, if something older surfaces, the role you learned to play and the unspoken terms. It ends with the two yogis. If it’s not a story about positive thinking, what’s it about? And what’s your Varanasi?</p>
+<p><a class="button" href="/practice/on-ramp/week-1/journal/whats-bringing-you-here" data-journal="week-1/whats-bringing-you-here">Write in the journal</a> <button type="button" class="button button-quiet" data-journal-done="week-1/whats-bringing-you-here">Mark done</button> <a class="button button-quiet" href="${JOURNAL[1].pagePath}?journal=week-1/whats-bringing-you-here">Bring it to the journal sitting</a></p><p class="small"><a href="/downloads/on-ramp/week-1/whats-bringing-you-here.pdf" target="_blank" rel="noopener">Print it instead (PDF)</a></p>
+<h4>Running alongside: The Breath in Ordinary Hours</h4>
+<p>Two minutes a day, next to where you sit. Notes on what the body does, not essays. This is the page the sit sends you to.</p>
+<p><a class="button" href="/practice/on-ramp/week-1/journal/the-breath-in-ordinary-hours" data-journal="week-1/the-breath-in-ordinary-hours">Write in the journal</a> <button type="button" class="button button-quiet" data-journal-done="week-1/the-breath-in-ordinary-hours">Mark done</button> <a class="button button-quiet" href="${JOURNAL[1].pagePath}?journal=week-1/the-breath-in-ordinary-hours">Bring it to the journal sitting</a></p><p class="small"><a href="/downloads/on-ramp/week-1/the-breath-in-ordinary-hours.pdf" target="_blank" rel="noopener">Print it instead (PDF)</a></p>
+<h4>If you want it: One Moment, Mapped</h4>
+<p>Not required, and not a smaller version of the week. It’s here if you want to take one moment apart end to end: the trigger, the body’s first response, the story quoted as you hear it, the reaction then and the pull now, the spinning, and where the opening was. Do it this week, later in the month, or not at all.</p>
+<p><a class="button" href="/practice/on-ramp/week-1/journal/one-moment-mapped" data-journal="week-1/one-moment-mapped">Write in the journal</a> <button type="button" class="button button-quiet" data-journal-done="week-1/one-moment-mapped">Mark done</button> <a class="button button-quiet" href="${JOURNAL[1].pagePath}?journal=week-1/one-moment-mapped">Bring it to the journal sitting</a></p><p class="small"><a href="/downloads/on-ramp/week-1/one-moment-mapped.pdf" target="_blank" rel="noopener">Print it instead (PDF)</a></p>
+<p class="note">Keep what you write. You’ll bring a piece of it to your Integration and Next-Step Session at the end of the four weeks.</p>
+`,
   },
   2: {
     title: 'Week 2: Staying With It',
@@ -327,7 +339,7 @@ const COURSE_WEEKS = {
 <h3>Introduction</h3>
 <p>This week matters to me because there's some part of you that's wanting to feel like you're enough, and that's the part we have to develop a relationship with, in an embodied way, not a cerebral one. It's wounded, yes. But hidden inside the wounding are your values, your sense of purpose, what's most important to you. So we're sidling up to the part of you that got abandoned, so that it can come online and be an ally instead of running you from the back of the bus. That's what naming, staying, and equanimity are for. I love this part of the work, because it's where people start to feel like they're on their own side.</p>
 <p>And a warning, said with care. There will be moments this week when the work gets hard. It'll bring things to the surface. You might feel tired, foggy, or irritable. You might skip the journal or pull away from anything that asks you to slow down and feel. That doesn't mean you're failing or that the work isn't working. It means something is working. Something is opening, and the parts of you that protect you don't yet know how to let that happen without trying to shut you down. No shame. We don't do shame here.</p>
-<p>Same shape as last week. Three pieces to read, one on each move, a piece a day early in the week. Two journals, and you can do one or both. The Protector in the first day or two, after a sit. The Return near the end of the week. Bring what you write to the journal sitting once or twice, whenever there's writing to bring. The sit this week is called Keeping It Company, about fifteen minutes. Sit with it most days. On the days you're jumpy and need to settle first, use the Week 1 breathing recording instead. The point is to sit, not to do the hardest version. A missed day is fine. Begin again the next. If you can only do a few things: sit, read Stay, and do one journal.</p>
+<p>Same shape as last week. Sit first, most days. The sit is called Keeping It Company, about fifteen minutes. On the days you're jumpy and need to settle first, use the Week 1 breathing recording instead. The point is to sit, not to do the hardest version. Then read Stay. Then one journal, The Protector, in the first day or two after a sit, and bring what you write to the journal sitting once in the week. A missed day is fine. Begin again the next. Name What's There and Equanimity are further down the page if you want more of the reading, and The Return is there too.</p>
 <p>One moment before you start, from my own life, because the move this week is one I'm still learning, and I'd rather you know that. A few months ago I was being interviewed for a podcast, late in the conversation, with the book about to come out and more eyes on me than I've had before. Coming into that conversation I was feeling really anxious. And what I said, into the microphone, was this. I still feel anxious, but I'm in relationship to the anxiety here. I'm not overriding it. I feel something in my chest. And then I kept talking.</p>
 <p>The shift is no longer, when I can once and for all not feel this anymore, when I can finally cut this off. It's, how do I move from this place? How do I breathe from this place? How do I relate from this place? The anxiety isn't an error. It's part of what lets us be human with each other. This week is about learning to have it here while you keep going. You've got this, and I've got you.</p>
 <h3>Something from my own life</h3>
@@ -456,6 +468,7 @@ const COURSE_WEEKS = {
 <p>Later that year, after what they called a disaster of a day: "I don't even feel a sense of regret or disappointment, or what I used to feel, a sense of beating myself up for a day like that. Just calm." That's equanimity. Not a good day. A bad day that didn't get a second beating on top of it.</p>
 <p>And most recently, the thing I'd point to as the result. "Having gotten better at saying that's not my thing, I'm not going to do that, so that doesn't eat into my fire, and doing more of the thing that fuels my fire."</p>
 <p>They did not make it tidy. "There is something about things are going well right now. I have this role, I have this job, it pays well, and it's easy to find that groundedness when things are going well." They don't know yet whether it holds through a bad stretch. They still rarely catch the anger while it's happening. What changed is that it no longer has to come back around as a verdict about who they are.</p>`,
+    sitLead: `Sit before you read. Keep the Week 1 breathing recording for the days you're jumpy and need to settle first. When it ends, two minutes in <a href="/practice/on-ramp/week-2/journal/staying-in-ordinary-hours">Staying in Ordinary Hours</a>.`,
     meditation: meditationPlayer('https://pub-3e45b3813f2d4b1b81f913aad060a3b8.r2.dev/audio/onramp-week2-keeping-it-company.mp3', 'Keeping It Company, recorded by Chad. About fifteen minutes. Sit with it most days this week.'),
     practiceCard: `
 <h4>Most days this week</h4>
@@ -469,15 +482,21 @@ const COURSE_WEEKS = {
 <h4>A line a day, if you want one</h4>
 <p>What did I stay with today, even for a moment? That's the whole entry. The site already keeps track of the recordings you play and the journals you mark done.</p>`,
     journal: `
-<p>Two journals this week, each one a printable sheet. Do one or both. When you finish one, tap Mark done. That's how the weekly note knows. Take a few minutes of breath before either of them, then open your eyes and write. A few paragraphs per prompt is plenty. Don't filter. Don't edit.</p>
-<p>Then, once or twice in the week, bring what you've written to the journal sitting. Bring one journal or both. It reads everything, finds the place with the most charge, and checks with you before it starts there. Then it reads a few of your own lines back to you, and you notice what happens in the body as you hear them. If you ticked the box on Week 1, what you bring here is kept for me as well.</p>
-<h4>1. The Protector (first day or two, after a sit)</h4>
-<p>One moment from the last week or two that still has charge. The body now, as you hold the memory. Then the first thing you meet, which is usually the protection: its shape, its place, its texture, what it would say if it could talk, and which kid it is. Three passes of staying, thirty seconds each, with a line after each. Then what softened, or what's still holding, and one line to carry into the week.</p>
-<p><a class="button" href="/downloads/on-ramp/week-2/the-protector.pdf" data-journal="week-2/the-protector" target="_blank" rel="noopener">Open the journal (PDF)</a> <button type="button" class="button button-quiet" data-journal-done="week-2/the-protector">Mark done</button> <a class="button button-quiet" href="${JOURNAL[2].pagePath}?journal=week-2/the-protector">Bring it to the journal sitting</a></p>
-<h4>2. The Return (end of the week)</h4>
-<p>The same moment, or a fresh one. The body now. Three minutes on the wave with a timer, then what happened: did it move, soften, get sharper before it eased. What surfaced on the other side, if anything. Then the return: write directly to whatever is there, the way you'd speak to a scared kid. What shifted over the week, one move for next week, and my two questions: what's one thing you're taking with you, and what's an open question you're left with?</p>
-<p><a class="button" href="/downloads/on-ramp/week-2/the-return.pdf" data-journal="week-2/the-return" target="_blank" rel="noopener">Open the journal (PDF)</a> <button type="button" class="button button-quiet" data-journal-done="week-2/the-return">Mark done</button> <a class="button button-quiet" href="${JOURNAL[2].pagePath}?journal=week-2/the-return">Bring it to the journal sitting</a></p>
-<p class="note">Keep what you write. You'll bring a piece of it to your Integration and Next-Step Session at the end of the four weeks.</p>`,
+<p>One journal this week: <strong>The Protector</strong>. When you finish it, tap Mark done.</p>
+<p>Take a few minutes of breath before you write. Sit with your eyes closed, let the body settle, then open your eyes and write. A few paragraphs per prompt is plenty. Don’t filter. Don’t edit.</p>
+<p class="note">Writing about something tender usually feels worse before it feels better. That’s ordinary and it settles. You can stop at any point and come back to it. Nothing here has to be finished in one go; the page keeps what you’ve written.</p>
+<p>Then, once in the week, bring what you’ve written to the journal sitting. It reads everything, finds the place with the most charge, checks with you, and reads your own lines back so you can notice what the body does as you hear them. If you ticked the box on Week 1, what you bring here is kept for me too, and I read it before our hour.</p>
+<h4>This week: The Protector</h4>
+<p>First day or two, after a sit. Twenty to thirty minutes. One moment from the last week or two that still has charge. The body now, as you hold the memory. Then the first thing you meet, which is usually the protection: its shape, its place, its texture, what it would say if it could talk, and which kid it is. Three passes of staying, thirty seconds each, with a line after each. Then what softened, or what’s still holding, and one line to carry into the week.</p>
+<p><a class="button" href="/practice/on-ramp/week-2/journal/the-protector" data-journal="week-2/the-protector">Write in the journal</a> <button type="button" class="button button-quiet" data-journal-done="week-2/the-protector">Mark done</button> <a class="button button-quiet" href="${JOURNAL[2].pagePath}?journal=week-2/the-protector">Bring it to the journal sitting</a></p><p class="small"><a href="/downloads/on-ramp/week-2/the-protector.pdf" target="_blank" rel="noopener">Print it instead (PDF)</a></p>
+<h4>Running alongside: Staying in Ordinary Hours</h4>
+<p>Two minutes a day, next to where you sit.</p>
+<p><a class="button" href="/practice/on-ramp/week-2/journal/staying-in-ordinary-hours" data-journal="week-2/staying-in-ordinary-hours">Write in the journal</a> <button type="button" class="button button-quiet" data-journal-done="week-2/staying-in-ordinary-hours">Mark done</button> <a class="button button-quiet" href="${JOURNAL[2].pagePath}?journal=week-2/staying-in-ordinary-hours">Bring it to the journal sitting</a></p><p class="small"><a href="/downloads/on-ramp/week-2/staying-in-ordinary-hours.pdf" target="_blank" rel="noopener">Print it instead (PDF)</a></p>
+<h4>If you want it: The Return</h4>
+<p>Not required. The same moment, or a fresh one. Three minutes on the wave with a timer, then what happened: did it move, soften, get sharper before it eased. Then the return: write directly to whatever is there, the way you’d speak to a scared kid.</p>
+<p><a class="button" href="/practice/on-ramp/week-2/journal/the-return" data-journal="week-2/the-return">Write in the journal</a> <button type="button" class="button button-quiet" data-journal-done="week-2/the-return">Mark done</button> <a class="button button-quiet" href="${JOURNAL[2].pagePath}?journal=week-2/the-return">Bring it to the journal sitting</a></p><p class="small"><a href="/downloads/on-ramp/week-2/the-return.pdf" target="_blank" rel="noopener">Print it instead (PDF)</a></p>
+<p class="note">Keep what you write. You’ll bring a piece of it to your Integration and Next-Step Session.</p>
+`,
   },
   3: {
     title: 'Week 3: Turning Contact Into Choice',
@@ -487,7 +506,7 @@ const COURSE_WEEKS = {
     teaching: `
 <h3>Introduction</h3>
 <p>Here's why it can't be skipped. Therapy and spiritual practice are usually only about the inner journey. I'm making the argument that it's also about a renegotiation with the world around us, so that our world becomes a reflection of our inner insight. Human beings are in contract with one another, spoken and unspoken, and belonging is itself contractual. The first two weeks were about renegotiating the contract with yourself. This week is the contract with others. If you don't tune in to the trade you keep making, you'll keep going back to do the same inner work over and over, because you're re-traumatizing yourself. At some point you have to say, okay, I'm trading something now. I have to make a choice. I have to see what my options are. And then I have to say what's so for me. I know how hard that last part is. It's the part I still practice.</p>
-<p>Same shape as before. Three pieces, one on each part of the move, early in the week. Two journals, and you can do one or both. The Trade, once you've caught one moment where the old pull was there. The Third Option, near the end of the week. Bring what you write to the journal sitting once or twice. And the sit this week is Finding the Third Option, about twelve minutes, most days. If you can only do a few things: sit, read The Trade, and do one journal.</p>
+<p>Same shape as before. Sit first, most days. Finding the Third Option, about twelve minutes, and bring a live bind to it. Then two pieces this week rather than one, because the trade and the third option only make sense together. Then one journal, The Trade, once you've caught a moment where the old pull was there, and bring it to the journal sitting. Still is further down the page if you want it, and so is the second journal.</p>
 <p>One thing to expect, and please hear this kindly. Most days you'll catch the moment only afterward. That counts fully. Nobody gets this in one clean shot. Oh wait, that was a moment I could have turned toward. That noticing is how you start catching it sooner, and I'll be glad to hear about it either way. Go find one moment this week. Be gentle with yourself while you look.</p>
 <h3>Something from my own life</h3>
 <p>I had just arrived in India. I was meeting a friend for lunch, and she saw me drinking from a sealed plastic water bottle.</p>
@@ -597,6 +616,7 @@ const COURSE_WEEKS = {
 <p>What he said he was saying no to, at the end: "No to trying too hard. No to controlling where I don't need to. No to trying to fix everything myself." And: "I feel like I speak differently now. I feel like I move differently."</p>
 <p>He would not let it become a fairy tale. "This isn't the fairy tale of, oh, chapter closed." Three years apart from his spouse doesn't undo itself because the job came through: "I recognize that she and I won't be the same together as we were before." And if the new place turns out differently than he hopes, he said, he'd be at another decision point about whether it's worth it.</p>
 <p>He didn't get certainty. He got to stop bending.</p>`,
+    sitLead: `Sit before you read, and bring a real bind to it, one that's live this week.`,
     meditation: meditationPlayer('https://pub-3e45b3813f2d4b1b81f913aad060a3b8.r2.dev/audio/onramp-week3-finding-the-third-option.mp3', 'Finding the Third Option, recorded by Chad. About twelve minutes. Sit with it most days this week.'),
     practiceCard: `
 <h4>Most days this week</h4>
@@ -610,15 +630,18 @@ const COURSE_WEEKS = {
 <h4>A line a day, if you want one</h4>
 <p>The trade I noticed, and the small step I took, or wish I had. The site already keeps track of the recordings you play and the journals you mark done.</p>`,
     journal: `
-<p>Two journals this week, each one a printable sheet. Do one or both. When you finish one, tap Mark done. Take a few minutes of breath before either of them, then open your eyes and write. Don't filter. Don't edit.</p>
-<p>Then, once or twice in the week, bring what you've written to the journal sitting. Bring one journal or both. It reads everything, finds the place with the most charge, checks with you, and reads your own lines back so you can notice what the body does as you hear them. If you ticked the box on Week 1, what you bring here is kept for me as well.</p>
-<h4>1. The Trade (once you've caught a moment, after a sit)</h4>
-<p>One moment this week where you contorted. The body now. The two channels, what was said and what the body picked up. The trade, named plainly: in exchange for what, I agree to what. What it's like to make that trade, felt in the body. The hidden lie. The payoff and the cost. Where else it has shown up. One line to carry into the week.</p>
-<p><a class="button" href="/downloads/on-ramp/week-3/the-trade.pdf" data-journal="week-3/the-trade" target="_blank" rel="noopener">Open the journal (PDF)</a> <button type="button" class="button button-quiet" data-journal-done="week-3/the-trade">Mark done</button> <a class="button button-quiet" href="${JOURNAL[3].pagePath}?journal=week-3/the-trade">Bring it to the journal sitting</a></p>
-<h4>2. The Third Option (end of the week)</h4>
-<p>One interaction from this week where the old pull was there. The body now. The two options the trap offered you, in your own words. The trade. The third option, even if you only see it now. Then the actual words: one honest sentence, one boundary, or one request that says what you do want. What comes next. What it would mean to have said it regardless of how they respond. And my two questions: what's one thing you're taking with you, and what's an open question you're left with?</p>
-<p><a class="button" href="/downloads/on-ramp/week-3/the-third-option.pdf" data-journal="week-3/the-third-option" target="_blank" rel="noopener">Open the journal (PDF)</a> <button type="button" class="button button-quiet" data-journal-done="week-3/the-third-option">Mark done</button> <a class="button button-quiet" href="${JOURNAL[3].pagePath}?journal=week-3/the-third-option">Bring it to the journal sitting</a></p>
-<p class="note">Keep what you write. You'll bring a piece of it to your Integration and Next-Step Session at the end of the four weeks.</p>`,
+<p>One journal this week: <strong>The Trade</strong>. When you finish it, tap Mark done.</p>
+<p>Take a few minutes of breath before you write. Sit with your eyes closed, let the body settle, then open your eyes and write. A few paragraphs per prompt is plenty. Don’t filter. Don’t edit.</p>
+<p class="note">Writing about something tender usually feels worse before it feels better. That’s ordinary and it settles. You can stop at any point and come back to it. Nothing here has to be finished in one go; the page keeps what you’ve written.</p>
+<p>Then, once in the week, bring what you’ve written to the journal sitting. It reads everything, finds the place with the most charge, checks with you, and reads your own lines back so you can notice what the body does as you hear them. If you ticked the box on Week 1, what you bring here is kept for me too, and I read it before our hour.</p>
+<h4>This week: The Trade</h4>
+<p>Once you’ve caught a moment where you contorted, after a sit. Twenty to thirty minutes. The body now. The two channels, what was said and what the body picked up. The trade, named plainly: in exchange for what, I agree to what. What it’s like to make that trade, felt in the body. The hidden lie. The payoff and the cost. Where else it has shown up. One line to carry into the week.</p>
+<p><a class="button" href="/practice/on-ramp/week-3/journal/the-trade" data-journal="week-3/the-trade">Write in the journal</a> <button type="button" class="button button-quiet" data-journal-done="week-3/the-trade">Mark done</button> <a class="button button-quiet" href="${JOURNAL[3].pagePath}?journal=week-3/the-trade">Bring it to the journal sitting</a></p><p class="small"><a href="/downloads/on-ramp/week-3/the-trade.pdf" target="_blank" rel="noopener">Print it instead (PDF)</a></p>
+<h4>If you want it: The Third Option</h4>
+<p>Not required. One interaction where the old pull was there. The two options the trap offered you, in your own words. The trade. The third option, even if you only see it now. Then the actual words: one honest sentence, one boundary, or one request that says what you do want.</p>
+<p><a class="button" href="/practice/on-ramp/week-3/journal/the-third-option" data-journal="week-3/the-third-option">Write in the journal</a> <button type="button" class="button button-quiet" data-journal-done="week-3/the-third-option">Mark done</button> <a class="button button-quiet" href="${JOURNAL[3].pagePath}?journal=week-3/the-third-option">Bring it to the journal sitting</a></p><p class="small"><a href="/downloads/on-ramp/week-3/the-third-option.pdf" target="_blank" rel="noopener">Print it instead (PDF)</a></p>
+<p class="note">Keep what you write. You’ll bring a piece of it to your Integration and Next-Step Session.</p>
+`,
   },
   4: {
     title: 'Week 4: Integration and the Doorway',
@@ -628,7 +651,7 @@ const COURSE_WEEKS = {
     teaching: `
 <h3>Introduction</h3>
 <p>All month you've been staying with the tightness. Underneath it there's usually something more tender. At the core of the things you came in with is a kind of core tenderness, a core anxiety or grief, that you've spent a lifetime trying to fix, ignore, or outrun. The performance isn't the root. It's a coping strategy built to avoid something older and more tender, something I call the sacred wound. The trap is the strategy, and the wound, the ache no success will ever fix, is what all that proving is designed to keep you from feeling. This month has been about the moves. This week I want to name what the moves are for. Not to do that work here. To point at it. And when the parts of you that guard it show up this week, meet them with a little less argument than you've given them so far. I love protectors. I want you to know that going in.</p>
-<p>Same shape as before. Three pieces early in the week: what's underneath, the whole arc as one move, and what comes next. Two journals, and you can do one or both, but please do the second one whatever else you skip. What's Still Running early in the week, after a sit. What You're Taking With You at the end, and that's the one you bring to our hour together. The sit this week is The Sacred Wound, about fourteen minutes. Go slowly. If it's too much on a given day, that's information, not failure. Go back to the breathing recording and come back to it tomorrow.</p>
+<p>Same shape as before. Sit first. The sit this week is The Sacred Wound, about fourteen minutes. Go slowly. If it's too much on a given day, that's information, not failure. Go back to the breathing recording and come back to it tomorrow. Then what's underneath, and what comes next. One journal, What You're Taking With You, at the end of the week, and that's the one I'll have read before we meet, so do it whatever else you skip. The whole arc as one move is further down the page, and so is What's Still Running.</p>
 <p>One more thing to expect. There will be moments this week when it gets hard. It'll bring things to the surface. You might feel tired, foggy, or irritable, and you might want to skip the journal. That doesn't mean you're failing. Something is opening, and the parts of you that protect you don't yet know how to let that happen without trying to shut you down. We don't do shame here. Notice it, and come back. I'm looking forward to sitting down with you. Be well, and go slowly.</p>
 <h3>Something from my own life</h3>
 <p>A client asked me straight out, in a session, how I live with my brother's suicide.</p>
@@ -739,7 +762,7 @@ const COURSE_WEEKS = {
 <h4>Summary</h4>
 <ul><li>The hour names the month: the pattern, where it lives in the body, the trade, one next step. It's yours either way, and it's where we both kick the tire.</li><li>The deeper work is a loving, embodied appreciation for the sacred wound, two thirds relating to the part that wants to feel enough, one third new choices. That's Mind/Body Foundations, eight sessions over about six months.</li><li>You'll know it's time when you can feel the trigger, ride the wave, and have started changing the contracts in small ways.</li><li>If not now, fifteen minutes of breath a day, and the door is open.</li></ul>
 <h4>Action</h4>
-<p>At the end of the week, do the second journal, What You're Taking With You. Bring it to your Integration and Next-Step Session. That's the one we'll start from.</p>
+<p>At the end of the week, do the journal, What You're Taking With You. It comes to me before your Integration and Next-Step Session, and it's the one we'll start from.</p>
 <h3>One person's story: eight sessions</h3>
 <p>Someone I worked with for eight sessions was, on paper, doing very well. Senior, well paid, more than a decade at the same firm, a young child at home. He had written out three obstacles before we started, and when I asked which one to begin with, he picked this one without hesitating: "Sometimes I feel like I'm scared of being happy."</p>
 <p>I asked for something tangible. Something he avoids that would make him happy if he did it. "I could take a one week vacation where I totally unplug and I totally have a great time with the family, but I know that's going to cause distress at work, because I will feel that I'm letting my teammates down."</p>
@@ -755,6 +778,7 @@ const COURSE_WEEKS = {
 <p>What he said he was saying no to and yes to, standing at the end: no to impulsive reactions to the feeling of pain and stress in the throat and the heart and the stomach, yes to cultivating relationships with the people around him, and yes to the feeling of loving himself.</p>
 <p>He was not finished. He was scared. "I'm still in this loop of working. Nothing has changed since yesterday. So maybe there is going to be a moment after I leave where it does hit me, and at that time I'm a little bit scared, to be honest with you. I've never been unemployed before. I'm scared about what the future could bring, the uncertainty." He also said he was still looking for the work that fits, and hadn't found it.</p>
 <p>That's eight sessions. He didn't arrive anywhere. He stopped running his life on other people's opinion of him, he got closer to his kid, and he walked into uncertainty on purpose, scared.</p>`,
+    sitLead: `Sit before you read. Go slowly with this one. If it's too much on a given day, that's information, not failure. Go back to the breathing recording and come back to this tomorrow.`,
     meditation: meditationPlayer('https://pub-3e45b3813f2d4b1b81f913aad060a3b8.r2.dev/audio/onramp-week4-the-sacred-wound.mp3', 'The Sacred Wound, recorded by Chad. About fourteen minutes. Sit with it most days this week.'),
     practiceCard: `
 <h4>Most days this week</h4>
@@ -766,21 +790,24 @@ const COURSE_WEEKS = {
 <h4>A line a day, if you want one</h4>
 <p>Where did I meet a protector today, and could I be a little kinder to it? The site already keeps track of the recordings you play and the journals you mark done.</p>`,
     journal: `
-<p>Two journals this week, each one a printable sheet. Do one or both, and do the second one whatever else you skip. When you finish one, tap Mark done. Take a few minutes of breath before either of them, then open your eyes and write. Don't filter. Don't edit.</p>
-<p>Then bring what you've written to the journal sitting. It reads everything, finds the place with the most charge, checks with you, and reads your own lines back so you can notice what the body does as you hear them. If you ticked the box on Week 1, what you bring here is kept for me as well.</p>
-<h4>1. What's Still Running (early in the week, after a sit)</h4>
-<p>The one pattern that kept showing up this month. Where it shows up in the body first. The protector you keep bumping into, named and thanked, and what it's protecting. The trade underneath, in one sentence. What you've brushed underneath the tightness, without digging. And what you'd want help with in our hour.</p>
-<p><a class="button" href="/downloads/on-ramp/week-4/whats-still-running.pdf" data-journal="week-4/whats-still-running" target="_blank" rel="noopener">Open the journal (PDF)</a> <button type="button" class="button button-quiet" data-journal-done="week-4/whats-still-running">Mark done</button> <a class="button button-quiet" href="${JOURNAL[4].pagePath}?journal=week-4/whats-still-running">Bring it to the journal sitting</a></p>
-<h4>2. What You're Taking With You (end of the month, for our session)</h4>
-<p>Where you started, read back a month later. What the body learned. One moment from the month when you did the thing. What's still running. What changed in a relationship, if anything. What you brushed. What you want from our hour. Your practice going forward. And my two questions. This is the one you bring to your Integration and Next-Step Session.</p>
-<p><a class="button" href="/downloads/on-ramp/week-4/what-youre-taking-with-you.pdf" data-journal="week-4/what-youre-taking-with-you" target="_blank" rel="noopener">Open the journal (PDF)</a> <button type="button" class="button button-quiet" data-journal-done="week-4/what-youre-taking-with-you">Mark done</button> <a class="button button-quiet" href="${JOURNAL[4].pagePath}?journal=week-4/what-youre-taking-with-you">Bring it to the journal sitting</a></p>`,
+<p>One journal this week: <strong>What You’re Taking With You</strong>. It’s the one I’ll have read before we meet, so do it whatever else you skip. When you finish it, tap Mark done.</p>
+<p>Take a few minutes of breath before you write. Sit with your eyes closed, let the body settle, then open your eyes and write. A few paragraphs per prompt is plenty. Don’t filter. Don’t edit.</p>
+<p class="note">Writing about something tender usually feels worse before it feels better. That’s ordinary and it settles. You can stop at any point and come back to it. Nothing here has to be finished in one go; the page keeps what you’ve written.</p>
+<p>Then, once in the week, bring what you’ve written to the journal sitting. It reads everything, finds the place with the most charge, checks with you, and reads your own lines back so you can notice what the body does as you hear them. If you ticked the box on Week 1, what you bring here is kept for me too, and I read it before our hour.</p>
+<h4>This week: What You’re Taking With You</h4>
+<p>End of the month, after a sit. Thirty to forty minutes. Where you started, read back a month later. What the body learned. One moment from the month when you did the thing. What’s still running. What changed in a relationship, if anything. What you brushed. What you want from our hour. Your practice going forward. And my two questions. Write it for the two of us.</p>
+<p><a class="button" href="/practice/on-ramp/week-4/journal/what-youre-taking-with-you" data-journal="week-4/what-youre-taking-with-you">Write in the journal</a> <button type="button" class="button button-quiet" data-journal-done="week-4/what-youre-taking-with-you">Mark done</button> <a class="button button-quiet" href="${JOURNAL[4].pagePath}?journal=week-4/what-youre-taking-with-you">Bring it to the journal sitting</a></p><p class="small"><a href="/downloads/on-ramp/week-4/what-youre-taking-with-you.pdf" target="_blank" rel="noopener">Print it instead (PDF)</a></p>
+<h4>If you want it: What’s Still Running</h4>
+<p>Not required. Early in the week, after a sit. The one pattern that kept showing up this month. Where it shows up in the body first. The protector you keep bumping into, named and thanked, and what it’s protecting. The trade underneath, in one sentence. And what you’d want help with in our hour.</p>
+<p><a class="button" href="/practice/on-ramp/week-4/journal/whats-still-running" data-journal="week-4/whats-still-running">Write in the journal</a> <button type="button" class="button button-quiet" data-journal-done="week-4/whats-still-running">Mark done</button> <a class="button button-quiet" href="${JOURNAL[4].pagePath}?journal=week-4/whats-still-running">Bring it to the journal sitting</a></p><p class="small"><a href="/downloads/on-ramp/week-4/whats-still-running.pdf" target="_blank" rel="noopener">Print it instead (PDF)</a></p>
+`,
     closing: `
 <h3>Your Integration and Next-Step Session</h3>
 <p>You made it through. However much of it you did, whatever stuck and whatever didn't, you spent four weeks turning toward yourself instead of away.</p>
-<p>The course ends with one private conversation with me. That session is where the month gets named: the contract you keep signing, where it shows up in your body first, the trade you keep making, and one small next step. It's yours whether or not we ever work together again.</p>
+<p>Now the other half of our hour. We met for thirty minutes before you started, and you told me what you were bringing. This is where we look at what the month did with it: the contract you keep signing, where it shows up in your body first, the trade you keep making, and one small next step. It's yours whether or not we ever work together again.</p>
 <p>I'll also tell you whether deeper one-on-one work fits where you are, and what it looks like if it does. If it's not the right time, I'll say that too. And if you do continue within 30 days, what you paid for this course is credited toward the coaching.</p>
 <p><a class="button" href="https://chadherst.as.me/integration-and-next-step-session">Book your Integration and Next-Step Session</a></p>
-<p class="small">Bring your What You're Taking With You journal.</p>`,
+<p class="small">Do What You're Taking With You first. I'll have read it before we meet.</p>`,
   },
 };
 
@@ -954,22 +981,55 @@ ${COURSE_CSS}
 </html>`;
 }
 
+// Each week keeps one reading and the week's story in the open flow and
+// puts the rest behind "If you want more this week". Cut 9/14/26 after the
+// completion research: the reason people give most often for leaving a
+// self-paced course is time, and whatever the page names as the assignment
+// is what they measure themselves against. Week 4 keeps more of its
+// reading, because by then the people still here are the ones who stayed.
+const FURTHER_READING = {
+  1: ['Enter the Body', 'The Loop, and Where It Opens'],
+  2: ["Name What's There", 'Equanimity'],
+  3: ['Still'],
+  4: ['The Whole Arc as One Move'],
+};
+
+// Splits a week's teaching HTML into its <h3> sections, in source order.
+function teachingSections(html) {
+  return String(html)
+    .split('<h3>')
+    .slice(1)
+    .map((part) => ({ heading: part.slice(0, part.indexOf('</h3>')), html: '<h3>' + part }));
+}
+
 function lessonContentHtml(weekNum) {
   const c = COURSE_WEEKS[weekNum];
   const companion = WEEKS[weekNum];
   const closing = c.closing ? `<section class="card">${c.closing}</section>` : '';
+  const hidden = FURTHER_READING[weekNum] || [];
+  const sections = teachingSections(c.teaching);
+  const visible = sections.filter((s) => !hidden.includes(s.heading));
+  const further = sections.filter((s) => hidden.includes(s.heading));
+  const furtherCard = further.length
+    ? `<section class="card"><div class="eyebrow" style="text-align:left">If you want more this week</div>
+    <details><summary>${further.length === 1 ? 'One more piece, here when you want it' : further.length + ' more pieces, here when you want them'}</summary>
+    <p class="note">This isn't homework. The week is the sit, the reading above, and the journal. Read these if you want more, now or later in the month or not at all.</p>
+    ${further.map((s) => s.html).join('')}</details></section>`
+    : '';
   return `
   <section class="card"><p>${c.intro}</p>${c.video}</section>
-  <section class="card"><div class="eyebrow" style="text-align:left">This week's lesson</div>${c.teaching}</section>
-  <section class="card"><div class="eyebrow" style="text-align:left">The guided sit</div><h3>Most days, about ten minutes</h3>${c.meditation}</section>
+  <section class="card"><div class="eyebrow" style="text-align:left">Start here</div><h3>Sit first</h3><p>${c.sitLead}</p>${c.meditation}</section>
+  <section class="card"><div class="eyebrow" style="text-align:left">This week's lesson</div>${visible.map((s) => s.html).join('')}</section>
   <section class="card"><div class="eyebrow" style="text-align:left">The daily rep</div>
     <h3>Practice with the companion</h3>
-    <p>Once a day, bring one real moment to the practice companion. It writes back and walks the week's moves with you, responding to what you write during the sitting. It keeps nothing after you end: no transcript is saved anywhere, and your notes are yours alone to download. Your access code works there too.</p>
+    <p>Once a day, bring one real moment to the practice companion. It writes back and walks the week's moves with you, responding to what you write during the sitting. It isn't me, and it isn't instead of me. It is the thing that sits with you between now and our hour, and what you bring to the journal sittings is what I read before we meet. The two of us come at the same month from different sides, and then we meet.</p>
+    <p>It keeps nothing after you end a sitting here: no transcript is saved anywhere, and your notes are yours alone to download. Your access code works there too.</p>
     <p><a class="button" href="${companion.pagePath}">Open this week's companion</a></p>
   </section>
   <section class="card"><div class="eyebrow" style="text-align:left">Practice card</div>${c.practiceCard}</section>
   <section class="card"><div class="eyebrow" style="text-align:left">Journal</div>${c.journal}</section>
-  ${closing}`;
+  ${closing}
+  ${furtherCard}`;
 }
 
 function enrollSection() {
@@ -979,6 +1039,7 @@ function enrollSection() {
     : '$' + p.priceUsd;
   return `<div id="enroll">
 <p><strong>Enroll yourself:</strong> ${priceLine}, once, via PayPal or card. Your personal access code, made from your name, appears the moment payment completes and is emailed to you. It is your key to all four weeks and the practice companion.</p>
+<p class="small">The first thing after you pay is not the course. It is booking the opening thirty minutes with me, before Week 1.</p>
 <p class="small">And if you go on to coaching with me within 30 days of your Integration and Next-Step Session, the full amount you paid here is credited toward it.</p>
 <div id="enrollFields" style="margin:14px 0 10px">
 <p style="margin:0 0 10px"><label for="enrollFirstName" class="small">First name</label><br><input id="enrollFirstName" type="text" autocomplete="given-name" maxlength="80" required style="width:100%;border:1px solid #BCA88E;border-radius:10px;background:#FFFDF9;color:#352515;padding:12px 14px;font:16px/1.4 Arial,sans-serif"></p>
@@ -989,7 +1050,10 @@ function enrollSection() {
 <div id="enrollDone" style="display:none;background:#EFE6D8;border-left:3px solid #8B6B1E;padding:16px 18px;margin-top:14px">
 <p style="margin:0 0 8px"><strong>You're in.</strong> Your access code:</p>
 <p id="issuedCode" style="font-size:24px;font-family:monospace;margin:0 0 8px"></p>
-<p style="margin:0" class="small">Write it down or screenshot it now; it is shown only once here. It is also in the email on its way to you. Then open <a href="${COURSE_PATH}/week-1">Week 1</a>.</p>
+<p style="margin:0 0 12px" class="small">Write it down or screenshot it now; it is shown only once here. It is also in the email on its way to you.</p>
+<p style="margin:0 0 8px"><strong>Now book the first half of your hour with Chad</strong>, before you open Week 1. Thirty minutes, in the next week or so. It's where you say what you're bringing, and where we put the practice somewhere in your life it can survive.</p>
+<p style="margin:0 0 10px"><a class="button" href="${OPENING_BOOKING_URL}" target="_blank" rel="noopener">Book your opening thirty minutes</a></p>
+<p style="margin:0" class="small">Then open <a href="${COURSE_PATH}/week-1">Week 1</a>. Sit with the recording before you read anything.</p>
 </div>
 <div id="enrollError" class="small" style="display:none;color:#8E2F27"></div>
 <script src="${p.sdkBase}?client-id=${encodeURIComponent(p.clientId)}&currency=USD"></script>
@@ -1070,7 +1134,7 @@ function overviewPage() {
 <p class="sub">The four-week practice that goes with the book.</p>
 <div class="card">
 <p><strong>You already know the pattern. The text you fired back, the yes you didn't mean, the meeting where you went quiet. This is four weeks of practice, about ten minutes a day, so you can catch it in your body a little earlier each time and have a different response available when the pressure is real.</strong></p>
-<p>The book ends with the ache as a doorway. This is the walking through: SENSE for coming back to yourself when the pressure hits, STEP for bringing that back into the room with other people. One real moment a day, four weeks, and a private Integration and Next-Step Session with me at the end. That session is where the month gets named: the contract you keep signing, where it shows up in your body first, the trade you keep making, and what you might try next. It's yours whether or not we ever work together again.</p>
+<p>The book ends with the ache as a doorway. This is the walking through: SENSE for coming back to yourself when the pressure hits, STEP for bringing that back into the room with other people. One real moment a day, four weeks, and a private hour with me, split in two. Thirty minutes at the start, before you open Week 1, where we find out what you're bringing and set the practice where it will fit in your life. Thirty minutes at the end, where the month gets named: the contract you keep signing, where it shows up in your body first, the trade you keep making, and what you might try next. It's yours whether or not we ever work together again.</p>
 ${selfServeEnabled() ? enrollSection() : '<p>Enrollment is personal: Chad sets you up directly and sends your access code. If you don\'t have one yet, reach out through <a href="https://herstwellness.com">herstwellness.com</a>.</p>'}
 <h2 style="font-size:19px;margin-top:26px">If it turns out not to be for you</h2>
 <p>Within the first 14 days, <a href="https://herstwellness.com/contact">write to me</a>, and I'll refund the whole thing. You don't need a reason, and there's no form to fill out. All I ask is that you stop using the course and the companion once the refund goes through.</p>

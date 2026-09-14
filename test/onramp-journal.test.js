@@ -453,11 +453,13 @@ test('the Week 1 lesson carries the consent box and a Bring it link per journal;
   assert.ok(w1.includes('id="journalConsent"'));
   assert.ok(w1.includes('Let Chad read what I write in the journal sittings before our Integration and Next-Step Session.'));
   assert.ok(w1.includes('Ticked: what you bring to the journal sittings is kept for Chad to read, and he gets a short brief before your session. Unticked: nothing is kept.'));
-  assert.ok(w1.indexOf('id="journalConsent"') < w1.indexOf('1. What&#39;s Bringing You Here') || w1.indexOf('id="journalConsent"') < w1.indexOf("1. What's Bringing You Here"), 'the box sits above the journals');
+  const firstJournalHeading = Math.max(w1.indexOf('This week: What&#39;s Bringing You Here'), w1.indexOf('This week: What\u2019s Bringing You Here'));
+  assert.ok(firstJournalHeading > 0, 'the required journal is named as the week');
+  assert.ok(w1.indexOf('id="journalConsent"') < firstJournalHeading, 'the box sits above the journals');
   for (const key of ['week-1/whats-bringing-you-here', 'week-1/one-moment-mapped']) {
     assert.ok(w1.includes('href="/practice/on-ramp/journal-1?journal=' + key + '">Bring it to the journal sitting</a>'), 'Bring it link for ' + key);
   }
-  assert.equal((w1.match(/Bring it to the journal sitting/g) || []).length, 3);
+  assert.equal((w1.match(/journal-1\?journal=week-1\/[a-z-]+">Bring it to the journal sitting/g) || []).length, 3, 'one link per Week 1 journal');
   assert.ok(!w1.includes(EM_DASH));
   const w2 = lessonContentHtml(2);
   for (const key of ['week-2/the-protector', 'week-2/the-return']) {

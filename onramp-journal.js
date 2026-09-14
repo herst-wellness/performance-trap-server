@@ -107,6 +107,7 @@ function journalPage(weekNumber, slug, journal) {
     <section class="card intro" id="introCard" aria-labelledby="introHeading">
       <h2 id="introHeading">Before you start</h2>
       <div id="introText"></div>
+      <p>You can stop at any point and come back. Writing about something tender often feels worse before it feels better, and that settles. Nothing here has to be finished in one go, and what you have written stays on the page.</p>
       <p class="small">Your answers save in this browser as you type, and come to Chad as you go unless you use the privacy box below.</p>
       <p class="small">If you speak instead of typing, the sound goes to OpenAI to be turned into words. This application keeps no recording. OpenAI may hold it in abuse-monitoring logs for up to 30 days.</p>
       <div class="field">
