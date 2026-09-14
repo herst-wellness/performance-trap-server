@@ -224,6 +224,38 @@ async function uploadBytesToDropbox(path, bytes, fetchImpl = fetch) {
   return data.path_display || path;
 }
 
+// Removing a file again, used only by the connection test so that proving
+// the connection works leaves nothing behind in Chad's folders.
+async function deleteFromDropbox(path, fetchImpl = fetch) {
+  const token = await dropboxAccessToken(fetchImpl);
+  const response = await fetchImpl('https://api.dropboxapi.com/2/files/delete_v2', {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ path }),
+  });
+  return response.ok;
+}
+
+// Writes a small file into the folder the journals go to, then removes it.
+// If this works, a real journal will land: it is the same account, the same
+// permission, and the same folder.
+async function testDropboxConnection(fetchImpl = fetch) {
+  const root = String(process.env.MBF_DROPBOX_ROOT || DEFAULT_ROOT).replace(/\/$/, '');
+  const path = root + '/Connection test ' + new Date().toISOString().replace(/[:.]/g, '-') + '.txt';
+  const written = await uploadBytesToDropbox(
+    path,
+    Buffer.from('This file was written to check that the journal pages can reach this folder. It removes itself.\n', 'utf8'),
+    fetchImpl
+  );
+  let removed = false;
+  try {
+    removed = await deleteFromDropbox(written, fetchImpl);
+  } catch (error) {
+    removed = false;
+  }
+  return { path: written, removed };
+}
+
 function uploadToDropbox(path, text, fetchImpl = fetch) {
   return uploadBytesToDropbox(path, Buffer.from(String(text), 'utf8'), fetchImpl);
 }
@@ -344,6 +376,8 @@ async function deliverJournal(options, fetchImpl = fetch) {
 
 module.exports = {
   clientNameFromCode,
+  deleteFromDropbox,
+  testDropboxConnection,
   dropboxCredentials,
   uploadBytesToDropbox,
   dropboxConfigured,
