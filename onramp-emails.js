@@ -7,6 +7,11 @@
 // journal names are provisional until those weeks are rebuilt.
 const BASE_URL = 'https://practice.herstwellness.com';
 const BOOKING_URL = 'https://chadherst.as.me/integration-and-next-step-session';
+// The hour with Chad is split: thirty minutes before Week 1 and thirty at the
+// end. Human contact before a self-paced programme does about as much for
+// finishing as contact all the way through, and a reward at the end moves
+// nobody who has already stopped (9/14/26 research, performance-trap docs/86).
+const OPENING_BOOKING_URL = process.env.ONRAMP_OPENING_BOOKING_URL || 'https://chadherst.as.me/opening-session';
 const MAILCHIMP_TAG = 'Performance Trap Practice';
 
 // Journal PDFs live at /downloads/on-ramp/week-N/<slug>.pdf. Week 1's two
@@ -46,6 +51,19 @@ function weekUrl(n) {
 function journalUrl(n, slug) {
   return BASE_URL + '/downloads/on-ramp/week-' + n + '/' + slug + '.pdf';
 }
+
+// The journals are pages you write in now, not sheets you print, and each
+// week names one as the week's (9/14/26). The rest stay on the lesson page.
+function journalPageUrl(n, slug) {
+  return BASE_URL + '/practice/on-ramp/week-' + n + '/journal/' + slug;
+}
+
+const REQUIRED_JOURNAL = {
+  1: 'whats-bringing-you-here',
+  2: 'the-protector',
+  3: 'the-trade',
+  4: 'what-youre-taking-with-you',
+};
 
 // ── Wrapper ─────────────────────────────────────────────────────
 function p(inner, extra) {
@@ -138,7 +156,9 @@ function journalCount(n) {
 function journalLinks(n) {
   const items = JOURNALS[n] || [];
   if (!items.length) return p(placeholder('journals-week-' + n));
-  return list(items.map((j) => link(journalUrl(n, j.slug), j.title)));
+  const slug = REQUIRED_JOURNAL[n];
+  const required = items.find((j) => j.slug === slug) || items[0];
+  return p(link(journalPageUrl(n, required.slug), 'Open ' + required.title));
 }
 
 // ── Messages ────────────────────────────────────────────────────
@@ -148,14 +168,15 @@ function enroll(record) {
   const body =
     greeting(record) +
     p("Glad we're doing this.") +
+    p("<strong>First thing, before the course.</strong> The hour you paid for comes in two halves. Thirty minutes with me now, before you start, and thirty at the end once the month is in you. Book the first half here: " + link(OPENING_BOOKING_URL, 'the opening thirty minutes') + ". Pick something in the next week or so. We use it to find out what you're bringing, and to put the practice somewhere in your life where it can survive.") +
     p('Your access code is <strong style="font-family:monospace;font-size:20px;">' + esc(record.code) + '</strong>. It unlocks all four weeks and the practice companion. Save it somewhere you\'ll find it again.') +
-    p('Week 1 is here: ' + link(weekUrl(1), 'Week 1: From the Book to the Body') + '. Open it today. Read the lesson, then sit with the breathing recording once before you do anything else. Ten minutes is plenty the first time.') +
-    p("The two journals for the week are in the lesson, and each one says when to do it. What's Bringing You Here is for the first day or two. One Moment, Mapped is for the end of the week, once you've caught a moment or two in real life. Do one or both.") +
-    journalLinks(1) +
-    p("When you've written, bring it to the journal sitting on the lesson page. It reads what you wrote, finds the line with the most charge, checks with you, and reads it back so you can notice what the body does. Not me, and not therapy.") +
-    p("One thing to know up front. The site keeps track of when you play the recordings and when you tap Mark done on a journal. Not to grade you. At the end of each week I'll send you what the week looked like: how many days you sat, which sits you finished, which journals you got to. No shame either way. It's just data, and it's yours.") +
+    p("Then Week 1 is here: " + link(weekUrl(1), 'Week 1: From the Book to the Body') + ". Open it and sit with the breathing recording before you read anything. Ten minutes is plenty the first time. The reading makes more sense from the other side of a sit.") +
+    p("One journal for the week, What's Bringing You Here, in the first day or two. There's a second one on the page if you want it. It isn't a smaller version of the week. One is the week.") +
+    p("Two things worth deciding before you start, because they matter more than willpower. <strong>What time of day will you sit</strong>, and <strong>what already happens at that time</strong>. Hooking the sit onto something already in your day, the first coffee, the dog, closing the laptop at night, holds better than deciding to be disciplined about it. You don't have to tell me. Just decide it.") +
+    p("And the thing to know before you miss a day, because you will. Missing one day costs you close to nothing. Missing a whole week is the one that matters. So if a day goes by, begin again the next one and don't make it mean anything about you.") +
+    p("Last thing. The site keeps track of when you play the recordings and when you tap Mark done on a journal. Not to grade you. At the end of each week I'll send you what the week looked like. No shame either way. It's just data, and it's yours.") +
     signOff();
-  return message("You're in. Here's your access code.", body);
+  return message("You're in. Book your first thirty minutes with me.", body);
 }
 
 function yayNayIntro(record, links) {
@@ -192,7 +213,7 @@ const WEEK_OPEN = {
     paras: [
       "Week 1 was about getting to the body. Slow the breath, enter, find the sensation, put a word on it. This week you stay. Most of us can find the tightness. Very few of us can keep it company for more than a second or two before we're back in the story about it. That's the whole week.",
       "The sit is called Keeping It Company. About fifteen minutes. Sit with it most days. Keep the breathing recording for the days you're jumpy and need to settle first.",
-      'Two journals, and the lesson says when. The Protector, early in the week, after a sit. The Return, at the end. Do one or both.',
+      'One journal this week: The Protector, early in the week, after a sit. There is a second one on the page, The Return, if you want it.',
     ],
   },
   3: {
@@ -202,7 +223,7 @@ const WEEK_OPEN = {
       'The first two weeks were SENSE. Getting to the body and staying there. This week is STEP, which is what becomes possible once you can stay.',
       "Something lands, and the nervous system hands you two bad choices. Say the true thing and lose the relationship, or keep the peace and lose yourself. Take the call at ten at night, or be the one who let the team down. Most of the time, the two choices are the trap, not the truth. There's a third option the bind told you wasn't available. This week is about finding it, and practicing it in small moments before the big ones.",
       "The sit is Finding the Third Option. About sixteen minutes. Bring a real bind to it, one that's live this week.",
-      "Two journals, and the lesson says when. The Trade, once you've caught a moment where the old pull was there. The Third Option, at the end. Do one or both.",
+      "One journal this week: The Trade, once you've caught a moment where the old pull was there. The Third Option is on the page if you want it.",
     ],
   },
   4: {
@@ -211,7 +232,7 @@ const WEEK_OPEN = {
     paras: [
       "This week pulls it together, and we go a layer deeper than we have. Underneath the tightness you've been learning to stay with, there's usually something more tender. The ache of all the ways you had to override yourself to belong. I call it the sacred wound, and we spend the week with it.",
       "The sit is The Sacred Wound. About fourteen minutes. Go slowly. If it's too much on a given day, that's information, not failure. Go back to the breathing recording and come back to it tomorrow.",
-      "Two journals. What's Still Running, early in the week, after a sit. What You're Taking With You, at the end. That last one is what you'll bring to our session, so do it whatever else you skip.",
+      "One journal: What You're Taking With You, at the end of the week. That is the one I read before we meet, so do it whatever else you skip. What's Still Running is on the page if you want it too.",
     ],
   },
 };
@@ -242,7 +263,6 @@ function scorecard(record, w, stats) {
       'Days you sat, meaning a recording played most of the way through: ' + stats.daysSat + ' of 7',
       'Sits you finished: ' + stats.sitsCompleted + (stats.sitsStarted ? ', and ' + stats.sitsStarted + ' you started and left' : ''),
       'Journals marked done: ' + stats.journalsDone + ' of ' + journalCount(w),
-      'Longest run of days in a row: ' + stats.longestRun,
       'Days sat since you started: ' + stats.totalDaysSat,
     ]) +
     p(scorecardNote(stats.daysSat)) +
@@ -255,16 +275,20 @@ function closing(record) {
   const body =
     greeting(record) +
     p("Four weeks. Whatever it looked like, you did it, and the month is in your body now in a way it wasn't before.") +
-    p("The last piece is a session with me. An hour on Zoom. It's part of what you paid for. We'll name what the month surfaced, what got easier, and what's still asking for attention. Then I'll tell you whether one-on-one work fits where you are, or whether what you have now is enough to keep going on your own. Either answer is a good one.") +
+    p("Now the other half of our hour. Thirty minutes on Zoom, the back end of what you paid for. We met at the start and you told me what you were bringing. This one is where we look at what the month did with it: what got easier, what is still asking for attention, and the one thing worth carrying forward.") +
     p('Book it here: ' + link(BOOKING_URL, 'Integration and Next-Step Session') + '. Pick a time in the next two or three weeks, while the month is still close.') +
-    p("Before we meet, do the last journal, What You're Taking With You, and bring it. If you didn't get to everything, bring what you have. We'll work with what's there.") +
+    p("I'll also tell you whether one-on-one work fits where you are, or whether what you have now is enough to keep going on your own. Either answer is a good one.") +
+    p("Before we meet, do the last journal, What You're Taking With You. If you didn't get to everything, bring what you have. We'll work with what's there.") +
     signOff();
-  return message('The session that closes the month', body);
+  return message('The other half of our hour', body);
 }
 
 module.exports = {
   BASE_URL,
   BOOKING_URL,
+  OPENING_BOOKING_URL,
+  REQUIRED_JOURNAL,
+  journalPageUrl,
   JOURNALS,
   MAILCHIMP_TAG,
   closing,

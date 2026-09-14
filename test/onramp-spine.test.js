@@ -348,11 +348,18 @@ test('emails: every message uses the Mind/Body Foundations wrapper, carries its 
   assert.ok(all.enroll.html.includes('>ann-lee<'), 'the enrollment email carries the name code');
   assert.ok(!all.enroll.html.includes('We narrow it together'), 'the closing line Chad cut is gone');
   assert.ok(all.enroll.html.includes('https://practice.herstwellness.com/course/on-ramp/week-1'));
-  assert.ok(all.enroll.html.includes('/downloads/on-ramp/week-1/whats-bringing-you-here.pdf'));
+  // The hour is split, and its opening half is the first thing a new person
+  // does, ahead of Week 1 (9/14/26).
+  assert.ok(all.enroll.html.includes(emails.OPENING_BOOKING_URL), 'the enrollment email carries the opening booking link');
+  assert.ok(
+    all.enroll.html.indexOf(emails.OPENING_BOOKING_URL) < all.enroll.html.indexOf('/course/on-ramp/week-1'),
+    'booking comes before the course'
+  );
+  assert.ok(!all.scorecard.html.includes('Longest run'), 'the weekly note reports no streak');
   for (const [name, m] of Object.entries(all)) {
     assert.ok(!m.html.includes('[[COPY') && !m.text.includes('[[COPY') && !m.subject.includes('[[COPY'), name + ' carries no placeholder copy');
   }
-  assert.equal(all.enroll.subject, "You're in. Here's your access code.");
+  assert.equal(all.enroll.subject, "You're in. Book your first thirty minutes with me.");
   assert.ok(all.enroll.html.includes("Glad we're doing this."), 'the enrollment email is in his register');
   assert.ok(all.enroll.html.includes('font-style:italic;color:#6B5036;">Chad</p>'));
   assert.ok(all.week2.html.includes('/course/on-ramp/week-2') && all.week2.html.includes('Keeping It Company'));
