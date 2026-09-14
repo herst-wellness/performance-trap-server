@@ -3,11 +3,13 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { findByCode, defaultStore } = require('./onramp-store');
 const { findJournal } = require('./onramp-journal-content');
+const { defaultStore: defaultJournalStore, findRecord, upsertRecord } = require('./onramp-journal-store');
 const { deliverJournal } = require('./mbf-delivery');
 
 const MAX_BODY_BYTES = 400000;
 const PAGE_ROUTE = /^\/practice\/on-ramp\/week-(\d)\/journal\/([a-z0-9-]+)$/;
 const CONTENT_ROUTE = /^\/api\/on-ramp\/journal\/(\d)\/([a-z0-9-]+)$/;
+const SAVE_PATH = '/api/on-ramp/journal/save';
 const SEND_PATH = '/api/on-ramp/journal/send';
 const OPT_OUT_NOTE = "What you write here comes to me, unless you tell me not to. We meet for an hour at the end of the four weeks, and that hour is better when I have already read what has been going on with you. It means we don't spend the first twenty minutes catching me up. If you would rather keep it to yourself, tick the box. It won't change anything about the hour, and I won't ask about it.";
 const OPT_OUT_LABEL = 'Please do not send to Chad.';
@@ -105,7 +107,7 @@ function journalPage(weekNumber, slug, journal) {
     <section class="card intro" id="introCard" aria-labelledby="introHeading">
       <h2 id="introHeading">Before you start</h2>
       <div id="introText"></div>
-      <p class="small">Your answers save in this browser as you type, so you can close this and come back.</p>
+      <p class="small">Your answers save in this browser as you type, and come to Chad as you go unless you use the privacy box below.</p>
       <p class="small">If you speak instead of typing, the sound goes to OpenAI to be turned into words. This application keeps no recording. OpenAI may hold it in abuse-monitoring logs for up to 30 days.</p>
       <div class="field">
         <p>${esc(OPT_OUT_NOTE)}</p>
@@ -127,7 +129,7 @@ function journalPage(weekNumber, slug, journal) {
 
     <section class="card send" aria-labelledby="sendHeading">
       <h2 id="sendHeading">When you are ready</h2>
-      <p>Send it so Chad has it before your closing session. If you ticked the privacy box above, it stays here instead.</p>
+      <p>What you write comes to Chad as you go. This button sends it now and marks it done. The privacy box stops all of it.</p>
       <div class="row">
         <button id="sendButton" class="button" type="button">Send to Chad</button>
         <button id="downloadButton" class="button secondary" type="button">Download a copy</button>
@@ -136,7 +138,7 @@ function journalPage(weekNumber, slug, journal) {
     </section>
   </div>
 
-  <p class="footer">The Performance Trap Practice. Your answers are held in this browser until you send them.</p>
+  <p class="footer">The Performance Trap Practice. Your answers are held in this browser and in Chad's files unless you use the privacy box.</p>
 </main>
 <script>
 (function(){
@@ -148,6 +150,7 @@ function journalPage(weekNumber, slug, journal) {
   var accessCode = '';
   var answers = {};
   var saveTimer = null;
+  var serverTimer = null;
   var recorder = null, micStream = null, chunks = [], listeningFor = null;
 
   function el(id){ return document.getElementById(id); }
@@ -155,9 +158,12 @@ function journalPage(weekNumber, slug, journal) {
   function codeKey(code){ return String(code || '').trim().toLowerCase().replace(/[\\s_]+/g, '-'); }
 
   function load(){
+    if (journal && journal.saved && journal.saved.answers) answers = journal.saved.answers;
     var s = store(); if (!s) return;
     try { answers = JSON.parse(s.getItem(STORAGE_KEY + '-' + codeKey(accessCode)) || '{}') || {}; } catch(e) { answers = {}; }
+    if (Object.keys(answers).length === 0 && journal && journal.saved && journal.saved.answers) answers = journal.saved.answers;
     try { el('optOut').checked = s.getItem(OPT_KEY) === '1'; } catch(e) {}
+    if (journal && journal.saved && journal.saved.optOut === true) el('optOut').checked = true;
   }
 
   function save(){
@@ -171,10 +177,31 @@ function journalPage(weekNumber, slug, journal) {
     try { s.setItem(OPT_KEY, el('optOut').checked ? '1' : '0'); } catch(e) {}
   }
 
+  async function saveToServer(finished){
+    if (!journal) return {};
+    try {
+      var response = await fetch(finished ? '${SEND_PATH}' : '${SAVE_PATH}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Companion-Access': accessCode },
+        cache: 'no-store',
+        body: JSON.stringify({ week: WEEK, slug: SLUG, answers: answers, optOut: el('optOut').checked })
+      });
+      var data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'It did not save.');
+      if (!finished) el('saveState').textContent = data.optedOut ? 'Saved on this device. Nothing is going to Chad.' : 'Saved. Chad has this.';
+      return data;
+    } catch (error) {
+      if (!finished) el('saveState').textContent = 'Saved on this device. It has not reached Chad yet, and will when you are back online.';
+      throw error;
+    }
+  }
+
   function queueSave(){
     el('saveState').textContent = 'Saving.';
     clearTimeout(saveTimer);
     saveTimer = setTimeout(save, 600);
+    clearTimeout(serverTimer);
+    serverTimer = setTimeout(function(){ saveToServer(false).catch(function(){}); }, 3000);
   }
 
   function counts(){
@@ -368,14 +395,8 @@ function journalPage(weekNumber, slug, journal) {
     el('sendButton').disabled = true;
     el('sendStatus').textContent = el('optOut').checked ? 'Saving here.' : 'Sending.';
     try {
-      var response = await fetch('${SEND_PATH}', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'X-Companion-Access': accessCode },
-        cache: 'no-store',
-        body: JSON.stringify({ week: WEEK, slug: SLUG, answers: answers, optOut: el('optOut').checked })
-      });
-      var data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'It did not send.');
+      clearTimeout(serverTimer);
+      var data = await saveToServer(true);
       el('sendStatus').textContent = data.optedOut ? 'Kept here. Nothing was sent to Chad.' : 'Chad has it.';
     } catch (error) {
       el('sendStatus').textContent = (error.message || 'It did not send.') + ' Your writing is still here. Try again, or download a copy.';
@@ -398,6 +419,7 @@ function journalPage(weekNumber, slug, journal) {
       accessCode = code;
       OPT_KEY = 'onramp-journal-optout-' + codeKey(accessCode) + '-' + WEEK + '-' + SLUG;
       journal = data.journal;
+      journal.saved = data.saved;
       el('pdfLink').href = data.pdfHref || '#';
       el('accessCard').hidden = true;
       el('journalWrap').hidden = false;
@@ -413,7 +435,7 @@ function journalPage(weekNumber, slug, journal) {
     }
   }
 
-  el('optOut').addEventListener('change', saveOptOut);
+  el('optOut').addEventListener('change', function(){ saveOptOut(); queueSave(); });
   el('unlockButton').addEventListener('click', unlock);
   el('accessCode').addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); unlock(); } });
   window.addEventListener('beforeunload', function(){ if (journal) save(); });
@@ -425,6 +447,7 @@ function journalPage(weekNumber, slug, journal) {
 
 async function handleOnrampJournalRoute(req, res, helpers = {}) {
   const store = helpers.store || defaultStore();
+  const journalStore = helpers.journalStore || defaultJournalStore();
   const url = String(req.url || '').split('?')[0];
 
   const pageMatch = PAGE_ROUTE.exec(url);
@@ -449,7 +472,45 @@ async function handleOnrampJournalRoute(req, res, helpers = {}) {
       sendJson(res, 401, { error: 'That code did not work.' });
       return true;
     }
-    sendJson(res, 200, { journal, pdfHref: pdfHrefFor(journal) });
+    const saved = findRecord(await journalStore.load(), record.code, contentMatch[1], contentMatch[2]);
+    sendJson(res, 200, { journal, pdfHref: pdfHrefFor(journal), saved });
+    return true;
+  }
+
+  if (url === SAVE_PATH) {
+    if (req.method !== 'POST') {
+      sendJson(res, 405, { error: 'Method not allowed' });
+      return true;
+    }
+    try {
+      const record = await recordForRequest(req, store);
+      if (!record) {
+        sendJson(res, 401, { error: 'That code did not work.' });
+        return true;
+      }
+      const body = await readJsonBody(req);
+      const journal = findJournal(body.week, body.slug);
+      if (!journal) {
+        sendJson(res, 400, { error: 'That journal does not exist.' });
+        return true;
+      }
+      const name = clientName(record);
+      let saved = null;
+      await journalStore.update((doc) => {
+        saved = upsertRecord(doc, {
+          code: record.code,
+          clientName: name,
+          week: journal.week,
+          slug: journal.slug,
+          answers: body.answers || {},
+          optOut: body.optOut === true,
+        });
+        return doc;
+      });
+      sendJson(res, 200, { saved: true, optedOut: saved.optOut === true });
+    } catch (error) {
+      sendJson(res, error.clientStatus || 502, { error: error.message || 'It did not save.' });
+    }
     return true;
   }
 
@@ -470,17 +531,42 @@ async function handleOnrampJournalRoute(req, res, helpers = {}) {
         sendJson(res, 400, { error: 'That journal does not exist.' });
         return true;
       }
+      const name = clientName(record);
+      let saved = null;
+      await journalStore.update((doc) => {
+        saved = upsertRecord(doc, {
+          code: record.code,
+          clientName: name,
+          week: journal.week,
+          slug: journal.slug,
+          answers: body.answers || {},
+          finished: true,
+          optOut: body.optOut === true,
+        });
+        return doc;
+      });
       if (body.optOut === true) {
         sendJson(res, 200, { sent: false, optedOut: true });
         return true;
       }
-      const name = clientName(record);
+      const now = new Date();
       const outcome = await deliverJournal({
         code: record.code,
         clientName: name,
-        journal,
+        journal: { ...journal, module: journal.week },
         answers: body.answers || {},
         clientEmail: null,
+        finished: true,
+        now,
+      });
+      await journalStore.update((doc) => {
+        const current = findRecord(doc, record.code, journal.week, journal.slug);
+        if (current && current.optOut !== true) {
+          current.deliveredAt = now.toISOString();
+          current.deliveredPath = outcome.savedTo;
+          current.deliveryProblem = null;
+        }
+        return doc;
       });
       sendJson(res, 200, { sent: true, copiedTo: outcome.copiedTo, savedTo: Boolean(outcome.savedTo) });
     } catch (error) {
