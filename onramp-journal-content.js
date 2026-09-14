@@ -841,7 +841,7 @@ const JOURNALS = [
     "kind": "Journal",
     "title": "What's Still Running",
     "blurb": "Early in the last week, after a sit. Twenty to thirty minutes. Keep it. You'll bring a piece of it to your Integration and Next-Step Session.",
-    "intro": "A month in, some of the pattern has loosened and some of it is still running you. No shame. We don't do shame here. Name it plainly, so we know what to work on together.",
+    "intro": "Some of the pattern has loosened by now and some of it is still running you. No shame. We don't do shame here. Name it plainly, so we know what to work on together.",
     "listed": true,
     "folderLabel": "Week 4",
     "rootEnv": "ONRAMP_DROPBOX_ROOT",
@@ -910,7 +910,7 @@ const JOURNALS = [
             "id": "whats-still-running-6",
             "kind": "medium",
             "label": "What you've brushed",
-            "text": "All month you've been staying with the tightness. If you've brushed something more tender underneath it, in a sit or a journal, write what you know about it so far. Where it lives, what it's like, how old it feels. If you haven't, write that. Either is the right answer. Don't dig. Just report."
+            "text": "You've been staying with the tightness. If you've brushed something more tender underneath it, in a sit or a journal, write what you know about it so far. Where it lives, what it's like, how old it feels. If you haven't, write that. Either is the right answer. Don't dig. Just report."
           }
         ]
       },
@@ -945,7 +945,7 @@ const JOURNALS = [
     "kind": "Journal",
     "title": "What You're Taking With You",
     "blurb": "The last journal. Do it at the end of the fourth week, after a sit. Thirty to forty minutes. This is the one you'll bring to your Integration and Next-Step Session, so write it for the two of us.",
-    "intro": "Four weeks ago you started with the breath. Look back over the month, in the body: what you're taking with you, what's still open, and what you want from our hour together.",
+    "intro": "You started with the breath. Look back over the month, in the body: what you're taking with you, what's still open, and what you want from our hour together.",
     "listed": true,
     "folderLabel": "Week 4",
     "rootEnv": "ONRAMP_DROPBOX_ROOT",
@@ -981,7 +981,7 @@ const JOURNALS = [
             "id": "what-youre-taking-with-you-3",
             "kind": "medium",
             "label": "What the body learned",
-            "text": "Not what you understood. What the body can do now that it couldn't four weeks ago. Can you find the sensation faster? Stay with it longer? Feel the difference between the story and what's there? Write it plainly, and small is fine."
+            "text": "Not what you understood. What the body can do now that it couldn't when you started. Can you find the sensation faster? Stay with it longer? Feel the difference between the story and what's there? Write it plainly, and small is fine."
           }
         ]
       },
@@ -1025,7 +1025,7 @@ const JOURNALS = [
             "id": "what-youre-taking-with-you-7",
             "kind": "medium",
             "label": "What you brushed",
-            "text": "All month you've been staying with the tightness. Underneath it there's usually something more tender. If you brushed it this month, in a sit or a journal, write what you know about it so far. Where it lives, what it's like. If you haven't, write that. Either is the right answer for our hour. Don't dig here."
+            "text": "You've been staying with the tightness. Underneath it there's usually something more tender. If you brushed it this month, in a sit or a journal, write what you know about it so far. Where it lives, what it's like. If you haven't, write that. Either is the right answer for our hour. Don't dig here."
           }
         ]
       },
