@@ -28,6 +28,7 @@ const SETUP_PATH = '/practice/mbf/connect-dropbox';
 const START_PATH = '/practice/mbf/connect-dropbox/start';
 const RETURN_PATH = '/practice/mbf/connect-dropbox/done';
 const CHECK_PATH = '/practice/mbf/connect-dropbox/check';
+const TEST_PATH = '/practice/mbf/connect-dropbox/test';
 
 // Held in memory between the redirect out to Dropbox and the return: the
 // app key and the one-time verifier this sign-in will have to produce. If
@@ -126,7 +127,13 @@ a{color:#7A5C14}
 function setupPage(req, { message, appKey, connectedAt } = {}) {
   const ready = Boolean(appKey);
   const already = connectedAt
-    ? '<div class="ok"><p>Dropbox is already connected. You only need to do this again if you disconnect it.</p></div>'
+    ? `<div class="ok"><p>Dropbox is connected. You only need to do this again if you disconnect it.</p></div>
+<form method="POST" action="${TEST_PATH}">
+  <label for="testadmin">Check it is still working</label>
+  <input id="testadmin" name="admin" type="password" autocomplete="off" placeholder="Your admin code" required>
+  <button type="submit">Write a test file to my Dropbox</button>
+</form>
+<div class="note"><p>This writes a small file into your client folder and then removes it again, so you can see for yourself that the journals have somewhere to land. It leaves nothing behind.</p></div>`
     : '';
   const body = ready
     ? `${already}
@@ -316,6 +323,45 @@ async function handleDropboxSetupRoute(req, res, { store = defaultStore(), fetch
     return true;
   }
 
+  if (url === TEST_PATH && req.method === 'POST') {
+    const form = await readForm(req).catch(() => ({}));
+    if (!adminOk(form.admin)) {
+      res.writeHead(401, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
+      res.end(page('Connect Dropbox', '<h1>That admin code did not match</h1><p><a href="' + SETUP_PATH + '">Go back and try again</a></p>'));
+      return true;
+    }
+    try {
+      const { testDropboxConnection } = require('./mbf-delivery');
+      const result = await testDropboxConnection();
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
+      res.end(
+        page(
+          'Connect Dropbox',
+          '<h1>It is working</h1><div class="ok"><p>A file was written into your Dropbox at ' +
+            esc(result.path) +
+            ', and ' +
+            (result.removed ? 'removed again, so nothing is left behind.' : 'left there, because removing it did not work. You can delete it yourself.') +
+            '</p></div><p>That is the same account, the same permission and the same folder a journal uses, so journals will land.</p><p><a href="' +
+            SETUP_PATH +
+            '">Back</a></p>'
+        )
+      );
+    } catch (error) {
+      res.writeHead(502, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
+      res.end(
+        page(
+          'Connect Dropbox',
+          '<h1>It did not work</h1><div class="bad"><p>' +
+            esc(error.message || 'Dropbox refused.') +
+            '</p></div><p>Tell Chad\'s developer what this page says. Nothing was changed.</p><p><a href="' +
+            SETUP_PATH +
+            '">Back</a></p>'
+        )
+      );
+    }
+    return true;
+  }
+
   if (url === CHECK_PATH && req.method === 'GET') {
     if (!adminOk(query.get('admin'))) {
       res.writeHead(401, { 'Content-Type': 'application/json' });
@@ -338,4 +384,5 @@ module.exports = {
   exchangeCode,
   SETUP_PATH,
   RETURN_PATH,
+  TEST_PATH,
 };

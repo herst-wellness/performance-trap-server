@@ -304,7 +304,9 @@ test('the app key is remembered, so a later visit needs no link', async (t) => {
   const page = await request(server, '/practice/mbf/connect-dropbox');
   const html = await page.text();
   assert.match(html, /remembered-key/);
-  assert.match(html, /already connected/);
+  assert.match(html, /Dropbox is connected/);
+  // Once connected, the page also offers a way to prove it still works.
+  assert.match(html, /Write a test file to my Dropbox/);
   forgetCachedCredentials();
 });
 
@@ -359,4 +361,48 @@ test('renewing access on a PKCE connection sends the app key, not a secret', asy
   assert.match(tokenCall.body, /client_id=app-key/);
   assert.match(tokenCall.body, /grant_type=refresh_token/);
   forgetCachedCredentials();
+});
+
+test('the connection test writes into the client folder and removes it again', async () => {
+  const store = freshStore();
+  await store.update((doc) => {
+    doc.dropbox = { appKey: 'app-key', refreshToken: 'lasting-key', connectedAt: '2026-09-13T00:00:00Z' };
+    return doc;
+  });
+  forgetCachedCredentials();
+  const { loadCredentials } = require('../mbf-dropbox-setup');
+  await loadCredentials(store);
+
+  const { testDropboxConnection } = require('../mbf-delivery');
+  const calls = [];
+  const result = await testDropboxConnection(async (url, options) => {
+    calls.push(url);
+    if (url.includes('oauth2/token')) return { ok: true, json: async () => ({ access_token: 't' }) };
+    if (url.includes('files/upload')) {
+      const arg = JSON.parse(options.headers['Dropbox-API-Arg']);
+      return { ok: true, json: async () => ({ path_display: arg.path }) };
+    }
+    if (url.includes('files/delete_v2')) return { ok: true, json: async () => ({}) };
+    throw new Error('unexpected call to ' + url);
+  });
+
+  // The same folder the journals go to, so passing this means journals land.
+  assert.match(result.path, /^\/clients\/Mind:Body Foundations\/Connection test /);
+  assert.strictEqual(result.removed, true);
+  assert.ok(calls.some((u) => u.includes('files/delete_v2')), 'the test file was never removed');
+  forgetCachedCredentials();
+});
+
+test('the connection test page will not run without the admin code', async (t) => {
+  const store = freshStore();
+  const server = await startServer((req, res) => handleDropboxSetupRoute(req, res, { store }));
+  t.after(() => server.close());
+  process.env.MBF_ADMIN_CODE = 'let-me-in';
+  const refused = await request(server, '/practice/mbf/connect-dropbox/test', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ admin: 'wrong' }).toString(),
+  });
+  assert.strictEqual(refused.status, 401);
+  delete process.env.MBF_ADMIN_CODE;
 });
