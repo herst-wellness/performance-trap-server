@@ -8,6 +8,7 @@ const { handleMbfRoute } = require('./mbf');
 const { handleMbfJournalRoute } = require('./mbf-journal');
 const { handleDropboxSetupRoute } = require('./mbf-dropbox-setup');
 const { startTicker: startMbfDelivery } = require('./mbf-schedule');
+const { handleOnrampJournalRoute } = require('./onramp-journal');
 const { handleAjRoute } = require('./aj');
 const { handleLorenzoRoute } = require('./lorenzo');
 const { handleCourseRoute } = require('./onramp-course');
@@ -1256,6 +1257,7 @@ const server = http.createServer(async (req, res) => {
   // when the person has agreed to that.
   if (await handleOnrampRoute(req, res, { store: onrampStore() })) { return; }
   if (await handleDropboxSetupRoute(req, res)) { return; }
+  if (await handleOnrampJournalRoute(req, res, { store: onrampStore() })) { return; }
   if (await handleMbfJournalRoute(req, res)) { return; }
   if (await handleMbfRoute(req, res)) { return; }
   if (await handleAjRoute(req, res)) { return; }
