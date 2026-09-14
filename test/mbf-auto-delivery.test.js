@@ -210,28 +210,32 @@ test('the ticker does nothing at all before Dropbox is connected', async () => {
   assert.strictEqual(result.skipped, 'dropbox-not-connected');
 });
 
-test('the connect page will not start without the admin code', async (t) => {
+test('the connect page asks for nothing but the admin code', async (t) => {
   const store = freshStore();
   const server = await startServer((req, res) => handleDropboxSetupRoute(req, res, { store }));
   t.after(() => server.close());
   process.env.MBF_ADMIN_CODE = 'let-me-in';
 
-  const page = await request(server, '/practice/mbf/connect-dropbox');
+  const page = await request(server, '/practice/mbf/connect-dropbox?key=app-key');
   assert.strictEqual(page.status, 200);
   const html = await page.text();
-  assert.match(html, /Redirect URIs/);
+  assert.match(html, /Your admin code/);
+  // Nothing to find, copy or paste: the words that defeated Chad in the
+  // first version must not be on the page.
+  assert.doesNotMatch(html, /App secret/i);
+  assert.doesNotMatch(html, /Redirect URIs/);
 
   const refused = await request(server, '/practice/mbf/connect-dropbox/start', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ admin: 'wrong', key: 'k', secret: 's' }).toString(),
+    body: new URLSearchParams({ admin: 'wrong', key: 'app-key' }).toString(),
     redirect: 'manual',
   });
   assert.strictEqual(refused.status, 401);
   delete process.env.MBF_ADMIN_CODE;
 });
 
-test('the right admin code sends Chad to Dropbox asking for a lasting key', async (t) => {
+test('the right admin code sends Chad to Dropbox, proving itself without a secret', async (t) => {
   const store = freshStore();
   const server = await startServer((req, res) => handleDropboxSetupRoute(req, res, { store }));
   t.after(() => server.close());
@@ -240,7 +244,7 @@ test('the right admin code sends Chad to Dropbox asking for a lasting key', asyn
   const response = await request(server, '/practice/mbf/connect-dropbox/start', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ admin: 'let-me-in', key: 'app-key', secret: 'app-secret' }).toString(),
+    body: new URLSearchParams({ admin: 'let-me-in', key: 'app-key' }).toString(),
     redirect: 'manual',
   });
   assert.strictEqual(response.status, 302);
@@ -249,29 +253,78 @@ test('the right admin code sends Chad to Dropbox asking for a lasting key', asyn
   // offline is what makes the connection last past one sitting.
   assert.match(location, /token_access_type=offline/);
   assert.match(location, /client_id=app-key/);
-  // The secret must never travel to the browser.
-  assert.doesNotMatch(location, /app-secret/);
-  delete process.env.MBF_ADMIN_CODE;
+  // PKCE: Dropbox gets the one-way hash, never the original.
+  assert.match(location, /code_challenge_method=S256/);
+  const challenge = new URL(location).searchParams.get('code_challenge');
+  assert.ok(challenge && challenge.length > 20, 'no code challenge was sent');
+  assert.doesNotMatch(location, /secret/i);
 });
 
-test('the approval is traded for a lasting key, and the key is never shown', async () => {
+test('the app key is remembered, so a later visit needs no link', async (t) => {
+  const store = freshStore();
+  const server = await startServer((req, res) => handleDropboxSetupRoute(req, res, { store }));
+  t.after(() => server.close());
+  await store.update((doc) => {
+    doc.dropbox = { appKey: 'remembered-key', refreshToken: 'r', connectedAt: '2026-09-13T00:00:00Z' };
+    return doc;
+  });
+  forgetCachedCredentials();
+  const page = await request(server, '/practice/mbf/connect-dropbox');
+  const html = await page.text();
+  assert.match(html, /remembered-key/);
+  assert.match(html, /already connected/);
+  forgetCachedCredentials();
+});
+
+test('the approval is traded for a lasting key by producing the original string', async () => {
+  let sent = null;
   const token = await exchangeCode(
-    { code: 'approval', appKey: 'k', appSecret: 's', redirectUri: 'https://example.com/done' },
+    { code: 'approval', appKey: 'k', verifier: 'the-original-string', redirectUri: 'https://example.com/done' },
     async (url, options) => {
+      sent = options;
       assert.strictEqual(url, 'https://api.dropbox.com/oauth2/token');
       assert.match(options.body, /grant_type=authorization_code/);
+      assert.match(options.body, /code_verifier=the-original-string/);
+      assert.match(options.body, /client_id=k/);
       return { ok: true, json: async () => ({ refresh_token: 'lasting-key', access_token: 'short' }) };
     }
   );
   assert.strictEqual(token, 'lasting-key');
+  // No Basic authorization header, because there is no secret to put in one.
+  assert.ok(!sent.headers.Authorization, 'a secret was sent after all');
 });
 
 test('a refused approval does not save anything', async () => {
   await assert.rejects(
     exchangeCode(
-      { code: 'bad', appKey: 'k', appSecret: 's', redirectUri: 'https://example.com/done' },
+      { code: 'bad', appKey: 'k', verifier: 'v', redirectUri: 'https://example.com/done' },
       async () => ({ ok: false, json: async () => ({}) })
     ),
     /would not complete/
   );
+});
+
+test('renewing access on a PKCE connection sends the app key, not a secret', async () => {
+  const store = freshStore();
+  await store.update((doc) => {
+    doc.dropbox = { appKey: 'app-key', refreshToken: 'lasting-key', connectedAt: '2026-09-13T00:00:00Z' };
+    return doc;
+  });
+  forgetCachedCredentials();
+  const { loadCredentials } = require('../mbf-dropbox-setup');
+  await loadCredentials(store);
+
+  const { uploadBytesToDropbox } = require('../mbf-delivery');
+  let tokenCall = null;
+  await uploadBytesToDropbox('/somewhere/file.txt', Buffer.from('hello'), async (url, options) => {
+    if (url.includes('oauth2/token')) {
+      tokenCall = options;
+      return { ok: true, json: async () => ({ access_token: 'short' }) };
+    }
+    return { ok: true, json: async () => ({ path_display: '/somewhere/file.txt' }) };
+  });
+  assert.ok(!tokenCall.headers.Authorization, 'a Basic secret was sent');
+  assert.match(tokenCall.body, /client_id=app-key/);
+  assert.match(tokenCall.body, /grant_type=refresh_token/);
+  forgetCachedCredentials();
 });

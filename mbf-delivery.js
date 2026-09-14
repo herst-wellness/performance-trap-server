@@ -35,10 +35,10 @@ async function dropboxCredentials() {
   const { loadCredentials } = require('./mbf-dropbox-setup');
   const stored = await loadCredentials();
   if (stored && stored.refreshToken) return stored;
-  if (process.env.DROPBOX_APP_KEY && process.env.DROPBOX_APP_SECRET && process.env.DROPBOX_REFRESH_TOKEN) {
+  if (process.env.DROPBOX_APP_KEY && process.env.DROPBOX_REFRESH_TOKEN) {
     return {
       appKey: process.env.DROPBOX_APP_KEY,
-      appSecret: process.env.DROPBOX_APP_SECRET,
+      appSecret: process.env.DROPBOX_APP_SECRET || '',
       refreshToken: process.env.DROPBOX_REFRESH_TOKEN,
     };
   }
@@ -161,15 +161,16 @@ async function dropboxAccessToken(fetchImpl = fetch) {
     grant_type: 'refresh_token',
     refresh_token: String(creds.refreshToken),
   });
-  const basic = Buffer.from(String(creds.appKey) + ':' + String(creds.appSecret)).toString('base64');
-  const response = await fetchImpl(DROPBOX_TOKEN_URL, {
-    method: 'POST',
-    headers: {
-      Authorization: 'Basic ' + basic,
-      'Content-Type': 'application/x-www-form-urlencoded',
-    },
-    body: body.toString(),
-  });
+  // A connection made with PKCE has no secret, so the app key goes in the
+  // form. An older connection that still carries a secret keeps using it.
+  const headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
+  if (creds.appSecret) {
+    headers.Authorization =
+      'Basic ' + Buffer.from(String(creds.appKey) + ':' + String(creds.appSecret)).toString('base64');
+  } else {
+    body.set('client_id', String(creds.appKey));
+  }
+  const response = await fetchImpl(DROPBOX_TOKEN_URL, { method: 'POST', headers, body: body.toString() });
   if (!response.ok) throw new Error('Dropbox would not renew its access.');
   const data = await response.json();
   if (!data || !data.access_token) throw new Error('Dropbox returned no access.');

@@ -6,11 +6,21 @@
 // short-lived code, which is traded once for a refresh token: a long-lived
 // key that lets the server keep writing without Chad ever signing in again.
 //
-// Chad creates the app in Dropbox's own console (which needs his login, so
-// nobody else can do it for him) and pastes its two identifiers into this
-// page. Everything after that is automatic. The refresh token is written
-// straight into the journal store and is never shown on screen, never
-// logged, and never sent anywhere.
+// There is no app secret anywhere in this. The first version asked Chad to
+// paste one and he could not follow it, which was a fair verdict on the
+// design rather than on him. This uses PKCE instead: the server invents a
+// long random string, sends Dropbox only a one-way hash of it, and proves
+// ownership later by producing the original. Nothing secret has to be
+// carried by a person, typed into a form, or stored in settings.
+//
+// What is left for Chad is one code he already knows and one button. The
+// app key is not a secret. It is a public identifier, the way a shop's
+// street address is public while its safe combination is not, and it
+// travels in the sign-in URL by design. It can be set once and remembered,
+// passed in the page's own address, or held in settings.
+//
+// The refresh token is written straight into the journal store and is never
+// shown on screen, never logged, and never sent anywhere.
 const crypto = require('node:crypto');
 const { defaultStore } = require('./mbf-store');
 
@@ -19,9 +29,42 @@ const START_PATH = '/practice/mbf/connect-dropbox/start';
 const RETURN_PATH = '/practice/mbf/connect-dropbox/done';
 const CHECK_PATH = '/practice/mbf/connect-dropbox/check';
 
-// Held in memory between the redirect out to Dropbox and the return. If the
-// server restarts in the middle, Chad starts the two-minute process again.
+// Held in memory between the redirect out to Dropbox and the return: the
+// app key and the one-time verifier this sign-in will have to produce. If
+// the server restarts in the middle, Chad presses the button again.
 const pending = new Map();
+
+function base64url(buffer) {
+  return buffer.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+// PKCE: a long random string, and the one-way hash of it that Dropbox is
+// given up front. Only whoever holds the original can finish the sign-in,
+// which is what an app secret used to prove.
+function newVerifier() {
+  return base64url(crypto.randomBytes(48));
+}
+
+function challengeFor(verifier) {
+  return base64url(crypto.createHash('sha256').update(verifier).digest());
+}
+
+// The app key, in order of preference: what a previous connection stored,
+// then settings, then whatever the page's own address carried.
+async function appKeyFor(store, fromUrl) {
+  try {
+    const doc = await store.load();
+    if (doc && doc.dropbox && doc.dropbox.appKey) return doc.dropbox.appKey;
+  } catch (error) {
+    // A store that cannot be read falls through to the other two.
+  }
+  const configured = String(process.env.MBF_DROPBOX_APP_KEY || '').trim();
+  if (configured) return configured;
+  const given = String(fromUrl || '').trim();
+  // A client identifier, nothing more. Checked only so that a stray query
+  // string cannot put arbitrary text into the sign-in URL.
+  return /^[A-Za-z0-9_-]{5,64}$/.test(given) ? given : '';
+}
 
 function adminCode() {
   // The same admin code Chad already uses for the course dashboard, so
@@ -80,35 +123,28 @@ a{color:#7A5C14}
 </html>`;
 }
 
-function setupPage(req, message) {
-  const redirect = baseUrl(req) + RETURN_PATH;
+function setupPage(req, { message, appKey, connectedAt } = {}) {
+  const ready = Boolean(appKey);
+  const already = connectedAt
+    ? '<div class="ok"><p>Dropbox is already connected. You only need to do this again if you disconnect it.</p></div>'
+    : '';
+  const body = ready
+    ? `${already}
+<p>Press the button. Dropbox will ask whether Herst Wellness Journals may see and edit your files. Say yes, and it brings you straight back here.</p>
+<form method="POST" action="${START_PATH}">
+  <input type="hidden" name="key" value="${esc(appKey)}">
+  <label for="admin">Your admin code</label>
+  <input id="admin" name="admin" type="password" autocomplete="off" required autofocus>
+  <button type="submit">Connect Dropbox</button>
+</form>
+<div class="note"><p>That is the whole thing. There is no key or secret to find, copy, or paste. Nothing is saved to your computer and nothing is shown on screen.</p></div>`
+    : `<div class="bad"><p>This page does not know which Dropbox app to use yet. Chad, you should have been sent a link with the app key already in it. Use that link rather than this page on its own.</p></div>`;
   return page(
     'Connect Dropbox',
     `<h1>Connect Dropbox</h1>
-<p>This lets the journal pages write your clients' work straight into your own Dropbox folders. It is a one-time thing. Once it is done nobody has to sign in again.</p>
+<p>This lets your clients' journals write themselves into your own Dropbox folders. It is a one-time thing.</p>
 ${message || ''}
-<h2>First, make the connection in Dropbox</h2>
-<p>You have to do this part yourself, because it needs your Dropbox login and nobody else can use it.</p>
-<ol>
-  <li>Open <a href="https://www.dropbox.com/developers/apps/create" rel="noopener">Dropbox's app page</a> in another tab.</li>
-  <li>Choose <strong>Scoped access</strong>, then <strong>Full Dropbox</strong>.</li>
-  <li>Name it <strong>Herst Wellness Journals</strong> and press Create app.</li>
-  <li>On the page that appears, find the box called <strong>Redirect URIs</strong>, paste this in, and press Add: <code>${esc(redirect)}</code></li>
-  <li>Click the <strong>Permissions</strong> tab along the top. Tick <strong>files.content.write</strong> and <strong>files.content.read</strong>, then press Submit at the bottom.</li>
-  <li>Go back to the <strong>Settings</strong> tab. Near the top you will see <strong>App key</strong> and <strong>App secret</strong>. The secret is hidden until you click Show.</li>
-</ol>
-<h2>Then paste those two here</h2>
-<p>They go straight into your own storage. They are not shown again and nobody else sees them.</p>
-<form method="POST" action="${START_PATH}">
-  <label for="admin">Your admin code</label>
-  <input id="admin" name="admin" type="password" autocomplete="off" required>
-  <label for="key">App key</label>
-  <input id="key" name="key" type="text" autocomplete="off" spellcheck="false" required>
-  <label for="secret">App secret</label>
-  <input id="secret" name="secret" type="password" autocomplete="off" spellcheck="false" required>
-  <button type="submit">Continue to Dropbox</button>
-</form>
-<div class="note"><p>The next screen is Dropbox's own. It will ask whether Herst Wellness Journals may see and edit your files. Say yes, and it brings you back here.</p></div>`
+${body}`
   );
 }
 
@@ -132,16 +168,17 @@ function readForm(req) {
   });
 }
 
-async function exchangeCode({ code, appKey, appSecret, redirectUri }, fetchImpl = fetch) {
+async function exchangeCode({ code, appKey, verifier, redirectUri }, fetchImpl = fetch) {
   const body = new URLSearchParams({
     code,
     grant_type: 'authorization_code',
     redirect_uri: redirectUri,
+    client_id: appKey,
+    code_verifier: verifier,
   });
-  const basic = Buffer.from(appKey + ':' + appSecret).toString('base64');
   const response = await fetchImpl('https://api.dropbox.com/oauth2/token', {
     method: 'POST',
-    headers: { Authorization: 'Basic ' + basic, 'Content-Type': 'application/x-www-form-urlencoded' },
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: body.toString(),
   });
   if (!response.ok) throw new Error('Dropbox would not complete the connection.');
@@ -150,11 +187,10 @@ async function exchangeCode({ code, appKey, appSecret, redirectUri }, fetchImpl 
   return data.refresh_token;
 }
 
-async function saveCredentials(store, { appKey, appSecret, refreshToken, account }) {
+async function saveCredentials(store, { appKey, refreshToken, account }) {
   await store.update((doc) => {
     doc.dropbox = {
       appKey,
-      appSecret,
       refreshToken,
       account: account || null,
       connectedAt: new Date().toISOString(),
@@ -186,27 +222,29 @@ async function handleDropboxSetupRoute(req, res, { store = defaultStore(), fetch
   const query = new URLSearchParams(String(req.url || '').split('?')[1] || '');
 
   if (url === SETUP_PATH && req.method === 'GET') {
+    const appKey = await appKeyFor(store, query.get('key'));
+    const existing = await loadCredentials(store);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
-    res.end(setupPage(req, null));
+    res.end(setupPage(req, { appKey, connectedAt: existing ? existing.connectedAt : null }));
     return true;
   }
 
   if (url === START_PATH && req.method === 'POST') {
     const form = await readForm(req).catch(() => ({}));
+    const appKey = await appKeyFor(store, form.key);
     if (!adminOk(form.admin)) {
       res.writeHead(401, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
-      res.end(setupPage(req, '<div class="bad"><p>That admin code did not match. Everything else you typed is still there in Dropbox; just try the code again.</p></div>'));
+      res.end(setupPage(req, { message: '<div class="bad"><p>That admin code did not match. Try it again.</p></div>', appKey }));
       return true;
     }
-    const appKey = String(form.key || '').trim();
-    const appSecret = String(form.secret || '').trim();
-    if (!appKey || !appSecret) {
+    if (!appKey) {
       res.writeHead(400, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
-      res.end(setupPage(req, '<div class="bad"><p>Both the app key and the app secret are needed. They are on the Settings tab of the app you just made.</p></div>'));
+      res.end(setupPage(req, { appKey: '' }));
       return true;
     }
     const state = crypto.randomBytes(16).toString('hex');
-    pending.set(state, { appKey, appSecret, at: Date.now() });
+    const verifier = newVerifier();
+    pending.set(state, { appKey, verifier, at: Date.now() });
     for (const [k, v] of pending) if (Date.now() - v.at > 15 * 60 * 1000) pending.delete(k);
     const redirectUri = baseUrl(req) + RETURN_PATH;
     const authorize =
@@ -216,6 +254,8 @@ async function handleDropboxSetupRoute(req, res, { store = defaultStore(), fetch
         response_type: 'code',
         redirect_uri: redirectUri,
         token_access_type: 'offline',
+        code_challenge: challengeFor(verifier),
+        code_challenge_method: 'S256',
         state,
       }).toString();
     res.writeHead(302, { Location: authorize, 'Cache-Control': 'no-store' });
@@ -242,10 +282,10 @@ async function handleDropboxSetupRoute(req, res, { store = defaultStore(), fetch
     }
     try {
       const refreshToken = await exchangeCode(
-        { code, appKey: entry.appKey, appSecret: entry.appSecret, redirectUri: baseUrl(req) + RETURN_PATH },
+        { code, appKey: entry.appKey, verifier: entry.verifier, redirectUri: baseUrl(req) + RETURN_PATH },
         fetchImpl
       );
-      await saveCredentials(store, { appKey: entry.appKey, appSecret: entry.appSecret, refreshToken });
+      await saveCredentials(store, { appKey: entry.appKey, refreshToken });
       forgetCachedCredentials();
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
       res.end(
