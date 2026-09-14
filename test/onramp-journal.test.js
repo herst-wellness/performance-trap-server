@@ -799,3 +799,62 @@ test('the Week 1 lens (Slow the breath, Enter the body) sits in both the daily r
   assert.ok(!WEEKS[1].instructions.includes("beginner's mind question"), 'the lens is the two moves, not beginner\'s mind');
   assert.ok(!WEEKS[1].instructions.includes(String.fromCharCode(0x2014)));
 });
+
+// The mirror: their Week 1 answers beside their Week 4 answers, at the bottom
+// of Week 4, above the closing card (9/14/26). Their own writing, so it is
+// escaped; and nothing at all unless both sides of a pair are written, because
+// one column reads as a reproach.
+test('the mirror shows both columns only when both are written, escapes their words, and sits above the closing card', async () => {
+  const { lessonContentHtml: lesson, mirrorCardHtml, mirrorCardFor } = require('../onramp-course.js');
+
+  const week1 = {
+    answers: {
+      'whats-bringing-you-here-1': { text: 'Tired in a way sleep does not touch.\n\nAnd I keep saying yes.' },
+      'whats-bringing-you-here-2': { text: 'A band across the chest. <b>tight</b>' },
+    },
+  };
+  const week4 = {
+    answers: {
+      'what-youre-taking-with-you-10': { text: 'I can feel it before I act on it.' },
+      'what-youre-taking-with-you-3': { text: 'It finds the chest faster now.' },
+    },
+  };
+
+  const card = mirrorCardHtml(week1, week4);
+  assert.match(card, /Your own words, a month apart/);
+  assert.equal((card.match(/class="mirror-pair"/g) || []).length, 2, 'both pairs render');
+  assert.match(card, /Tired in a way sleep does not touch\./);
+  assert.match(card, /I can feel it before I act on it\./);
+  assert.ok(card.includes('&lt;b&gt;tight&lt;\/b&gt;'), 'their writing is escaped');
+  assert.ok(!card.includes('<b>tight</b>'), 'no raw markup from their writing');
+  assert.match(
+    card,
+    /<p>Tired in a way sleep does not touch\.<\/p><p>And I keep saying yes\.<\/p>/,
+    'the blank line in their answer stays a paragraph break'
+  );
+
+  // One side missing means that pair renders nothing, and no side means no card.
+  assert.equal(mirrorCardHtml(null, week4), '');
+  assert.equal(mirrorCardHtml(week1, { answers: {} }), '');
+  const onePair = mirrorCardHtml(week1, { answers: { 'what-youre-taking-with-you-3': { text: 'Faster.' } } });
+  assert.equal((onePair.match(/class="mirror-pair"/g) || []).length, 1, 'only the complete pair shows');
+
+  // Placement: after the journal, before the closing card, before the fold.
+  const marker = '<section class="card">MIRROR-MARKER</section>';
+  const w4 = lesson(4, marker);
+  assert.ok(w4.indexOf('>Journal<') < w4.indexOf('MIRROR-MARKER'));
+  assert.ok(w4.indexOf('MIRROR-MARKER') < w4.indexOf('Your Integration and Next-Step Session'));
+  assert.ok(w4.indexOf('Your Integration and Next-Step Session') < w4.indexOf('If you want more this week'));
+
+  // It belongs to Week 4 alone, and Week 4 without one is still clean.
+  assert.ok(!lesson(1, marker).includes('MIRROR-MARKER'));
+  assert.ok(!lesson(4).includes('undefined'));
+
+  // No code, no store read.
+  assert.equal(await mirrorCardFor('', { load: async () => { throw new Error('should not read'); } }), '');
+
+  // A code that has written neither journal gets nothing.
+  assert.equal(await mirrorCardFor('nobody', { load: async () => ({ version: 1, journals: [] }) }), '');
+
+  assert.ok(!card.includes(String.fromCharCode(0x2014)));
+});
