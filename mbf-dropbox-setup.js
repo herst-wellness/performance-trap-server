@@ -219,7 +219,12 @@ function forgetCachedCredentials() {
 
 async function handleDropboxSetupRoute(req, res, { store = defaultStore(), fetchImpl = fetch } = {}) {
   const url = String(req.url || '').split('?')[0];
-  const query = new URLSearchParams(String(req.url || '').split('?')[1] || '');
+  // The server cuts the query string off req.url before routing, so the
+  // parameters have to come from the address it kept. Reading them from
+  // req.url alone finds nothing in production, which is exactly the bug
+  // that met Chad on his first try.
+  const whole = String(req.originalUrl || req.url || '');
+  const query = new URLSearchParams(whole.split('?')[1] || '');
 
   if (url === SETUP_PATH && req.method === 'GET') {
     const appKey = await appKeyFor(store, query.get('key'));

@@ -260,6 +260,38 @@ test('the right admin code sends Chad to Dropbox, proving itself without a secre
   assert.doesNotMatch(location, /secret/i);
 });
 
+// The live server matches routes on the path alone and cuts the query
+// string off req.url before any handler sees it, keeping the whole address
+// on req.originalUrl. The first version of this page read req.url, found
+// no key in production, and told Chad it did not know which Dropbox app to
+// use even though his link carried one. This starts the server the way
+// server.js does so the cut actually happens.
+test('the key in the link survives the server cutting the query string off', async (t) => {
+  const store = freshStore();
+  const server = await startServer(async (req, res) => {
+    req.originalUrl = req.url;
+    req.url = req.url.split('?')[0];
+    return handleDropboxSetupRoute(req, res, { store });
+  });
+  t.after(() => server.close());
+  const saved = process.env.MBF_DROPBOX_APP_KEY;
+  delete process.env.MBF_DROPBOX_APP_KEY;
+  process.env.MBF_ADMIN_CODE = 'let-me-in';
+  forgetCachedCredentials();
+
+  const page = await request(server, '/practice/mbf/connect-dropbox?key=link-carried-key');
+  const html = await page.text();
+  assert.match(html, /name="key" value="link-carried-key"/, 'the key from the link did not reach the form');
+  assert.doesNotMatch(html, /does not know which Dropbox app/);
+
+  // With nothing to go on, it should still say so rather than guess.
+  const bare = await request(server, '/practice/mbf/connect-dropbox');
+  assert.match(await bare.text(), /does not know which Dropbox app/);
+
+  if (saved) process.env.MBF_DROPBOX_APP_KEY = saved;
+  delete process.env.MBF_ADMIN_CODE;
+});
+
 test('the app key is remembered, so a later visit needs no link', async (t) => {
   const store = freshStore();
   const server = await startServer((req, res) => handleDropboxSetupRoute(req, res, { store }));

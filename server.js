@@ -1251,6 +1251,10 @@ function tagSubscriber(email, tag) {
 
 const server = http.createServer(async (req, res) => {
   if (await handleCompanionRoute(req, res)) { return; }
+  // Routes match on the path alone, so the query string is cut here. The
+  // whole address is kept first, because a handler that genuinely needs a
+  // query parameter has no other way back to it.
+  req.originalUrl = req.url;
   req.url = req.url.split('?')[0];
   // The enrollment store is shared with the course routes: name codes are
   // checked against it, and the journal sitting keeps its exchange there
