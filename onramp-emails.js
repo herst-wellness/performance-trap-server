@@ -173,7 +173,7 @@ function enroll(record) {
     p("Then Week 1 is here: " + link(weekUrl(1), 'Week 1: From the Book to the Body') + ". Open it and sit with the breathing recording before you read anything. Ten minutes is plenty the first time. The reading makes more sense from the other side of a sit.") +
     p("One journal for the week, What's Bringing You Here, in the first day or two. There's a second one on the page if you want it. It isn't a smaller version of the week. One is the week.") +
     p("Two things worth deciding before you start, because they matter more than willpower. <strong>What time of day will you sit</strong>, and <strong>what already happens at that time</strong>. Hooking the sit onto something already in your day, the first coffee, the dog, closing the laptop at night, holds better than deciding to be disciplined about it. You don't have to tell me. Just decide it.") +
-    p("And the thing to know before you miss a day, because you will. Missing one day costs you close to nothing. Missing a whole week is the one that matters. So if a day goes by, begin again the next one and don't make it mean anything about you.") +
+    p("And the thing to know before you miss a day. One missed day doesn't matter. A missed week does. Begin again the next one.") +
     p("Last thing. The site keeps track of when you play the recordings and when you tap Mark done on a journal. Not to grade you. At the end of each week I'll send you what the week looked like. No shame either way. It's just data, and it's yours.") +
     signOff();
   return message("You're in. Book your first thirty minutes with me.", body);

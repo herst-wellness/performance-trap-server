@@ -696,7 +696,7 @@ const JOURNALS = [
             "id": "the-trade-8",
             "kind": "short",
             "label": "Where it comes from",
-            "text": "If it's familiar, and it usually is, where else has this trade shown up? Is this the role you got cast in a long time ago? A sentence or two. You don't have to dig. Just notice that you recognize it."
+            "text": "If it's familiar, where else has this trade shown up? Is this the role you got cast in a long time ago? A sentence or two. You don't have to dig. Just notice that you recognize it. If it isn't familiar, write that. That's an answer."
           }
         ]
       },
