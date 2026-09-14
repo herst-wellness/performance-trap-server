@@ -8,6 +8,7 @@ const { handleMbfRoute } = require('./mbf');
 const { handleMbfJournalRoute } = require('./mbf-journal');
 const { handleDropboxSetupRoute } = require('./mbf-dropbox-setup');
 const { startTicker: startMbfDelivery } = require('./mbf-schedule');
+const { startTicker: startOnrampJournalDelivery } = require('./onramp-journal-schedule');
 const { handleOnrampJournalRoute } = require('./onramp-journal');
 const { handleAjRoute } = require('./aj');
 const { handleLorenzoRoute } = require('./lorenzo');
@@ -2887,4 +2888,10 @@ if (process.env.ONRAMP_EMAIL_SPINE === 'on') {
 // does nothing. MBF_AUTO_DELIVERY=off stops it.
 if (process.env.MBF_AUTO_DELIVERY !== 'off') {
   startMbfDelivery({ log: (line) => console.log(line) });
+}
+
+// On-Ramp course journals use the same quiet Dropbox delivery pattern as
+// MBF, with their own store and their own Dropbox folder tree.
+if (process.env.ONRAMP_JOURNAL_AUTO_DELIVERY !== 'off') {
+  startOnrampJournalDelivery({ log: (line) => console.log(line) });
 }
