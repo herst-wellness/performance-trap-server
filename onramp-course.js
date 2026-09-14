@@ -3,9 +3,9 @@
 // course content (drafted July 14, 2026), an overview page, and the same
 // per-person access codes that unlock the practice companions. Lesson
 // content is delivered only through the code-checked API, not embedded in
-// the public page source. Video and most meditation slots are placeholders
-// until Chad records them; Week 1's slot carries the recorded 12-minute
-// breathing practice. Week 1 is in the Mind/Body Foundations shape (docs/68,
+// the public page source. All four guided sits are recorded; the four short
+// videos from Chad are the only placeholders left. Week 1 is in the shape
+// set on 9/14/26 (docs/68 and docs/86,
 // 9/14/26): an introduction, the sit first, one piece to read, a practice
 // card, one journal, and the rest of the reading behind a fold.
 const crypto = require('node:crypto');
@@ -323,7 +323,7 @@ const COURSE_WEEKS = {
 <p><a class="button" href="/practice/on-ramp/week-1/journal/whats-bringing-you-here" data-journal="week-1/whats-bringing-you-here">Write in the journal</a> <button type="button" class="button button-quiet" data-journal-done="week-1/whats-bringing-you-here">Mark done</button> <a class="button button-quiet" href="${JOURNAL[1].pagePath}?journal=week-1/whats-bringing-you-here">Bring it to the journal sitting</a></p><p class="small"><a href="/downloads/on-ramp/week-1/whats-bringing-you-here.pdf" target="_blank" rel="noopener">Print it instead (PDF)</a></p>
 <h4>Running alongside: The Breath in Ordinary Hours</h4>
 <p>Two minutes a day, next to where you sit. Notes on what the body does, not essays. This is the page the sit sends you to.</p>
-<p><a class="button" href="/practice/on-ramp/week-1/journal/the-breath-in-ordinary-hours" data-journal="week-1/the-breath-in-ordinary-hours">Write in the journal</a> <button type="button" class="button button-quiet" data-journal-done="week-1/the-breath-in-ordinary-hours">Mark done</button> <a class="button button-quiet" href="${JOURNAL[1].pagePath}?journal=week-1/the-breath-in-ordinary-hours">Bring it to the journal sitting</a></p><p class="small"><a href="/downloads/on-ramp/week-1/the-breath-in-ordinary-hours.pdf" target="_blank" rel="noopener">Print it instead (PDF)</a></p>
+<p><a class="button" href="/practice/on-ramp/week-1/journal/the-breath-in-ordinary-hours" data-journal="week-1/the-breath-in-ordinary-hours">Write in the journal</a> <button type="button" class="button button-quiet" data-journal-done="week-1/the-breath-in-ordinary-hours">Mark done</button> <a class="button button-quiet" href="${JOURNAL[1].pagePath}?journal=week-1/the-breath-in-ordinary-hours">Bring it to the journal sitting</a></p>
 <h4>If you want it: One Moment, Mapped</h4>
 <p>Not required, and not a smaller version of the week. It’s here if you want to take one moment apart end to end: the trigger, the body’s first response, the story quoted as you hear it, the reaction then and the pull now, the spinning, and where the opening was. Do it this week, later in the month, or not at all.</p>
 <p><a class="button" href="/practice/on-ramp/week-1/journal/one-moment-mapped" data-journal="week-1/one-moment-mapped">Write in the journal</a> <button type="button" class="button button-quiet" data-journal-done="week-1/one-moment-mapped">Mark done</button> <a class="button button-quiet" href="${JOURNAL[1].pagePath}?journal=week-1/one-moment-mapped">Bring it to the journal sitting</a></p><p class="small"><a href="/downloads/on-ramp/week-1/one-moment-mapped.pdf" target="_blank" rel="noopener">Print it instead (PDF)</a></p>
@@ -491,7 +491,7 @@ const COURSE_WEEKS = {
 <p><a class="button" href="/practice/on-ramp/week-2/journal/the-protector" data-journal="week-2/the-protector">Write in the journal</a> <button type="button" class="button button-quiet" data-journal-done="week-2/the-protector">Mark done</button> <a class="button button-quiet" href="${JOURNAL[2].pagePath}?journal=week-2/the-protector">Bring it to the journal sitting</a></p><p class="small"><a href="/downloads/on-ramp/week-2/the-protector.pdf" target="_blank" rel="noopener">Print it instead (PDF)</a></p>
 <h4>Running alongside: Staying in Ordinary Hours</h4>
 <p>Two minutes a day, next to where you sit.</p>
-<p><a class="button" href="/practice/on-ramp/week-2/journal/staying-in-ordinary-hours" data-journal="week-2/staying-in-ordinary-hours">Write in the journal</a> <button type="button" class="button button-quiet" data-journal-done="week-2/staying-in-ordinary-hours">Mark done</button> <a class="button button-quiet" href="${JOURNAL[2].pagePath}?journal=week-2/staying-in-ordinary-hours">Bring it to the journal sitting</a></p><p class="small"><a href="/downloads/on-ramp/week-2/staying-in-ordinary-hours.pdf" target="_blank" rel="noopener">Print it instead (PDF)</a></p>
+<p><a class="button" href="/practice/on-ramp/week-2/journal/staying-in-ordinary-hours" data-journal="week-2/staying-in-ordinary-hours">Write in the journal</a> <button type="button" class="button button-quiet" data-journal-done="week-2/staying-in-ordinary-hours">Mark done</button> <a class="button button-quiet" href="${JOURNAL[2].pagePath}?journal=week-2/staying-in-ordinary-hours">Bring it to the journal sitting</a></p>
 <h4>If you want it: The Return</h4>
 <p>Not required. The same moment, or a fresh one. Three minutes on the wave with a timer, then what happened: did it move, soften, get sharper before it eased. Then the return: write directly to whatever is there, the way you’d speak to a scared kid.</p>
 <p><a class="button" href="/practice/on-ramp/week-2/journal/the-return" data-journal="week-2/the-return">Write in the journal</a> <button type="button" class="button button-quiet" data-journal-done="week-2/the-return">Mark done</button> <a class="button button-quiet" href="${JOURNAL[2].pagePath}?journal=week-2/the-return">Bring it to the journal sitting</a></p><p class="small"><a href="/downloads/on-ramp/week-2/the-return.pdf" target="_blank" rel="noopener">Print it instead (PDF)</a></p>
