@@ -80,14 +80,32 @@ function safeSegment(s) {
 // client writes, so Chad's folder holds the current state of the work
 // rather than a pile of dated fragments, and the file itself says whether
 // it is finished.
+// A journal from another programme carries its own folder label, its own
+// Dropbox root and its own programme name. When it does not, this is
+// Mind/Body Foundations and nothing here changes.
+function folderLabelFor(journal) {
+  return journal.folderLabel || 'Module ' + journal.module;
+}
+
+function rootFor(journal) {
+  const own =
+    (journal.rootEnv ? process.env[journal.rootEnv] : '') || journal.defaultRoot || '';
+  return String(own || process.env.MBF_DROPBOX_ROOT || DEFAULT_ROOT).replace(/\/$/, '');
+}
+
 function journalFileName(journal, clientName) {
-  return safeSegment('Module ' + journal.module + ' - ' + journal.title + ' - ' + clientName) + '.txt';
+  return safeSegment(folderLabelFor(journal) + ' - ' + journal.title + ' - ' + clientName) + '.txt';
 }
 
 function dropboxPath(journal, clientName) {
-  const root = String(process.env.MBF_DROPBOX_ROOT || DEFAULT_ROOT).replace(/\/$/, '');
   return (
-    root + '/' + safeSegment(clientName) + '/Module ' + journal.module + '/' + journalFileName(journal, clientName)
+    rootFor(journal) +
+    '/' +
+    safeSegment(clientName) +
+    '/' +
+    safeSegment(folderLabelFor(journal)) +
+    '/' +
+    journalFileName(journal, clientName)
   );
 }
 
@@ -99,7 +117,12 @@ function renderJournalText(journal, answers, clientName, now, state = {}) {
   const counts = answeredCount(journal, answers);
   const lines = [];
   lines.push(journal.title);
-  lines.push('Mind/Body Foundations, Module ' + journal.module + ', ' + journal.code);
+  lines.push(
+    (journal.programLabel || 'Mind/Body Foundations') +
+      ', ' +
+      folderLabelFor(journal) +
+      (journal.code ? ', ' + journal.code : '')
+  );
   lines.push(clientName);
   lines.push(
     state.finished
