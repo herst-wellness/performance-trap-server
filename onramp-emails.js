@@ -7,8 +7,8 @@
 // journal names are provisional until those weeks are rebuilt.
 const BASE_URL = 'https://practice.herstwellness.com';
 const BOOKING_URL = 'https://chadherst.as.me/integration-and-next-step-session';
-// The hour with Chad is split: thirty minutes before Week 1 and thirty at the
-// end. Human contact before a self-paced programme does about as much for
+// Two conversations with Chad: half an hour before Week 1 and a full hour at
+// the end. Human contact before a self-paced programme does about as much for
 // finishing as contact all the way through, and a reward at the end moves
 // nobody who has already stopped (9/14/26 research, performance-trap docs/86).
 const OPENING_BOOKING_URL = process.env.ONRAMP_OPENING_BOOKING_URL || 'https://chadherst.as.me/opening-session';
@@ -168,7 +168,7 @@ function enroll(record) {
   const body =
     greeting(record) +
     p("Glad we're doing this.") +
-    p("<strong>First thing, before the course.</strong> The hour you paid for comes in two halves. Thirty minutes with me now, before you start, and thirty at the end once the month is in you. Book the first half here: " + link(OPENING_BOOKING_URL, 'the opening thirty minutes') + ". Pick something in the next week or so. We use it to find out what you're bringing, and to put the practice somewhere in your life where it can survive.") +
+    p("<strong>First thing, before the course.</strong> You get two conversations with me, not one. A short one now, before you start, and a full hour at the end once the month is in you. Book the short one here: " + link(OPENING_BOOKING_URL, 'the opening thirty minutes') + ". Pick something in the next week or so. We use it to find out what you're bringing, and to put the practice somewhere in your life where it can survive.") +
     p('Your access code is <strong style="font-family:monospace;font-size:20px;">' + esc(record.code) + '</strong>. It unlocks all four weeks and the practice companion. Save it somewhere you\'ll find it again.') +
     p("Then Week 1 is here: " + link(weekUrl(1), 'Week 1: From the Book to the Body') + ". Open it and sit with the breathing recording before you read anything. Ten minutes is plenty the first time. The reading makes more sense from the other side of a sit.") +
     p("One journal for the week, What's Bringing You Here, in the first day or two. There's a second one on the page if you want it. It isn't a smaller version of the week. One is the week.") +
@@ -275,12 +275,12 @@ function closing(record) {
   const body =
     greeting(record) +
     p("Four weeks. Whatever it looked like, you did it, and the month is in your body now in a way it wasn't before.") +
-    p("Now the other half of our hour. Thirty minutes on Zoom, the back end of what you paid for. We met at the start and you told me what you were bringing. This one is where we look at what the month did with it: what got easier, what is still asking for attention, and the one thing worth carrying forward.") +
+    p("Now the long one. A full hour on Zoom. We talked for half an hour at the start and you told me what you were bringing. This is where we look at what the month did with it: what got easier, what is still asking for attention, and the one thing worth carrying forward.") +
     p('Book it here: ' + link(BOOKING_URL, 'Integration and Next-Step Session') + '. Pick a time in the next two or three weeks, while the month is still close.') +
     p("I'll also tell you whether one-on-one work fits where you are, or whether what you have now is enough to keep going on your own. Either answer is a good one.") +
     p("Before we meet, do the last journal, What You're Taking With You. If you didn't get to everything, bring what you have. We'll work with what's there.") +
     signOff();
-  return message('The other half of our hour', body);
+  return message('The hour that closes the month', body);
 }
 
 module.exports = {
