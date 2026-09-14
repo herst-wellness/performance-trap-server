@@ -182,16 +182,41 @@ test('uploading without Dropbox connected says so plainly', async (t) => {
   assert.match(data.error, /not connected yet/);
 });
 
-test('every prompt has an id and a label, and ids do not repeat', () => {
+test('every prompt in every journal has an id and a label, and ids do not repeat', () => {
+  const { JOURNALS } = require('../mbf-journal-content');
   const seen = new Set();
-  for (const slug of ['about-you', 'your-turning-point', 'beginners-mind']) {
-    const journal = findJournal(1, slug);
+  for (const journal of JOURNALS) {
+    assert.ok(journal.title, 'a journal is missing its title');
+    assert.ok(journal.slug, 'a journal is missing its slug');
+    assert.ok(journal.blurb, journal.slug + ' is missing its blurb');
+    assert.ok(journal.sections.length, journal.slug + ' has no sections');
     for (const prompt of allPrompts(journal)) {
       assert.ok(prompt.id, 'a prompt is missing its id');
       assert.ok(prompt.label, 'prompt ' + prompt.id + ' is missing its label');
       assert.ok(!seen.has(prompt.id), 'duplicate prompt id ' + prompt.id);
       seen.add(prompt.id);
     }
+  }
+});
+
+test('every journal has at least one place to write', () => {
+  const { JOURNALS } = require('../mbf-journal-content');
+  for (const journal of JOURNALS) {
+    assert.ok(allPrompts(journal).length > 0, journal.slug + ' asks nothing');
+  }
+});
+
+test('modules 2 and 3 are reachable the same way module 1 is', async (t) => {
+  const server = await startServer();
+  t.after(() => server.close());
+  process.env.MBF_ACCESS_CODES = 'test-client';
+  for (const [moduleNumber, slug] of [[2, 'kids-on-the-bus'], [3, 'formation-of-a-reaction'], [3, 'session-prep-3']]) {
+    const page = await request(server, '/practice/mbf/module-' + moduleNumber + '/journal/' + slug);
+    assert.strictEqual(page.status, 200, slug + ' has no page');
+    const content = await request(server, '/api/mbf/journal/' + moduleNumber + '/' + slug, {
+      headers: { 'X-Companion-Access': 'test-client' },
+    });
+    assert.strictEqual(content.status, 200, slug + ' serves no content');
   }
 });
 
