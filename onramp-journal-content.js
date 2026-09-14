@@ -1,5 +1,14 @@
-// Generated from ../performance-trap/docs/onramp-journals/*.md.
-// Do not edit prompts here by hand. Change the markdown source and regenerate.
+// The prompts here are the same ten journals as the markdown in
+// ../performance-trap/docs/onramp-journals, which is also what the printable
+// PDFs are built from. No generator produces one from the other, and none
+// should: this file carries structure the markdown cannot express (prompt ids,
+// long-or-short field kinds, section headings, the Dropbox folder and root) and
+// the markdown carries LaTeX this file has no use for.
+//
+// So when a prompt changes, change it in both places. The markdown is the one
+// to think of as the source. test/onramp-journal-sync.test.js checks that every
+// prompt rendered on the web still appears word for word in the markdown, and
+// fails when one copy was edited without the other.
 
 const DOCS_DIR = require('node:path').resolve(__dirname, '..', 'performance-trap', 'docs', 'onramp-journals');
 
