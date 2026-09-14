@@ -14,9 +14,9 @@ const BOOKING_URL = 'https://chadherst.as.me/integration-and-next-step-session';
 const OPENING_BOOKING_URL = process.env.ONRAMP_OPENING_BOOKING_URL || 'https://chadherst.as.me/opening-session';
 const MAILCHIMP_TAG = 'Performance Trap Practice';
 
-// Journal PDFs live at /downloads/on-ramp/week-N/<slug>.pdf. Week 1's two
-// are drafted in docs/onramp-journals; the other weeks are placeholders
-// until their journals exist.
+// The journals are writable pages at /practice/on-ramp/week-N/journal/<slug>.
+// Eight of the ten also have a printable PDF at
+// /downloads/on-ramp/week-N/<slug>.pdf; the two daily logs do not.
 const JOURNALS = {
   1: [
     { title: "What's Bringing You Here", slug: 'whats-bringing-you-here' },
