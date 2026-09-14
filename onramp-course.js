@@ -14,6 +14,8 @@ const { defaultStore, newRecord, findByCode, dayEntry, nameCode } = require('./o
 const { normaliseTimeZone, localDateString } = require('./onramp-schedule');
 const { handleYayRoute, handleSmsInbound } = require('./onramp-yaynay');
 const emails = require('./onramp-emails');
+const journalStore = require('./onramp-journal-store');
+const { findRecord: findJournalRecord } = require('./onramp-journal-store');
 const brief = require('./onramp-brief');
 
 const COURSE_PATH = '/course/on-ramp';
@@ -831,6 +833,10 @@ h4{font:600 15px/1.4 Arial,sans-serif;color:var(--gold);margin:20px 0 6px}
 .small{font:14px/1.5 Arial,sans-serif;color:#715D49}
 .note{font-style:italic;color:#6F5438}
 .placeholder{padding:16px 18px;background:var(--soft);border-left:3px solid var(--gold);font:14px/1.55 Arial,sans-serif;margin:12px 0}
+.mirror-pair{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin:22px 0 0;padding-top:20px;border-top:1px solid var(--line)}
+.mirror-col h4{margin:0 0 8px}
+.mirror-col p{margin:0 0 10px}
+@media (max-width:640px){.mirror-pair{grid-template-columns:1fr;gap:18px}.mirror-col+.mirror-col{padding-top:14px;border-top:1px solid var(--line)}}
 .button{display:inline-block;border:1px solid var(--gold);background:var(--gold);color:#fff;border-radius:999px;padding:12px 22px;font:600 14px/1 Arial,sans-serif;cursor:pointer;text-decoration:none}
 .button-quiet{background:transparent;color:var(--gold)}
 .button-quiet.is-done{background:#EFE6D8;border-color:#EFE6D8;color:#5C4A2A;cursor:default}
@@ -1008,7 +1014,85 @@ function teachingSections(html) {
     .map((part) => ({ heading: part.slice(0, part.indexOf('</h3>')), html: '<h3>' + part }));
 }
 
-function lessonContentHtml(weekNum) {
+// Their own writing goes on a page, so it is escaped, always.
+function escapeHtml(value) {
+  return String(value == null ? '' : value).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+// The mirror: their Week 1 answers beside their Week 4 answers, in their own
+// words, with nothing from Chad in between. The change between the two is the
+// content, and a person cannot see the distance they travelled from inside
+// either end of it. Week 4's journal already asks them to go back and reread
+// Week 1; this takes the digging out.
+//
+// Two pairs, chosen because each side answers the other: the thing that brought
+// them against the thing they are carrying out, and the body then against the
+// body now. Renders nothing unless both sides of a pair are written, because a
+// single column reads as a reproach.
+const MIRROR_PAIRS = [
+  {
+    thenLabel: "What you said was bringing you here",
+    thenId: 'whats-bringing-you-here-1',
+    nowLabel: "What you're taking with you",
+    nowId: 'what-youre-taking-with-you-10',
+  },
+  {
+    thenLabel: 'What was happening in your body',
+    thenId: 'whats-bringing-you-here-2',
+    nowLabel: 'What the body learned',
+    nowId: 'what-youre-taking-with-you-3',
+  },
+];
+
+function answerText(record, id) {
+  const a = record && record.answers && record.answers[id];
+  const text = a && typeof a.text === 'string' ? a.text.trim() : '';
+  return text;
+}
+
+function paragraphsOf(text) {
+  return String(text)
+    .split(/\n{2,}/)
+    .map((para) => para.trim())
+    .filter(Boolean)
+    .map((para) => '<p>' + escapeHtml(para).replace(/\n/g, '<br>') + '</p>')
+    .join('');
+}
+
+// Builds the mirror card, or '' when there is nothing honest to show.
+function mirrorCardHtml(week1Record, week4Record) {
+  const rows = MIRROR_PAIRS.map((pair) => {
+    const then = answerText(week1Record, pair.thenId);
+    const now = answerText(week4Record, pair.nowId);
+    if (!then || !now) return '';
+    return (
+      '<div class="mirror-pair">' +
+      '<div class="mirror-col"><h4>' + escapeHtml(pair.thenLabel) + '</h4>' + paragraphsOf(then) + '</div>' +
+      '<div class="mirror-col"><h4>' + escapeHtml(pair.nowLabel) + '</h4>' + paragraphsOf(now) + '</div>' +
+      '</div>'
+    );
+  }).filter(Boolean);
+  if (!rows.length) return '';
+  return (
+    '<section class="card"><div class="eyebrow" style="text-align:left">Where you started, and where you are</div>' +
+    '<h3>Your own words, a month apart</h3>' +
+    '<p>On the left is what you wrote in the first days. On the right is what you wrote this week. I have not touched either one.</p>' +
+    rows.join('') +
+    '</section>'
+  );
+}
+
+// Reads the person's own two journals out of the store. Returns '' on anything
+// missing, including a code that has written neither.
+async function mirrorCardFor(code, store = journalStore.defaultStore()) {
+  if (!code) return '';
+  const doc = await store.load();
+  const week1 = findJournalRecord(doc, code, 1, 'whats-bringing-you-here');
+  const week4 = findJournalRecord(doc, code, 4, 'what-youre-taking-with-you');
+  return mirrorCardHtml(week1, week4);
+}
+
+function lessonContentHtml(weekNum, mirrorCard) {
   const c = COURSE_WEEKS[weekNum];
   const companion = WEEKS[weekNum];
   const closing = c.closing ? `<section class="card">${c.closing}</section>` : '';
@@ -1034,6 +1118,7 @@ function lessonContentHtml(weekNum) {
   </section>
   <section class="card"><div class="eyebrow" style="text-align:left">Practice card</div>${c.practiceCard}</section>
   <section class="card"><div class="eyebrow" style="text-align:left">Journal</div>${c.journal}</section>
+  ${weekNum === 4 ? (mirrorCard || '') : ''}
   ${closing}
   ${furtherCard}`;
 }
@@ -1441,11 +1526,22 @@ async function handleCourseRoute(req, res, helpers = {}) {
       );
       return true;
     }
-    sendJson(res, 200, { contentHtml: lessonContentHtml(Number(apiMatch[1])) });
+    const weekNum = Number(apiMatch[1]);
+    let mirrorCard = '';
+    if (weekNum === 4) {
+      try {
+        mirrorCard = await mirrorCardFor(String(req.headers['x-companion-access'] || ''));
+      } catch (err) {
+        // The mirror is a gift, not a dependency. If the store is unreachable
+        // the rest of Week 4 still renders.
+        mirrorCard = '';
+      }
+    }
+    sendJson(res, 200, { contentHtml: lessonContentHtml(weekNum, mirrorCard) });
     return true;
   }
 
   return false;
 }
 
-module.exports = { COURSE_CSS, COURSE_PATH, COURSE_WEEKS, handleCourseRoute, lessonContentHtml, normalisePhone, validateEnrollment };
+module.exports = { COURSE_CSS, COURSE_PATH, COURSE_WEEKS, handleCourseRoute, lessonContentHtml, mirrorCardFor, mirrorCardHtml, normalisePhone, validateEnrollment };
