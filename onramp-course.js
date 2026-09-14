@@ -221,9 +221,15 @@ const COURSE_WEEKS = {
 <h4>The breath is a mirror for the mind</h4>
 <p>People figured this out a long time ago. In the yoga tradition I come from, Krishnamacharya, the teacher nearly every school of modern yoga descends from, taught that the breath is a mirror for the mind. When the breath is scattered, the mind is agitated. When you regulate the breath, lengthening it and smoothing it, the mind steadies with it. In my own practice this is still the piece that works best, fifteen minutes a day, because it's from this calm place that I can inhabit a curious mind, observe my thoughts and feelings with openness rather than judgment, and be less tense and less reactive. Everything else in these four weeks comes after this. Working with the nervous system comes first.</p>
 <h4>Summary</h4>
+<p class="note">Before you read the list: look away and say back what you can. Getting it wrong still does the work.</p>
 <ul><li>A settled nervous system is where the work becomes possible, and where you can see your options. The breath is the lever, and you always have it.</li><li>The straw breath: in through the nose for five, out through pursed lips for seven, smooth as silk, all the air out, and let the inhale come on its own.</li><li>The diaphragm moves like a parachute, massaging the organs, with the vagus nerve running through it. A long smooth exhale tells the system it's safe.</li><li>Fit the breath to the state: a longer exhale when you're jumpy, a fuller inhale when you're dull, even when you're even.</li><li>Check the quality of mind before and after every sit.</li></ul>
 <h4>Action</h4>
 <p>Sit with the breathing recording today, ten to fifteen minutes, eyes closed, in a posture that feels upright, feet on the floor. Sitting, not lying down. I don't lie down for sits. Before you press start, check the state you're in. Three straw breaths through the day, before a meeting, a hard email, a conversation you've been putting off.</p>
+<h3>A part of me</h3>
+<p>Before anything else this week, one move. It runs under all four weeks and it's the only thing here I'd call a foundation.</p>
+<p>There's a way of saying this that you can carry into the rest of your day. Instead of "I'm anxious," try "a part of me is anxious." Instead of "I'm a failure," "a part of me feels like I'm failing." Say both out loud and notice what changes in the body.</p>
+<p>When you're identified with a feeling, when the butterflies are you, you only have two options. Push them down or ignore them. Neither works. You're either with the part or inside the part. Being with it is what gives you room to move. This thing that's arising, it's not all of me. It's a part of me. That's the whole foundation of the four weeks, and you're already doing it.</p>
+<p>It's the move I make with people in the room, over and over. Something has hold of you and you can't see it, because you're looking out through it. Put "a part of me" in front of it and you're looking at it instead. That's the whole trick, and everything else this month is practice at it.</p>
 <h3>Enter the Body</h3>
 <p>Someone I work with had written to me about going to visit their mother, who they have a hard time with. I asked them to take me into it.</p>
 <p>"I walked in. I was unloading the car. I didn't even acknowledge her. I just put the stuff down, didn't look at her. My body froze. Then I grabbed the next load."</p>
@@ -248,9 +254,6 @@ const COURSE_WEEKS = {
 <p>The body has a kind of inner knowing. It may not express itself in words, but it will express itself in sensations. So when you're in the body and a sentence comes, let it land in the body and notice what the energy does. Say the sentence out loud and watch. That's a question you can ask all day: as I say that, what happens in there? And then the one I ask myself when something has me: how do I move from this place? How do I breathe from this place? How do I relate from this place? Not from where I think I should be. From here.</p>
 <h4>Why to what</h4>
 <p>The mind will keep asking why. Why am I like this. Why does this always happen. Why is a booby trap. Why keeps you in the story, and the story is where the loop lives. The question that opens things up is what. What's happening in the body right now? What's the quality of it? Not what you wish was there, not what you think ought to be there. What's there. That's the whole of it, and it's harder than it sounds, because everything in you was trained to look out, and very little care or attention was ever placed inward.</p>
-<h4>A part of me</h4>
-<p>There's a way of saying this that you can carry into the rest of your day. Instead of "I'm anxious," try "a part of me is anxious." Instead of "I'm a failure," "a part of me feels like I'm failing." Say both out loud and notice what changes in the body.</p>
-<p>When you're identified with a feeling, when the butterflies are you, you only have two options. Push them down or ignore them. Neither works. You're either with the part or inside the part. Being with it is what gives you room to move. This thing that's arising, it's not all of me. It's a part of me. That's the whole foundation of the four weeks, and you're already doing it.</p>
 <h4>Summary</h4>
 <ul><li>The feeling tone comes before the story. The body is what is happening, and it's trying to show you what's next.</li><li>The U-turn: from the brain back into the body. Where, throat, chest, belly. Then the quality, then a word, then check the word.</li><li>Blank is fine, numb is information, and you always have hands and breath.</li><li>Not why. What.</li><li>"A part of me is," said out loud, is the same move in words.</li></ul>
 <h4>Action</h4>
@@ -314,7 +317,7 @@ const COURSE_WEEKS = {
     journal: `
 <p>One journal this week: <strong>What’s Bringing You Here</strong>. That’s the week. When you finish it, tap Mark done.</p>
 <p>Take a few minutes of breath before you write. Sit with your eyes closed, let the body settle, then open your eyes and write. A few paragraphs per prompt is plenty. Don’t filter. Don’t edit.</p>
-<p class="note">Writing about something tender usually feels worse before it feels better. That’s ordinary and it settles. You can stop at any point and come back to it. Nothing here has to be finished in one go; the page keeps what you’ve written.</p>
+<p class="note">This can feel worse before it feels better. Stop whenever you want. The page keeps what you wrote.</p>
 <p>Then, once in the week, bring what you’ve written to the journal sitting. It reads everything, finds the place with the most charge, and checks with you before it starts there. Then it reads a few of your own lines back to you, and you notice what happens in the body as you hear them, with the breath. That’s what I do with people’s writing before a session, and it’s what I’ll have read before ours.</p>
 <label class="check"><input type="checkbox" id="journalConsent"> <span>Let Chad read what I write in the journal sittings before our Integration and Next-Step Session.</span></label>
 <p class="small">Ticked: what you bring to the journal sittings is kept for Chad to read, and he gets a short brief before your session. Unticked: nothing is kept.</p>
@@ -333,7 +336,7 @@ const COURSE_WEEKS = {
   2: {
     title: 'Week 2: Staying With It',
     sub: "Name what's there. Stay. Equanimity. The second half of SENSE.",
-    intro: `Hi, friend. You made it through the first week, and I want you to take that in for a second. Whatever you got to and whatever you didn't, you spent a week turning toward yourself instead of away, and that's not nothing. Last week you practiced getting to the body. Slow the breath, enter, find the sensation, put a word on it. This week you practice staying there, longer than is comfortable, without fixing what you find. Name what's there. Stay. Equanimity. That's the second half of the method, and it's the half that changes things.`,
+    intro: `Hi, friend. Whatever you got to in the first week and whatever you didn't, you turned toward yourself instead of away, and that's not nothing. Week 1 was getting to the body. Slow the breath, enter, find the sensation, put a word on it. This week you practice staying there, longer than is comfortable, without fixing what you find. Name what's there. Stay. Equanimity. That's the second half of the method, and it's the half that changes things.<br><br>One thing nobody tells you. There's usually a stretch in here where you can say all of this back and none of it has landed. You have the words and not the thing. That's not failure. That's the middle of it, and everybody goes through there.`,
     video: videoPlaceholder('Staying, instead of fixing'),
     teaching: `
 <h3>Introduction</h3>
@@ -418,6 +421,7 @@ const COURSE_WEEKS = {
 <h4>What happens</h4>
 <p>When we come back to these places, there are first layers of anxiety and overwhelm. I can't touch this, this is too much. But as you stay with it, it starts to settle, and it starts to reveal. It becomes like a flower that starts to open, and there's a tender spot right in the center. Sometimes you'll feel a sigh, or the shoulders drop a little. It's not gone. It's settling for now. Just keeping it company. Not by conquering it. By staying.</p>
 <h4>Summary</h4>
+<p class="note">Before you read the list: look away and say back what you can. Getting it wrong still does the work.</p>
 <ul><li>Stay because the feeling has a concern for you and is calling you toward something. When it settles, you react less and see the situation more clearly, and every stay shows your system you won't leave yourself.</li><li>Keep it company: warm attention and a little breath, not to get it to go away, but to explore it and see how it responds.</li><li>Explore, don't endure. The razor's edge, not gritting your teeth.</li><li>Small doses. Touch it, go to the hands or the breath, come back. Don't overwhelm the system.</li><li>The first thing you meet is usually a protector. It's serving something. Let it be there, offer it warmth, and don't shame it.</li></ul>
 <h4>Action</h4>
 <p>Do the first journal, The Protector, in the first day or two, after a sit. Through the day, once, when you'd normally reach for the phone, the drink, the spreadsheet, the defensive sentence, stay with whatever you were about to get away from for thirty seconds longer. Then reach if you need to. That thirty seconds is the practice.</p>
@@ -484,7 +488,7 @@ const COURSE_WEEKS = {
     journal: `
 <p>One journal this week: <strong>The Protector</strong>. When you finish it, tap Mark done.</p>
 <p>Take a few minutes of breath before you write. Sit with your eyes closed, let the body settle, then open your eyes and write. A few paragraphs per prompt is plenty. Don’t filter. Don’t edit.</p>
-<p class="note">Writing about something tender usually feels worse before it feels better. That’s ordinary and it settles. You can stop at any point and come back to it. Nothing here has to be finished in one go; the page keeps what you’ve written.</p>
+<p class="note">This can feel worse before it feels better. Stop whenever you want. The page keeps what you wrote.</p>
 <p>Then, once in the week, bring what you’ve written to the journal sitting. It reads everything, finds the place with the most charge, checks with you, and reads your own lines back so you can notice what the body does as you hear them. If you ticked the box on Week 1, what you bring here is kept for me too, and I read it before our hour.</p>
 <h4>This week: The Protector</h4>
 <p>First day or two, after a sit. Twenty to thirty minutes. One moment from the last week or two that still has charge. The body now, as you hold the memory. Then the first thing you meet, which is usually the protection: its shape, its place, its texture, what it would say if it could talk, and which kid it is. Three passes of staying, thirty seconds each, with a line after each. Then what softened, or what’s still holding, and one line to carry into the week.</p>
@@ -501,7 +505,7 @@ const COURSE_WEEKS = {
   3: {
     title: 'Week 3: Turning Contact Into Choice',
     sub: 'Still. Tune in to the trade. The third option. This is STEP.',
-    intro: `Hi, friend. Two weeks in. The first two were inner work, getting to the body and staying there, and I'm guessing by now you've had at least one moment where you caught something in your body before the story got to it. Hold on to that. This week it goes outward, into your conversations. Still. Tune in to the trade. Expand options. Practice. The order matters. You restore contact with yourself first, then you renegotiate the terms with the world. This is the week I get most excited about, because it's where the practice starts to change something in your real life.`,
+    intro: `Hi, friend. The first two weeks were inner work, getting to the body and staying there. If you've had even one moment where you caught something in your body before the story got to it, hold on to that. If you haven't, that's what the practice is for. This week it goes outward, into your conversations. Still. Tune in to the trade. Expand options. Practice. The order matters. You restore contact with yourself first, then you renegotiate the terms with the world. This is the week I get most excited about, because it's where the practice starts to change something in your real life.`,
     video: videoPlaceholder('The third option'),
     teaching: `
 <h3>Introduction</h3>
@@ -567,6 +571,7 @@ const COURSE_WEEKS = {
 <p>I'll tell you mine. After my brother took his life, the unspoken deal in my family was that we couldn't handle another problem. So I traded my own grief and messiness to become the good kid. I became low maintenance. I got good grades. I became the proof that the family was still respectable. The trade was clear: I will suppress my own needs so you don't crumble, and in exchange I get to belong. It's a funny thing being the surviving son. You have to make up for the other one. Even now, decades later, I can feel the trace of that bargain in my body. In exchange for that trade, my own inner life went underground. My needs, my hurt, my anger were buried so deep I forgot they were mine. And I can see that the cost has been undeniable. It's a weight I've carried in my gut.</p>
 <p>We have to recognize where we're compromising ourselves. That's the tuning in. Then it's about renegotiating the contract. Not renegotiating it by saying fuck you. It might say: wow, that hurts a lot, and you matter to me, and I want to find a new way. That's the third option, and it's next.</p>
 <h4>Summary</h4>
+<p class="note">Before you read the list: look away and say back what you can. Getting it wrong still does the work.</p>
 <ul><li>The trade is the place you agreed to give up part of yourself to stay connected. It was subconscious, and it's still running.</li><li>Tuning in drags the hidden deal into the light so you can stop paying. If you don't, you keep re-traumatizing yourself and redoing the same inner work.</li><li>The trade comes from a bind: what's said versus what the body feels. You learned to override the implicit. Unpicking your bind is Foundations' work; catching the trade is this week's.</li><li>Name the trade. What's it like to make it? What's the hidden lie? What's the payoff, and what's the cost? Feel the cost in the body.</li><li>Then renegotiate, without fuck you.</li></ul>
 <h4>Action</h4>
 <p>Once you've caught one moment where the old pull was there, do the first journal, The Trade. Name the trade in that moment, what it's like to make it, and what it's costing. Bring it to the journal sitting.</p>
@@ -632,7 +637,7 @@ const COURSE_WEEKS = {
     journal: `
 <p>One journal this week: <strong>The Trade</strong>. When you finish it, tap Mark done.</p>
 <p>Take a few minutes of breath before you write. Sit with your eyes closed, let the body settle, then open your eyes and write. A few paragraphs per prompt is plenty. Don’t filter. Don’t edit.</p>
-<p class="note">Writing about something tender usually feels worse before it feels better. That’s ordinary and it settles. You can stop at any point and come back to it. Nothing here has to be finished in one go; the page keeps what you’ve written.</p>
+<p class="note">This can feel worse before it feels better. Stop whenever you want. The page keeps what you wrote.</p>
 <p>Then, once in the week, bring what you’ve written to the journal sitting. It reads everything, finds the place with the most charge, checks with you, and reads your own lines back so you can notice what the body does as you hear them. If you ticked the box on Week 1, what you bring here is kept for me too, and I read it before our hour.</p>
 <h4>This week: The Trade</h4>
 <p>Once you’ve caught a moment where you contorted, after a sit. Twenty to thirty minutes. The body now. The two channels, what was said and what the body picked up. The trade, named plainly: in exchange for what, I agree to what. What it’s like to make that trade, felt in the body. The hidden lie. The payoff and the cost. Where else it has shown up. One line to carry into the week.</p>
@@ -646,7 +651,7 @@ const COURSE_WEEKS = {
   4: {
     title: 'Week 4: Integration and the Doorway',
     sub: "What's underneath, the whole arc as one move, and what comes next.",
-    intro: `Hi, friend. Last week. However much of it you did, whatever stuck and whatever didn't, you spent four weeks turning toward yourself instead of away. There's no new move this week. You have all of them. This week you run the whole arc, SENSE into STEP, on whatever your life hands you. And you get honest about the deeper layer you've been brushing up against all month, and what it would mean to go there. It's a privilege for me that I get to walk this last stretch with you.`,
+    intro: `Hi, friend. The last week. However much of it you did, whatever stuck and whatever didn't, you turned toward yourself instead of away. There's no new move this week. You have all of them. This week you run the whole arc, SENSE into STEP, on whatever your life hands you. And you get honest about the deeper layer you've been brushing up against, and what it would mean to go there. It's a privilege for me that I get to walk this last stretch with you.`,
     video: videoPlaceholder('The last week'),
     teaching: `
 <h3>Introduction</h3>
@@ -684,6 +689,7 @@ const COURSE_WEEKS = {
 <p>You might, this week, with the sit or in a journal. If you do: receive it with warmth, not with a cold neutrality. I see you. I'm here. I've got you. Stay in the present. Don't dig for where it came from. Keep it company in the small doses you practiced, hands and breath as the place to come back to. And if what shows up first is the old protection, the mind speeding up, going blank, heat, that's the body doing what once kept connection possible. Meet the protector with a little less argument. Let it, maybe even thank it. It's protecting you. Then bring whatever you found to the journal sitting, and to our hour. That's where it belongs.</p>
 <p>I know this from the inside. When I finally had the success I thought would make me feel like enough, my body went into full revolt. When we looked at the knot in my gut, the one that said I'm holding it together, we weren't looking at a stomach ache. We were looking at a contract I signed when I was young. Turning toward that has not resolved everything for me. What it's given me is a way to meet the old shame and pressure with more presence and kindness. That's the work I do with people over a longer arc.</p>
 <h4>Summary</h4>
+<p class="note">Before you read the list: look away and say back what you can. Getting it wrong still does the work.</p>
 <ul><li>Underneath the tightness is the ache: the imprint, in the body, of every way you traded yourself to belong. The performance is the strategy; the ache is what it avoids.</li><li>It's not an error. It's the system alerting you, asking to be met, and your values live inside it.</li><li>The moves come first because you reach it through the body, sideways, with steadiness. Without them you just get flooded.</li><li>If you brush it this week: warmth, the present, small doses, no digging. Thank the protector. Bring it to the sitting and to our hour.</li></ul>
 <h4>Action</h4>
 <p>Sit with The Sacred Wound, this week's recording, and go slowly. Early in the week, after a sit, do the first journal, What's Still Running, and bring it to the journal sitting.</p>
@@ -792,7 +798,7 @@ const COURSE_WEEKS = {
     journal: `
 <p>One journal this week: <strong>What You’re Taking With You</strong>. It’s the one I’ll have read before we meet, so do it whatever else you skip. When you finish it, tap Mark done.</p>
 <p>Take a few minutes of breath before you write. Sit with your eyes closed, let the body settle, then open your eyes and write. A few paragraphs per prompt is plenty. Don’t filter. Don’t edit.</p>
-<p class="note">Writing about something tender usually feels worse before it feels better. That’s ordinary and it settles. You can stop at any point and come back to it. Nothing here has to be finished in one go; the page keeps what you’ve written.</p>
+<p class="note">This can feel worse before it feels better. Stop whenever you want. The page keeps what you wrote.</p>
 <p>Then, once in the week, bring what you’ve written to the journal sitting. It reads everything, finds the place with the most charge, checks with you, and reads your own lines back so you can notice what the body does as you hear them. If you ticked the box on Week 1, what you bring here is kept for me too, and I read it before our hour.</p>
 <h4>This week: What You’re Taking With You</h4>
 <p>End of the month, after a sit. Thirty to forty minutes. Where you started, read back a month later. What the body learned. One moment from the month when you did the thing. What’s still running. What changed in a relationship, if anything. What you brushed. What you want from our hour. Your practice going forward. And my two questions. Write it for the two of us.</p>
