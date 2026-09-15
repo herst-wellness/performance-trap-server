@@ -10,7 +10,7 @@ Module 8 introduces it because integration asks for warmth. The work of the prio
 
 ## How to use the audio
 
-The Loving-Kindness audio is sixteen minutes. It's in your Module 8 Audio folder under the **08 Loving-Kindness** subfolder. There are also two longer Daily Meditation tracks (15 min and 30 min) in the same folder. The Daily Meditation is a composite practice incorporating elements from across the program. It's a good template for what your sit could look like after Mind/Body Foundations ends.
+The Loving-Kindness audio is sixteen minutes. It's on your Module 8 page. There are also two longer Daily Meditation tracks (15 min and 30 min) in the same folder. The Daily Meditation is a composite practice incorporating elements from across the program. It's a good template for what your sit could look like after Mind/Body Foundations ends.
 
 For the first week, use the Loving-Kindness audio daily. Let yourself learn the sequence by listening. Notice which circle of widening the warmth lands easiest, and which feels constricted.
 

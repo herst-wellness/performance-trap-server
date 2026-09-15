@@ -1,50 +1,50 @@
 # Be The Change
 
-There's one more piece of this I want to leave you with, because the journey isn't only about you.
+The last reading asked you to enroll a few people in the version of you that's arriving, and to accept a new invitation from them. There's a larger version of that invitation, and it's the one I want to leave you with, because none of this is only about you.
 
-Throughout this training, I've tried to stay close to the practical: what to do, what to notice, how to work with what arises. I've stayed away from making big claims about meaning, about why this work matters in the larger frame, about what you might be a part of.
+Throughout this I've tried to stay close to the practical. What to do, what to notice, how to work with what arrives. And I've stayed off big claims about meaning, or why this matters in a larger frame, or what you might be part of.
 
-For this last reading, I want to say the bigger thing.
+So for this last reading I want to say the bigger thing, which I've mostly kept to myself.
 
 ## A long arc
 
-The Buddha attained enlightenment around 528 B.C.E. and spent the rest of his life teaching. For five hundred years after his death, his philosophy spread across India. Then, slowly, Buddhism receded from there. It continued in Southeast and East Asia, but the specific emphasis on mindfulness practice grew quieter in many of those traditions, preserved in pockets, in Burma and elsewhere, in lineages I'd never have heard of had I been born a generation earlier.
+The Buddha attained enlightenment around 528 B.C.E. and taught for the rest of his life, and for five hundred years after his death the philosophy spread across India. Then it receded from there. It carried on in Southeast and East Asia, but the specific emphasis on mindfulness got quieter in a lot of those traditions, preserved in pockets, in Burma and elsewhere, in lineages I'd never have heard of had I been born a generation earlier.
 
-When I first encountered mindfulness in my twenties, the people I sat with were a small subculture: meditators, yoga practitioners, the kind of people who shopped at the funny little health food store and went to retreats nobody else had heard of. We thought of ourselves as outside the mainstream, and we mostly were.
+When I first came to mindfulness in my twenties, the people I sat with were a small subculture. Meditators, yoga practitioners, the sort who shopped at the funny little health food store and went on retreats nobody else had heard of. I thought of myself as outside the mainstream and I mostly was.
 
-Then, over the next two decades, I watched the mainstream come to us. By 2000, yoga was everywhere. By 2010, mindfulness was being taught in corporations, schools, and prisons. The word started showing up in The New York Times, in Time, in places I would never have predicted. Often watered down, sometimes turned into a productivity tool, but spreading. Genuinely spreading.
+Then over the next two decades I watched the mainstream come to us. By 2000 yoga was everywhere and by 2010 I was seeing mindfulness taught in corporations and schools and prisons. The word turned up in places I'd never have predicted. Often watered down, sometimes turned into a productivity tool, but spreading.
 
 ## Why now
 
 I think mindfulness is spreading because we need it.
 
-Not in a vague way. In a specific, urgent, civilizational way.
+And I don't mean that vaguely. I mean it in a specific and fairly urgent way.
 
-We are living through a period of significant disorientation. The structures that organized public life in the second half of the twentieth century are no longer holding the way they used to. Public discourse has become more reactive, more polarized, more performative. Many of the conditions in which we live, climate, technology, the speed of information, and the texture of work, are changing faster than our collective nervous system can metabolize.
+And we're living through a period of real disorientation. The structures that organized public life in the second half of the last century aren't holding the way they did. Public discourse has become more reactive, more polarized, more performative. Many of the conditions in which we live, climate, technology, the speed of information, and the texture of work, are changing faster than our collective nervous system can metabolize.
 
-There's a study from the University of Michigan that found college students today score about forty percent lower in measured empathy than students from twenty or thirty years ago. Whether that exact figure holds up under scrutiny, the direction of travel is something most of us can feel.
+There's a study out of Michigan that found college students scoring about forty percent lower on measured empathy than students of twenty or thirty years ago. And whether that exact figure holds up, I think the direction of travel is something most of us can feel.
 
-Pema Chödrön, the Buddhist nun, describes our era this way:
+Pema Chödrön describes our era this way, and I've never found a better line for it:
 
 > When the rivers and air are polluted, when families and nations are at war, when homeless wanderers fill the highways, these are traditional signs of a dark age.
 
-I don't know if it's always been dark. I don't know if it's getting worse or just changing. What I do know is that the old reflexes for navigating it are insufficient. Reacting faster, harder, louder is not making any of this better. It's making it worse.
+I don't know if it's always been dark, or whether it's getting worse or only changing. What I do know is that the old reflexes for navigating it aren't enough. Reacting faster, harder, louder is not making any of this better. It's making it worse.
 
-What we need, urgently, is the capacity to slow down enough to choose how we respond. To stay open and curious in moments where every signal is telling us to close down. To stop reacting from the parts of us that want to win, dominate, or punish, and start responding from the parts that can hold complexity. Mindfulness, in its most serious form, builds exactly this capacity.
+So what I think we need is the capacity to slow down enough to choose how we respond. To stay open and curious when every signal says close down. To stop reacting from the part that wants to win or punish, and respond from the part that can hold complexity. I'd say mindfulness in its serious form builds exactly that.
 
-I've come to believe that the spread of these practices across cultures is not an accident or a fad. It's a response. Something in the collective is reaching for tools to handle a moment we don't yet know how to handle.
+I've come to think the spread of these practices isn't an accident or a fad. I think it's a response, and that something is reaching for tools to handle a moment we don't know how to handle.
 
 ## Your part
 
-This is the part I want you to hear most carefully.
+This is the part I most want you to hear.
 
 I think you are part of this larger thing.
 
-I don't mean this in a self-aggrandizing way. I mean it in the most ordinary way possible. You showed up to this work. Most people don't. There was something in you that was willing to look at what most people work very hard to avoid looking at. You've now spent months developing the specific capacities, equanimity, presence, and the ability to feel before reacting, that almost everyone in your immediate life would benefit from being around.
+And I don't mean that grandly. I mean it in the most ordinary way there is. You showed up to this work, and most people don't. There was something in you that was willing to look at what most people work very hard to avoid looking at. You've now spent months developing the specific capacities, equanimity, presence, and the ability to feel before reacting, that almost everyone in your immediate life would benefit from being around.
 
-That's not nothing. That's actually a contribution. The world doesn't get less reactive in the abstract. It gets less reactive one nervous system at a time, in one conversation at a time, in one room at a time.
+And I'd call that a contribution. The world doesn't get less reactive in the abstract. It gets less reactive one nervous system at a time, in one room at a time.
 
-You don't have to teach mindfulness for this to count. You don't have to become a coach or write a book or post about it. The contribution is mostly invisible. It's the meeting where you don't escalate. The dinner where you actually listen instead of waiting to talk. The hard conversation with your kid where you stay present instead of going somewhere else in your head. The small choices, hundreds of times a week, to respond rather than react.
+But you don't have to teach mindfulness for it to count, or become a coach, or write a book, or post about it. The contribution is mostly invisible. I mean the meeting where you don't escalate. The dinner where you listen instead of waiting to talk. The hard conversation with your kid where you stay in the room instead of going somewhere else in your head. Hundreds of small choices a week to respond rather than react.
 
 Multiply that by enough people, over enough years, and the texture of a culture starts to shift.
 

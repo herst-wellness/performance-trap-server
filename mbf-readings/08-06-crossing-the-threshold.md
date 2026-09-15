@@ -1,8 +1,8 @@
 # Crossing the Threshold: A Closing Ritual
 
-You've spent these months going down. The last act of the journey is coming back up and across.
+The last reading asked you to be the change in something larger than your own life. This one ends the program, because you've been going down for a long stretch and the last act of any journey is coming back up and across.
 
-In every old myth, the threshold between the underworld and the ordinary world is marked. Not just walked through, marked. The hero pours something out, leaves something behind, says certain words, makes a vow, lights a fire, and takes a name. The marking is not a decoration. It's how the journey gets sealed into the body, into memory, into the part of the self that holds shape after the program ends.
+In every old myth the threshold between the underworld and the ordinary world gets marked. Not walked through. Marked. Something is poured out, something left behind, certain words said, a fire lit, a name taken. And I don't think the marking is decoration. It's how a journey gets sealed into the body and into memory, into the part of you that holds its shape after this ends.
 
 We don't have many threshold rituals left in modern life. Graduations gesture at one. Weddings, the few that still feel real. Funerals, sometimes. Most of the important transitions we make get no acknowledgment at all. We finish therapy and just stop showing up. We end relationships with a text. We complete years of inner work and quietly close the laptop on the last call.
 

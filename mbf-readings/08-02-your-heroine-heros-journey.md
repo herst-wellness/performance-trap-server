@@ -1,148 +1,101 @@
 # Your Heroine/Hero's Journey
 
-Throughout this training, I've handed you various maps: the breath, awareness, the kids on the bus, the sankhara, surfing what arises, the protector and the wound, your heartfelt intentions and life purpose statements, and the third option. Frameworks like these are useful because inner work without a map can feel like waking up in an unfamiliar house in the middle of the night, feeling along the walls to find the bathroom.
+The Welcome said the change is invisible from inside, which leaves you the problem of how to see something you can't see. So I'm going to hand you one more map, and this one isn't a tool. It's a mirror.
 
-But maps are not the territory, and at some point you have to put them down and notice what's actually been happening to you.
+I've given you a lot of maps. The breath, awareness, the kids, the sankhara, surfing, the protector and the wound, your intentions and your purpose, the third option. I use them because inner work without one feels like waking in an unfamiliar house at night and feeling along the walls for the bathroom.
 
-So before we close, I want to give you one more map. Not as a tool but as a mirror. This is the oldest map of all, and the one you may already recognize without knowing why.
+But maps aren't the territory, and at some point I want you to put them down and look at what's actually happened to you.
 
-## The shape of every journey
+## The Shape of Every Journey
 
-In the early twentieth century, the scholar Joseph Campbell studied myths from cultures across the world and found, to his own surprise, that they were telling the same story. He called it the monomyth, or the heroine's and hero's journey:
+In the early twentieth century Joseph Campbell studied myths from all over the world and found, to his own surprise, that they were telling one story. A person ventures out from the world of common day, meets fabulous forces, wins a decisive victory, and comes back able to give something to their own people.
 
-*A hero ventures forth from the world of common day into a region of supernatural wonder. Fabulous forces are encountered, and a decisive victory is won. The hero comes back from this mysterious adventure with the power to bestow boons on his fellow man.*
+I'm going to walk it using the Buddha's life. It's the version I know best, and you've been practicing inside that lineage all year without my making much of it.
 
-You know this shape. Star Wars is this shape. Harry Potter is this shape. The Lion King, Moana, The Matrix, every superhero origin story you've ever seen. We respond to these stories not because they're escapist but because they're describing something true about how transformation actually works in a human life.
+## The Palace, and the Call
 
-The story of the Buddha is the same shape. So is the story of Jesus in the desert, of Moses on the mountain, of every figure whose life became a teaching. And so, in its own way, is yours.
+Every journey starts in false comfort.
 
-I'm going to walk through the Buddha's version of this journey because it's the one closest to the work we've been doing. As I do, see if you can hear your own story underneath it. Not literally. You haven't sat under a fig tree for forty-nine days. But the movements are the same.
+Siddhartha is born to a king who's been told the boy will become either a great ruler or a great holy man. Wanting the first, the king raises him in a sealed palace, shielded from sickness, age and death, so he never asks the questions that wake a person up.
 
-## The Ordinary World
+That's the Ordinary World, and it isn't a bad life. Often it's a comfortable one. A life arranged around other people's expectations, with the deeper questions kept out of view. Most of the people who come to me come from somewhere like it. Not always materially comfortable, but arranged. You had a way of getting through the day and stories about yourself that mostly worked, and underneath it something was off.
 
-Every journey begins in a place of false comfort.
+And the Call comes when the palace walls stop holding. For Siddhartha it's a chariot ride outside the gates, where he sees an old man, a sick man and a corpse, and learns that all three are coming for him too. Then on the way back he sees a wandering yogi sitting in stillness, so he's glimpsed the problem and a possible response inside the same hour.
 
-In the legend, Siddhartha Gautama is born to a king who has been told his son might become either a great ruler or a great holy man. The king, wanting the first, raises his son in a sealed palace. Siddhartha grows up surrounded by every luxury, shielded from sickness, aging, and death. Everything has been arranged so he never has to ask the questions that lead a person to wake up.
+Mine came to me in a dorm room.
 
-This is the Ordinary World. Not necessarily a bad life. Often a comfortable one. But a life shaped by other people's expectations, in which the deeper questions have been carefully kept out of view.
+It was about two weeks after my brother's memorial. He had taken his life. I was at college, sitting alone, and I can still see that room. I was thinking that he and I had been raised with every possible opportunity. And in spite of all of it he was gone, and I felt completely empty.
 
-Most of you arrived at Mind/Body Foundations from somewhere like this. Not always materially comfortable, but spiritually and emotionally arranged. You had a way of getting through the day. You had stories about who you were that mostly worked. And underneath it all, something was off.
+What I wondered was whether the values I'd been handed, accomplishment and wealth and status, would land me in the same place if I wasn't careful. I could see how empty they were. And I started looking for a different set. A different identity. A path that didn't end the way his had.
 
-## The Call to Adventure
+That was my Call. A kid in a dorm room asking a question, and it set the rest of my life going.
 
-The Call comes when the walls of the palace stop holding.
+You answered one when you reached out to me, and I'd guess it looked like wanting to be less anxious, or to sleep, or to stop snapping at your kids. Underneath whatever practical thing brought you to me, something else was asking to be looked at.
 
-For Siddhartha, it happens during a chariot ride outside the palace gates. For the first time in his life, he sees an old person, a sick person, and a corpse. He asks his charioteer what these things are, and learns that they are old age, illness, and death, and that they will come for him too. The illusion of his sheltered life shatters in a single afternoon. Then, on his way back, he sees a wandering yogi sitting in tranquil meditation. Something in that sight pulls at him. He has glimpsed both the problem and a possible response to it in the same hour.
+## Mara
 
-The Call rarely arrives that dramatically in our lives, but it always carries the same two elements: a rupture in the old story, and a glimpse of something else that might be possible. A doctor's appointment that doesn't go the way you expected. A relationship ending or a long marriage going quiet. A morning where you can't quite get out of bed for a reason you can't name. The career that looked like the answer, suddenly looking like a cage.
+Almost nobody answers cleanly. There's a refusal first.
 
-For me, the Call came in a dorm room.
+In the Buddha's story the refusal has a name. Mara, who follows him the whole way. Mara isn't a demon somewhere outside. He's the part of Siddhartha that doesn't want to leave the palace. The sankhara with a face. *Who do you think you are. You don't have what it takes. This is going to hurt. You'll fail and look ridiculous.*
 
-It was about two weeks after my brother's memorial. He had taken his life. I was at college, sitting alone, and the memory is still vivid. I was thinking that my brother and I had been raised with every possible opportunity. And yet, in spite of those opportunities, he was gone and I felt completely empty.
+And you met him too, probably more than once. Maybe at the start, when you were deciding whether to show up. Maybe at Module 3. Maybe last week. The arguments change and the job never does, which is to keep you in the palace.
 
-What I wondered, in that moment, was whether the values I'd been handed, accomplishment, wealth, status, all the things that were supposed to mean my life was going well, would land me in the same place if I wasn't careful. I could see vividly how empty those values were. I started looking for a different set of values, a different identity, a path that didn't end the way my brother's had ended.
+And he comes back for the last confrontation. Under the fig tree Mara sends pleasure and Siddhartha is unmoved, then fear, and the arrows turn to flowers. Then the deepest cut, which is whether he's entitled to what he found. *Who are you to do this. Nobody will recognize it.*
 
-That was my Call. It didn't look like much. A kid in a dorm room, alone, asking a question. But it set the rest of my life in motion.
+That's the one I watch get people, and it isn't pleasure and it isn't fear. It's the question of whether you're allowed to claim what happened to you.
 
-You answered a Call when you reached out for this work. You may not have called it that at the time. It may have looked like wanting to feel less anxious, or sleep better, or stop yelling at your kids, or finally figure out what to do with your life. But underneath whatever practical thing brought you here, something deeper was asking to be looked at.
+Siddhartha doesn't argue. He reaches down, touches the earth, and says the earth is my witness. He doesn't need Mara's agreement, or anybody's, to be what he already is.
 
-## Refusal and Crossing the Threshold
+And you've had your version of that, and possibly you're having it now, in the voice saying you're making this up and don't really feel different. The move isn't to win the argument. It's to touch the ground.
 
-Almost no one answers the Call cleanly. There's a refusal first, even if it's brief.
+## The Reward, and Not Coming Back
 
-In the Buddha's story, the refusal takes the form of Mara, an inner figure of doubt and temptation who follows him through the rest of the journey. Mara is not a separate demon. He's the part of Siddhartha that doesn't want to leave the palace. The sankhara dressed up as a person: the conditioned reaction that keeps you exactly where you are. The part that says, *who do you think you are, you don't have what it takes, this is going to hurt, the people who love you are going to suffer, you're going to fail and look ridiculous.* Every spiritual tradition has a version of this figure because every person who has tried to wake up has met him.
+After the long night something breaks open, and the myth makes it a thunderclap. The texts also describe a long quiet morning where he just sat with what he'd understood.
 
-You met Mara, too, probably more than once. Maybe at the very beginning, when you were deciding whether to show up. Maybe at module three, when the work got harder. Maybe last week. The voice changes its arguments, but its function is constant: keep you in the palace.
+Yours will be less cinematic, because most of the real rewards I see here are small. The morning you caught the critic before it took the wheel. The conversation where you stayed open instead of armoring. The day you saw that the thing you'd chased for years didn't want you, and felt the relief. None of them feel as big as they are.
 
-And yet you crossed the threshold. You showed up for the calls. You did the journals. You meditated, even on the days you didn't want to. The crossing isn't a single dramatic moment. It's the accumulated weight of a thousand small choices to keep going.
+Then comes the part I care most about in this module, because it's the one everybody skips.
 
-## Tests, Allies, and Enemies
+After his awakening he almost stays put. The texts have him weighing whether to teach at all. What he's understood is too subtle, too easily misheard, and the people who most need it are least equipped to hear it. So he decides to keep it.
 
-This is the long middle, the part that takes up most of the journey.
+I think it's the most honest moment in the tradition, and it's exactly where you are. You've come through something. You know things about yourself and about working with suffering that the people in your life don't know. And the pull is to hold it close, not risk being misunderstood, enjoy your own peace and let everyone else sort themselves out.
 
-After leaving the palace, Siddhartha studies with two famous yogis. He quickly masters their teachings, and they each offer him leadership in their lineage. He turns them both down. Their answers don't address the question he came to ask. He moves on.
+I built this whole module because of that pull. The return isn't automatic, and I've never seen it be. It's a choice you make, and remake, against something real pulling the other way.
 
-Then he goes the other direction, into severe asceticism. For six years, he and a small group of fellow seekers eat almost nothing, expose themselves to extreme heat and cold, and punish their bodies in pursuit of liberation. Siddhartha takes this further than anyone. He nearly dies.
+## Coming Back
 
-What's important about this stretch is that he gets it wrong twice. He follows teachers who can't take him where he needs to go. He pursues a path of self-destruction that almost kills him. The Buddha's journey, the supposed model of awakening, is not a clean ascent. It's full of wrong turns, dead ends, and self-inflicted wounds.
+When he finally went out, his first attempt failed. A wanderer on the road asked who his teacher was, and he said he had none, and the man couldn't imagine it, dismissed him and walked on.
 
-Your journey was the same. You tried things that didn't work. You bought books you didn't read, started practices you abandoned, and took advice that turned out to be wrong for you. You may have spent years pursuing answers in the wrong places before this work found you. Some of you have done real harm to yourselves along the way, in the name of getting better.
+And that's what coming back from something actually feels like. Not heroic. Slightly awkward. Most people in your life won't register that you've changed, some will register it and feel threatened, and a few will see it and respond.
 
-This is not a failure. It's the journey. There is no version of this where you only made the right moves. The wrong moves are how you learned to recognize the right ones.
+He kept walking, found his old companions at Sarnath, who'd heard he'd abandoned the ascetic path and were ready to disapprove, and taught them anyway. They were the first.
 
-## The Innermost Cave
-
-Eventually, after the wrong teachers and the failed strategies, Siddhartha sits down under a fig tree and resolves not to move until he has the answer.
-
-This is when Mara returns for the final confrontation. Three tests, in sequence. First, Mara sends visions of beautiful women, offering pleasure. Siddhartha is unmoved. Then Mara sends a storm of arrows, offering fear. The arrows turn to flowers in midair. Then Mara tries the deepest cut. He challenges Siddhartha's worthiness. *Who are you to do this? What gives you the right? No one will recognize what you've done. You'll go unseen, unheard, and unremembered.*
-
-This is the test that breaks most of us. Not pleasure, not fear, but the question of whether we're entitled to what we've found. Whether we're allowed to claim it.
-
-Siddhartha's answer is one of the great moments in the literature of awakening. He doesn't argue. He reaches down, touches the earth, and says, *the earth is my witness.* He doesn't need Mara's approval, or anyone else's, to be what he is.
-
-You've had your version of this moment. Maybe you're still having it. The voice that says you're making it all up. That you don't really feel different. *Who do you think you are?* The right response is not to win the argument. It's to touch the ground.
-
-## The Reward
-
-After the long fight under the tree, something breaks open.
-
-In the legend, Siddhartha attains enlightenment. He sees through the structure of suffering and becomes the Buddha, the awakened one. The myth makes this sound like a single thunderclap, but the texts also describe a long, quiet morning where he simply sat with what he had understood.
-
-Your version is probably less cinematic. Most of the real rewards in this work are small. The morning you noticed the inner critic before it took the wheel. The conversation where you stayed open instead of armoring up. The day you realized the thing you had been chasing for years didn't actually want you, and the relief of letting it go. These are the awakenings of an ordinary life. They don't feel as big as they are. Months later, you look back and see you've become someone you wouldn't have recognized at the start.
-
-## The Refusal of the Return
-
-After his awakening, the Buddha almost stays put.
-
-The texts describe him sitting in his enlightenment, weighing whether to teach. He concludes that what he has understood is too subtle, too easily misunderstood, and that the people who most need it will be the least equipped to hear it. He decides to keep it to himself.
-
-It is only when he is begged to teach by celestial beings, in some versions, or simply by his own slow turning of the heart in others, that he changes his mind and chooses to return.
-
-This is one of the most honest moments in the tradition, and the one most relevant to where you are now. You've come through something. You know things about yourself, about how to work with suffering, that the people in your life don't know. The temptation is to hold the knowledge close. To not risk being misunderstood. To enjoy your peace and let everyone else figure out their own way.
-
-Module 8 exists because of this temptation. The Return is not automatic. It's a choice you have to make, and re-make, against a real pull in the other direction.
-
-## Return with the Elixir
-
-When the Buddha finally went out to teach, his first attempt failed.
-
-He met a wandering ascetic on the road who asked, with genuine curiosity, who his teacher was. Buddha said he had no teacher. The ascetic, unable to imagine self-realized awakening, dismissed him and walked on.
-
-This is what coming back from a deep journey actually feels like. Not heroic. A little awkward. The world doesn't roll out a carpet for you. Most of the people in your life will not register that you've changed. Some will register it and be threatened. A few will see it and respond.
-
-The Buddha kept walking. He found his old companions in the deer park at Sarnath. They had heard he had abandoned the ascetic path and were ready to disapprove. He taught them anyway. They became his first disciples. The community grew from there.
-
-The lesson is not that everyone will eventually understand you. They won't. The lesson is that some will, and those are the ones you build with.
+I don't think the lesson is that everyone comes round, because they don't. It's that some do, and those are the ones you build with.
 
 ## Freedom to Live
 
-The journey doesn't end at awakening. The Buddha taught for forty-five years after the night under the tree. He grew old. He got sick. He died in a small town, on a cot, of food poisoning, in the company of his closest students.
+And it doesn't end at awakening. He taught for forty-five years after that night, then grew old, got sick, and died in a small town of food poisoning with his closest students around him.
 
-The texts describe a final scene. A man arrives wanting to ask the Buddha a question, but he's dying, and his attendant Ananda is turning visitors away. The man insists. The Buddha overhears, opens his eyes, and tells Ananda, *let him stay. Let him hear the teachings.*
+There's a last scene where a man turns up wanting to ask a question and Ananda is turning visitors away because the Buddha is dying. The man insists, and the Buddha overhears, opens his eyes, and says let him stay.
 
-His last instruction to his students was, *all things are impermanent. Work out your own salvation with diligence.*
+His final instruction was that all things are impermanent, and to work out your own salvation with diligence.
 
-This is the Freedom to Live. Not freedom from suffering, aging, or death. Those came for the Buddha as they will come for all of us. Freedom in how you meet them. The capacity to keep teaching, keep loving, keep being useful, all the way to the cot.
+That's what I mean by freedom. Not freedom from suffering or age or death, which came for him as they'll come for us. Freedom in how you meet them, and the capacity to keep teaching and loving and being useful all the way to the cot.
 
-## MBF as a hero's journey
+## Now You Write Yours
 
-The program is itself a Campbell-shaped arc. Module 1 was the Ordinary World through the Crossing of the Threshold: the discomfort that brought you in, the doubts that almost kept you out, the first decision to begin. Module 2 was Empty the Cup: beginner's mind, the witness, putting down what you thought you knew. Modules 3, 4, and 5 were the Innermost Cave and the Ordeal: the sankhara, the wave, the protector, the wound. The transition into Module 6 was the Reward: the wound revealed as the place your particular gifts come from, and the heartfelt intentions and life purpose that emerged from the same soil. Modules 7 and 8 are the Road Back and the Return with the Elixir: the third option, the practice, the integration. The Buddha's story is one example. The MBF arc you've been living is another. Yours, the specific one this journal is going to draw out, is the third.
+That's the map, and now I want yours. The journal takes you through it stage by stage, in your words rather than mine.
 
-## Now you write your own
-
-The hero's journey is not a one-time arc. It's a spiral. You'll move through these stages many times in a life, at different scales, around different questions. The journey you've been on through Mind/Body Foundations is one full revolution. There will be others. Each one closer to who you actually are.
-
-The next thing I'm asking you to do is the most important assignment of this module. Sit down with your companion and tell me your own version of this story. Not a polished one. The real one. The Ordinary World you came from, the Call you almost refused, the wrong teachers, the cave, the moment you touched the ground. The reward, however small. The temptation right now, in this Return phase, is to keep it to yourself.
-
-Telling the story is part of how the story finishes. The myths know this. That's why every hero ends up at a fire, talking.
+I'd do it slowly, and I'd resist the urge to make it tidy. I'm not after a good story. I want you to see the shape of what you actually went through, which you've been too close to notice.
 
 ## Summary
 
-- Every transformation follows a recognizable shape: separation, descent, initiation, return. The work of this module is the return.
-- The Buddha's story is one example of the pattern. Yours is another.
-- Writing your own version is how you integrate what's happened to you. Don't skip it.
+- Campbell found one story under all the myths, and it's a mirror rather than a tool.
+- The Call is a rupture in the old story and a glimpse of something else, in the same hour.
+- Mara's last argument is whether you're entitled to what you found. You don't win it. You touch the ground.
+- The rewards are small and never feel as big as they are.
+- The refusal of the return is real, and this module exists because of it.
 
 ## Actions
 
-1. Listen to the [audio walk-through of Your Heroine/Hero's Journey](https://www.dropbox.com/scl/fi/7nvsglg73p423rdlbngx8/Your-Heroine-Hero-s-Journey.mp3?rlkey=yxavxo5mqjieler2xfcvfvl8m&st=91rldl8s&dl=0). The audio walks the Campbell stages through your specific MBF arc, module by module.
-2. Open your [Module 8 companion](https://performance-trap-server.onrender.com/practice/mbf/module-8). It's replaced both printed journals, the Hero's Journey and Your Road Back: the same ground, your own version of the story and where you're headed next, but in dialogue instead of on the page.
+Work the **Hero's Journey** journal, slowly, then **Your Road Back**.
