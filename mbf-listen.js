@@ -4,15 +4,17 @@
 // often has the attention for listening and not for reading, so every chapter
 // has an audio version alongside the text and the page offers both.
 //
-// The voice is a computer voice, Kokoro's am_michael, the one Chad uses to read
-// his own screen. The pages say so plainly rather than letting a client assume
-// it is him. When Chad records a chapter himself the recording replaces the file
-// of the same name in the bucket and nothing in here changes.
+// A listener chooses the voice: Michael, the one Chad uses to read his own
+// screen, or Heart. Both are computer voices and the pages say so plainly
+// rather than letting a client assume either is him. When Chad records a
+// chapter himself, his recording becomes a third voice in the same shape: a
+// folder of files and a row in reading-voices.js.
 //
 // scripts/generate-reading-audio.py makes the files and writes the list of what
 // exists. The bucket is the one the meditations and the audiobook already use.
 const fs = require('node:fs');
 const path = require('node:path');
+const { pickVoice, spokenLength, voiceSelectHtml, KEYS } = require('./reading-voices');
 
 const DEFAULT_BASE = 'https://pub-3e45b3813f2d4b1b81f913aad060a3b8.r2.dev';
 const PREFIX = '/mbf/readings/';
@@ -40,43 +42,67 @@ function stemFor(reading) {
   return reading.file.replace(/\.md$/, '');
 }
 
-// "9 minutes" is what a person deciding whether to press play wants. Under a
-// minute never happens in these chapters, but it would read as "1 minute"
-// rather than "0 minutes" if it did.
-function spokenLength(totalSeconds) {
-  const minutes = Math.max(1, Math.round(totalSeconds / 60));
-  return minutes + (minutes === 1 ? ' minute' : ' minutes');
+// Which voices this chapter has been read in, in the order reading-voices.js
+// lists them.
+function voicesFor(reading) {
+  if (!reading) return [];
+  const entry = MANIFEST.chapters[stemFor(reading)];
+  if (!entry) return [];
+  return KEYS.filter((k) => entry[k]);
 }
 
-function listenFor(reading) {
+// One chapter in one voice: where to play it from, how long it runs in that
+// voice (Heart reads about a tenth quicker than Michael, so the two differ),
+// and where to save it.
+function listenFor(reading, wantedVoice) {
   if (!reading) return null;
   const stem = stemFor(reading);
   const entry = MANIFEST.chapters[stem];
   if (!entry) return null;
+  const voice = pickVoice(Object.keys(entry), wantedVoice);
+  if (!voice) return null;
+  const said = entry[voice];
   return {
     stem,
-    seconds: entry.seconds,
-    length: spokenLength(entry.seconds),
-    href: base() + PREFIX + stem + '.mp3',
-    download: '/mbf-reading-audio/' + reading.module + '/' + reading.slug + '.mp3',
+    voice,
+    voices: voicesFor(reading),
+    seconds: said.seconds,
+    length: spokenLength(said.seconds),
+    href: base() + PREFIX + voice + '/' + stem + '.mp3',
+    download: '/mbf-reading-audio/' + reading.module + '/' + reading.slug + '.' + voice + '.mp3',
+    // Without a voice in it, the same address serves whichever voice is the
+    // default. The module list uses this and lets the page correct it to the
+    // voice the reader has chosen.
+    downloadAnyVoice: '/mbf-reading-audio/' + reading.module + '/' + reading.slug + '.mp3',
     computerVoice: MANIFEST.spoken_by !== 'chad',
   };
 }
 
 function hasListen(reading) {
-  return Boolean(reading && MANIFEST.chapters[stemFor(reading)]);
+  return voicesFor(reading).length > 0;
+}
+
+// Every voice this chapter has, as the page needs it: the address and the
+// length of each, so switching voice does not wait on the server.
+function listenAllVoices(reading) {
+  const out = {};
+  for (const voice of voicesFor(reading)) {
+    const one = listenFor(reading, voice);
+    out[voice] = { href: one.href, download: one.download, length: one.length, seconds: one.seconds };
+  }
+  return out;
 }
 
 // A client on a train wants the file on the phone rather than a stream. The
 // bucket serves the bytes; this adds the one header that makes a browser save
 // it under a name that still means something months later.
-const DOWNLOAD_ROUTE = /^\/mbf-reading-audio\/(\d)\/([a-z0-9-]+)\.mp3$/;
+const DOWNLOAD_ROUTE = /^\/mbf-reading-audio\/(\d)\/([a-z0-9-]+?)(?:\.([a-z]+))?\.mp3$/;
 
 async function handleMbfListenRoute(req, res, findReading) {
   const m = DOWNLOAD_ROUTE.exec(String(req.url).split('?')[0]);
   if (!m || (req.method !== 'GET' && req.method !== 'HEAD')) return false;
   const reading = findReading(m[1], m[2]);
-  const listen = listenFor(reading);
+  const listen = listenFor(reading, m[3]);
   if (!listen) return false;
 
   let upstream;
@@ -116,4 +142,7 @@ async function handleMbfListenRoute(req, res, findReading) {
   return true;
 }
 
-module.exports = { listenFor, hasListen, spokenLength, handleMbfListenRoute, MANIFEST };
+module.exports = {
+  listenFor, listenAllVoices, voicesFor, hasListen, spokenLength,
+  voiceSelectHtml, handleMbfListenRoute, MANIFEST,
+};

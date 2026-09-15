@@ -45,7 +45,17 @@ MANIFEST = ROOT / "mbf-reading-audio.json"
 SUFFIXES = (".md", ".txt")
 
 MODEL = "mlx-community/Kokoro-82M-bf16"
-VOICE = "am_michael"
+
+# Chad reads his own screen with am_michael and named af_heart as the other one
+# he likes, so those are the two a listener chooses between. The key is what the
+# pages and the bucket call the voice; the Kokoro name is an implementation
+# detail that never reaches a page.
+VOICES = {
+    "michael": "am_michael",
+    "heart": "af_heart",
+}
+VOICE_KEY = "michael"
+VOICE = VOICES[VOICE_KEY]
 
 # Kokoro drops words when it is asked to read much faster than it wants to, so
 # the file is made at a natural pace and the page does the speeding up. A
@@ -114,8 +124,8 @@ def seconds(path):
 
 
 def parse_args(argv):
-    """--source, --out and --manifest, then any number of stems to redo."""
-    global READINGS, OUT, MANIFEST
+    """--source, --out, --manifest and --voice, then any stems to redo."""
+    global READINGS, OUT, MANIFEST, VOICE, VOICE_KEY
     stems = []
     i = 0
     while i < len(argv):
@@ -128,6 +138,14 @@ def parse_args(argv):
             i += 2
         elif arg == "--manifest" and i + 1 < len(argv):
             MANIFEST = (ROOT / argv[i + 1]).resolve()
+            i += 2
+        elif arg == "--voice" and i + 1 < len(argv):
+            VOICE_KEY = argv[i + 1]
+            if VOICE_KEY not in VOICES:
+                print("Unknown voice " + VOICE_KEY + ". Try: " + ", ".join(VOICES),
+                      file=sys.stderr)
+                return None
+            VOICE = VOICES[VOICE_KEY]
             i += 2
         elif arg.startswith("--"):
             print("Unknown option " + arg, file=sys.stderr)
@@ -152,7 +170,7 @@ def main():
         return 1
 
     OUT.mkdir(parents=True, exist_ok=True)
-    print(f"Loading {VOICE}. {len(files)} chapters to read.", flush=True)
+    print(f"Loading {VOICE} as \"{VOICE_KEY}\". {len(files)} chapters to read.", flush=True)
     model = load_model(MODEL)
 
     for index, path in enumerate(files, 1):
@@ -186,20 +204,31 @@ def main():
 
 
 def write_manifest():
-    """What the pages need: which chapters have audio and how long each runs."""
-    entries = {}
+    """What the pages need: which chapters have audio, in which voice, and how
+    long each one runs in that voice. A voice is added to what is already
+    listed rather than replacing it, so making Heart does not lose Michael."""
+    existing = {}
+    if MANIFEST.exists():
+        try:
+            existing = json.loads(MANIFEST.read_text(encoding="utf8"))
+        except ValueError:
+            existing = {}
+    chapters = existing.get("chapters") or {}
+
     for mp3 in sorted(OUT.glob("*.mp3")):
-        entries[mp3.stem] = {
+        per_voice = chapters.setdefault(mp3.stem, {})
+        per_voice[VOICE_KEY] = {
             "seconds": round(seconds(mp3), 1),
             "bytes": mp3.stat().st_size,
         }
+
     MANIFEST.write_text(json.dumps({
-        "voice": VOICE,
-        "spoken_by": "computer",
-        "chapters": entries,
+        "spoken_by": existing.get("spoken_by", "computer"),
+        "chapters": chapters,
     }, indent=2) + "\n", encoding="utf8")
-    total = sum(e["seconds"] for e in entries.values())
-    print(f"{len(entries)} chapters, {total / 3600:.1f} hours, "
+    made = sum(1 for c in chapters.values() if VOICE_KEY in c)
+    total = sum(c[VOICE_KEY]["seconds"] for c in chapters.values() if VOICE_KEY in c)
+    print(f"{made} chapters in {VOICE_KEY}, {total / 3600:.1f} hours, "
           f"listed in {MANIFEST.name}.", flush=True)
 
 

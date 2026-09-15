@@ -1,110 +1,265 @@
 {
-  "voice": "am_michael",
   "spoken_by": "computer",
   "chapters": {
     "week-1-a-part-of-me": {
-      "seconds": 67.2,
-      "bytes": 807228
+      "michael": {
+        "seconds": 67.2,
+        "bytes": 807228
+      },
+      "heart": {
+        "seconds": 61.0,
+        "bytes": 733249
+      }
     },
     "week-1-enter-the-body": {
-      "seconds": 450.9,
-      "bytes": 5411780
+      "michael": {
+        "seconds": 450.9,
+        "bytes": 5411780
+      },
+      "heart": {
+        "seconds": 413.7,
+        "bytes": 4965400
+      }
     },
     "week-1-introduction": {
-      "seconds": 309.0,
-      "bytes": 3708701
+      "michael": {
+        "seconds": 309.0,
+        "bytes": 3708701
+      },
+      "heart": {
+        "seconds": 283.7,
+        "bytes": 3404949
+      }
     },
     "week-1-one-persons-story": {
-      "seconds": 290.6,
-      "bytes": 3487391
+      "michael": {
+        "seconds": 290.6,
+        "bytes": 3487391
+      },
+      "heart": {
+        "seconds": 266.9,
+        "bytes": 3203702
+      }
     },
     "week-1-something-from-my-own-life": {
-      "seconds": 226.7,
-      "bytes": 2720959
+      "michael": {
+        "seconds": 226.7,
+        "bytes": 2720959
+      },
+      "heart": {
+        "seconds": 205.7,
+        "bytes": 2468929
+      }
     },
     "week-1-the-breath": {
-      "seconds": 545.0,
-      "bytes": 6540897
+      "michael": {
+        "seconds": 545.0,
+        "bytes": 6540897
+      },
+      "heart": {
+        "seconds": 497.0,
+        "bytes": 5964740
+      }
     },
     "week-1-the-loop-and-where-it-opens": {
-      "seconds": 583.3,
-      "bytes": 7000756
+      "michael": {
+        "seconds": 583.3,
+        "bytes": 7000756
+      },
+      "heart": {
+        "seconds": 533.2,
+        "bytes": 6399836
+      }
     },
     "week-2-equanimity": {
-      "seconds": 553.2,
-      "bytes": 6639326
+      "michael": {
+        "seconds": 553.2,
+        "bytes": 6639326
+      },
+      "heart": {
+        "seconds": 506.8,
+        "bytes": 6082605
+      }
     },
     "week-2-introduction": {
-      "seconds": 157.8,
-      "bytes": 1894654
+      "michael": {
+        "seconds": 157.8,
+        "bytes": 1894654
+      },
+      "heart": {
+        "seconds": 144.7,
+        "bytes": 1737292
+      }
     },
     "week-2-name-whats-there": {
-      "seconds": 496.8,
-      "bytes": 5962232
+      "michael": {
+        "seconds": 496.8,
+        "bytes": 5962232
+      },
+      "heart": {
+        "seconds": 458.0,
+        "bytes": 5496417
+      }
     },
     "week-2-one-persons-story": {
-      "seconds": 250.1,
-      "bytes": 3001514
+      "michael": {
+        "seconds": 250.1,
+        "bytes": 3001514
+      },
+      "heart": {
+        "seconds": 228.1,
+        "bytes": 2737573
+      }
     },
     "week-2-something-from-my-own-life": {
-      "seconds": 162.2,
-      "bytes": 1946689
+      "michael": {
+        "seconds": 162.2,
+        "bytes": 1946689
+      },
+      "heart": {
+        "seconds": 146.0,
+        "bytes": 1752965
+      }
     },
     "week-2-stay": {
-      "seconds": 535.7,
-      "bytes": 6429615
+      "michael": {
+        "seconds": 535.7,
+        "bytes": 6429615
+      },
+      "heart": {
+        "seconds": 489.9,
+        "bytes": 5880103
+      }
     },
     "week-3-introduction": {
-      "seconds": 105.1,
-      "bytes": 1262386
+      "michael": {
+        "seconds": 105.1,
+        "bytes": 1262386
+      },
+      "heart": {
+        "seconds": 97.2,
+        "bytes": 1167405
+      }
     },
     "week-3-one-persons-story": {
-      "seconds": 254.1,
-      "bytes": 3050102
+      "michael": {
+        "seconds": 254.1,
+        "bytes": 3050102
+      },
+      "heart": {
+        "seconds": 231.5,
+        "bytes": 2778637
+      }
     },
     "week-3-something-from-my-own-life": {
-      "seconds": 57.2,
-      "bytes": 687796
+      "michael": {
+        "seconds": 57.2,
+        "bytes": 687796
+      },
+      "heart": {
+        "seconds": 50.8,
+        "bytes": 610683
+      }
     },
     "week-3-still": {
-      "seconds": 529.7,
-      "bytes": 6356890
+      "michael": {
+        "seconds": 529.7,
+        "bytes": 6356890
+      },
+      "heart": {
+        "seconds": 483.6,
+        "bytes": 5803930
+      }
     },
     "week-3-the-third-option": {
-      "seconds": 590.4,
-      "bytes": 7086020
+      "michael": {
+        "seconds": 590.4,
+        "bytes": 7086020
+      },
+      "heart": {
+        "seconds": 540.5,
+        "bytes": 6486980
+      }
     },
     "week-3-tune-in-to-the-trade": {
-      "seconds": 524.3,
-      "bytes": 6292002
+      "michael": {
+        "seconds": 524.3,
+        "bytes": 6292002
+      },
+      "heart": {
+        "seconds": 480.6,
+        "bytes": 5767881
+      }
     },
     "week-4-introduction": {
-      "seconds": 112.5,
-      "bytes": 1351411
+      "michael": {
+        "seconds": 112.5,
+        "bytes": 1351411
+      },
+      "heart": {
+        "seconds": 103.5,
+        "bytes": 1242637
+      }
     },
     "week-4-one-persons-story-eight-sessions": {
-      "seconds": 274.8,
-      "bytes": 3298369
+      "michael": {
+        "seconds": 274.8,
+        "bytes": 3298369
+      },
+      "heart": {
+        "seconds": 250.5,
+        "bytes": 3007156
+      }
     },
     "week-4-one-persons-story-the-wound-underneath": {
-      "seconds": 365.8,
-      "bytes": 4390810
+      "michael": {
+        "seconds": 365.8,
+        "bytes": 4390810
+      },
+      "heart": {
+        "seconds": 333.4,
+        "bytes": 4002108
+      }
     },
     "week-4-something-from-my-own-life": {
-      "seconds": 104.0,
-      "bytes": 1249534
+      "michael": {
+        "seconds": 104.0,
+        "bytes": 1249534
+      },
+      "heart": {
+        "seconds": 92.6,
+        "bytes": 1111920
+      }
     },
     "week-4-the-whole-arc-as-one-move": {
-      "seconds": 542.8,
-      "bytes": 6514565
+      "michael": {
+        "seconds": 542.8,
+        "bytes": 6514565
+      },
+      "heart": {
+        "seconds": 495.8,
+        "bytes": 5950007
+      }
     },
     "week-4-what-comes-next": {
-      "seconds": 375.4,
-      "bytes": 4506167
+      "michael": {
+        "seconds": 375.4,
+        "bytes": 4506167
+      },
+      "heart": {
+        "seconds": 340.5,
+        "bytes": 4087058
+      }
     },
     "week-4-whats-underneath": {
-      "seconds": 367.9,
-      "bytes": 4415888
+      "michael": {
+        "seconds": 367.9,
+        "bytes": 4415888
+      },
+      "heart": {
+        "seconds": 335.8,
+        "bytes": 4030634
+      }
     }
   }
 }

@@ -1,198 +1,485 @@
 {
-  "voice": "am_michael",
   "spoken_by": "computer",
   "chapters": {
     "01-01-welcome": {
-      "seconds": 579.4,
-      "bytes": 6953109
+      "michael": {
+        "seconds": 579.4,
+        "bytes": 6953109
+      },
+      "heart": {
+        "seconds": 526.9,
+        "bytes": 6323349
+      }
     },
     "01-03-turning-point": {
-      "seconds": 453.2,
-      "bytes": 5439365
+      "michael": {
+        "seconds": 453.2,
+        "bytes": 5439365
+      },
+      "heart": {
+        "seconds": 412.9,
+        "bytes": 4955055
+      }
     },
     "01-04-why-we-perform": {
-      "seconds": 449.4,
-      "bytes": 5393285
+      "michael": {
+        "seconds": 449.4,
+        "bytes": 5393285
+      },
+      "heart": {
+        "seconds": 407.6,
+        "bytes": 4892675
+      }
     },
     "01-05-the-breath": {
-      "seconds": 584.8,
-      "bytes": 7018624
+      "michael": {
+        "seconds": 584.8,
+        "bytes": 7018624
+      },
+      "heart": {
+        "seconds": 530.8,
+        "bytes": 6370056
+      }
     },
     "01-05a-breath-practice": {
-      "seconds": 215.3,
-      "bytes": 2584286
+      "michael": {
+        "seconds": 215.3,
+        "bytes": 2584286
+      },
+      "heart": {
+        "seconds": 196.9,
+        "bytes": 2363290
+      }
     },
     "01-06-beginners-mind": {
-      "seconds": 560.2,
-      "bytes": 6723023
+      "michael": {
+        "seconds": 560.2,
+        "bytes": 6723023
+      },
+      "heart": {
+        "seconds": 504.8,
+        "bytes": 6058781
+      }
     },
     "01-07-the-journey-ahead": {
-      "seconds": 574.0,
-      "bytes": 6888848
+      "michael": {
+        "seconds": 574.0,
+        "bytes": 6888848
+      },
+      "heart": {
+        "seconds": 519.7,
+        "bytes": 6237145
+      }
     },
     "02-01-welcome": {
-      "seconds": 561.4,
-      "bytes": 6737756
+      "michael": {
+        "seconds": 561.4,
+        "bytes": 6737756
+      },
+      "heart": {
+        "seconds": 507.8,
+        "bytes": 6093889
+      }
     },
     "02-02-awareness": {
-      "seconds": 619.9,
-      "bytes": 7439927
+      "michael": {
+        "seconds": 619.9,
+        "bytes": 7439927
+      },
+      "heart": {
+        "seconds": 564.0,
+        "bytes": 6769103
+      }
     },
     "02-02b-aware": {
-      "seconds": 235.2,
-      "bytes": 2823777
+      "michael": {
+        "seconds": 235.2,
+        "bytes": 2823777
+      },
+      "heart": {
+        "seconds": 215.8,
+        "bytes": 2589929
+      }
     },
     "02-03-the-kids-on-the-bus": {
-      "seconds": 621.9,
-      "bytes": 7463437
+      "michael": {
+        "seconds": 621.9,
+        "bytes": 7463437
+      },
+      "heart": {
+        "seconds": 565.7,
+        "bytes": 6789478
+      }
     },
     "02-04-parts-as-protectors": {
-      "seconds": 471.2,
-      "bytes": 5655346
+      "michael": {
+        "seconds": 471.2,
+        "bytes": 5655346
+      },
+      "heart": {
+        "seconds": 429.1,
+        "bytes": 5150033
+      }
     },
     "03-01-welcome": {
-      "seconds": 412.5,
-      "bytes": 4950980
+      "michael": {
+        "seconds": 412.5,
+        "bytes": 4950980
+      },
+      "heart": {
+        "seconds": 373.8,
+        "bytes": 4485791
+      }
     },
     "03-02-sankharas": {
-      "seconds": 643.8,
-      "bytes": 7726125
+      "michael": {
+        "seconds": 643.8,
+        "bytes": 7726125
+      },
+      "heart": {
+        "seconds": 582.5,
+        "bytes": 6991039
+      }
     },
     "03-03-be-with": {
-      "seconds": 524.0,
-      "bytes": 6288867
+      "michael": {
+        "seconds": 524.0,
+        "bytes": 6288867
+      },
+      "heart": {
+        "seconds": 473.3,
+        "bytes": 5680110
+      }
     },
     "03-03b-be-with-practice": {
-      "seconds": 373.0,
-      "bytes": 4476387
+      "michael": {
+        "seconds": 373.0,
+        "bytes": 4476387
+      },
+      "heart": {
+        "seconds": 343.0,
+        "bytes": 4116525
+      }
     },
     "04-01-welcome": {
-      "seconds": 582.0,
-      "bytes": 6985083
+      "michael": {
+        "seconds": 582.0,
+        "bytes": 6985083
+      },
+      "heart": {
+        "seconds": 530.2,
+        "bytes": 6363473
+      }
     },
     "04-02-the-law-of-change": {
-      "seconds": 1035.0,
-      "bytes": 12421269
+      "michael": {
+        "seconds": 1035.0,
+        "bytes": 12421269
+      },
+      "heart": {
+        "seconds": 949.4,
+        "bytes": 11393089
+      }
     },
     "04-03-surfing-an-emotion": {
-      "seconds": 1509.4,
-      "bytes": 18113560
+      "michael": {
+        "seconds": 1509.4,
+        "bytes": 18113560
+      },
+      "heart": {
+        "seconds": 1382.4,
+        "bytes": 16589471
+      }
     },
     "04-03b-equanimous": {
-      "seconds": 644.2,
-      "bytes": 7731140
+      "michael": {
+        "seconds": 644.2,
+        "bytes": 7731140
+      },
+      "heart": {
+        "seconds": 590.0,
+        "bytes": 7080691
+      }
     },
     "04-03c-the-whole-arc-in-one-session": {
-      "seconds": 515.0,
-      "bytes": 6180720
+      "michael": {
+        "seconds": 515.0,
+        "bytes": 6180720
+      },
+      "heart": {
+        "seconds": 472.5,
+        "bytes": 5670392
+      }
     },
     "05-01-welcome": {
-      "seconds": 457.6,
-      "bytes": 5492342
+      "michael": {
+        "seconds": 457.6,
+        "bytes": 5492342
+      },
+      "heart": {
+        "seconds": 420.5,
+        "bytes": 5046588
+      }
     },
     "05-02-the-protector-and-the-wound": {
-      "seconds": 939.8,
-      "bytes": 11277733
+      "michael": {
+        "seconds": 939.8,
+        "bytes": 11277733
+      },
+      "heart": {
+        "seconds": 859.6,
+        "bytes": 10316322
+      }
     },
     "05-03-the-sacred-wound": {
-      "seconds": 951.7,
-      "bytes": 11421615
+      "michael": {
+        "seconds": 951.7,
+        "bytes": 11421615
+      },
+      "heart": {
+        "seconds": 865.5,
+        "bytes": 10387166
+      }
     },
     "05-04-coming-home": {
-      "seconds": 814.9,
-      "bytes": 9779976
+      "michael": {
+        "seconds": 814.9,
+        "bytes": 9779976
+      },
+      "heart": {
+        "seconds": 747.8,
+        "bytes": 8974360
+      }
     },
     "05-04b-compassion": {
-      "seconds": 502.6,
-      "bytes": 6032449
+      "michael": {
+        "seconds": 502.6,
+        "bytes": 6032449
+      },
+      "heart": {
+        "seconds": 461.3,
+        "bytes": 5536541
+      }
     },
     "06-01-welcome": {
-      "seconds": 401.9,
-      "bytes": 4824025
+      "michael": {
+        "seconds": 401.9,
+        "bytes": 4824025
+      },
+      "heart": {
+        "seconds": 366.2,
+        "bytes": 4395512
+      }
     },
     "06-02-heartfelt-intentions": {
-      "seconds": 588.8,
-      "bytes": 7066271
+      "michael": {
+        "seconds": 588.8,
+        "bytes": 7066271
+      },
+      "heart": {
+        "seconds": 534.0,
+        "bytes": 6408613
+      }
     },
     "06-02b-gratitude-choice-commitment": {
-      "seconds": 606.4,
-      "bytes": 7277863
+      "michael": {
+        "seconds": 606.4,
+        "bytes": 7277863
+      },
+      "heart": {
+        "seconds": 555.7,
+        "bytes": 6669106
+      }
     },
     "06-03-life-purpose": {
-      "seconds": 660.0,
-      "bytes": 7920789
+      "michael": {
+        "seconds": 660.0,
+        "bytes": 7920789
+      },
+      "heart": {
+        "seconds": 600.5,
+        "bytes": 7207019
+      }
     },
     "06-03b-reaching-out": {
-      "seconds": 255.8,
-      "bytes": 3071104
+      "michael": {
+        "seconds": 255.8,
+        "bytes": 3071104
+      },
+      "heart": {
+        "seconds": 229.7,
+        "bytes": 2756694
+      }
     },
     "06-04-tune-in-to-the-trade": {
-      "seconds": 993.8,
-      "bytes": 11926301
+      "michael": {
+        "seconds": 993.8,
+        "bytes": 11926301
+      },
+      "heart": {
+        "seconds": 908.4,
+        "bytes": 10901569
+      }
     },
     "07-01-welcome": {
-      "seconds": 402.4,
-      "bytes": 4829981
+      "michael": {
+        "seconds": 402.4,
+        "bytes": 4829981
+      },
+      "heart": {
+        "seconds": 368.4,
+        "bytes": 4420903
+      }
     },
     "07-02-the-third-option": {
-      "seconds": 1618.0,
-      "bytes": 19416965
+      "michael": {
+        "seconds": 1618.0,
+        "bytes": 19416965
+      },
+      "heart": {
+        "seconds": 1487.1,
+        "bytes": 17846170
+      }
     },
     "07-02b-conscious-choice": {
-      "seconds": 454.4,
-      "bytes": 5453158
+      "michael": {
+        "seconds": 454.4,
+        "bytes": 5453158
+      },
+      "heart": {
+        "seconds": 416.2,
+        "bytes": 4995493
+      }
     },
     "07-03-expand-options": {
-      "seconds": 1175.3,
-      "bytes": 14103973
+      "michael": {
+        "seconds": 1175.3,
+        "bytes": 14103973
+      },
+      "heart": {
+        "seconds": 1068.3,
+        "bytes": 12820316
+      }
     },
     "07-03b-glossary-of-mindsets": {
-      "seconds": 292.0,
-      "bytes": 3504946
+      "michael": {
+        "seconds": 292.0,
+        "bytes": 3504946
+      },
+      "heart": {
+        "seconds": 266.7,
+        "bytes": 3201507
+      }
     },
     "07-04-practice": {
-      "seconds": 1695.0,
-      "bytes": 20341387
+      "michael": {
+        "seconds": 1695.0,
+        "bytes": 20341387
+      },
+      "heart": {
+        "seconds": 1540.5,
+        "bytes": 18486275
+      }
     },
     "08-01-welcome": {
-      "seconds": 492.6,
-      "bytes": 5911764
+      "michael": {
+        "seconds": 492.6,
+        "bytes": 5911764
+      },
+      "heart": {
+        "seconds": 447.0,
+        "bytes": 5364446
+      }
     },
     "08-02-your-heroine-heros-journey": {
-      "seconds": 1041.3,
-      "bytes": 12496188
+      "michael": {
+        "seconds": 1041.3,
+        "bytes": 12496188
+      },
+      "heart": {
+        "seconds": 949.1,
+        "bytes": 11389955
+      }
     },
     "08-02c-loving-kindness": {
-      "seconds": 348.4,
-      "bytes": 4181099
+      "michael": {
+        "seconds": 348.4,
+        "bytes": 4181099
+      },
+      "heart": {
+        "seconds": 317.1,
+        "bytes": 3805876
+      }
     },
     "08-03-protecting-your-sapling": {
-      "seconds": 799.2,
-      "bytes": 9591894
+      "michael": {
+        "seconds": 799.2,
+        "bytes": 9591894
+      },
+      "heart": {
+        "seconds": 728.8,
+        "bytes": 8746467
+      }
     },
     "08-04-a-new-invitation": {
-      "seconds": 673.2,
-      "bytes": 8079718
+      "michael": {
+        "seconds": 673.2,
+        "bytes": 8079718
+      },
+      "heart": {
+        "seconds": 612.4,
+        "bytes": 7349961
+      }
     },
     "08-05-be-the-change": {
-      "seconds": 548.4,
-      "bytes": 6581961
+      "michael": {
+        "seconds": 548.4,
+        "bytes": 6581961
+      },
+      "heart": {
+        "seconds": 500.9,
+        "bytes": 6011134
+      }
     },
     "08-05a-what-comes-next": {
-      "seconds": 228.6,
-      "bytes": 2743842
+      "michael": {
+        "seconds": 228.6,
+        "bytes": 2743842
+      },
+      "heart": {
+        "seconds": 208.8,
+        "bytes": 2505919
+      }
     },
     "08-06-crossing-the-threshold": {
-      "seconds": 367.6,
-      "bytes": 4411813
+      "michael": {
+        "seconds": 367.6,
+        "bytes": 4411813
+      },
+      "heart": {
+        "seconds": 333.9,
+        "bytes": 4007751
+      }
     },
     "08-08-further-reading": {
-      "seconds": 440.6,
-      "bytes": 5287960
+      "michael": {
+        "seconds": 440.6,
+        "bytes": 5287960
+      },
+      "heart": {
+        "seconds": 397.9,
+        "bytes": 4775437
+      }
     },
     "08-09-the-framework": {
-      "seconds": 175.0,
-      "bytes": 2101230
+      "michael": {
+        "seconds": 175.0,
+        "bytes": 2101230
+      },
+      "heart": {
+        "seconds": 160.6,
+        "bytes": 1927881
+      }
     }
   }
 }

@@ -9,7 +9,7 @@
 // and there is no state to keep.
 const { hasAccess } = require('./mbf-journal');
 const { findReading, readingsForModule } = require('./mbf-reading-content');
-const { listenFor } = require('./mbf-listen');
+const { listenFor, listenAllVoices, voicesFor, voiceSelectHtml } = require('./mbf-listen');
 
 const PAGE_ROUTE = /^\/practice\/mbf\/module-(\d)\/reading\/([a-z0-9-]+)$/;
 const CONTENT_ROUTE = /^\/api\/mbf\/reading\/(\d)\/([a-z0-9-]+)$/;
@@ -64,12 +64,17 @@ function listenBlock(reading) {
   const whose = listen.computerVoice
     ? 'read aloud in a computer voice. Chad\u2019s own recording of this one is coming, he has not got to it yet.'
     : 'read aloud by Chad.';
+  // Every voice's address travels with the page, so changing voice is instant
+  // and keeps the listener's place rather than going back to the server.
+  const voices = listenAllVoices(reading);
+  const picker = voiceSelectHtml('voice', voicesFor(reading), listen.voice);
   return `<section class="listen" aria-labelledby="listenHeading">
     <h2 id="listenHeading" class="label">Listen instead</h2>
-    <p>${esc(listen.length)}, ${whose} You can speed it up below, and his voice stays where it is when you do.</p>
+    <p><span id="listenLength">${esc(listen.length)}</span>, ${whose} You can change the voice and the speed below, and whichever voice you pick stays at its own pitch when you speed it up.</p>
     <audio id="player" controls preload="none" src="${esc(listen.href)}"
            aria-label="This chapter read aloud"></audio>
     <div class="listen-row">
+      ${picker}
       <label for="speed">Speed</label>
       <select id="speed">
         <option value="0.75">Slower, three quarters</option>
@@ -79,9 +84,10 @@ function listenBlock(reading) {
         <option value="1.75">Nearly twice as fast</option>
         <option value="2">Twice as fast</option>
       </select>
-      <a href="${esc(listen.download)}">Download it to listen on the go</a>
+      <a id="download" href="${esc(listen.download)}">Download it to listen on the go</a>
       <a href="#" id="restart" hidden>Start from the beginning</a>
     </div>
+    <script type="application/json" id="voiceData">${JSON.stringify(voices).replace(/</g, '\\u003c')}</script>
   </section>`;
 }
 
@@ -191,13 +197,40 @@ function readingPage(reading) {
   // a person who put the phone down at minute six should not start over.
   (function player(){
     var audio = el('player'), speed = el('speed'), restart = el('restart');
+    var voice = el('voice'), download = el('download'), lengthLabel = el('listenLength');
     if (!audio || !speed) return;
-    // The same key the Performance Trap Practice uses, so someone who comes
-    // through the Practice into Foundations sets their speed once.
-    var SPEED_KEY = 'herst-listen-speed', POS_KEY = 'herst-listen-pos:mbf/' + MODULE + '/' + SLUG;
+    // The same keys the Performance Trap Practice uses, so someone who comes
+    // through the Practice into Foundations sets voice and speed once.
+    var SPEED_KEY = 'herst-listen-speed', VOICE_KEY = 'herst-listen-voice';
+    var POS_KEY = 'herst-listen-pos:mbf/' + MODULE + '/' + SLUG;
     var s = store();
     function get(k){ try { return s && s.getItem(k); } catch(e) { return null; } }
     function put(k, v){ try { if (s) s.setItem(k, v); } catch(e) {} }
+
+    // Where each voice's recording lives, written into the page when it was
+    // built, so changing voice never waits on the network to know the address.
+    var voices = {};
+    try { voices = JSON.parse((el('voiceData') || {}).textContent || '{}'); } catch(e) {}
+
+    // Changing voice keeps the listener where they are. The two recordings are
+    // the same words at slightly different paces, so the same fraction of the
+    // way through lands in the same sentence, which is closer to right than the
+    // same number of seconds would be.
+    function useVoice(key, keepPlace){
+      var pick = voices[key];
+      if (!pick || audio.src === pick.href) return;
+      var fraction = (keepPlace && audio.duration) ? audio.currentTime / audio.duration : 0;
+      var wasPlaying = !audio.paused;
+      audio.src = pick.href;
+      if (download) download.href = pick.download;
+      if (lengthLabel) lengthLabel.textContent = pick.length;
+      audio.addEventListener('loadedmetadata', function once(){
+        audio.removeEventListener('loadedmetadata', once);
+        if (fraction > 0 && audio.duration) audio.currentTime = fraction * audio.duration;
+        if (wasPlaying) audio.play().catch(function(){});
+      });
+      audio.load();
+    }
 
     // Speeding up audio can either resample it, which lifts the pitch and turns
     // a warm voice into a cartoon, or stretch the time and leave the pitch
@@ -208,6 +241,18 @@ function readingPage(reading) {
       audio.preservesPitch = true;
       audio.webkitPreservesPitch = true;
       audio.mozPreservesPitch = true;
+    }
+
+    var savedVoice = get(VOICE_KEY);
+    if (voice && savedVoice && voice.querySelector('option[value="' + savedVoice + '"]')) {
+      voice.value = savedVoice;
+      useVoice(savedVoice, false);
+    }
+    if (voice) {
+      voice.addEventListener('change', function(){
+        put(VOICE_KEY, voice.value);
+        useVoice(voice.value, true);
+      });
     }
 
     var saved = get(SPEED_KEY);

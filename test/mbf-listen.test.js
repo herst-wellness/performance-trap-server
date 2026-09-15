@@ -41,8 +41,8 @@ test('the bucket can be pointed somewhere else without touching the code', { ski
   process.env.MBF_AUDIO_BASE = 'https://audio.example/';
   const reading = READINGS.find((r) => hasListen(r));
   const listen = listenFor(reading);
-  assert.match(listen.href, /^https:\/\/audio\.example\/mbf\/readings\/[0-9a-z-]+\.mp3$/);
-  assert.match(listen.download, /^\/mbf-reading-audio\/\d\/[a-z0-9-]+\.mp3$/);
+  assert.match(listen.href, /^https:\/\/audio\.example\/mbf\/readings\/(michael|heart)\/[0-9a-z-]+\.mp3$/);
+  assert.match(listen.download, /^\/mbf-reading-audio\/\d\/[a-z0-9-]+\.(michael|heart)\.mp3$/);
   if (before === undefined) delete process.env.MBF_AUDIO_BASE;
   else process.env.MBF_AUDIO_BASE = before;
 });
@@ -67,7 +67,7 @@ test('speeding it up never lifts the pitch', { skip: anyRecorded.length === 0 ? 
   assert.ok(html.includes('audio.webkitPreservesPitch = true'), 'older Safari spells it differently');
   assert.ok(html.includes("audio.addEventListener('ratechange', keepPitch)"),
     'a browser that resets the switch on a rate change must be corrected');
-  assert.ok(/his voice stays where it is/.test(html), 'a listener should be told the voice will not change');
+  assert.ok(/stays at its own pitch/.test(html), 'a listener should be told the voice will not change');
 });
 
 // A client listens to these on a train and a plane, which is the whole reason

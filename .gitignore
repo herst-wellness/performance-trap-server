@@ -6,3 +6,6 @@ data/
 # The generated chapter readings. They go to the bucket, not into the history.
 build/
 __pycache__/
+
+# Wrangler writes account details here when uploading audio. Never commit it.
+.wrangler/
