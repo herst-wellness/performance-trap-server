@@ -2,9 +2,9 @@
 
 *Read this after the Surfing an Emotion chapter. It's a case study showing the full SENSE arc, end to end, in a single session with one client.*
 
-The chapter on Surfing an Emotion broke the practice into pieces. The window of presence. Allowing rather than solving. Insight on the other side. Body before story. Each section took one part of the work and looked at it closely.
+I've just handed you the practice in pieces, which is the only way to teach it and the worst way to recognize it. In a real hour it doesn't arrive in labeled sections. It arrives as one thing.
 
-This piece does the opposite. It shows the whole thing in motion, in one session, with one client. The reason this case study sits in its own document is that it's worth reading slowly, without the pressure to keep moving through a longer chapter. You can sit with this one. Re-read sections. Notice the moves that show up in your own body as you read.
+So here is one session, end to end, with one client. Read it slowly. Re-read the parts that catch, and notice what moves in your own body while you do, because that's the part you'll be using.
 
 ## The Client
 
@@ -24,7 +24,7 @@ Then **E. Enter the Body.** I asked her to bring the meeting back to mind, not t
 
 **N. Name the Quality.** I asked if *clamp* captured the whole feeling or if there was another word that fit better. She went quiet. Her hand moved to her throat. *Clamp is right. It's protecting something.*
 
-**S. Stay.** *Let the clamp be there. Don't try to fix it. Just make contact.* Then I dropped a question into the body: *what is it trying to prevent? What's it worried might happen?* These are the two questions you can use any time you've made contact with a sensation and you want to invite it to show you what it's holding.
+**S. Stay.** *Let the clamp be there. Don't try to fix it. Just make contact.* Then I dropped a question into the body: *what is it trying to prevent? What's it worried might happen?*
 
 She went quiet again. Her shoulders lifted. *Pressure. If I don't contain it, I'll say too much, or I'll say the wrong thing.* And then? She swallowed. *I get in trouble.* I told her to come back to the body and notice how it responded to that memory. Her hand moved to her throat again. *It's tighter.* I said to see if she could keep that tight throat company.
 

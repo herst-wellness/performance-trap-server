@@ -1,14 +1,14 @@
 # Equanimous
 
-*Begin sitting with the Equanimous meditation as soon as you've read the Surfing an Emotion chapter. Daily over the rest of the module. The audio files are in your Audio folder, under the **04 Equanimous** subfolder.*
+*Begin sitting with the Equanimous meditation as soon as you've read the Surfing an Emotion chapter, then daily for the rest of the module. The recordings are on your Module 4 page, and you can play them there or save them to your phone.*
 
-The Equanimous meditation is the sitting practice that pairs with this module's teachings. Where the Surfing Journal walks you through the practice on the page with three specific moments, this meditation walks you through the same work as a daily sit, with my voice guiding you.
+The Equanimous meditation is the sitting practice that pairs with this module's teachings. Where the Surfing journal walks you through the practice on the page with three specific moments, this walks you through the same work as a daily sit, with my voice.
 
 Equanimity is the dual capacity to be both fully in the experience and aware that you're experiencing it. As I describe it in the intro talk: there's a part of you in the river feeling the wave, and at the same time another part sitting by the side noticing the river pass. The practice trains both at once. You stay sensitive enough to actually feel what's happening, and steady enough to remember *this too shall pass* while it's happening.
 
 ## How to use the audio
 
-Your Audio folder for Module 4 contains three files in the **04 Equanimous** subfolder. There's an introductory talk and two different thirty-minute guided meditations. The two thirty-minute versions are not the same meditation at different lengths. They're two distinct practices on the same underlying capacity. Use them in rotation.
+There are three recordings on your Module 4 page. An introductory talk and two different thirty-minute guided meditations. The two thirty-minute versions are not the same meditation at different lengths. They're two distinct practices on the same underlying capacity. Use them in rotation.
 
 **Intro to Equanimous.** A short talk that picks up where Module 3 left off. We were working with the felt tone, the third stage of the sankhara. This talk introduces what happens when felt tone gets ignored over time (the wounding festers and turns into poison in the system) and how riding the emotion as a wave is what allows it to integrate instead. It also reframes the wounding itself as *sacred material*, the teacher that, given its due attention, keeps revealing something new. Listen once before you begin sitting. Come back to it when you need the reminder.
 
@@ -19,6 +19,18 @@ Your Audio folder for Module 4 contains three files in the **04 Equanimous** sub
 Most weeks you'll alternate between the two versions. Some people find one fits better and use it more often. Both are correct. Different days call for different doorways.
 
 I'd also like you to sit up and meditate for five to ten minutes before falling asleep, in addition to your main practice. Right before sleep is a moment when the day's accumulated charge often surfaces. A short sit there lets the wave move rather than carrying it into sleep with you.
+
+## Two Questions for the Body
+
+When you've made contact with a sensation and you want to invite it to show you what it's holding, I use two questions.
+
+*What are you trying to prevent?*
+
+*What are you worried might happen?*
+
+You don't ask these with your mind. You drop them into the body and wait, and the body answers in its own time, sometimes with a memory, sometimes a sentence, often with the sensation tightening before it loosens. The shift is the answer.
+
+And they're not asking the protector to explain itself. They're giving it permission to show you what it's been carrying. You'll hear both questions in the meditation, and they're worth carrying outside the sit as well.
 
 ## How to sit
 

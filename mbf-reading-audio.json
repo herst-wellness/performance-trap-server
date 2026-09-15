@@ -163,52 +163,52 @@
     },
     "04-01-welcome": {
       "michael": {
-        "seconds": 582.0,
-        "bytes": 6985083
+        "seconds": 409.5,
+        "bytes": 4915245
       },
       "heart": {
-        "seconds": 530.2,
-        "bytes": 6363473
+        "seconds": 370.9,
+        "bytes": 4452250
       }
     },
     "04-02-the-law-of-change": {
       "michael": {
-        "seconds": 1035.0,
-        "bytes": 12421269
+        "seconds": 590.9,
+        "bytes": 7091663
       },
       "heart": {
-        "seconds": 949.4,
-        "bytes": 11393089
+        "seconds": 536.7,
+        "bytes": 6441527
       }
     },
     "04-03-surfing-an-emotion": {
       "michael": {
-        "seconds": 1509.4,
-        "bytes": 18113560
+        "seconds": 557.0,
+        "bytes": 6684152
       },
       "heart": {
-        "seconds": 1382.4,
-        "bytes": 16589471
+        "seconds": 504.9,
+        "bytes": 6060035
       }
     },
     "04-03b-equanimous": {
       "michael": {
-        "seconds": 644.2,
-        "bytes": 7731140
+        "seconds": 684.7,
+        "bytes": 8217331
       },
       "heart": {
-        "seconds": 590.0,
-        "bytes": 7080691
+        "seconds": 626.0,
+        "bytes": 7512652
       }
     },
     "04-03c-the-whole-arc-in-one-session": {
       "michael": {
-        "seconds": 515.0,
-        "bytes": 6180720
+        "seconds": 494.4,
+        "bytes": 5933707
       },
       "heart": {
-        "seconds": 472.5,
-        "bytes": 5670392
+        "seconds": 453.2,
+        "bytes": 5439679
       }
     },
     "05-01-welcome": {
