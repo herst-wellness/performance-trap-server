@@ -183,12 +183,12 @@
     },
     "04-03-surfing-an-emotion": {
       "michael": {
-        "seconds": 610.9,
-        "bytes": 7331153
+        "seconds": 562.3,
+        "bytes": 6748727
       },
       "heart": {
-        "seconds": 554.4,
-        "bytes": 6653432
+        "seconds": 509.3,
+        "bytes": 6112071
       }
     },
     "04-03b-equanimous": {
@@ -263,22 +263,22 @@
     },
     "06-01-welcome": {
       "michael": {
-        "seconds": 401.9,
-        "bytes": 4824025
+        "seconds": 419.1,
+        "bytes": 5029347
       },
       "heart": {
-        "seconds": 366.2,
-        "bytes": 4395512
+        "seconds": 378.8,
+        "bytes": 4546291
       }
     },
     "06-02-heartfelt-intentions": {
       "michael": {
-        "seconds": 588.8,
-        "bytes": 7066271
+        "seconds": 554.5,
+        "bytes": 6655313
       },
       "heart": {
-        "seconds": 534.0,
-        "bytes": 6408613
+        "seconds": 502.6,
+        "bytes": 6032136
       }
     },
     "06-02b-gratitude-choice-commitment": {
@@ -293,32 +293,32 @@
     },
     "06-03-life-purpose": {
       "michael": {
-        "seconds": 660.0,
-        "bytes": 7920789
+        "seconds": 643.8,
+        "bytes": 7726125
       },
       "heart": {
-        "seconds": 600.5,
-        "bytes": 7207019
+        "seconds": 585.7,
+        "bytes": 7029282
       }
     },
     "06-03b-reaching-out": {
       "michael": {
-        "seconds": 255.8,
-        "bytes": 3071104
+        "seconds": 253.8,
+        "bytes": 3046654
       },
       "heart": {
-        "seconds": 229.7,
-        "bytes": 2756694
+        "seconds": 227.6,
+        "bytes": 2732244
       }
     },
     "06-04-tune-in-to-the-trade": {
       "michael": {
-        "seconds": 993.8,
-        "bytes": 11926301
+        "seconds": 622.0,
+        "bytes": 7464378
       },
       "heart": {
-        "seconds": 908.4,
-        "bytes": 10901569
+        "seconds": 563.0,
+        "bytes": 6756877
       }
     },
     "07-01-welcome": {
