@@ -1156,6 +1156,7 @@ function indexPage() {
   const { journalsForModule } = require('./mbf-journal-content');
   const { readingsForModule } = require('./mbf-reading-content');
   const { audioForModule } = require('./mbf-audio');
+  const { listenFor } = require('./mbf-listen');
   const blocks = Object.keys(MODULES)
     .map((n) => {
       const mod = MODULES[n];
@@ -1167,7 +1168,13 @@ function indexPage() {
               (r) =>
                 `<li><a href="/practice/mbf/module-${r.module}/reading/${r.slug}">${r.title}</a>${
                   r.practice ? '<span class="note">The written instructions for this module\u2019s meditation.</span>' : ''
-                }</li>`
+                }${(() => {
+                  const l = listenFor(r);
+                  return l
+                    ? `<span class="note">Read it, or listen to it, ${l.length}. ` +
+                      `<a href="${l.download}">Download it</a> to have it on the train.</span>`
+                    : '';
+                })()}</li>`
             )
             .join('') +
           '</ul>'
