@@ -1,71 +1,81 @@
 # Welcome
 
-You have your heartfelt intentions named. You have your life purpose statements written. You know what you value and what you uniquely offer. Module 6 handed you the inner compass.
+Last module I taught you to catch the trade while it's happening. And I told you that the seeing would arrive well before the stopping, and that you'd watch yourself make the trade anyway.
 
-Module 7 is what you do with it.
+So this module is the stopping.
 
-## Where This Module Sits
+Which raises the thing I most want to say before you start.
 
-\arcDiagram{7}
+## Knowing the Move Is Not Being Able to Make It
 
-Modules 1 through 6 trained the seeing. Modules 7 and 8 train the doing.
+I'm about to show you what the other option is, and you'll be able to name it in the moment, in the room, while it's live. And some of the time you'll take the old one regardless.
 
-You can know your values and still get pulled out of them every time the meeting goes sideways, your partner says the thing that flips you, the boss asks for one more yes. The intentions don't fail you in those moments. You lose access to them. The signal is still there. The noise of the nervous system drowns it out.
+I want that named now because it's the stretch where I watch people quit on themselves. Knowing the move and being able to make it are two capacities, and they're separated by more time than anybody expects. Not because you're not trying. Because the old one is faster, and it's been rehearsed for forty years, and the new one has been rehearsed four times.
 
-So the question for Module 7 is: what do you actually do, in real life, when life is moving fast and the old patterns are taking the wheel?
+That's the normal shape of crossing this particular thing. Nobody skips it, I certainly didn't, and the only thing I know of that closes the gap is reps.
 
-We're not stacking unrelated practices on top of each other. We're building a single capacity, in stages. Each module sets up the next.
+So when you take the old option and know you're taking it, tell me. That's the useful conversation, not the one where you report the times it went well.
 
-## What Module 6 Set Up
+Mine ran longer than I'd like to admit. I could describe my own trade to my therapist in precise language, name the bind it sat inside, say what the other option was, and then take a call an hour later and do the old thing without a flicker of hesitation. I did that for around two years. What eventually shifted it wasn't a better understanding. It was a handful of small, badly executed, extremely uncomfortable sentences said out loud to people who mattered to me, and then a lot more of them.
 
-Module 6 ended with the trade visible. You learned that under pressure, you abandon parts of yourself to keep the contract intact. You named what you've been trading away. You started catching the trades in real time.
+## Why Seeing Isn't Enough
 
-What we didn't fully say then was what becomes possible once you can see the trade. The trade isn't just a moment of self-betrayal. It's a moment where the false binary takes over and collapses your options to two. Either I say the truth and lose the relationship, or I stay silent and lose myself. Either I respond immediately and burn out, or I refuse and feel selfish. Either I stay in this job and suffer, or I escape to another job and pretend the pain will stop. The trade lives inside that binary.
+The old contract is written into your body, not your understanding. Your body's response to a familiar bind is faster than thought, which is why you can see the third option clearly, in detail, and still find yourself an hour later having done the old thing.
 
-Module 7 teaches that the binary is almost never the truth.
+Understanding doesn't update it and I've never seen understanding update it. Only experience does. The nervous system has to go through the new response and come out intact, enough times that its prediction changes.
 
-## What Module 7 Does
+That's why I built this module around repetition rather than insight.
 
-Two movements over the next two weeks, mapped to the second half of STEP.
+## What's Here
 
-**E. Expand Options.** Stress collapses the world. Imagination narrows. The nervous system tricks you into thinking there are only two choices. Expand Options is the move of widening the field, of finding the third option the bind told you wasn't available. Sometimes the third option is a small utterance, sometimes it's a pause, sometimes it's turning toward what hurts instead of fixing it, sometimes it's consulting the values you've already named. The shape varies. The move is the same: refuse the binary.
+Three chapters.
 
-**P. Practice.** The third option doesn't change your life by being seen. It changes your life by being done. Practice is the moment you take one small action in the world that breaks the old contract. Not a heroic reinvention. Not a dramatic confrontation. One honest sentence. One pause. One boundary. One refusal to abandon the body. One choice made from the larger self rather than the frightened protector.
+**The Third Option** is the move itself. When a bind presents you with two bad choices, there is almost always a third that the bind told you wasn't available, and it's usually the truer one.
 
-## From STEP
+**Expand Options** is how you find it while you're inside the narrowing, which is the hard part. A bind works by making the field feel small. This is how you widen it.
 
-In STEP, this module completes the framework. **E. Expand Options** and **P. Practice** are the two letters that turn inner work into lived behavior.
+**Practice** is what actually changes you. One small truthful thing, done while the body is scared, repeated until the prediction updates. In my experience small beats dramatic here every single time.
 
-You've now had all four letters of STEP. **S. Still** and **T. Tune in to the Trade** in Module 6. **E. Expand Options** and **P. Practice** in Module 7. SENSE rebuilt the body as a trustworthy source of truth. STEP is how that contact becomes action in the world.
+## The Shape of the Next Few Weeks
 
-Module 8 is integration. The work of M7 lays the foundation.
+I'm going to ask for something different from you here, and it's worth knowing in advance.
 
-## What You'll Notice Along the Way
+Up to now most of what I've asked has happened in your own body, on a cushion or on a page, where nobody else was involved and nothing was at stake outside you. That changes. The assignments in this module happen in rooms with other people in them, and other people react.
 
-A few things worth flagging upfront.
+Which means some of this will land badly. Somebody will take your plain sentence as an attack, or go quiet on you, or agree so fast you can tell they didn't hear it. None of that is a verdict on whether you did it right. I'd rather you brought me the one that went badly than the one that went well, because the badly one has more in it.
 
-**The binary is convincing because it's bodily, not just mental.** The trap doesn't arrive as a thought you can argue with. It arrives as a chest tightening, a belly gripping, a throat closing. The mind starts racing. The old protector takes over. You don't think *I have no options.* You feel optionless. Most of the work of Module 7 is learning to recognize the felt absence of options as the signature of an old survival pattern, not as the truth.
+I'd also say this. You don't owe anybody a perfectly worded version of the truth. The bar is that you said the thing rather than managed around it.
 
-**The third option is usually smaller than you expect.** Many people come to this module assuming the practice means something dramatic. A big confession, a quit, a confrontation. The actual move is almost always tinier. The sentence that's only 20% different from what you would have said. The pause before the automatic yes. The U-turn back into the body when the mind wants to flee.
+One more thing about the timing of it. The move rarely happens in the moment the first few times. It happens forty minutes later in the car, or the next morning, when you finally say the thing you didn't say. That counts. I want it to count, because if only the real-time version counts then almost nothing counts for the first month and you'll give up.
 
-**Practice doesn't feel graceful the first time.** Or the tenth time. The old pattern has been practiced for decades. You'll miss it. You'll over-explain or go quiet or say yes when you mean no. Then you'll notice, recover, and try again. That's the practice. One small honest move, repeated, until it becomes a new default.
+Late is a rep. Clumsy is a rep. Said to the wrong person because you couldn't get to the right one yet is still a rep. What isn't a rep is working out what you would have said and then never saying it to anybody at all.
 
-## The Practice This Module
+## Two Things to Expect
 
-The daily sit changes. The Compassion meditation from Module 5 and the GCC sit from Module 6 step back. **Conscious Choice** becomes the new daily practice.
+**It will feel disproportionate.** You'll say one plain sentence and your body will react as though you'd set fire to something. I'd read that as the size of the original contract rather than the size of what you did.
 
-Conscious Choice is Stop-Look-Go in embodied form. It walks you through settling the breath, sensing into a stuck situation in your life, sitting with the conflicting feelings, widening the aperture, and sensing the one next step that would have you feel aligned. It's the whole work of M7 in slow motion, on the cushion, every day. The chapter teaches the moves conceptually. The sit trains them in the body.
+**You'll do it badly at first.** The first few attempts come out too blunt, or too hedged, or three days late. That's what a new move looks like early, and I'm not asking you for a good version. I'm asking for a version.
 
-The bedtime sit from Module 4 continues.
+## What I'll Be Asking For
+
+One move at a time. Not a program of them.
+
+You'll pick a single bind that recurs in your actual life. The conversation you keep not having. The request you keep saying yes to. The thing you go quiet about. One. Then you'll work out what the third option is in that specific case, and you'll do it, badly, and then you'll do it again.
+
+Not five binds. Not a list. One, worked until the body has a different expectation of it.
+
+There's a reason for that. Spread across five, you get five single attempts and no reps, and reps are the entire mechanism. Worked on one, you get the thing that actually changes: a body that has been through it before.
+
+And I'd choose one with real stakes but not the highest stakes you have. Not the marriage, if the marriage is the biggest thing in your life. Something that matters and won't take the roof off if it goes sideways.
 
 ## Summary
 
-- Module 7 is where the inner work becomes lived behavior. You stop watching the trade and start refusing it.
-- Stress collapses the world into a false binary. Either/or. Module 7's whole arc is built on the recognition that the binary is almost never the truth.
-- The third option is the move that opens what the bind told you wasn't available. It's usually smaller than you expect.
-- E. Expand Options finds the third option. P. Practice is the one small action in the world that breaks the old contract.
-- The daily sit is Conscious Choice, which is Stop-Look-Go in embodied form. The chapter teaches the moves; the sit trains them in the body.
+- Knowing the move and being able to make it are two capacities, separated by more time than anyone expects.
+- Seeing isn't enough, because the contract lives in the body and only experience updates it.
+- The third option is the one the bind told you wasn't there, and it's usually truer.
+- Small and truthful beats dramatic, every time.
+- You'll do it badly at first, and a bad version is the assignment.
 
 ## Action
 
-Read **07.02 The Third Option** next.
+Keep the daily sit going, and when you're ready, open **The Third Option**.
