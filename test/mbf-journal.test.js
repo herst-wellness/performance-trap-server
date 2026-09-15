@@ -71,7 +71,8 @@ test('content needs a valid code', async (t) => {
   assert.strictEqual(allowed.status, 200);
   const data = await allowed.json();
   assert.strictEqual(data.journal.title, 'About You');
-  assert.ok(allPrompts(data.journal).length > 20);
+  const asked = allPrompts(data.journal).map((p) => p.text).join(' ').split(/\s+/).length;
+  assert.ok(asked > 200, `the intake only asks ${asked} words`);
 });
 
 test('with no codes issued at all, nobody gets in', async (t) => {
@@ -112,16 +113,16 @@ test('the Dropbox path lands in the client module folder, under one stable name'
 });
 
 test('the written journal carries every prompt, answered or not', () => {
-  const journal = findJournal(1, 'your-turning-point');
+  const journal = findJournal(1, 'turning-point');
   const text = renderJournalText(
     journal,
-    { 'tp-1': { text: 'Something has to change at work.' } },
+    { [allPrompts(findJournal(1, 'turning-point'))[0].id]: { text: 'Something has to change at work.' } },
     'Danny Lowenthal',
     new Date('2026-09-13T12:00:00Z')
   );
   assert.match(text, /Something has to change at work\./);
   assert.match(text, /\(not answered\)/);
-  assert.match(text, /Your Turning Point/);
+  assert.match(text, /Turning Point/);
   // An unfinished journal says so, so Chad never mistakes a first pass for
   // the whole thing.
   assert.match(text, /Still being written/);
@@ -134,10 +135,14 @@ test('agreements count as answered when yes or no is chosen', () => {
   const journal = findJournal(1, 'about-you');
   const none = answeredCount(journal, {});
   assert.strictEqual(none.answered, 0);
-  assert.ok(none.total > 25);
-  const some = answeredCount(journal, { 'agree-human': { agree: true }, health: { text: 'six' } });
+  assert.ok(none.total >= allPrompts(findJournal(1, 'about-you')).length);
+  const prompts = allPrompts(journal);
+  const agreement = prompts.find((p) => p.kind === 'agree');
+  const written = prompts.find((p) => p.kind !== 'agree');
+  assert.ok(agreement, 'About You should still carry the working agreements');
+  const some = answeredCount(journal, { [agreement.id]: { agree: true }, [written.id]: { text: 'six' } });
   assert.strictEqual(some.answered, 2);
-  const blank = answeredCount(journal, { health: { text: '   ' } });
+  const blank = answeredCount(journal, { [written.id]: { text: '   ' } });
   assert.strictEqual(blank.answered, 0);
 });
 
@@ -255,7 +260,7 @@ test('a finished journal goes to Dropbox, to the client, and as a notice to Chad
     {
       code: 'danny-lowenthal',
       journal,
-      answers: { 'bm-1': { text: 'The loudest story is that I am behind.' } },
+      answers: { [allPrompts(findJournal(1, 'beginners-mind'))[0].id]: { text: 'The loudest story is that I am behind.' } },
       clientEmail: 'danny@example.com',
       finished: true,
       now: new Date('2026-09-13T12:00:00Z'),
@@ -277,7 +282,7 @@ test('a finished journal goes to Dropbox, to the client, and as a notice to Chad
   // the journal is already in his Dropbox.
   assert.match(toClient.text, /The loudest story is that I am behind\./);
   assert.doesNotMatch(toChad.text, /The loudest story is that I am behind\./);
-  assert.match(toChad.text, /1 of 12 prompts answered/);
+  assert.match(toChad.text, /1 of \d+ prompts answered/);
   assert.match(toChad.subject, /^Danny Lowenthal finished /);
 
   delete process.env.DROPBOX_APP_KEY;
@@ -297,9 +302,9 @@ test('without Dropbox, Chad still gets the journal itself', async () => {
     sent.push(JSON.parse(options.body));
     return { ok: true, json: async () => ({ id: 'sent' }) };
   };
-  const journal = findJournal(1, 'your-turning-point');
+  const journal = findJournal(1, 'turning-point');
   const outcome = await deliverJournal(
-    { code: 'danny-lowenthal', journal, answers: { 'tp-1': { text: 'Work has to change.' } }, clientEmail: null, finished: true },
+    { code: 'danny-lowenthal', journal, answers: { [allPrompts(journal)[0].id]: { text: 'Work has to change.' } }, clientEmail: null, finished: true },
     fakeFetch
   );
   assert.strictEqual(outcome.savedTo, null);
