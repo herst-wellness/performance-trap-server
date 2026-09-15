@@ -5,3 +5,4 @@ data/
 
 # The generated chapter readings. They go to the bucket, not into the history.
 build/
+__pycache__/
