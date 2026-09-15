@@ -1,18 +1,20 @@
 # Life Purpose
 
-Laura sat on the other side of the Zoom call reading a page I had written for her. She'd just finished her three friend interviews, sent me her own reflections, and we were meeting to put it all together.
+Your heartfelt intentions name what you've been protecting. Now I want the other half, which is what you've been giving people the whole time without noticing you were.
 
-"You're the one people turn to when life gets hard," she read. "You show up, stay present, and hold space. You make people feel safe when everything else feels uncertain."
+A client of mine, I'll call her Laura, sat on the other side of the Zoom call reading a page I had written for her. She'd finished her three friend interviews and sent me her own reflections, and I'd put it all together.
 
-She smiled, half embarrassed and half moved. "Yeah, that's me," she said.
+"You're the one people turn to when life gets hard," she read out to me. "You show up, you stay, and people can put things down in front of you. You make people feel safe when everything else feels uncertain."
 
-Then she read the paragraph beneath it, the one that traced where that quality started.
+She smiled at me, half embarrassed and half moved. "Yeah, that's me," she said.
+
+Then she read the paragraph underneath, where I'd traced where that quality started.
 
 "When you were a child and your home life fell apart again and again, you learned quickly that no one else was really in charge. Your dad had checked out. Your brother was being sent away to reform school. Your mom was overwhelmed and unpredictable. You could see she didn't have her shit together, and that realization forced you to grow up fast. That early fear of *no one's got this* became the seed of your steadiness."
 
-By the time she finished, her voice had gone quiet. "It's strange," she said. "Being the protector for myself feels hard. But doing it for other people feels completely natural."
+By the time she finished, her voice had gone quiet on me. "It's strange," she said. "Being the protector for myself feels hard. But doing it for other people feels completely natural."
 
-That's where life purpose lives. In the same place as the wound. The strategy you built to survive turned, over time, into the gift others come to you for.
+That's where I find life purpose. In the same place as the wound, because the strategy you built to survive turned, over time, into the gift people come to you for.
 
 ## What Life Purpose Actually Is
 
@@ -28,61 +30,63 @@ Once you can see the pattern, you stop having to invent your purpose. You name w
 
 ## How the Protector Becomes the Healer
 
-Every purpose starts with protection. Whether you became the caregiver, the achiever, the problem-solver, the visionary, or the peacemaker, it all began as a way to stay safe.
+Every purpose I have ever helped anybody name started out as protection. Caregiver, achiever, problem-solver, visionary, peacemaker, and every one of them began as a way to stay safe.
 
-Eventually, awareness kicks in, and something changes. What used to be a defense becomes a gift. The same instinct that protected you starts showing up as support for others. Not because you're managing or controlling anything, but because you're present in a way the wound made you good at being.
+And then awareness arrives and something changes. What was a defense turns into a gift, and the same instinct that protected you starts showing up as something other people can lean on. Not because you're managing anything, but because you're present in a way the wound made you good at.
 
-Laura's steadiness still has its old shape. She anticipates others' needs to stay ahead of chaos. Her life's work is learning how to operate not from anxiety, but from presence. The shift feels different. Still steady, but grounded, open, responsive. The same nervous system, no longer bracing.
+Laura's steadiness still has its old shape, and she anticipates what people need in order to stay ahead of chaos. Her work now is learning to do it from presence instead of anxiety. Still steady, but open and responsive. The same nervous system, no longer bracing.
 
-That's the shift. The protective instinct doesn't vanish. It just stops gripping so tightly. It becomes something more generous.
+And that's the shift I'm after with you. The protective instinct doesn't vanish, it stops gripping, and what's left is more generous.
 
-Most purpose journeys follow the same arc. There's an early moment where something cracks. Love, safety, or belonging. You get the message that you're on your own, or too much, or not enough. From that place, you adapt. You learn to become useful or invisible or perfect or strong.
+I see the same arc nearly every time. Something cracks early, in love or safety or belonging, and you get the message that you're on your own, or too much, or not enough. So you adapt. You become useful or invisible or perfect or strong.
 
-Over time, those strategies turn into qualities others rely on. You become someone who leads, heals, sees clearly, holds people steady, builds things. When fear is still running underneath, the gift can turn on you. You give past your limits. You try to control instead of trust. You lose yourself in the effort to keep being enough.
+Over time those strategies turn into the qualities people rely on you for. But while fear is still running underneath, the gift turns on you. You give past your limits, you control instead of trusting, and you lose yourself in the effort of continuing to be enough.
 
-When that old story softens, the gift matures. It's no longer wired with anxiety or shame. It's more rooted. You don't have to prove anything with it. You just offer it because it's what you have to give.
+And when the old story softens, the gift matures. It stops being wired to anxiety or shame, and you stop having to prove anything with it. You offer it because it's what you have.
 
 ## Why Purpose Feels Familiar
 
 One of the more disorienting things about discovering your purpose is how obvious it turns out to be.
 
-You're usually too close to it to see clearly. You've lived inside the pattern so long that it feels like personality, not gift. *Of course I notice what's not being said. Of course I'm the one people call when things fall apart. Of course I think in stories. That's just me.* And because it's just you, you don't recognize it as a contribution.
+Mine was reading rooms. I could walk into any room as a kid and know within seconds which version of me would go down best, and I thought that was just a thing about me rather than a skill, let alone a skill I'd been drilled in. It took a coach named Chuck Roppel telling me that the thing I did wasn't a flaw and wasn't an accident. It had formed for a reason, and it was also why I'd ended up in this work at all. Without the wound underneath it, I doubt I'd have the gift.
 
-That's why this module asks others to reflect it back. People who've seen you in motion, especially in unscripted moments, often know exactly what you bring. They're the ones who can say, *you probably don't even realize this, but here's what you always do when you walk into a room.* When you hear it, something clicks. The recognition feels old. Like remembering rather than learning.
+You're too close to see it, because you've lived inside the pattern so long that it feels like personality rather than a gift. *Of course I notice what's not being said. Of course I'm the one people call when things fall apart. Of course I think in stories. That's just me.* And because it's just you, you don't recognize it as a contribution.
 
-That's how you find your purpose. Not by figuring it out. By being reflected back to yourself in a way you finally believe.
+Which is why I ask other people to hand it back to you. In my experience the ones who've seen you in unscripted moments know exactly what you bring, and they're the ones who can say *you probably don't realize this, but here's what you always do when you walk into a room.* When you hear it something clicks, and the recognition feels old. More like remembering than learning.
+
+So that's how you find it. Not by working it out, but by being handed back to yourself in a way you finally believe.
 
 ## The Shadow Side of Purpose
 
-Every gift has a version of itself that drains you.
+And I've never found a gift that doesn't have a version of itself that drains you.
 
-Laura's steadiness, embodied, is powerful. The same steadiness in survival mode becomes over-responsibility. She says yes too quickly. She holds tension in her body. She takes care of everything and burns out doing it.
+Laura's steadiness, when she's in her body, is powerful. The same steadiness in survival mode is over-responsibility, and she says yes too fast, holds the tension in her body, takes care of everything and burns out doing it.
 
-The wound is still running the show. That's true for every archetype when awareness isn't present. The caregiver forgets to take care of themselves. The visionary doesn't stop or slow down. The peacemaker avoids conflict. The achiever loses touch with joy. The witness gets stuck in observation and never lets themselves act.
+That's the wound still running the show, and it's true of every one of them without awareness. The caregiver forgets themselves. The visionary won't slow down. The peacemaker avoids the conflict, the achiever loses touch with joy, and the witness observes and never acts.
 
-These patterns are signals. They tell you when your gift has slipped back into the old wiring. The moment you notice, you're already shifting. The protector dialed down. The gift dialed in.
+I read these as signals rather than failures, and they tell you the gift has slipped back into the old wiring. The moment you notice, you're already moving. Protector dialed down, gift dialed in.
 
 ## The Maturation of Purpose
 
-In the beginning, purpose is loud and effortful. You push. You try a lot. You want to help, to succeed, to prove you matter. That part of the journey isn't bad. It's what develops the strength in the first place.
+Early on it's loud and effortful. You push, you try a lot, you want to help and succeed and prove you matter, and I don't think any of that is bad, because it's what builds the strength.
 
-Something happens as you grow. Purpose becomes less about what you do and more about how you do it. You don't need to push as hard anymore. You can let it flow more.
+Then something changes, and I'd say it becomes less about what you do than how you do it. You don't push as hard, and it starts to move on its own.
 
-You feel the shift when you stop performing so much and start working from somewhere quieter. Things get simpler. You stop gripping. You start trusting that what you have to offer is enough, exactly as it is.
+You feel it when you stop performing so much and start working from somewhere quieter. Things get simpler, you stop gripping, and you start trusting that what you have to offer is enough as it is.
 
-The polished document you'll receive after our session is meant to mark that shift. Your friends' words about what they see in you, the threads I've pulled together, the gifts you've been offering without naming. The document doesn't give you a purpose. It hands back what you've been doing all along, in words you can recognize.
+The document I send you after our session marks that shift. Their words, the threads I've pulled, the gifts you've been giving without naming. I'm not giving you a purpose. I'm handing back what you've been doing all along, in words you can recognize.
 
 ## How You'll Find Yours
 
-Two pieces of work, before our session.
+I want two pieces of work before we meet.
 
-The first is internal. You'll choose three qualities from a list of fifteen, the ones that feel most like you when you're not trying. Then you'll deep-dive each one: specific moments when it was alive, what felt natural about it, what part of your wound it grew out of. That work happens in your Natural Strengths companion.
+The first is internal. You choose three qualities from a list of fifteen, the ones that feel most like you when you're not trying, then go deep on each: moments when it was alive, what felt natural about it, what part of your wound it grew out of. That's Natural Strengths.
 
-The second is relational. You'll reach out to three people who know you well enough to see you in unscripted moments. You'll send them a short questionnaire about what they see in you. Then you'll set up a conversation with each of them, ideally by phone or in person, and let them talk. The full process, the language to use when asking, the questions to bring to each interview, and what to listen for, all of it lives in **06.03B Reaching Out**. The form your friends fill out is **06.03C What You See In Me**.
+The second is relational. You'll reach out to three people who know you well enough to have seen you in unscripted moments, send them a short questionnaire, then get on the phone with each of them and let them talk. How to ask, what to send and what to listen for are all in **Reaching Out**, and the form itself is **What You See In Me**.
 
-The combination, your own reflection plus the friends' reflection, is what we work with in session. I synthesize what you and they sent into the polished document afterward.
+I work with the two together in our session, yours and theirs, and then I put them into the document.
 
-A note on the asking. The reach-out can feel vulnerable. You're asking people to tell you what they see in you, with depth. Some participants flinch. Some over-prepare to control what their friends might say. The right move is to send the questionnaire, schedule the call, and stay open. What you receive may not match how you see yourself. The mismatch is exactly the point.
+One note on the asking. It can feel exposing, and I'd send the questionnaire, book the call and stay open anyway.
 
 ## Summary
 

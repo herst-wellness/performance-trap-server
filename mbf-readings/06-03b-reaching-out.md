@@ -54,4 +54,4 @@ Take written notes. But more than that, take it in. Let yourself be seen.
 
 ## After the Interviews
 
-Send me your notes from all three conversations, along with the completed forms, at least 48 hours before our session. I'll bring them into the session with us, and I'll synthesize them with your own reflections from 06.03A into the polished Life Purpose document you'll receive after we meet.
+Your notes from all three conversations, and their completed forms, come to me on their own. I'll bring them into the session with us, and I'll synthesize them with your own reflections from 06.03A into the polished Life Purpose document you'll receive after we meet.
