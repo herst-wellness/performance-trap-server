@@ -102,10 +102,8 @@ test('a reading cannot smuggle markup into the page', () => {
   assert.match(html, /&lt;script&gt;/);
 });
 
-test('the meditations stay hidden until the bucket is configured', () => {
+test('the bucket can be pointed somewhere else without touching the code', () => {
   const before = process.env.MBF_AUDIO_BASE;
-  delete process.env.MBF_AUDIO_BASE;
-  assert.equal(audioForModule(3).length, 0, 'no base means no links, rather than links that 404');
   process.env.MBF_AUDIO_BASE = 'https://audio.example/';
   const live = audioForModule(3);
   assert.ok(live.length > 0);
@@ -113,4 +111,61 @@ test('the meditations stay hidden until the bucket is configured', () => {
   assert.equal(new Set(FILES.map((f) => f.module + '/' + f.slug)).size, FILES.length, 'two recordings share an address');
   if (before === undefined) delete process.env.MBF_AUDIO_BASE;
   else process.env.MBF_AUDIO_BASE = before;
+});
+
+// The meditations are served for listening and for keeping. A client on a plane
+// has no signal, so the download is not a nicety.
+test('a meditation can be downloaded, under a name that means something later', async (t) => {
+  const http = require('node:http');
+  const { handleMbfAudioRoute, FILES } = require('../mbf-audio');
+  const calls = [];
+  const realFetch = global.fetch;
+  global.fetch = async (url, opts) => {
+    calls.push({ url, opts });
+    return {
+      status: 200,
+      headers: new Map([['content-length', '4']]),
+      body: null,
+    };
+  };
+  const server = await new Promise((resolve) => {
+    const s = http.createServer(async (req, res) => {
+      if (await handleMbfAudioRoute(req, res)) return;
+      res.writeHead(404); res.end();
+    });
+    s.listen(0, () => resolve(s));
+  });
+  const port = server.address().port;
+  t.after(() => { server.close(); global.fetch = realFetch; });
+
+  const head = await new Promise((resolve, reject) => {
+    const r = http.request({ port, path: '/mbf-audio/3/be-with.mp3', method: 'HEAD' }, (res) =>
+      resolve({ status: res.statusCode, headers: res.headers }));
+    r.on('error', reject); r.end();
+  });
+  assert.equal(head.status, 200);
+  assert.equal(head.headers['content-disposition'], 'attachment; filename="Module 3 - Be With.mp3"');
+  assert.equal(head.headers['accept-ranges'], 'bytes');
+  assert.ok(calls[0].url.endsWith('/mbf/module-3/be-with.mp3'), 'it should read from the bucket');
+
+  const missing = await new Promise((resolve, reject) => {
+    const r = http.request({ port, path: '/mbf-audio/3/not-a-sit.mp3', method: 'HEAD' }, (res) =>
+      resolve(res.statusCode));
+    r.on('error', reject); r.end();
+  });
+  assert.equal(missing, 404);
+  assert.ok(FILES.every((f) => f.title && f.slug), 'every recording needs a name and an address');
+});
+
+test('the meditations point at the bucket by default, so a module page never shows a dead link', () => {
+  const before = process.env.MBF_AUDIO_BASE;
+  delete process.env.MBF_AUDIO_BASE;
+  const { audioForModule } = require('../mbf-audio');
+  const live = audioForModule(8);
+  assert.ok(live.length > 0, 'Module 8 should list its meditations with no configuration at all');
+  for (const a of live) {
+    assert.match(a.href, /^https:\/\/pub-[a-z0-9]+\.r2\.dev\/mbf\/module-8\//);
+    assert.match(a.download, /^\/mbf-audio\/8\/[a-z0-9-]+\.mp3$/);
+  }
+  if (before !== undefined) process.env.MBF_AUDIO_BASE = before;
 });

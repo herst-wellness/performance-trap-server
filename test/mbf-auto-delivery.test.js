@@ -39,12 +39,12 @@ test('a save with no send reaches the store, and comes back on the next visit', 
   const saved = await request(server, '/api/mbf/journal/save', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-Companion-Access': 'danny-lowenthal' },
-    body: JSON.stringify({ module: '1', slug: 'your-turning-point', answers: { 'tp-1': { text: 'Half a thought.' } } }),
+    body: JSON.stringify({ module: '1', slug: 'turning-point', answers: { 'tp-1': { text: 'Half a thought.' } } }),
   });
   assert.strictEqual(saved.status, 200);
 
   // What the page asks for when the client opens it again, anywhere.
-  const reopened = await request(server, '/api/mbf/journal/1/your-turning-point', {
+  const reopened = await request(server, '/api/mbf/journal/1/turning-point', {
     headers: { 'X-Companion-Access': 'danny-lowenthal' },
   });
   const data = await reopened.json();
@@ -153,7 +153,7 @@ test('the ticker writes to Dropbox and marks the record, sending no email', asyn
       code: 'danny-lowenthal',
       clientName: 'Danny Lowenthal',
       moduleNumber: 1,
-      slug: 'your-turning-point',
+      slug: 'turning-point',
       answers: { 'tp-1': { text: 'Something has to change.' } },
       now: new Date('2026-09-13T11:20:00Z'),
     });
@@ -181,7 +181,7 @@ test('the ticker writes to Dropbox and marks the record, sending no email', asyn
   assert.ok(!calls.some((u) => u.includes('resend')), 'a quiet save must not email anybody');
 
   const doc = await store.load();
-  const record = findRecord(doc, 'danny-lowenthal', 1, 'your-turning-point');
+  const record = findRecord(doc, 'danny-lowenthal', 1, 'turning-point');
   assert.ok(record.deliveredAt);
   assert.match(record.deliveredPath, /Danny Lowenthal\/Module 1\//);
   assert.strictEqual(record.deliveryProblem, null);
