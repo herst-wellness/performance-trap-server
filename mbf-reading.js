@@ -62,11 +62,11 @@ function listenBlock(reading) {
   const listen = listenFor(reading);
   if (!listen) return '';
   const whose = listen.computerVoice
-    ? 'Read aloud in a computer voice, not Chad\u2019s. He records these as he gets to them.'
-    : 'Read aloud by Chad.';
+    ? 'read aloud in a computer voice. Chad\u2019s own recording of this one is coming, he has not got to it yet.'
+    : 'read aloud by Chad.';
   return `<section class="listen" aria-labelledby="listenHeading">
     <h2 id="listenHeading" class="label">Listen instead</h2>
-    <p>${esc(listen.length)}. ${whose} You can speed it up below.</p>
+    <p>${esc(listen.length)}, ${whose} You can speed it up below, and his voice stays where it is when you do.</p>
     <audio id="player" controls preload="none" src="${esc(listen.href)}"
            aria-label="This chapter read aloud"></audio>
     <div class="listen-row">
@@ -79,7 +79,7 @@ function listenBlock(reading) {
         <option value="1.75">Nearly twice as fast</option>
         <option value="2">Twice as fast</option>
       </select>
-      <a href="${esc(listen.download)}">Save it to this device</a>
+      <a href="${esc(listen.download)}">Download it to listen on the go</a>
       <a href="#" id="restart" hidden>Start from the beginning</a>
     </div>
   </section>`;
@@ -197,10 +197,24 @@ function readingPage(reading) {
     function get(k){ try { return s && s.getItem(k); } catch(e) { return null; } }
     function put(k, v){ try { if (s) s.setItem(k, v); } catch(e) {} }
 
+    // Speeding up audio can either resample it, which lifts the pitch and turns
+    // a warm voice into a cartoon, or stretch the time and leave the pitch
+    // alone. Browsers do the second by default, but the default is not worth
+    // relying on, so the page asks for it by name. Every browser that has ever
+    // used a different name for the same switch is covered.
+    function keepPitch(){
+      audio.preservesPitch = true;
+      audio.webkitPreservesPitch = true;
+      audio.mozPreservesPitch = true;
+    }
+
     var saved = get(SPEED_KEY);
     if (saved && speed.querySelector('option[value="' + saved + '"]')) speed.value = saved;
-    function apply(){ audio.playbackRate = parseFloat(speed.value) || 1; }
+    function apply(){ keepPitch(); audio.playbackRate = parseFloat(speed.value) || 1; }
     apply();
+    // Some browsers reset the switch when a new source starts loading.
+    audio.addEventListener('play', apply);
+    audio.addEventListener('ratechange', keepPitch);
     speed.addEventListener('change', function(){ apply(); put(SPEED_KEY, speed.value); });
 
     audio.addEventListener('loadedmetadata', function(){

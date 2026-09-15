@@ -57,6 +57,32 @@ test('the page says whose voice it is, and keeps the words on the page', { skip:
   assert.ok(html.includes('aria-label="This chapter read aloud"'), 'the player needs a name read aloud');
 });
 
+// Chad's one worry about a computer voice was the speeding up: a voice that is
+// resampled rather than time stretched comes out a cartoon, and he would rather
+// have nothing than that. Browsers get this right by default, and the page still
+// asks for it by name, because a default is not a promise.
+test('speeding it up never lifts the pitch', { skip: anyRecorded.length === 0 ? 'no recordings yet' : false }, () => {
+  const html = readingPage(READINGS.find((r) => hasListen(r)));
+  assert.ok(html.includes('audio.preservesPitch = true'), 'the pitch switch must be asked for, not assumed');
+  assert.ok(html.includes('audio.webkitPreservesPitch = true'), 'older Safari spells it differently');
+  assert.ok(html.includes("audio.addEventListener('ratechange', keepPitch)"),
+    'a browser that resets the switch on a rate change must be corrected');
+  assert.ok(/his voice stays where it is/.test(html), 'a listener should be told the voice will not change');
+});
+
+// A client listens to these on a train and a plane, which is the whole reason
+// the audio exists, so the file has to come down to the device.
+test('the recording can be carried off the page', { skip: anyRecorded.length === 0 ? 'no recordings yet' : false }, () => {
+  const html = readingPage(READINGS.find((r) => hasListen(r)));
+  assert.ok(/Download it to listen on the go/.test(html), 'the download has to say what it is for');
+});
+
+test('a chapter says it is a computer voice and that Chad\u2019s own is coming', { skip: anyRecorded.length === 0 ? 'no recordings yet' : false }, () => {
+  const html = readingPage(READINGS.find((r) => hasListen(r)));
+  assert.ok(/computer voice/.test(html), 'it must never be passed off as him');
+  assert.ok(/own recording of this one is coming/.test(html), 'and it must say his own is on the way');
+});
+
 test('the recording can be saved, under a name that means something later', { skip: anyRecorded.length === 0 ? 'no recordings yet' : false }, async (t) => {
   const reading = READINGS.find((r) => hasListen(r));
   const calls = [];

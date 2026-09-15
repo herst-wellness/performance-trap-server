@@ -1170,7 +1170,10 @@ function indexPage() {
                   r.practice ? '<span class="note">The written instructions for this module\u2019s meditation.</span>' : ''
                 }${(() => {
                   const l = listenFor(r);
-                  return l ? `<span class="note">Read it, or listen to it on the page, ${l.length}.</span>` : '';
+                  return l
+                    ? `<span class="note">Read it, or listen to it, ${l.length}. ` +
+                      `<a href="${l.download}">Download it</a> to have it on the train.</span>`
+                    : '';
                 })()}</li>`
             )
             .join('') +
