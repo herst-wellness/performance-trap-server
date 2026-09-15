@@ -153,3 +153,38 @@ test('a streamed response reports its own text, usage, and truncation', async ()
   assert.equal(result.incomplete, false);
   assert.equal(result.retried, false);
 });
+
+test('a streamed reply times the wait for the first word apart from the wait for the whole reply', async () => {
+  const sleep = (ms) => new Promise((resolve) => { setTimeout(resolve, ms); });
+  async function* slowTail() {
+    yield Buffer.from(`event: message_start\ndata: ${JSON.stringify({ type: 'message_start', message: { usage: {} } })}\n\n`);
+    // The model thinks before it writes anything, and that silence is the wait.
+    await sleep(60);
+    yield Buffer.from(`event: content_block_delta\ndata: ${JSON.stringify({ type: 'content_block_delta', delta: { type: 'text_delta', text: 'Where' } })}\n\n`);
+    await sleep(60);
+    yield Buffer.from(`event: content_block_delta\ndata: ${JSON.stringify({ type: 'content_block_delta', delta: { type: 'text_delta', text: ' do you feel that?' } })}\n\n`);
+    await sleep(60);
+    yield Buffer.from(`event: message_delta\ndata: ${JSON.stringify({ type: 'message_delta', delta: { stop_reason: 'end_turn' }, usage: { output_tokens: 8 } })}\n\n`);
+  }
+  const result = await streamClaude({
+    apiKey: 'k', model: 'claude-sonnet-5', effort: 'high', instructions: 'i', message: 'm', history: [],
+    fetchImpl: async () => ({ ok: true, status: 200, body: slowTail() })
+  }, () => {});
+  assert.ok(result.latency.firstTextMs >= 50, `expected the thinking silence to be counted, got ${result.latency.firstTextMs}ms`);
+  assert.ok(
+    result.latency.completeMs - result.latency.firstTextMs >= 50,
+    'the writing that happens after the first word is not part of the wait'
+  );
+});
+
+test('a buffered reply waits the whole time for its first word, because nothing appears early', async () => {
+  const result = await generateClaudeResponse({
+    apiKey: 'k', model: 'claude-sonnet-5', effort: 'high', instructions: 'i', message: 'm', history: [],
+    fetchImpl: async () => new Response(JSON.stringify({
+      content: [{ type: 'text', text: 'All at once.' }],
+      stop_reason: 'end_turn',
+      usage: { input_tokens: 1, output_tokens: 1 }
+    }), { status: 200, headers: { 'Content-Type': 'application/json' } })
+  });
+  assert.equal(result.latency.firstTextMs, result.latency.completeMs);
+});

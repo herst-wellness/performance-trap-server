@@ -186,6 +186,7 @@ function aggregateInsights(sessions) {
   const durations = rows.filter((row) => row.endedAt).map((row) => Number(row.durationSeconds || 0)).filter((value) => value > 0);
   const exchanges = rows.map((row) => Number(row.companionResponses || 0));
   const responseTimes = rows.flatMap((row) => Array.isArray(row.responseTimesMs) ? row.responseTimesMs : []);
+  const firstWordTimes = rows.flatMap((row) => Array.isArray(row.firstWordTimesMs) ? row.firstWordTimesMs : []);
   const transcriptionTimes = rows.flatMap((row) => Array.isArray(row.transcriptionTimesMs) ? row.transcriptionTimesMs : []);
   const topicCounts = {};
   const topicCombinations = {};
@@ -260,6 +261,10 @@ function aggregateInsights(sessions) {
     averageResponseTimeMs: responseTimes.length ? Math.round(responseTimes.reduce((sum, value) => sum + value, 0) / responseTimes.length) : 0,
     medianResponseTimeMs: Math.round(median(responseTimes)),
     slowestResponseMs: responseTimes.length ? Math.max(...responseTimes) : 0,
+    averageFirstWordMs: firstWordTimes.length ? Math.round(firstWordTimes.reduce((sum, value) => sum + value, 0) / firstWordTimes.length) : 0,
+    medianFirstWordMs: Math.round(median(firstWordTimes)),
+    slowestFirstWordMs: firstWordTimes.length ? Math.max(...firstWordTimes) : 0,
+    firstWordMeasuredCount: firstWordTimes.length,
     topics: ranked(topicCounts),
     topicCombinations: ranked(topicCombinations),
     commonAbandonmentPoint: ranked(abandonmentPoints)[0]?.[0] || 'Not enough data yet',
@@ -330,7 +335,7 @@ function sessionsToCsv(sessions) {
     'companionResponses', 'averageUserEntryLength', 'longestUserEntryLength', 'estimatedPrimaryTopic',
     'estimatedSecondaryTopics', 'estimatedCompanionInvitations', 'estimatedParticipantEvidence', 'deviceCategory', 'browserFamily', 'operatingSystemFamily', 'screenSizeCategory',
     'referringPage', 'utmSource', 'utmMedium', 'utmCampaign', 'utmContent', 'estimatedCostUsd',
-    'medianResponseTimeMs', 'slowestResponseMs', 'serverErrors', 'browserErrors', 'responseFailures', 'safetyActivations',
+    'medianResponseTimeMs', 'slowestResponseMs', 'medianFirstWordMs', 'slowestFirstWordMs', 'serverErrors', 'browserErrors', 'responseFailures', 'safetyActivations',
     'diagnosisBoundaryActivations', 'crisisActivations', 'voiceRecordingStarts', 'voiceRecordingStops',
     'voiceTranscriptionSuccesses', 'voiceTranscriptionFailures', 'voiceClientFailures', 'microphoneDenials',
     'voiceTranscriptCorrections', 'voiceRecordedSeconds', 'medianTranscriptionTimeMs', 'slowestTranscriptionMs',
@@ -348,7 +353,7 @@ function sessionsToCsv(sessions) {
       row.device?.category, row.device?.browserFamily, row.device?.operatingSystemFamily,
       row.device?.screenSizeCategory, row.referral?.referringPage, row.referral?.utmSource, row.referral?.utmMedium,
       row.referral?.utmCampaign, row.referral?.utmContent, row.estimatedCostUsd, row.medianResponseTimeMs,
-      row.slowestResponseMs, row.serverErrors, row.browserErrors, row.responseFailures, row.safetyActivations,
+      row.slowestResponseMs, row.medianFirstWordMs, row.slowestFirstWordMs, row.serverErrors, row.browserErrors, row.responseFailures, row.safetyActivations,
       row.diagnosisBoundaryActivations, row.crisisActivations, row.voiceRecordingStarts, row.voiceRecordingStops,
       row.voiceTranscriptionSuccesses, row.voiceTranscriptionFailures, row.voiceClientFailures, row.microphoneDenials,
       row.voiceTranscriptCorrections, row.voiceRecordedSeconds, row.medianTranscriptionTimeMs, row.slowestTranscriptionMs,

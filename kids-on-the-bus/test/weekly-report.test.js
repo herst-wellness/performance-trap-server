@@ -78,3 +78,25 @@ test('the weekly report carries the current name, not the one it was renamed fro
   assert.match(report.html, /<h1[^>]*>Start Anywhere<\/h1>/);
   assert.doesNotMatch(`${report.subject}\n${report.html}`, /Mind\/Body Foundations Companion|Kids on the Bus/i);
 });
+
+test('the weekly report separates the silence people sit through from the time a reply takes to finish', () => {
+  const now = Date.parse('2026-09-14T20:00:00.000Z');
+  const measured = buildWeeklyReport([{
+    sessionReference: 'MBF-EEEE-5555',
+    startedAt: '2026-09-11T18:00:00.000Z',
+    companionResponses: 2,
+    responseTimesMs: [30000, 10000],
+    firstWordTimesMs: [5000, 3000]
+  }], now, []);
+  assert.match(measured.html, /Average wait before the first words appear<\/td><td><strong>4\.0 seconds/);
+  assert.match(measured.html, /Average time for a reply to finish<\/td><td><strong>20\.0 seconds/);
+
+  const unmeasured = buildWeeklyReport([{
+    sessionReference: 'MBF-FFFF-6666',
+    startedAt: '2026-09-11T18:00:00.000Z',
+    companionResponses: 1,
+    responseTimesMs: [30000]
+  }], now, []);
+  assert.match(unmeasured.html, /Average wait before the first words appear<\/td><td><strong>Not measured yet/,
+    'a week recorded before this was measured says so rather than reporting nothing as fast');
+});

@@ -80,6 +80,9 @@ async function requestClaude(options, maxTokens) {
     },
     latency: {
       headersMs: Math.round(headersAt - startedAt),
+      // Nothing reaches the reader until the whole reply has arrived, so the
+      // wait before the first word is the wait for all of it.
+      firstTextMs: Math.round(completedAt - startedAt),
       completeMs: Math.round(completedAt - startedAt)
     }
   };
@@ -165,6 +168,10 @@ async function streamClaude(options, onText) {
   let stopReason = '';
   let full = '';
   let buffer = '';
+  // The moment the reader stops waiting, which is what the silence in front of
+  // a reply actually costs them. The scrubber downstream holds back under a
+  // marker's worth of characters, far less than a tenth of a second of writing.
+  let firstTextAt = 0;
   const decoder = new TextDecoder();
   for await (const chunk of response.body) {
     buffer += typeof chunk === 'string' ? chunk : decoder.decode(chunk, { stream: true });
@@ -189,7 +196,10 @@ async function streamClaude(options, onText) {
       } else if (event.type === 'content_block_delta' && event.delta?.type === 'text_delta') {
         const piece = cleanDelta(event.delta.text || '');
         full += piece;
-        if (piece) await onText(piece);
+        if (piece) {
+          if (!firstTextAt) firstTextAt = performance.now();
+          await onText(piece);
+        }
       } else if (event.type === 'message_delta') {
         usage.claudeOutputTokens += Number(event.usage?.output_tokens || 0);
         stopReason = event.delta?.stop_reason || stopReason;
@@ -209,6 +219,7 @@ async function streamClaude(options, onText) {
     retried: false,
     latency: {
       headersMs: Math.round(headersAt - startedAt),
+      firstTextMs: Math.round((firstTextAt || completedAt) - startedAt),
       completeMs: Math.round(completedAt - startedAt)
     }
   };
@@ -231,6 +242,7 @@ async function generateClaudeResponse(options) {
       ),
       latency: {
         headersMs: result.latency.headersMs + retry.latency.headersMs,
+        firstTextMs: result.latency.completeMs + retry.latency.completeMs,
         completeMs: result.latency.completeMs + retry.latency.completeMs
       }
     };
