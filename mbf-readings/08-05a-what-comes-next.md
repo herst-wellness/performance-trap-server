@@ -34,4 +34,4 @@ Watch for the contract in this choice. It has a version of each answer. The good
 
 ## Action
 
-Name your leaning in **08.07 Session Prep**. It's a leaning, not a commitment.
+Name where you're inclined in **08.07 Session Prep**. It's an inclination, not a commitment.

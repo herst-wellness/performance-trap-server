@@ -383,82 +383,82 @@
     },
     "08-01-welcome": {
       "michael": {
-        "seconds": 492.6,
-        "bytes": 5911764
+        "seconds": 428.4,
+        "bytes": 5141569
       },
       "heart": {
-        "seconds": 447.0,
-        "bytes": 5364446
+        "seconds": 385.6,
+        "bytes": 4627480
       }
     },
     "08-02-your-heroine-heros-journey": {
       "michael": {
-        "seconds": 1041.3,
-        "bytes": 12496188
+        "seconds": 557.8,
+        "bytes": 6693870
       },
       "heart": {
-        "seconds": 949.1,
-        "bytes": 11389955
+        "seconds": 505.1,
+        "bytes": 6061602
       }
     },
     "08-02c-loving-kindness": {
       "michael": {
-        "seconds": 348.4,
-        "bytes": 4181099
+        "seconds": 345.8,
+        "bytes": 4150379
       },
       "heart": {
-        "seconds": 317.1,
-        "bytes": 3805876
+        "seconds": 314.6,
+        "bytes": 3775783
       }
     },
     "08-03-protecting-your-sapling": {
       "michael": {
-        "seconds": 799.2,
-        "bytes": 9591894
+        "seconds": 567.7,
+        "bytes": 6813615
       },
       "heart": {
-        "seconds": 728.8,
-        "bytes": 8746467
+        "seconds": 515.9,
+        "bytes": 6191692
       }
     },
     "08-04-a-new-invitation": {
       "michael": {
-        "seconds": 673.2,
-        "bytes": 8079718
+        "seconds": 570.0,
+        "bytes": 6841514
       },
       "heart": {
-        "seconds": 612.4,
-        "bytes": 7349961
+        "seconds": 516.0,
+        "bytes": 6193259
       }
     },
     "08-05-be-the-change": {
       "michael": {
-        "seconds": 548.4,
-        "bytes": 6581961
+        "seconds": 538.9,
+        "bytes": 6467858
       },
       "heart": {
-        "seconds": 500.9,
-        "bytes": 6011134
+        "seconds": 490.5,
+        "bytes": 5887000
       }
     },
     "08-05a-what-comes-next": {
       "michael": {
-        "seconds": 228.6,
-        "bytes": 2743842
+        "seconds": 229.4,
+        "bytes": 2753873
       },
       "heart": {
-        "seconds": 208.8,
-        "bytes": 2505919
+        "seconds": 209.7,
+        "bytes": 2516890
       }
     },
     "08-06-crossing-the-threshold": {
       "michael": {
-        "seconds": 367.6,
-        "bytes": 4411813
+        "seconds": 374.9,
+        "bytes": 4499271
       },
       "heart": {
-        "seconds": 333.9,
-        "bytes": 4007751
+        "seconds": 340.9,
+        "bytes": 4091447
       }
     },
     "08-08-further-reading": {
