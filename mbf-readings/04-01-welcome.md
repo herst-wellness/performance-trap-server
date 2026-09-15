@@ -1,82 +1,75 @@
 # Welcome
 
-You've spent the last two weeks staying with what fires in the body before the loop completes. You mapped a sankhara end to end. You met the protector. You learned that the shield can soften into tenderness if you give it the right kind of attention, in the right doses, with the right pace.
+You've been staying with what fires, in small doses, three passes at a time. So you already know the thing I want to open this module with, and I'd rather say it than have you decide it on your own.
 
-Module 4 picks up where that left off.
+You stayed, and it got worse.
 
-In Module 3, you learned to stay long enough to make contact with what's underneath. In Module 4, the question becomes: *can you stay with it through the whole wave?* The wave rises. The wave peaks. The wave passes. Most of us can stay for the rising. Most of us bail at the peak. Module 4 is the practice of staying all the way to the other side.
+You found the clamp in your throat or the stone in your gut, you did what I asked and kept it company instead of pushing it off, and it got louder. Not calmer. Louder. And at the exact moment it peaked you let go of it, because the getting-worse felt like proof you'd made a mistake.
 
-## Where This Module Sits
+That's what this module is for. Not the staying, which you can already do, but what I watch people do at the peak.
 
-Module 1 was settling. Module 2 was seeing. Module 3 was staying with the body's signal at the moment it fires. Module 4 is staying with the signal through to its end.
+## The Part Where Staying Feels Like a Mistake
 
-What we're actually staying with, when we ride a wave in Module 4, is a **protector in its physical form**. That's worth naming directly. The wave you'll surf isn't a generic emotion. It's the specific somatic shape of the part of you that learned, long ago, to take the wheel when something dangerous showed up. The shoulders that brace. The throat that clamps. The gut that locks. The chest that hardens into a shield. Each of these is a protector, working from inside the body to keep you safe.
+This is the stretch I want to name before you're in it.
 
-The work of Module 4 is to stay with the protector in that physical form until it settles. Not to remove it. Not to defeat it. Just to keep it company, with the surfboard of your awareness, while the wave it's been holding moves all the way through.
+A feeling that's being kept company gets more intense before it moves. That's the normal shape of crossing this particular thing, and it happens to nearly everybody, which means the moment the practice is working is the moment it feels most like it isn't. You will be sure, in your body, that the sensible move is to stop.
 
-What's revealed when the protector settles is the self you came in with, before you learned to contort yourself to belong. The roles you collected over the years, the polished one, the performer, the achiever, the one who fit what others needed, the one who hid the pain, were all built on top of someone who was already there. That earlier self hasn't gone anywhere. The protectors have been standing in front of it. The contortion has been hiding it. The performance has been speaking on its behalf. But it's been there the whole time, waiting for you to come back.
+Almost everyone I've worked with bails there, and then concludes the work doesn't work for them, or that their version of this is too big, or that they're doing it wrong. I lost years to exactly that reading, so I'd rather hand it to you now than watch you find it.
 
-This isn't a mystical claim. I'm not pointing at a soul or a True Self or any kind of capital-letter spiritual entity. I'm pointing at something more ordinary and more verifiable. The you that existed before the rules got handed to you. The you that's been quietly hosting all the roles while still being something underneath them. Coming home means returning to that you, the parts of you you left behind to belong.
+My own version of it ran for about two years. My gut had stopped hurting on and off and just hurt, and I was doing yoga and breath work and gua sha and herbs, and I believed I was listening to my body. I wasn't. I was managing the symptoms so my life wouldn't come apart, which looks like staying and is actually a very sophisticated way of leaving. I was teaching other people to stay with discomfort at the time. I couldn't do it myself, and the reason wasn't that I didn't know how. It was that mine had lasted long enough that I couldn't meet it alone.
 
-## The New Capacity
+So tell me when you're in it, rather than waiting until you're out. That's the useful time, and it's the part I can help with.
 
-The new capacity has a name. Equanimity.
+## What the Wave Actually Is
 
-I want to be careful with that word, because most of what people mean when they say *equanimity* is wrong. Equanimity isn't calm. It isn't detachment. It isn't a quiet smile while the room burns. It isn't being above your feelings. And it absolutely isn't spiritual bypassing, where you skip the actual feeling and jump straight to forced gratitude or *everything happens for a reason*.
+Here's the frame I'll be using for the next two chapters.
 
-True equanimity is the opposite of that. It's the capacity to feel everything that's actually happening, all the way through, with sensitivity, without getting knocked off the board.
+Something fires, and it rises, peaks and falls the way a wave does. Your job isn't to stop it. Your job is to stay upright while it does what it's going to do, and ride it to shore.
 
-The cleanest way I know to say the difference between Module 3 and Module 4: if **Stay** is making contact, **Equanimity** is learning to remain with what you've touched. Stay says hello to the feeling. Equanimity invites it to sit with you for as long as it needs.
+The surfboard is the awareness you've been building since Module 2. The wave is what's moving underneath the story.
 
-The surprising part is that the more sensitive you become to what's happening, the less overwhelming it feels. Sensitivity brings clarity. You begin to see, in real time, that nothing stays. The wave rises, the wave peaks, the wave passes. Once your body knows that, in its bones, the whole equation changes. You stop bracing. You stop reaching for the next thing that will make the feeling stop. You start trusting the process.
+And I want to be exact about what I'm asking you to stay with, because it isn't generic emotion. It's a protector in its physical form. The throat that clamps. The chest that hardens. The gut that locks. The shoulders that come up around the ears. Each one is a piece of the old system doing its old job from inside your body, and what it's guarding is the ache underneath, the imprint of every time you contorted yourself to keep a bond intact.
 
-That trust is what equanimity actually is. It's the capacity that makes the passage possible.
+So you're not waiting out a mood. You're keeping company with something that has been working for decades, while the wave it's been holding finally moves.
 
-## The Ache as Doorway
+## Why the Protector Won't Just Let Go
 
-There's a piece of this you should know going in.
+The reason this is hard isn't that the ache is unbearable. It's that the protector is running an old program that says *if you feel this, you will not survive it.*
 
-To get to what's underneath the protector, you have to pass through the ache the protector has been guarding. Not around it. Not above it. Through it. The ache is the doorway home, but you can't just walk through. You have to actually experience the contortion, the imprint of all the ways you abandoned yourself to keep the bond intact. That imprint is what the Still Face Experiment, the double bind, and the override left in your body. The sacred wound, in book language. The trace.
+The program is wrong. It doesn't know it's wrong, and it can't be told. It only finds out by going through the wave and coming out the other side still here. Each pass teaches the same small lesson. *It came, it went, I'm still here.*
 
-The reason this work has been so hard for you, for me, for everyone, isn't that the ache is unbearable. It's that the protectors guarding the ache are running an old program that says: *if she feels this, she'll die*. The program is wrong, but it doesn't know it's wrong, and it won't find out until the body has experienced the wave passing without dying. Each pass teaches the system: *the wave came, the wave went, I'm still here.* Over time, the protector starts to trust that it doesn't have to clamp anymore. The contortion loosens. The parts of you that got left behind to belong have room to come back.
+That's why I care more about the reps than about any single session. I can't argue a protector out of its job, and neither can you. It gets shown, over and over, until it loosens its grip on its own.
 
-This is the homecoming Module 4 is building toward. Not a single dramatic breakthrough. The slow return of yourself, to yourself, by way of staying with what got buried so you could belong.
+## Equanimity
 
-## What You'll Meet in This Module
+The capacity you're building has a name, and I almost don't want to use it, because most of what people mean by it is wrong.
 
-Two big teachings frame the work over the next two weeks.
+Equanimity isn't calm. It isn't detachment. It isn't a serene face while the room burns, and it certainly isn't skipping the feeling and landing on *everything happens for a reason*. That last one is the override wearing robes.
 
-The first is **the law of change**. The Buddhist name is impermanence. Everything that arises passes. Joy passes. Pain passes. The sankhara that fires passes. The shield that clamps passes. When you've felt that in your body enough times, you stop fighting the rise. You stop needing the relief now. You can let the wave run its course.
+What I mean by it is the capacity to feel everything that's actually happening, all the way through, without getting knocked off the board.
 
-The second is **surfing the emotion**. The surfboard is your awareness, the one we built in Modules 2 and 3. The wave is the emotion underneath the story, the energy moving through. The practice is to stay on the board while the wave does what waves do.
+The cleanest way I can put the difference between the last module and this one is that Stay is making contact and Equanimity is remaining with what you touched. Stay says hello to the feeling. Equanimity lets it sit with you for as long as it needs.
 
-When you ride a wave all the way to shore instead of jumping off at the peak, two things happen. The intensity passes on its own. And on the other side, a kind of clarity arrives that you couldn't have reasoned your way to. David, a client of mine, calls what shows up *skillful action*. Claire calls it her *next move*. Either way, it's the choice that becomes available only after the wave has finished. Most of us never get there because we act in the middle of the wave, when the only thing available is the reaction we'd run anyway.
+And here's the part I never believe until I feel it again. The more sensitive you get to what's happening, the less overwhelming it is. Sensitivity brings clarity, and clarity shows you, in real time, that nothing stays. Once your body knows that rather than believes it, the bracing relaxes without being told to.
 
-## From SENSE
+## What's in This Module
 
-In the SENSE framework, this module begins **E. Equanimity**.
+Two chapters and a practice.
 
-You've now done **S**low the Breath in Module 1, **E**nter the Body and **N**ame the Quality in Module 2, and **S**tay in Module 3. You're about to add **E**quanimity. With this module, you'll have all five letters of SENSE in your hands. Module 5 will complete the work with the heart side of equanimity, which is compassion.
+**The Law of Change** is why any of this is possible. Everything that arises passes. You've known that as a fact your whole life and it's never once helped in the moment, and the chapter is about the difference between knowing it and having felt it enough times that your body stops arguing.
 
-This isn't a sequence of separate practices. It's one capacity built in stages. By the end of Module 5, the whole inner half of the work, the SENSE half, will be in your hands. Then Modules 6 and 7 take it outward into STEP.
+**Surfing an Emotion** is the practice. How to stay on the board through the rise, the peak and the fall. What to do with the part of you that wants to fix it. Why the clearest thing you'll think all week arrives after the wave, not during it.
 
-## What This Module Covers
-
-Two chapters and a journal frame the next two weeks.
-
-- **The Law of Change** introduces impermanence. The wave and the ocean. The vibrating string. *This too shall pass.* The granite-and-silk-scarf metaphor for the patience equanimity requires.
-- **Surfing an Emotion** is the practice itself. How to stay on the board through the rise, the peak, and the fall. The window of presence. The difference between staying with the feeling and getting carried into the story. Allowing instead of solving. Why insight emerges only on the other side.
-- **The Surfing Journal** walks you through three real moments from your life in detail, over three days.
-
-The Aware meditation taught the witness. The Be With meditation taught the witness to stay. The Equanimous meditation, which is new this module, teaches the witness to stay through the wave. Three stages of the same capacity, each building on the last.
+The **Equanimous** meditation is new this module, and it's the third stage of one thing rather than a third technique. Aware taught the witness. Be With taught the witness to stay. Equanimous teaches it to stay through the whole wave.
 
 ## Summary
 
-- Equanimity isn't detachment or calm. It's the capacity to feel everything that's happening, with sensitivity, without getting knocked off the board.
-- The law of change is what makes equanimity possible. When the body knows, from direct experience, that everything passes, the bracing relaxes.
-- Surfing is the practice. The surfboard is your awareness. The wave is the emotion underneath the story.
-- Most reactions happen at the peak of the wave. Equanimity is the practice of staying past the peak, into the falling, into what arrives on the other side.
+- A feeling that's kept company gets more intense before it moves. Staying feels most like a mistake at exactly the moment it's working.
+- What you're staying with is a protector in its physical form, not a mood.
+- The protector's program says you won't survive the feeling. It only learns otherwise by going through and coming out.
+- Equanimity is feeling everything that's happening without being knocked off the board. It isn't calm and it isn't detachment.
+- Sensitivity makes things less overwhelming, not more, because it shows you nothing stays.
 
 ## Action
 
-Continue your daily Be With meditation while you read this module. When you've read this Welcome, open **04.02 The Law of Change**.
+Keep sitting with Be With while you read this module, and when you've finished here, open **The Law of Change**.
