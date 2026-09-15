@@ -192,7 +192,9 @@ function readingPage(reading) {
   (function player(){
     var audio = el('player'), speed = el('speed'), restart = el('restart');
     if (!audio || !speed) return;
-    var SPEED_KEY = 'mbf-listen-speed', POS_KEY = 'mbf-listen-pos:' + MODULE + '/' + SLUG;
+    // The same key the Performance Trap Practice uses, so someone who comes
+    // through the Practice into Foundations sets their speed once.
+    var SPEED_KEY = 'herst-listen-speed', POS_KEY = 'herst-listen-pos:mbf/' + MODULE + '/' + SLUG;
     var s = store();
     function get(k){ try { return s && s.getItem(k); } catch(e) { return null; } }
     function put(k, v){ try { if (s) s.setItem(k, v); } catch(e) {} }
