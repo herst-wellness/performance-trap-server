@@ -1,5 +1,7 @@
 # The Law of Change
 
+*If you'd rather hear this one than read it, [listen to the audio version](https://www.dropbox.com/scl/fi/s018g18aoukzl7l03bswv/The-Freedom-of-Impermanence.mp3?rlkey=zupkoaavfrhgzd2vtisopvedc&st=23arrc5e&dl=0). It's me rather than the computer voice, it covers the same ground, and it has one thing the chapter doesn't: my brother's death, and that being the first time I felt impermanence in my body rather than as an idea.*
+
 In the Welcome I said the protector only finds out it's wrong by living through a wave and still being here afterward. Which raises the obvious question: why would you believe it ends, while you're inside it?
 
 So what I want to give you here is the one fact the whole capacity rests on, and the difference between knowing it and having felt it.

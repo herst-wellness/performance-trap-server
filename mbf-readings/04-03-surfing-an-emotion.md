@@ -2,6 +2,8 @@
 
 *This is **E** in **SENSE**: equanimity. The fifth move, and the close of the inner half.*
 
+*There's [a recording of this one](https://www.dropbox.com/scl/fi/zy4avqa9lgsndhxjtcrz4/Surfing-an-Emotion.mp3?rlkey=ri89bdfb905ytrhl4k3lf5hss&st=vg4b33dy&dl=0) in my own voice, walking the practice through step by step.*
+
 The last chapter said the string fades on its own if you stop plucking it. Which leaves the practical question, and it's the one I get asked in every Module 4 session: what am I supposed to do while it's still loud?
 
 That's this chapter.
@@ -27,6 +29,8 @@ I resist. I brace against it, tighten the jaw, hold the breath, clamp the gut. T
 And I distract. The phone, the drink, the spreadsheet, the text to a friend. That works for about three minutes, and the feeling is still there when I come back, usually louder, because nothing got metabolized.
 
 I discharge. I throw it at somebody. I blame, I pick the fight, I send the email. The pressure does drop for a moment, and it costs me a relationship or my self-respect, and by tomorrow I'm back where I started with an apology to make.
+
+I had a fourth-door failure on a video call during the lockdowns, with a senior executive who was panicking about layoffs. I was the calm one, the one he could trust. Inside I hadn't slept in days, my gut was twisting, my jaw was clenched and my ears were ringing. Then he stopped and asked, almost offhand, whether everything was all right over there. And for about half a second I saw the option to tell him the truth. I said, *yeah, just a rough night.* The trade didn't happen in the lie. It happened in the half second before it, when the old thing was faster.
 
 Resist, distract, discharge. None of the three gets you to the other side, and surfing is the fourth door. You stay, and you don't brace and you don't leave and you don't throw it, and you let the wave do what waves do.
 
@@ -80,13 +84,11 @@ Which is why I keep telling people not to act at the peak, because the wave at i
 
 ## What Matters Is the Return
 
-Before you start, because I'd rather say it than have you decide you're failing.
+One thing before you start, because I'd rather say it than have you decide you're failing.
 
-You'll sit down with this and within two minutes you'll have drifted into the email you have to write, and you'll think, *I'm bad at this, I can't even stay for two minutes.*
+You'll sit down with this and within two minutes you'll have drifted into the email you have to write, and you'll think, *I can't even stay for two minutes.*
 
-But the leaving isn't the failure. Noticing you left and coming back is the entire practice. Not what happens before it or after it. The return itself.
-
-I'm not asking you to build the capacity to stay perfectly, which nobody has. I'm asking you to build the capacity to return.
+But the leaving isn't the failure. Noticing you left and coming back is the practice, and I'm not asking you to build the capacity to stay perfectly, which nobody has. I'm asking you to build the capacity to return.
 
 ## Summary
 
@@ -108,3 +110,5 @@ Then read **The Whole Arc in One Session**. It's one client's session end to end
 Then find one moment in your week where you'd normally reach for the phone or the drink or the defensive sentence, and don't reach. Stay with it thirty seconds longer than is comfortable, then reach if you need to. Those thirty seconds are the whole thing.
 
 Then work the **Surfing** journal, which takes three real moments from your week, one a day. Don't rush it.
+
+And once or twice this module, give twenty minutes to [*Expanding Our Window of Tolerance*](https://www.dropbox.com/scl/fi/j0vt9ks7mg2j0vw5iuupi/Expanding-Our-Window-of-Tolerance.mp3?rlkey=3d141dk3e7ebirgiks2xkglif&st=f1df421f&dl=0), which walks you through toggling between something you love and something that hurts, widening the window a little each pass. Occasionally, not daily. Equanimous is the daily sit and this is the targeted one.
