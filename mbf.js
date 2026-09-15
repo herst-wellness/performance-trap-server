@@ -1172,7 +1172,8 @@ function indexPage() {
                   const l = listenFor(r);
                   return l
                     ? `<span class="note">Read it, or listen to it, ${l.length}. ` +
-                      `<a href="${l.download}">Download it</a> to have it on the train.</span>`
+                      `<a class="reading-download" data-slug="${r.module}/${r.slug}" ` +
+                      `href="${l.downloadAnyVoice}">Download it</a> to have it on the train.</span>`
                     : '';
                 })()}</li>`
             )
@@ -1252,6 +1253,20 @@ ul.audio audio{display:block;width:100%;max-width:420px;margin:6px 0 4px}
 ${blocks}
 <p class="foot">Every page asks for the access code Chad gave you.</p>
 </main>
+<script>
+// The download links here carry no voice, so they serve whichever is the
+// default. A reader who has already chosen a voice on a chapter page gets
+// their own choice instead.
+(function(){
+  var chosen;
+  try { chosen = window.localStorage.getItem('herst-listen-voice'); } catch (e) { return; }
+  if (!chosen || !/^[a-z]+$/.test(chosen)) return;
+  var links = document.querySelectorAll('a.reading-download');
+  Array.prototype.forEach.call(links, function(a){
+    a.href = a.getAttribute('href').replace(/\.mp3$/, '.' + chosen + '.mp3');
+  });
+})();
+</script>
 </body>
 </html>`;
 }

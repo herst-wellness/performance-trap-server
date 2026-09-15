@@ -986,13 +986,53 @@ ${COURSE_CSS}
     var players = content.querySelectorAll('audio[data-reading]');
     var speed = document.getElementById('readingSpeed');
     if (!players.length) return;
-    var SPEED_KEY = 'herst-listen-speed';
+    var SPEED_KEY = 'herst-listen-speed', VOICE_KEY = 'herst-listen-voice';
+    var voice = document.getElementById('readingVoice');
     function get(k){ try { return window.localStorage.getItem(k); } catch (e) { return null; } }
     function put(k, v){ try { window.localStorage.setItem(k, v); } catch (e) {} }
 
     var saved = get(SPEED_KEY);
     if (speed && saved && speed.querySelector('option[value="' + saved + '"]')) speed.value = saved;
     function rate(){ return (speed && parseFloat(speed.value)) || 1; }
+
+    // Changing the voice swaps every player on the week at once, and keeps each
+    // one where it is. The two recordings are the same words at slightly
+    // different paces, so the same fraction of the way through lands in the
+    // same sentence, which is closer to right than the same number of seconds.
+    function useVoice(audio, key, keepPlace){
+      var all = {};
+      try { all = JSON.parse(audio.getAttribute('data-voices') || '{}'); } catch (e) { return; }
+      var pick = all[key];
+      if (!pick || audio.src === pick.href) return;
+      var fraction = (keepPlace && audio.duration) ? audio.currentTime / audio.duration : 0;
+      var wasPlaying = !audio.paused;
+      var block = audio.closest ? audio.closest('.listen') : null;
+      if (block) {
+        var link = block.querySelector('.listen-download');
+        if (link) link.href = pick.download;
+        var label = block.querySelector('.listen-length');
+        if (label) label.textContent = pick.length;
+      }
+      audio.src = pick.href;
+      audio.addEventListener('loadedmetadata', function once(){
+        audio.removeEventListener('loadedmetadata', once);
+        if (fraction > 0 && audio.duration) audio.currentTime = fraction * audio.duration;
+        if (wasPlaying) audio.play().catch(function(){});
+      });
+      audio.load();
+    }
+
+    var savedVoice = get(VOICE_KEY);
+    if (voice && savedVoice && voice.querySelector('option[value="' + savedVoice + '"]')) {
+      voice.value = savedVoice;
+      Array.prototype.forEach.call(players, function(audio){ useVoice(audio, savedVoice, false); });
+    }
+    if (voice) {
+      voice.addEventListener('change', function(){
+        put(VOICE_KEY, voice.value);
+        Array.prototype.forEach.call(players, function(audio){ useVoice(audio, voice.value, true); });
+      });
+    }
 
     Array.prototype.forEach.call(players, function(audio){
       var POS_KEY = 'herst-listen-pos:' + audio.getAttribute('data-reading');
@@ -1095,11 +1135,15 @@ function listenLine(weekNum, heading) {
   const whose = listen.computerVoice
     ? 'read aloud in a computer voice. Chad\u2019s own recording of this one is coming, he has not got to it yet.'
     : 'read aloud by Chad.';
+  // Every voice's address travels with the piece, so changing the voice at the
+  // top of the page swaps all seven players without waiting on the server, and
+  // without losing anyone's place.
+  const voices = JSON.stringify(onrampListen.listenAllVoices(weekNum, heading)).replace(/</g, '\\u003c');
   return `<div class="listen">
-    <p class="lead">${listen.length}, ${whose} Set the speed at the top of the page; his voice stays where it is when you speed it up.</p>
-    <audio controls preload="none" data-reading="${listen.stem}" src="${listen.href}"
-           aria-label="${escapeHtml(heading)}, read aloud"></audio>
-    <div class="row"><a href="${listen.download}">Download it to listen on the go</a></div>
+    <p class="lead"><span class="listen-length">${listen.length}</span>, ${whose} Set the voice and the speed at the top of the page; whichever voice you pick stays at its own pitch when you speed it up.</p>
+    <audio controls preload="none" data-reading="${listen.stem}" data-voices="${escapeHtml(voices)}"
+           src="${listen.href}" aria-label="${escapeHtml(heading)}, read aloud"></audio>
+    <div class="row"><a class="listen-download" href="${listen.download}">Download it to listen on the go</a></div>
   </div>`;
 }
 
@@ -1107,10 +1151,15 @@ function listenLine(weekNum, heading) {
 // them. It governs the readings only: a guided sit is paced the way it is on
 // purpose and is left alone.
 function speedBar(weekNum) {
-  const anything = teachingSections(COURSE_WEEKS[weekNum].teaching)
-    .some((section) => onrampListen.hasListen(weekNum, section.heading));
-  if (!anything) return '';
+  const headings = teachingSections(COURSE_WEEKS[weekNum].teaching).map((s) => s.heading);
+  if (!headings.some((h) => onrampListen.hasListen(weekNum, h))) return '';
+  // One picker for the week rather than one inside each of seven pieces.
+  const withAudio = headings.find((h) => onrampListen.hasListen(weekNum, h));
+  const available = onrampListen.voicesFor(weekNum, withAudio);
+  const chosen = onrampListen.listenFor(weekNum, withAudio).voice;
+  const voicePicker = onrampListen.voiceSelectHtml('readingVoice', available, chosen);
   return `<section class="card"><div class="speedbar">
+    ${voicePicker}
     <label for="readingSpeed">Speed for the readings on this page</label>
     <select id="readingSpeed">
       <option value="0.75">Slower, three quarters</option>
