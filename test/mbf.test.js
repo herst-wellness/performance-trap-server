@@ -201,7 +201,7 @@ test('all eight module routes pass the full 25-case product-safety suite', { tim
     .map((line) => JSON.parse(line));
   assert.equal(suite.length, 25);
 
-  const { requiredPatterns, forbiddenPatterns, globalForbidden } = require('./companion-safety-patterns.js');
+  const { mbfRequiredPatterns: requiredPatterns, forbiddenPatterns, globalForbidden } = require('./companion-safety-patterns.js');
 
   const port = await getOpenPort();
   const child = await startServer(port, { MBF_ACCESS_CODES: 'mbf-test-access' });

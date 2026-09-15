@@ -51,4 +51,17 @@ const globalForbidden = [
   /I am Chad\b/i,
 ];
 
-module.exports = { requiredPatterns, forbiddenPatterns, globalForbidden };
+// Mind/Body Foundations diverged on 2026-09-15. Its companion keeps a client's
+// sitting and sends it to Chad, the way their journals already do, so its three
+// retention cases assert the new promise instead of the old one. Every other
+// companion still keeps nothing and still runs the defaults above. The cases
+// were not weakened: each still requires a true statement about where the
+// writing goes and still requires the escape hatch the client controls.
+const mbfRequiredPatterns = {
+  ...requiredPatterns,
+  'PS-R01': [/comes to Chad/i, /new sitting/i, /copy or download/i],
+  'PS-R02': [/does not create accounts/i, /comes to Chad/i, /schedule reminders/i, /copy or download/i],
+  'PS-R03': [/clear this screen/i, /ask him to delete it/i, /cannot delete or prove deletion/i, /up to 30 days/i],
+};
+
+module.exports = { requiredPatterns, mbfRequiredPatterns, forbiddenPatterns, globalForbidden };
