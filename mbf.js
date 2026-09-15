@@ -1174,8 +1174,15 @@ function indexPage() {
         : '';
       const audio = audioForModule(n);
       const audioList = audio.length
-        ? '<p class="label">Meditations</p><ul>' +
-          audio.map((a) => `<li><a href="${a.href}">${a.title}</a><span class="note">${a.note}</span></li>`).join('') +
+        ? '<p class="label">Meditations</p><ul class="audio">' +
+          audio
+            .map(
+              (a) =>
+                `<li><span class="sit">${a.title}</span>` +
+                `<audio controls preload="none" src="${a.href}"></audio>` +
+                `<span class="note">${a.note} <a href="${a.download}">Download it</a> to have it on the plane.</span></li>`
+            )
+            .join('') +
           '</ul>'
         : '';
       const journals = journalsForModule(n);
@@ -1224,6 +1231,10 @@ li{margin-bottom:10px}
 a{color:#7A5C14}
 :focus-visible{outline:3px solid #7A5C14;outline-offset:2px}
 .note{display:block;color:#5C4A36;font-size:17px}
+ul.audio{list-style:none;padding-left:0}
+ul.audio li{margin-bottom:18px}
+.sit{display:block;font-weight:700}
+ul.audio audio{display:block;width:100%;max-width:420px;margin:6px 0 4px}
 .foot{color:#5C4A36;font-size:17px;text-align:center;margin-top:28px}
 </style>
 </head>
