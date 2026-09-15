@@ -380,6 +380,7 @@ module.exports = {
   testDropboxConnection,
   dropboxCredentials,
   uploadBytesToDropbox,
+  uploadToDropbox,
   dropboxConfigured,
   dropboxPath,
   journalFileName,

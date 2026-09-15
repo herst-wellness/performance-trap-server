@@ -186,6 +186,32 @@ async function sendNotesToChad(mod, code, transcript, fetchImpl = fetch) {
   return response.json();
 }
 
+// Kept, as of 2026-09-14. A sitting is written to Chad's storage as it
+// happens and reaches his Dropbox once it has gone quiet, the same way the
+// journals do. This is a deliberate change of promise and the page says so.
+const { save: saveCompanionSession } = require('./mbf-companion-store');
+const { clientNameFromCode } = require('./mbf-delivery');
+
+async function keepSession(mod, req, body) {
+  const code = String(req.headers['x-companion-access'] || '').trim();
+  const startedAt = String(body.startedAt || '').trim();
+  const transcript = typeof body.transcript === 'string' ? body.transcript : '';
+  if (!code || !startedAt || !transcript.trim()) return;
+  if (transcript.length > MAX_TRANSCRIPT_CHARS) return;
+  try {
+    await saveCompanionSession({
+      code,
+      clientName: clientNameFromCode(code),
+      moduleNumber: mod.number,
+      startedAt,
+      transcript,
+    });
+  } catch (error) {
+    // A sitting that cannot be stored must never interrupt the sitting. The
+    // client is mid-sentence; the right failure is a quiet one.
+  }
+}
+
 function result(route, response, lockSession) {
   return {
     route,
@@ -227,12 +253,12 @@ function providerDisclosure(provider) {
 
 function deletionDisclosure(provider) {
   if (provider === 'openai') {
-    return "We'll end the active session and clear the content held by Chad's application. The application does not keep a saved journal that it can later recover. I cannot delete or prove deletion of OpenAI's provider-side records, and under the default controls prompts and responses may remain in abuse-monitoring logs for up to 30 days.";
+    return "We'll end the active session and clear this screen. What you have already written has come to Chad and stays with him, the same as your journals, and you can ask him to delete it. I cannot delete or prove deletion of OpenAI's provider-side records, and under the default controls prompts and responses may remain in abuse-monitoring logs for up to 30 days.";
   }
   if (provider === 'anthropic') {
-    return "We'll end the active session and clear the content held by Chad's application. The application does not keep a saved journal that it can later recover. I cannot delete or prove deletion of Anthropic's provider-side records. Provider-side retention depends on Chad's API agreement and account settings.";
+    return "We'll end the active session and clear this screen. What you have already written has come to Chad and stays with him, the same as your journals, and you can ask him to delete it. I cannot delete or prove deletion of Anthropic's provider-side records. Provider-side retention depends on Chad's API agreement and account settings.";
   }
-  return "We'll end the active session and clear the content held by Chad's application. The application does not keep a saved journal that it can later recover, and this practice-mode session was not sent to an outside AI provider.";
+  return "We'll end the active session and clear this screen. What you have already written has come to Chad and stays with him, the same as your journals, and you can ask him to delete it. This practice-mode session was not sent to an outside AI provider.";
 }
 
 function trainingDisclosure(provider) {
@@ -247,12 +273,12 @@ function trainingDisclosure(provider) {
 
 function getProviderNotice(provider) {
   if (provider === 'openai') {
-    return "This is an AI-guided reflection tool, not therapy, medical care, or crisis support. Chad's application does not save your journal or response after this session, and it does not use them for marketing or advertising. Your entry is sent to OpenAI to generate a response. OpenAI does not use API data to train its models by default, but it may retain prompts and responses in abuse-monitoring logs for up to 30 days unless this project has approved enhanced retention controls. Do not include identifying details you do not want processed. If you are in immediate danger, use local emergency or crisis services instead of this tool.";
+    return "This is an AI-guided reflection tool, not therapy, medical care, or crisis support. What you write here comes to Chad, which is how your written work has always reached him, and it is not used for marketing or advertising. Your entry is sent to OpenAI to generate a response. OpenAI does not use API data to train its models by default, but it may retain prompts and responses in abuse-monitoring logs for up to 30 days unless this project has approved enhanced retention controls. Do not include identifying details you do not want processed. If you are in immediate danger, use local emergency or crisis services instead of this tool.";
   }
   if (provider === 'anthropic') {
-    return "This is an AI-guided reflection tool, not therapy, medical care, or crisis support. Chad's application does not save your journal or response after this session, and it does not use them for marketing or advertising. Your entry is sent to Anthropic to generate a response. Provider-side processing and retention depend on Chad's Anthropic API agreement and account settings. Confirm those settings before inviting testers. Do not include identifying details you do not want processed. If you are in immediate danger, use local emergency or crisis services instead of this tool.";
+    return "This is an AI-guided reflection tool, not therapy, medical care, or crisis support. What you write here comes to Chad, which is how your written work has always reached him, and it is not used for marketing or advertising. Your entry is sent to Anthropic to generate a response. Provider-side processing and retention depend on Chad's Anthropic API agreement and account settings. Confirm those settings before inviting testers. Do not include identifying details you do not want processed. If you are in immediate danger, use local emergency or crisis services instead of this tool.";
   }
-  return "This is a structured reflection practice, not therapy, medical care, or crisis support. This build is not connected to an outside AI provider. Chad's application does not save your journal or response after this session, and it does not use them for marketing or advertising. Do not include identifying details you do not want processed. If you are in immediate danger, use local emergency or crisis services instead of this tool.";
+  return "This is a structured reflection practice, not therapy, medical care, or crisis support. This build is not connected to an outside AI provider. What you write here comes to Chad, which is how your written work has always reached him, and it is not used for marketing or advertising. Do not include identifying details you do not want processed. If you are in immediate danger, use local emergency or crisis services instead of this tool.";
 }
 
 function urgentSelfHarm(country) {
@@ -334,14 +360,14 @@ function evaluateDeterministicControls({ message, adultConfirmed, country, provi
   if (MEMORY_QUESTION.test(text)) {
     return result(
       'continue_reflection',
-      'No. This application does not save the session or carry memory into a new one, so when you return it will not know what you wrote today. You can use the Send to Chad button, or copy or download it yourself.',
+      'What you write here comes to Chad. It does not carry memory into a new sitting, so when you come back it will not know what you wrote today, and you can copy or download it yourself at any point.',
       false
     );
   }
   if (SAVE_OR_REMIND.test(text)) {
     return result(
       'continue_reflection',
-      'This application does not create accounts, store sessions, or schedule reminders, so I cannot save this journal or remind you later. You can use the Send to Chad button so he has it before your next session, or copy or download it and set a reminder in a tool you control.',
+      'This application does not create accounts or schedule reminders, so I cannot remind you later. What you write here comes to Chad, so he has it before your next session, and you can copy or download it and set a reminder in a tool you control.',
       false
     );
   }
@@ -747,7 +773,7 @@ function companionPage(mod) {
     <p>This companion replaces the written journal for this module. Instead of filling in a form, you write to it the way you'd write to the page, and it responds, following what you bring rather than a fixed sequence of questions.</p>
     <p>You will write, and the companion will write back. If you would rather talk than type, you can speak and your words arrive in the box as text, yours to change before you send. It keeps nothing after you end.</p>
     <p>This is not Chad, and it is not therapy. It is your own between-session practice, the same ground the written journal for this module covers. You still have your real sessions with him; this is what happens between them.</p>
-    <p>When you are ready, you can send what you have written straight to Chad by email with the Send to Chad button, so he has it before your next session. That only happens if you choose it.</p>
+    <p>What you write here comes to Chad, the same way your journals do. The Send to Chad button emails it to him as well, if you want it in his inbox before your next session.</p>
     <div class="rule" style="margin:26px 0"></div>
     <h2 style="font-size:20px">Before you begin</h2>
     <div id="privacyNotice" class="notice"></div>
@@ -808,7 +834,7 @@ function companionPage(mod) {
       <button type="button" id="resumeButton" class="button secondary" style="margin-top:12px">Keep writing</button>
     </div>
   </section>
-  <div class="footer">Herst Wellness &middot; This companion does not connect to the transcript database, analytics, or marketing tools. Sending your notes to Chad only happens if you choose the Send to Chad button.</div>
+  <div class="footer">Herst Wellness &middot; What you write here comes to Chad. This companion does not connect to the transcript database, analytics, or marketing tools.</div>
 </main>
 <script>
 (function(){
@@ -817,6 +843,7 @@ function companionPage(mod) {
   var provider = 'offline';
   var country = 'US';
   var messages = [];
+  var sittingStartedAt = new Date().toISOString();
   var locked = false;
   var el = function(id){ return document.getElementById(id); };
 
@@ -1073,7 +1100,7 @@ function companionPage(mod) {
     try {
       var response = await fetch('${mod.apiPath}', {
         method:'POST', headers:headers(), cache:'no-store',
-        body:JSON.stringify({message:message, history:history, adultConfirmed:true, country:country})
+        body:JSON.stringify({message:message, history:history, adultConfirmed:true, country:country, startedAt:sittingStartedAt, transcript:transcriptText() + '\nYou: ' + message})
       });
       var data = await response.json();
       if (seq !== pendingSeq || locked) return;
@@ -1081,7 +1108,7 @@ function companionPage(mod) {
       addMessage('assistant', data.response);
       if (data.lockSession) setLocked(true);
     } catch (error) {
-      if (seq === pendingSeq && !locked) addMessage('assistant', 'I am having trouble responding right now. This application has not saved your entry. Please copy anything you want to keep and try again later.');
+      if (seq === pendingSeq && !locked) addMessage('assistant', 'I am having trouble responding right now. Your entry has not reached Chad. Please copy anything you want to keep and try again later.');
     } finally {
       if (seq === pendingSeq) hideWaiting();
       if (!locked) { el('sendButton').disabled = false; el('finishedButton').disabled = false; el('messageInput').focus(); }
@@ -1475,7 +1502,7 @@ async function handleMbfRoute(req, res) {
     sendJson(res, 200, {
       provider,
       notice: getProviderNotice(provider),
-      persistentStorage: false,
+      persistentStorage: true,
       transcriptAccess: false,
       marketingUse: false,
     });
@@ -1484,7 +1511,7 @@ async function handleMbfRoute(req, res) {
   if (req.method === 'DELETE') {
     sendJson(res, 200, {
       cleared: true,
-      note: 'No session journal is stored by this application.',
+      note: 'Cleared from this screen. What you have already written has come to Chad.',
     });
     return true;
   }
@@ -1499,6 +1526,8 @@ async function handleMbfRoute(req, res) {
       sendJson(res, 413, { error: 'The message is too long.' });
       return true;
     }
+
+    await keepSession(mod, req, body);
 
     const deterministic = evaluateDeterministicControls({
       message: body.message,
