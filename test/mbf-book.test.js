@@ -77,6 +77,52 @@ test('companion sittings are in it, not only journals', async () => {
   assert.match(book.markdown, /critic started before I sat down/);
 });
 
+// Half a sitting is the companion talking. If that goes in as body text the
+// book is half somebody else's words, which breaks its only rule. So the
+// companion's turns are set as the question and the client's as the answer.
+test('a sitting is set as an interview: their words are the body, the companion is the question', () => {
+  const { turnsFrom } = require('../mbf-book');
+  const transcript = [
+    'Companion: What is here right now?',
+    'You: A clamp in my throat.',
+    'Companion: Where exactly?',
+    'You: Just under the jaw.',
+  ].join('\n');
+
+  assert.deepEqual(turnsFrom(transcript).map((t) => t.who), ['companion', 'client', 'companion', 'client']);
+
+  const markdown = renderBook({
+    clientName: 'Jane Doe',
+    entries: [{ kind: 'sitting', module: 2, title: 'A sitting', at: '2026-03-01T10:00:00.000Z', transcript }],
+    mirrors: [],
+  });
+  // Their words stand on their own. The companion's are italic, never body text.
+  assert.match(markdown, /^A clamp in my throat\.$/m);
+  assert.match(markdown, /^\*What is here right now\?\*$/m);
+  assert.doesNotMatch(markdown, /^Where exactly\?$/m);
+  assert.doesNotMatch(markdown, /^(You|Companion):/m);
+});
+
+test('the word count counts their words, not the companion half', async () => {
+  const doc = {
+    journals: [],
+    companionSessions: [{
+      code: 'jane-doe', module: 2, startedAt: '2026-03-01T10:00:00.000Z',
+      transcript: 'Companion: one two three four five six\nYou: seven eight',
+      updatedAt: '2026-03-01T10:40:00.000Z',
+    }],
+  };
+  const book = await buildBook('jane-doe', { store: storeWith(doc) });
+  assert.equal(book.words, 2);
+});
+
+test('a transcript with no labels is treated as theirs, never as the companion', () => {
+  const { turnsFrom } = require('../mbf-book');
+  const turns = turnsFrom('something written with no speaker label');
+  assert.equal(turns.length, 1);
+  assert.equal(turns[0].who, 'client');
+});
+
 test('an unanswered prompt leaves no trace', () => {
   const journal = findJournal(1, 'about-you');
   const [first, second] = promptIds(1, 'about-you', 2);

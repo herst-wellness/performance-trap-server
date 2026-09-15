@@ -57,6 +57,37 @@ function normaliseCode(code) {
   return String(code).toLowerCase().replace(/[\s_]+/g, '-');
 }
 
+// A sitting is a conversation, and half of a conversation with a companion is
+// the companion talking. Dropped in whole, the book would be half somebody
+// else's words, which breaks the only rule it has.
+//
+// So a sitting is set the way a published interview is. The companion's turns
+// go in small, as the question, and the client's answers are the body text. It
+// reads as an interview with themselves, which is close to what it was, and
+// every word of substance in it is still theirs.
+function turnsFrom(transcript) {
+  const turns = [];
+  let current = null;
+  for (const raw of String(transcript || '').split('\n')) {
+    const match = /^(You|Companion):\s?(.*)$/.exec(raw);
+    if (match) {
+      if (current) turns.push(current);
+      current = { who: match[1] === 'You' ? 'client' : 'companion', text: match[2] };
+    } else if (current) {
+      current.text += '\n' + raw;
+    } else if (raw.trim()) {
+      // A transcript with no speaker labels at all is treated as theirs, which
+      // is the safe direction to be wrong in: it can only ever include their
+      // own words, never attribute the companion's to them.
+      current = { who: 'client', text: raw };
+    }
+  }
+  if (current) turns.push(current);
+  return turns
+    .map((t) => ({ ...t, text: t.text.trim() }))
+    .filter((t) => t.text);
+}
+
 // Everything a client wrote, as one flat list in the order it happened. A
 // journal is dated by when they last touched it, a sitting by when it began,
 // because that is when each was actually being lived.
@@ -176,8 +207,14 @@ function renderBook({ clientName, entries, mirrors, now = new Date() }) {
     }
     lines.push('');
     if (entry.kind === 'sitting') {
-      lines.push(entry.transcript.trim());
-      lines.push('');
+      for (const turn of turnsFrom(entry.transcript)) {
+        if (turn.who === 'companion') {
+          lines.push('*' + turn.text.replace(/\n+/g, ' ') + '*');
+        } else {
+          lines.push(turn.text);
+        }
+        lines.push('');
+      }
       continue;
     }
     for (const prompt of entry.answered) {
@@ -219,7 +256,14 @@ async function buildBook(code, { store = defaultStore(), now = new Date() } = {}
     clientName,
     entries,
     words: entries.reduce(
-      (n, e) => n + (e.kind === 'sitting' ? e.transcript : e.answered.map((p) => p.text).join(' ')).split(/\s+/).filter(Boolean).length,
+      (n, e) =>
+        n +
+        (e.kind === 'sitting'
+          ? turnsFrom(e.transcript).filter((t) => t.who === 'client').map((t) => t.text).join(' ')
+          : e.answered.map((p) => p.text).join(' ')
+        )
+          .split(/\s+/)
+          .filter(Boolean).length,
       0
     ),
     markdown: renderBook({ clientName, entries, mirrors: mirrorPages(doc, code), now }),
@@ -229,6 +273,7 @@ async function buildBook(code, { store = defaultStore(), now = new Date() } = {}
 module.exports = {
   MIRRORS,
   answeredPrompts,
+  turnsFrom,
   buildBook,
   collect,
   mirrorPages,
