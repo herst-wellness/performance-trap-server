@@ -213,52 +213,52 @@
     },
     "05-01-welcome": {
       "michael": {
-        "seconds": 457.6,
-        "bytes": 5492342
+        "seconds": 385.7,
+        "bytes": 4629360
       },
       "heart": {
-        "seconds": 420.5,
-        "bytes": 5046588
+        "seconds": 350.7,
+        "bytes": 4209625
       }
     },
     "05-02-the-protector-and-the-wound": {
       "michael": {
-        "seconds": 939.8,
-        "bytes": 11277733
+        "seconds": 639.1,
+        "bytes": 7670640
       },
       "heart": {
-        "seconds": 859.6,
-        "bytes": 10316322
+        "seconds": 582.5,
+        "bytes": 6990412
       }
     },
     "05-03-the-sacred-wound": {
       "michael": {
-        "seconds": 951.7,
-        "bytes": 11421615
+        "seconds": 626.6,
+        "bytes": 7520489
       },
       "heart": {
-        "seconds": 865.5,
-        "bytes": 10387166
+        "seconds": 567.7,
+        "bytes": 6813302
       }
     },
     "05-04-coming-home": {
       "michael": {
-        "seconds": 814.9,
-        "bytes": 9779976
+        "seconds": 625.6,
+        "bytes": 7508577
       },
       "heart": {
-        "seconds": 747.8,
-        "bytes": 8974360
+        "seconds": 569.8,
+        "bytes": 6838379
       }
     },
     "05-04b-compassion": {
       "michael": {
-        "seconds": 502.6,
-        "bytes": 6032449
+        "seconds": 497.4,
+        "bytes": 5969442
       },
       "heart": {
-        "seconds": 461.3,
-        "bytes": 5536541
+        "seconds": 455.4,
+        "bytes": 5466324
       }
     },
     "06-01-welcome": {
