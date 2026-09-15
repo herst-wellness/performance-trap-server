@@ -1,67 +1,65 @@
 # Welcome
 
-You've spent the last four modules building toward this one. You learned to slow the breath. You learned to see. You learned to stay with what fires in the body before the loop completes. You learned to ride the wave through to the other side. Each module was capacity-building. Each one made the next one possible.
+Last module I taught you to stay on the board through the whole wave, and I told you that what gets revealed when a protector finally settles is the part of you that was there before the contorting started.
 
-Module 5 is where the capacity gets used.
+So here's the question this module opens on. You rode one all the way to shore. What was under it?
 
-What we've been calling the ache in earlier modules is the surface of something we'll now learn to honor as the sacred wound. Same territory, deeper layer.
+For some of you nothing was. You stayed, the wave moved, you came out the other side and the space underneath was blank. And for others something came up so fast and so whole that it knocked you sideways for two days.
 
-This is the module where we meet what's been underneath the contract all along. The protector you've been working with from the side has a particular thing it's been protecting. We're going to turn toward that thing directly.
+Both of those are this module.
 
-## Where This Module Sits
+## The Part Where Nothing Comes, or Everything Does
 
-Module 1 was about settling. Module 2 was about seeing. Module 3 was about staying with the body's signal at the moment it fires. Module 4 was about riding the wave through the whole arc. Module 5 is about meeting what's underneath.
+I want to name this before you're in it, because it's the stretch where people conclude they're doing it wrong.
 
-The sequence isn't accidental. You couldn't meet what's underneath without first being able to ride the wave that guards it. You couldn't ride the wave without first being able to stay with the signal. You couldn't stay with the signal without first being able to see it as separate from you. You couldn't see it as separate without first having a settled enough nervous system to look. Each module taught the capacity that makes the next one possible.
+You'll meet the protector and you'll do the work properly. And then either what's underneath won't come at all, or it'll come all at once with no warning. Neither one is a failure and neither one means you've done it badly. That's the normal shape of crossing this particular thing, and I've watched it happen both ways with almost everybody I've taken through here.
 
-Module 5 is the close of the inner half of the program. After this one, SENSE is complete. Then in Modules 6 and 7, the work turns outward into STEP, the conversations and boundaries and actions that become possible once you've come home to the parts of yourself you'd left behind.
+If it's the first, I'd say the protector isn't finished doing its job and doesn't trust the conditions yet. That's information about the protector, not a verdict on you.
 
-## What's Actually Happening in You
+And if it's the second, the flood is what happens when something held for thirty years finally gets an opening. It isn't a breakdown and it isn't a sign you've gone too deep.
 
-Here's the underlying picture you came in with. Most of us don't know this is the structure we're running, but it is.
+Mine took years, and some of it still isn't finished. A client asked me once, straight out, how I live with my brother's suicide. I told him the truth, which is that I didn't know how to grieve somebody I didn't like. My brother was frightening to live with. So when he took his life there was nothing underneath for a long time, and I took the nothing as evidence about me rather than as the protector doing exactly what it was built for.
 
-Somewhere early, something got wounded. The specifics are different for everyone. It might be around safety, belonging, being seen, being allowed to be sensitive or angry or ordinary or needy. The shape underneath the specifics is the same: a part of you got the message, repeatedly, that the way you naturally were wasn't quite acceptable.
+So tell me when you're in it, rather than waiting until you're out.
 
-A protector formed around that wound. The protector's job was to make sure you never had to feel the wound again. It got organized around whatever worked. An inner critic that pre-emptively put you down so you'd never relax into being fully yourself. An achiever that proved you were worthy by accomplishment. A caretaker that earned love through being needed. A part that suppressed anger because anger had once been dangerous. A part that controlled food or body or environment because control felt safer than being seen. There are dozens of forms the protector can take. You've probably got several.
+## What You're Actually Running
 
-The protector worked. It helped you survive the conditions you grew up in. It may even have built the career and life that look good on paper. The cost was that it had to keep the wound buried. And keeping the wound buried means you can never quite come home to the part of yourself the wound was guarding.
+Here's the structure underneath it, and I find most people don't know this is what they're running.
 
-## What Module 5 Does
+Somewhere early, something got wounded. The specifics differ for everyone. I've seen it land on safety, on belonging, on being seen, on being allowed to be sensitive or angry or ordinary or needy. Underneath the specifics the shape is the same, which is that a part of you got the message, repeatedly, that the way you naturally were wasn't quite acceptable.
 
-Three movements over the next two weeks.
+And a protector formed around it, and its job was to make sure you never had to feel that again. It organized itself around whatever worked. An inner critic that put you down first so you'd never relax into being fully yourself. An achiever that proved you were worth keeping. A caretaker that earned love by being needed. A part that buried anger because anger had once been dangerous. A part that controlled food or body or the room because control felt safer than being seen.
 
-We turn toward the protector first. Not to defeat it. To understand it. The protector isn't your enemy. It was the best survival move your system could come up with at the time. It deserves the respect that comes with being met as the intelligent adaptation it was. That's the work of **The Protector and the Wound**.
+And the protector worked. It got you through the conditions you grew up in, and it may well have built the life that looks good on paper. What it cost is that keeping the wound buried means you never quite get back to the part of you the wound was guarding.
 
-Then we turn toward the wound itself. Carefully. With the capacity you've built over the last four modules. The wound is what the protector has been guarding. It's not a defect. It's the imprint of all the times you contorted yourself to belong, the somatic memory of the parts of you that got left behind. The book's name for it is the sacred wound. It hurts. It also carries something. That's the work of **The Sacred Wound**.
+## What This Module Does
 
-Then we meet what we've found with kindness. Not as a slogan. As a practice. The vulnerable part underneath the protector needs the one thing the protector has never been able to give it: contact without judgment. That contact is compassion. That's the work of **Coming Home**.
+Three movements.
 
-## From SENSE
+We turn toward the protector first, and not to defeat it, because I've watched people try that for years and I have never once seen it work. It's been running the same program for thirty or forty or fifty years and it isn't going to dissolve because you decided this morning you'd had enough of it. We meet it as the intelligent adaptation it was.
 
-In the SENSE framework, this module completes **E. Equanimity**.
+Then we turn toward the wound itself, carefully, with the capacity I've spent four modules building in you. It isn't a defect, and the book's name for it is the sacred wound.
 
-Module 4 taught equanimity as capacity. The ability to stay through the wave without bailing. Module 5 teaches the heart side. The same capacity, turned toward what's underneath, with kindness. Both halves of equanimity together: steady enough to feel what's there, kind enough to meet it as it is.
+And then we meet what we've found with kindness. Not as a slogan, as a practice. The part underneath the protector needs the one thing the protector has never been able to give it, which is contact without judgment.
 
-By the end of Module 5, you'll have all five letters of SENSE complete. The inner half of the program is done. Modules 6 and 7 then turn outward into STEP.
+I'm changing the daily sit this module too. Equanimous built the capacity to stay through a wave, and **Compassion** is that same capacity turned toward what's underneath, with some warmth in it. It's the sit that makes the rest of this survivable, so I want you starting it as soon as you've read the next chapter, and I mean daily, because the reps are what let you meet this material without being flooded by it.
 
-## What You'll Notice Along the Way
+One more thing, and I mean it more here than anywhere else in the program. If this gets too big for you at any point, I don't want you pushing through it. I want you to stop and tell me. The pacing rules are in The Sacred Wound and they are not optional.
 
-A few things you'll likely encounter in this module that are worth naming upfront.
+## Two Things You'll Hit
 
-**The protector will defend itself.** Once you start turning toward it, it may get louder. It may insist that this work is pointless or that you don't have time for it. It may try to convince you that you've already done this work. All of that is the protector doing its job. The instruction is the same as in Module 3: stay with what fires, don't act on the impulse to bail.
+**The protector will defend itself.** Once you turn toward it, it may get louder. It may tell you this work is pointless, or that you don't have time, or that you've already done this bit. That's the protector doing its job, and my instruction is the one you already know. Stay with what fires and don't act on the impulse to bail.
 
-**The performance impulse can enter the healing.** This is subtle and important. You can perform Module 5. You can try to meet your inner critic impressively. You can try to compassion correctly. You can try to be a good client at the work of coming home. The ego that's been running the performance everywhere else can run the performance here too. Notice when that happens. Then come back to what's actually present in your body.
-
-**You'll probably feel the wound before you understand it.** That's the right order. Insight comes after contact, not before. If you find yourself trying to think your way to the wound, drop into the body instead. The wound shows up first as sensation. The story comes later, if it comes at all.
+**You can perform this module.** This one is subtle and I want you watching for it, because I do it too. You can try to meet your inner critic impressively. You can try to do compassion correctly. You can try to be good at coming home. The ego that's been running the performance everywhere else in your life will happily run it here, and when you catch it, come back to what's actually in your body.
 
 ## Summary
 
-- Module 5 is the close of the inner half of the program. It teaches you to meet what the protector has been protecting: the wound underneath, and the parts of yourself you left behind to belong.
-- The protector formed around a wound and helped you survive. It also keeps you from coming home. The work isn't to defeat the protector. It's to understand it.
-- The wound underneath isn't a defect. It's the imprint of the contortion. It carries pain and, when met consciously, the source of your particular gifts.
-- Compassion is the contact that the protector has never been able to give the wound. The vulnerable part needs the one thing it never got: meeting without judgment.
-- By the end of Module 5, SENSE is complete. The work then turns outward into STEP.
+- What's underneath the protector either won't come or comes all at once. Neither is failure and both are normal.
+- Something got wounded early, a protector formed around it, and the protector worked. The cost is that you never get back to what it's guarding.
+- We turn toward the protector first, then the wound, then meet what we find with contact rather than fixing.
+- The protector gets louder when you turn toward it. That's it doing its job.
+- You can perform this module. Watch for it.
 
 ## Action
 
-Continue your daily Equanimous meditation while you read this module. When you're ready, open **05.02 The Protector and the Wound**.
+Keep sitting with Equanimous while you read this module, and when you're ready I'd open **The Protector and the Wound**.

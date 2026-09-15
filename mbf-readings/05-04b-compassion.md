@@ -1,14 +1,14 @@
 # Compassion
 
-*Begin sitting with the Compassion meditation as soon as you've read The Sacred Wound chapter. Daily over the rest of the module. The audio files are in your Audio folder, under the **05 Compassion** subfolder.*
+*Begin sitting with the Compassion meditation as soon as you've read The Sacred Wound chapter, then daily for the rest of the module. The recordings are on your Module 5 page, and you can play them there or save them to your phone.*
 
 The Compassion meditation is the sitting practice that pairs with this module. Where the Equanimous meditation from Module 4 trained the witness to stay through the whole wave, Compassion trains the witness to meet what's underneath the wave with the kindness it never got.
 
-This is the practice that builds the daily capacity for the work the Protector and Wound Journal is asking of you. The journal does the work on the page with specific stories. The meditation does the work on the cushion with whatever's present that day. Both feed each other. Neither replaces the other.
+This is what builds the daily capacity for what the Protector and Wound journal asks of you. The journal does it on the page with specific stories. The meditation does it on the cushion with whatever is present that day. Neither replaces the other.
 
 ## How to use the audio
 
-Your Audio folder for Module 5 contains three files in the **05 Compassion** subfolder. The pattern is the same as Module 4: an introductory talk plus two distinct thirty-minute meditations. The two thirty-minute versions are not the same meditation extended. They're two different doorways to the same underlying capacity.
+There are three recordings on your Module 5 page, the same pattern as Module 4: an introductory talk plus two distinct thirty-minute meditations. The two thirty-minute versions are not the same meditation extended. They're two different doorways to the same underlying capacity.
 
 **Intro to Compassion.** A short talk that introduces the dynamic between the inner critic and the vulnerable inner child, and names awareness as the third part of you (the one neither stuck in the critic's defensiveness nor in the child's fear) that can hold both. Listen to this once before you start sitting. Come back to it if you need the reminder.
 
