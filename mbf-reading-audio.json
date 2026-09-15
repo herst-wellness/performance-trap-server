@@ -323,42 +323,42 @@
     },
     "07-01-welcome": {
       "michael": {
-        "seconds": 402.4,
-        "bytes": 4829981
+        "seconds": 416.2,
+        "bytes": 4995493
       },
       "heart": {
-        "seconds": 368.4,
-        "bytes": 4420903
+        "seconds": 376.2,
+        "bytes": 4515571
       }
     },
     "07-02-the-third-option": {
       "michael": {
-        "seconds": 1618.0,
-        "bytes": 19416965
+        "seconds": 542.6,
+        "bytes": 6511744
       },
       "heart": {
-        "seconds": 1487.1,
-        "bytes": 17846170
+        "seconds": 493.9,
+        "bytes": 5927124
       }
     },
     "07-02b-conscious-choice": {
       "michael": {
-        "seconds": 454.4,
-        "bytes": 5453158
+        "seconds": 452.5,
+        "bytes": 5431215
       },
       "heart": {
-        "seconds": 416.2,
-        "bytes": 4995493
+        "seconds": 413.8,
+        "bytes": 4966654
       }
     },
     "07-03-expand-options": {
       "michael": {
-        "seconds": 1175.3,
-        "bytes": 14103973
+        "seconds": 630.6,
+        "bytes": 7567823
       },
       "heart": {
-        "seconds": 1068.3,
-        "bytes": 12820316
+        "seconds": 571.8,
+        "bytes": 6862516
       }
     },
     "07-03b-glossary-of-mindsets": {
@@ -373,12 +373,12 @@
     },
     "07-04-practice": {
       "michael": {
-        "seconds": 1695.0,
-        "bytes": 20341387
+        "seconds": 639.8,
+        "bytes": 7678791
       },
       "heart": {
-        "seconds": 1540.5,
-        "bytes": 18486275
+        "seconds": 581.0,
+        "bytes": 6972858
       }
     },
     "08-01-welcome": {

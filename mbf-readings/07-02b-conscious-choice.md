@@ -1,14 +1,14 @@
 # Conscious Choice
 
-*Begin sitting with Conscious Choice as soon as you've read this doc. Daily over the rest of the module. The audio file is in your Audio folder, under the **07 Conscious Choice** subfolder.*
+*Begin sitting with Conscious Choice as soon as you've read this doc. Daily over the rest of the module. The recording is on your Module 7 page.*
 
-Conscious Choice is the sitting practice that pairs with this module. Where the Gratitude-Choice-Commitment sit from Module 6 trained the daily inquiry around what to release and what to honor, Conscious Choice goes one step further. It walks you, on the cushion, through the exact arc the third option asks for in life. Settle the body. Bring a stuck situation into awareness. Sit with the conflicting feelings without trying to resolve them. Widen the field. Sense what would honor what you actually value. Sense one next step.
+Conscious Choice is the sit that pairs with this module, and it's the last new one I'll give you. Where the Gratitude-Choice-Commitment sit from Module 6 trained the daily inquiry around what to release and what to honor, Conscious Choice goes one step further. It walks you, on the cushion, through the exact arc the third option asks for in life. Settle the body. Bring a stuck situation into awareness. Sit with the conflicting feelings without trying to resolve them. Widen the field. Sense what would honor what you actually value. Sense one next step.
 
-It's Stop-Look-Go in embodied form. The chapter teaches the move conceptually. The journal walks you through one situation in slow motion on the page. This sit trains the move in the body, every morning, so the body knows the territory when the real moment arrives.
+It's Stop-Look-Go in the body. The chapter teaches the move, the journal walks you through one situation in slow motion on the page, and this trains it every morning so your body knows the territory when the real moment turns up. You won't have time to think it through when it does.
 
 ## How to use the audio
 
-Your Audio folder for Module 7 contains two files in the **07 Conscious Choice** subfolder.
+There are two recordings on your Module 7 page, and they're not the same thing at different lengths.
 
 **Conscious Choice (thirty minutes).** The main daily practice for this module. Opens with the four-part breath into the body (lower belly, upper belly, floating ribs, center of chest), drops attention into the throat, heart, and belly as the field of awareness, and then asks you to bring a specific stuck situation into the field. From there, the sit walks through sitting with the judgments, keeping the conflicting feelings company, contacting the vulnerability, offering yourself reassurance, looking at the situation with fresh eyes, sensing what you most long for, sensing options that would honor your gifts, and sensing one next step that would feel aligned.
 
@@ -48,7 +48,7 @@ A few things that come up in this practice.
 
 **The vulnerability can feel raw.** Especially in the early days. The contact with the tender place underneath the binary brings up grief, fear, longing that the protector has been managing. If it gets too big, back off. Open your eyes. Place your feet on the floor. The titration practice from Module 3 applies here too.
 
-**The body says no to your first idea sometimes.** You'll sense an option, name it, and the body will not soften around it. That's information. It probably means the option you named is still inside the binary somehow. Sit again. Wait for the option that lands with a yes in the body, not just in the mind.
+**The body says no to your first idea sometimes.** You'll sense an option, name it, and the body won't soften around it. That's information. It probably means the option you named is still inside the binary somehow. Sit again. Wait for the option that lands with a yes in the body, not just in the mind.
 
 ## Throughout your day
 
