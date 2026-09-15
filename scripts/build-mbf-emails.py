@@ -87,9 +87,14 @@ def render(body):
 EMAILS = []
 def email(module, n, filename, subject, body):
     body = body.replace("{ZOOM}", ZOOM).replace("{JOURNALS}", JOURNALS)
+    # The post-session email of module N sends them to module N's own follow-up.
+    body = body.replace("{FOLLOWUP}", "%s/module-%d/journal/follow-up-%d" % (JOURNALS, module, module))
     for i in range(1, 9):
         body = body.replace("{FOLDER%d}" % i, FOLDER[i])
     EMAILS.append((module, n, filename, subject, body))
+
+def follow_up(n):
+    return "%s/module-%d/journal/follow-up-%d" % (JOURNALS.rsplit("/practice/mbf", 1)[0] + "/practice/mbf", n, n)
 
 def where(n):
     return ("Everything for this module is in one place: [the reading, the meditations and the journals](%s). "
@@ -152,7 +157,7 @@ Hi %first%,
 
 Good session today.
 
-The Follow-Up journal is on [your module page]({JOURNALS}). Do it in the next day or two, while what surfaced is still close. It's short.
+Here is the Follow-Up journal: [open it]({FOLLOWUP}). Do it in the next day or two, while what surfaced is still close. It is short.
 
 Module 2 is open on the same page,. Start with the Welcome.
 
@@ -211,7 +216,7 @@ Hi %first%,
 
 Good session today.
 
-The Follow-Up journal is on [your module page]({JOURNALS}). Do it in the next day or two, while what surfaced is still close.
+Here is the Follow-Up journal: [open it]({FOLLOWUP}). Do it in the next day or two, while what surfaced is still close.
 
 Module 3 is open on the same page,. Start with the Welcome.
 
@@ -276,7 +281,7 @@ Hi %first%,
 
 Good session today.
 
-The Follow-Up journal is on [your module page]({JOURNALS}). Do it in the next day or two, while what surfaced is still close.
+Here is the Follow-Up journal: [open it]({FOLLOWUP}). Do it in the next day or two, while what surfaced is still close.
 
 Module 4 is open on the same page,. Start with the Welcome.
 
@@ -345,7 +350,7 @@ Hi %first%,
 
 Good session today.
 
-The Follow-Up journal is on [your module page]({JOURNALS}), and there's a prompt in it about the wave you rode and what arrived on the other side. The hours right after a session are when the body is closest to remembering. Use them.
+Here is the Follow-Up journal: [open it]({FOLLOWUP}). There's a prompt in it about the wave you rode and what arrived on the other side. The hours right after a session are when the body is closest to remembering. Use them.
 
 Module 5 is open on the same page,.
 
@@ -412,7 +417,7 @@ Hi %first%,
 
 Good session today.
 
-The Follow-Up journal is on [your module page]({JOURNALS}). Do it in the next day or two. These sessions tend to land tender, and whatever opened today will be closer to the surface now than later in the week.
+Here is the Follow-Up journal: [open it]({FOLLOWUP}). Do it in the next day or two. These sessions tend to land tender, and whatever opened today will be closer to the surface now than later in the week.
 
 Module 6 is open on the same page,. Open it sooner rather than later. There's a piece in it that needs other people's time, not just yours.
 
@@ -491,7 +496,7 @@ Two things from here.
 
 Your Heartfelt Intentions and Life Purpose document is in progress. I'm taking everything you and your three friends sent and weaving it into one document: your intentions, your purpose statements, and the evidence behind each one. It takes me a week or two. You'll get it as its own email.
 
-Meanwhile the Follow-Up journal is on [your module page]({JOURNALS}). It's longer than the usual one, so take it slowly and start with the intention that feels most alive. It asks where you're honoring each intention and where you're trading it away, which is tune in to the trade in its fullest form.
+Meanwhile, here is the Follow-Up journal: [open it]({FOLLOWUP}). It's longer than the usual one, so take it slowly and start with the intention that feels most alive. It asks where you're honoring each intention and where you're trading it away, which is tune in to the trade in its fullest form.
 
 Module 7 is open on the same page,. It picks up with what to do once you've tuned in.
 
@@ -573,7 +578,7 @@ Hi %first%,
 
 Good work today. The third option doesn't show up the same way twice. Whatever shape it took between us, what matters now is the small move that follows.
 
-The Follow-Up journal is on [your module page]({JOURNALS}). Do it in the next day or two. It walks you through naming the bind more clearly, sensing where the third option lives in you now, and the one step you'll take this week. Don't try to do it in a single sitting. The prompts are spacious.
+Here is the Follow-Up journal: [open it]({FOLLOWUP}). Do it in the next day or two. It walks you through naming the bind more clearly, sensing where the third option lives in you now, and the one step you'll take this week. Don't try to do it in a single sitting. The prompts are spacious.
 
 Module 8 is open on the same page,. It's the integration module, where this stops being a set of techniques and becomes a way of living.
 
