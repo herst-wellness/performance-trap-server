@@ -2,3 +2,6 @@
 kids-on-the-bus/data/*.json
 
 data/
+
+# The generated chapter readings. They go to the bucket, not into the history.
+build/

@@ -9,6 +9,7 @@
 // and there is no state to keep.
 const { hasAccess } = require('./mbf-journal');
 const { findReading, readingsForModule } = require('./mbf-reading-content');
+const { listenFor } = require('./mbf-listen');
 
 const PAGE_ROUTE = /^\/practice\/mbf\/module-(\d)\/reading\/([a-z0-9-]+)$/;
 const CONTENT_ROUTE = /^\/api\/mbf\/reading\/(\d)\/([a-z0-9-]+)$/;
@@ -53,6 +54,37 @@ function bodyWithoutTitle(src) {
   return src.replace(/^#\s+.*$/m, '');
 }
 
+// The choice at the top of every chapter: read it, or have it read to you.
+// It is stated as a fact about the recording rather than as a button that makes
+// the text go away, so a client using a screen reader never has a mode to get
+// lost in and the words stay on the page either way.
+function listenBlock(reading) {
+  const listen = listenFor(reading);
+  if (!listen) return '';
+  const whose = listen.computerVoice
+    ? 'Read aloud in a computer voice, not Chad\u2019s. He records these as he gets to them.'
+    : 'Read aloud by Chad.';
+  return `<section class="listen" aria-labelledby="listenHeading">
+    <h2 id="listenHeading" class="label">Listen instead</h2>
+    <p>${esc(listen.length)}. ${whose} You can speed it up below.</p>
+    <audio id="player" controls preload="none" src="${esc(listen.href)}"
+           aria-label="This chapter read aloud"></audio>
+    <div class="listen-row">
+      <label for="speed">Speed</label>
+      <select id="speed">
+        <option value="0.75">Slower, three quarters</option>
+        <option value="1" selected>Normal</option>
+        <option value="1.25">A quarter faster</option>
+        <option value="1.5">Half again as fast</option>
+        <option value="1.75">Nearly twice as fast</option>
+        <option value="2">Twice as fast</option>
+      </select>
+      <a href="${esc(listen.download)}">Save it to this device</a>
+      <a href="#" id="restart" hidden>Start from the beginning</a>
+    </div>
+  </section>`;
+}
+
 function readingPage(reading) {
   const others = readingsForModule(reading.module).filter((r) => r.slug !== reading.slug);
   const more = others.length
@@ -89,6 +121,15 @@ function readingPage(reading) {
   button { font:inherit; font-size:1rem; margin-top:0.8rem; padding:0.55rem 1.1rem; cursor:pointer;
            border:1px solid #7C6C5C; border-radius:7px; background:#7C6C5C; color:#FBF7EF; }
   .err { color:#8A3B2E; margin:0.7rem 0 0; }
+  .listen { margin:0 0 2.2rem; padding:1rem 1.15rem 1.15rem; border:1px solid #C4A879;
+            border-radius:10px; background:#FDFBF6; }
+  .listen p { margin:0 0 0.7rem; font-size:0.95rem; color:#6B5036; }
+  .listen audio { width:100%; display:block; }
+  .listen-row { display:flex; flex-wrap:wrap; align-items:center; gap:0.5rem 1rem;
+                margin-top:0.8rem; font-size:0.9rem; }
+  .listen-row label { display:inline; margin:0; font-size:0.9rem; }
+  .listen-row select { font:inherit; font-size:0.9rem; padding:0.3rem 0.4rem;
+                       border:1px solid #C4A879; border-radius:6px; background:#fff; color:inherit; }
   .more { margin-top:3rem; padding-top:1.4rem; border-top:1px solid #C4A879; font-size:0.95rem; }
   .label { font-size:0.7rem; letter-spacing:0.16em; text-transform:uppercase; color:#7C6C5C; margin:0 0 0.5rem; }
   .more ul { list-style:none; padding:0; }
@@ -109,6 +150,7 @@ function readingPage(reading) {
   <article id="reading" hidden>
     <p class="eyebrow">Module ${reading.module}${reading.practice ? ' &middot; practice' : ''}</p>
     <h1 id="title" tabindex="-1">${esc(reading.title)}</h1>
+    ${listenBlock(reading)}
     <div id="body"></div>
     ${more}
     <p><a class="back" href="/practice/mbf">All of Mind/Body Foundations</a></p>
@@ -142,6 +184,53 @@ function readingPage(reading) {
     catch (error) { el('err').hidden = false; el('err').textContent = error.message; }
     finally { el('unlock').disabled = false; }
   }
+
+  // Chad listens at twice speed and a client who has found their own speed
+  // should not have to set it again on the next chapter, so the choice is kept
+  // in this browser. Where they stopped is kept too: these run nine minutes and
+  // a person who put the phone down at minute six should not start over.
+  (function player(){
+    var audio = el('player'), speed = el('speed'), restart = el('restart');
+    if (!audio || !speed) return;
+    var SPEED_KEY = 'mbf-listen-speed', POS_KEY = 'mbf-listen-pos:' + MODULE + '/' + SLUG;
+    var s = store();
+    function get(k){ try { return s && s.getItem(k); } catch(e) { return null; } }
+    function put(k, v){ try { if (s) s.setItem(k, v); } catch(e) {} }
+
+    var saved = get(SPEED_KEY);
+    if (saved && speed.querySelector('option[value="' + saved + '"]')) speed.value = saved;
+    function apply(){ audio.playbackRate = parseFloat(speed.value) || 1; }
+    apply();
+    speed.addEventListener('change', function(){ apply(); put(SPEED_KEY, speed.value); });
+
+    audio.addEventListener('loadedmetadata', function(){
+      apply();
+      var at = parseFloat(get(POS_KEY) || '0');
+      // Far enough in to be worth keeping, far enough from the end to be worth
+      // returning to.
+      if (at > 60 && audio.duration && at < audio.duration - 20) {
+        audio.currentTime = at;
+        restart.hidden = false;
+      }
+    });
+
+    var last = 0;
+    audio.addEventListener('timeupdate', function(){
+      var now = audio.currentTime;
+      if (Math.abs(now - last) < 5) return;
+      last = now;
+      put(POS_KEY, String(Math.floor(now)));
+    });
+    audio.addEventListener('ended', function(){ put(POS_KEY, '0'); restart.hidden = true; });
+
+    restart.addEventListener('click', function(e){
+      e.preventDefault();
+      audio.currentTime = 0;
+      put(POS_KEY, '0');
+      restart.hidden = true;
+      audio.focus();
+    });
+  })();
 
   el('unlock').addEventListener('click', unlock);
   el('code').addEventListener('keydown', function(e){ if (e.key === 'Enter') { e.preventDefault(); unlock(); } });
