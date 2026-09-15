@@ -17,6 +17,7 @@ const emails = require('./onramp-emails');
 const journalStore = require('./onramp-journal-store');
 const { findRecord: findJournalRecord } = require('./onramp-journal-store');
 const brief = require('./onramp-brief');
+const onrampListen = require('./onramp-listen');
 
 const COURSE_PATH = '/course/on-ramp';
 // Two conversations with Chad: half an hour before Week 1 and a full hour at
@@ -833,6 +834,12 @@ h4{font:600 15px/1.4 Arial,sans-serif;color:var(--gold);margin:20px 0 6px}
 .small{font:14px/1.5 Arial,sans-serif;color:#715D49}
 .note{font-style:italic;color:#6F5438}
 .placeholder{padding:16px 18px;background:var(--soft);border-left:3px solid var(--gold);font:14px/1.55 Arial,sans-serif;margin:12px 0}
+.listen{margin:6px 0 16px;padding:12px 14px;background:var(--soft);border-radius:10px}
+.listen .lead{font:13px/1.5 Arial,sans-serif;color:#715D49;margin:0 0 8px}
+.listen audio{width:100%;display:block}
+.listen .row{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px;font:13px/1.5 Arial,sans-serif}
+.speedbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;font:14px/1.5 Arial,sans-serif;color:#715D49}
+.speedbar select{font:14px/1.5 Arial,sans-serif;padding:5px 7px;border:1px solid var(--line);border-radius:7px;background:var(--paper);color:var(--ink)}
 .mirror-pair{display:grid;grid-template-columns:1fr 1fr;gap:26px;margin:22px 0 0;padding-top:20px;border-top:1px solid var(--line)}
 .mirror-col h4{margin:0 0 8px}
 .mirror-col p{margin:0 0 10px}
@@ -964,6 +971,66 @@ ${COURSE_CSS}
       });
     }
   }
+  // The readings read aloud. Kokoro drops syllables if it is asked to speak
+  // much faster than it wants to, so every file is made at a natural pace and
+  // the speeding up happens here, with the switch that stretches the time
+  // instead of resampling. Resampling would lift the pitch and turn a warm
+  // voice into a cartoon. Browsers do the right thing by default and the page
+  // asks for it by name anyway, in all three spellings, because a default is
+  // not a promise.
+  //
+  // One speed governs every reading on the page. The guided sit is left alone:
+  // it is paced the way it is on purpose.
+  function attachReadingAudio(){
+    var content = el('lessonContent');
+    var players = content.querySelectorAll('audio[data-reading]');
+    var speed = document.getElementById('readingSpeed');
+    if (!players.length) return;
+    var SPEED_KEY = 'herst-listen-speed';
+    function get(k){ try { return window.localStorage.getItem(k); } catch (e) { return null; } }
+    function put(k, v){ try { window.localStorage.setItem(k, v); } catch (e) {} }
+
+    var saved = get(SPEED_KEY);
+    if (speed && saved && speed.querySelector('option[value="' + saved + '"]')) speed.value = saved;
+    function rate(){ return (speed && parseFloat(speed.value)) || 1; }
+
+    Array.prototype.forEach.call(players, function(audio){
+      var POS_KEY = 'herst-listen-pos:' + audio.getAttribute('data-reading');
+      function keepPitch(){
+        audio.preservesPitch = true;
+        audio.webkitPreservesPitch = true;
+        audio.mozPreservesPitch = true;
+      }
+      function apply(){ keepPitch(); audio.playbackRate = rate(); }
+      apply();
+      audio.addEventListener('play', apply);
+      audio.addEventListener('ratechange', keepPitch);
+      audio.__applySpeed = apply;
+
+      // These run six or seven minutes. A person who put the phone down part
+      // way through should not start over.
+      audio.addEventListener('loadedmetadata', function(){
+        apply();
+        var at = parseFloat(get(POS_KEY) || '0');
+        if (at > 60 && audio.duration && at < audio.duration - 20) audio.currentTime = at;
+      });
+      var last = 0;
+      audio.addEventListener('timeupdate', function(){
+        if (Math.abs(audio.currentTime - last) < 5) return;
+        last = audio.currentTime;
+        put(POS_KEY, String(Math.floor(audio.currentTime)));
+      });
+      audio.addEventListener('ended', function(){ put(POS_KEY, '0'); });
+    });
+
+    if (speed) {
+      speed.addEventListener('change', function(){
+        put(SPEED_KEY, speed.value);
+        Array.prototype.forEach.call(players, function(audio){ audio.__applySpeed(); });
+      });
+    }
+  }
+
   async function unlock(code){
     if (!code) { showError('Enter the access code.'); return; }
     showError('');
@@ -979,6 +1046,7 @@ ${COURSE_CSS}
       el('unlockCard').classList.add('hidden');
       try { window.sessionStorage.setItem('onrampCode', code); } catch (e) {}
       try { attachListenTracking(code); } catch (e) {}
+      try { attachReadingAudio(); } catch (e) {}
     } catch (error) {
       try { window.sessionStorage.removeItem('onrampCode'); } catch (e) {}
       showError(error.message || 'Access denied');
@@ -1012,6 +1080,57 @@ function teachingSections(html) {
     .split('<h3>')
     .slice(1)
     .map((part) => ({ heading: part.slice(0, part.indexOf('</h3>')), html: '<h3>' + part }));
+}
+
+// Every piece can be listened to instead of read. The offer sits directly under
+// the piece's own heading, so a person skimming for the one they want finds the
+// player attached to it rather than in a list somewhere else. The words stay on
+// the page underneath: nothing is swapped out, so there is no mode for a screen
+// reader user to get lost in.
+//
+// A piece with no recording yet simply shows nothing.
+function listenLine(weekNum, heading) {
+  const listen = onrampListen.listenFor(weekNum, heading);
+  if (!listen) return '';
+  const whose = listen.computerVoice
+    ? 'read aloud in a computer voice. Chad\u2019s own recording of this one is coming, he has not got to it yet.'
+    : 'read aloud by Chad.';
+  return `<div class="listen">
+    <p class="lead">${listen.length}, ${whose} Set the speed at the top of the page; his voice stays where it is when you speed it up.</p>
+    <audio controls preload="none" data-reading="${listen.stem}" src="${listen.href}"
+           aria-label="${escapeHtml(heading)}, read aloud"></audio>
+    <div class="row"><a href="${listen.download}">Download it to listen on the go</a></div>
+  </div>`;
+}
+
+// One speed for every piece on the week, rather than a dropdown inside each of
+// them. It governs the readings only: a guided sit is paced the way it is on
+// purpose and is left alone.
+function speedBar(weekNum) {
+  const anything = teachingSections(COURSE_WEEKS[weekNum].teaching)
+    .some((section) => onrampListen.hasListen(weekNum, section.heading));
+  if (!anything) return '';
+  return `<section class="card"><div class="speedbar">
+    <label for="readingSpeed">Speed for the readings on this page</label>
+    <select id="readingSpeed">
+      <option value="0.75">Slower, three quarters</option>
+      <option value="1" selected>Normal</option>
+      <option value="1.25">A quarter faster</option>
+      <option value="1.5">Half again as fast</option>
+      <option value="1.75">Nearly twice as fast</option>
+      <option value="2">Twice as fast</option>
+    </select>
+  </div></section>`;
+}
+
+// Puts the listen line under the piece's heading without disturbing anything
+// else in the piece.
+function withListen(weekNum, section) {
+  const line = listenLine(weekNum, section.heading);
+  if (!line) return section.html;
+  const close = section.html.indexOf('</h3>');
+  if (close === -1) return section.html;
+  return section.html.slice(0, close + 5) + line + section.html.slice(close + 5);
 }
 
 // Their own writing goes on a page, so it is escaped, always.
@@ -1104,12 +1223,13 @@ function lessonContentHtml(weekNum, mirrorCard) {
     ? `<section class="card"><div class="eyebrow" style="text-align:left">If you want more this week</div>
     <details><summary>${further.length === 1 ? 'One more piece, here when you want it' : further.length + ' more pieces, here when you want them'}</summary>
     <p class="note">This isn't homework. The week is the sit, the reading above, and the journal. Read these if you want more, now or later in the month or not at all.</p>
-    ${further.map((s) => s.html).join('')}</details></section>`
+    ${further.map((s) => withListen(weekNum, s)).join('')}</details></section>`
     : '';
   return `
   <section class="card"><p>${c.intro}</p>${c.video}</section>
   <section class="card"><div class="eyebrow" style="text-align:left">Start here</div><h3>Sit first</h3><p>${c.sitLead}</p>${c.meditation}</section>
-  <section class="card"><div class="eyebrow" style="text-align:left">This week's lesson</div>${visible.map((s) => s.html).join('')}</section>
+  ${speedBar(weekNum)}
+  <section class="card"><div class="eyebrow" style="text-align:left">This week's lesson</div>${visible.map((s) => withListen(weekNum, s)).join('')}</section>
   <section class="card"><div class="eyebrow" style="text-align:left">The daily rep</div>
     <h3>Practice with the companion</h3>
     <p>Once a day, bring one real moment to the practice companion. It writes back and walks the week's moves with you, responding to what you write during the sitting. It isn't me, and it isn't instead of me. It is the thing that sits with you between now and our hour, and what you bring to the journal sittings is what I read before we meet. The two of us come at the same month from different sides, and then we meet.</p>

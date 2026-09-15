@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Read the Mind/Body Foundations chapters aloud in a computer voice.
+"""Read Chad's written material aloud in a computer voice.
 
 Chad reads screen text with the Kokoro voice am_michael and likes it, so the
 readings get the same voice rather than whatever a client's browser happens to
@@ -7,9 +7,19 @@ have. These files are a stand-in. When Chad records a chapter himself the
 recording replaces the file of the same name and nothing else changes.
 
 Run it with the Speak11 virtual environment, which already has mlx-audio and
-the Kokoro weights:
+the Kokoro weights. With no arguments it reads the Mind/Body Foundations
+chapters:
 
     ~/.local/share/speak11/venv/bin/python3 scripts/generate-reading-audio.py
+
+The Performance Trap Practice pieces live inside the week pages rather than in
+files, so `node scripts/extract-onramp-readings.js` writes them out first and
+this then reads that folder:
+
+    node scripts/extract-onramp-readings.js
+    ~/.local/share/speak11/venv/bin/python3 scripts/generate-reading-audio.py \
+        --source build/onramp-readings --out build/onramp-audio \
+        --manifest onramp-reading-audio.json
 
 It writes one MP3 per chapter into build/reading-audio/, then rewrites
 mbf-reading-audio.json, which is what the module pages read to know how long
@@ -32,6 +42,7 @@ ROOT = Path(__file__).resolve().parent.parent
 READINGS = ROOT / "mbf-readings"
 OUT = ROOT / "build" / "reading-audio"
 MANIFEST = ROOT / "mbf-reading-audio.json"
+SUFFIXES = (".md", ".txt")
 
 MODEL = "mlx-community/Kokoro-82M-bf16"
 VOICE = "am_michael"
@@ -102,13 +113,40 @@ def seconds(path):
     return float(out.stdout.strip())
 
 
+def parse_args(argv):
+    """--source, --out and --manifest, then any number of stems to redo."""
+    global READINGS, OUT, MANIFEST
+    stems = []
+    i = 0
+    while i < len(argv):
+        arg = argv[i]
+        if arg == "--source" and i + 1 < len(argv):
+            READINGS = (ROOT / argv[i + 1]).resolve()
+            i += 2
+        elif arg == "--out" and i + 1 < len(argv):
+            OUT = (ROOT / argv[i + 1]).resolve()
+            i += 2
+        elif arg == "--manifest" and i + 1 < len(argv):
+            MANIFEST = (ROOT / argv[i + 1]).resolve()
+            i += 2
+        elif arg.startswith("--"):
+            print("Unknown option " + arg, file=sys.stderr)
+            return None
+        else:
+            stems.append(arg)
+            i += 1
+    return set(stems)
+
+
 def main():
     from mlx_audio.tts.generate import generate_audio
     from mlx_audio.tts.utils import load_model
 
-    wanted = set(sys.argv[1:])
-    files = sorted(p for p in READINGS.glob("*.md")
-                   if not wanted or p.stem in wanted)
+    wanted = parse_args(sys.argv[1:])
+    if wanted is None:
+        return 1
+    files = sorted(p for p in READINGS.iterdir()
+                   if p.suffix in SUFFIXES and (not wanted or p.stem in wanted))
     if not files:
         print("No chapters matched.", file=sys.stderr)
         return 1

@@ -1,0 +1,110 @@
+{
+  "voice": "am_michael",
+  "spoken_by": "computer",
+  "chapters": {
+    "week-1-a-part-of-me": {
+      "seconds": 67.2,
+      "bytes": 807228
+    },
+    "week-1-enter-the-body": {
+      "seconds": 450.9,
+      "bytes": 5411780
+    },
+    "week-1-introduction": {
+      "seconds": 309.0,
+      "bytes": 3708701
+    },
+    "week-1-one-persons-story": {
+      "seconds": 290.6,
+      "bytes": 3487391
+    },
+    "week-1-something-from-my-own-life": {
+      "seconds": 226.7,
+      "bytes": 2720959
+    },
+    "week-1-the-breath": {
+      "seconds": 545.0,
+      "bytes": 6540897
+    },
+    "week-1-the-loop-and-where-it-opens": {
+      "seconds": 583.3,
+      "bytes": 7000756
+    },
+    "week-2-equanimity": {
+      "seconds": 553.2,
+      "bytes": 6639326
+    },
+    "week-2-introduction": {
+      "seconds": 157.8,
+      "bytes": 1894654
+    },
+    "week-2-name-whats-there": {
+      "seconds": 496.8,
+      "bytes": 5962232
+    },
+    "week-2-one-persons-story": {
+      "seconds": 250.1,
+      "bytes": 3001514
+    },
+    "week-2-something-from-my-own-life": {
+      "seconds": 162.2,
+      "bytes": 1946689
+    },
+    "week-2-stay": {
+      "seconds": 535.7,
+      "bytes": 6429615
+    },
+    "week-3-introduction": {
+      "seconds": 105.1,
+      "bytes": 1262386
+    },
+    "week-3-one-persons-story": {
+      "seconds": 254.1,
+      "bytes": 3050102
+    },
+    "week-3-something-from-my-own-life": {
+      "seconds": 57.2,
+      "bytes": 687796
+    },
+    "week-3-still": {
+      "seconds": 529.7,
+      "bytes": 6356890
+    },
+    "week-3-the-third-option": {
+      "seconds": 590.4,
+      "bytes": 7086020
+    },
+    "week-3-tune-in-to-the-trade": {
+      "seconds": 524.3,
+      "bytes": 6292002
+    },
+    "week-4-introduction": {
+      "seconds": 112.5,
+      "bytes": 1351411
+    },
+    "week-4-one-persons-story-eight-sessions": {
+      "seconds": 274.8,
+      "bytes": 3298369
+    },
+    "week-4-one-persons-story-the-wound-underneath": {
+      "seconds": 365.8,
+      "bytes": 4390810
+    },
+    "week-4-something-from-my-own-life": {
+      "seconds": 104.0,
+      "bytes": 1249534
+    },
+    "week-4-the-whole-arc-as-one-move": {
+      "seconds": 542.8,
+      "bytes": 6514565
+    },
+    "week-4-what-comes-next": {
+      "seconds": 375.4,
+      "bytes": 4506167
+    },
+    "week-4-whats-underneath": {
+      "seconds": 367.9,
+      "bytes": 4415888
+    }
+  }
+}

@@ -9,6 +9,7 @@ const { handleMbfJournalRoute } = require('./mbf-journal');
 const { handleMbfReadingRoute } = require('./mbf-reading');
 const { handleMbfAudioRoute } = require('./mbf-audio');
 const { handleMbfListenRoute } = require('./mbf-listen');
+const { handleOnrampListenRoute } = require('./onramp-listen');
 const { findReading } = require('./mbf-reading-content');
 const { handleDropboxSetupRoute } = require('./mbf-dropbox-setup');
 const { startTicker: startMbfDelivery } = require('./mbf-schedule');
@@ -1271,6 +1272,7 @@ const server = http.createServer(async (req, res) => {
   if (handleMbfReadingRoute(req, res)) { return; }
   if (await handleMbfAudioRoute(req, res)) { return; }
   if (await handleMbfListenRoute(req, res, findReading)) { return; }
+  if (await handleOnrampListenRoute(req, res)) { return; }
   if (await handleMbfRoute(req, res)) { return; }
   if (await handleAjRoute(req, res)) { return; }
   if (await handleLorenzoRoute(req, res)) { return; }
