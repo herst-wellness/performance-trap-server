@@ -264,3 +264,26 @@ test('old records can be marked as testing by date, and marked back again, witho
   assert.throws(() => ledger.markInternalBefore('not a date'), /valid cutoff date/);
   fs.rmSync(directory, { recursive: true, force: true });
 });
+
+test('a sitting keeps the wait for first words separately, and an older sitting stays blank rather than looking fast', () => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'mindbody-firstword-'));
+  const file = path.join(directory, 'usage-ledger.json');
+  const ledger = new UsageLedger(file, { budgetUsd: 100 });
+  ledger.startSession({ sessionReference: 'MBF-CCCC-3333' });
+  ledger.recordTurn('MBF-CCCC-3333', { userEntryLength: 100, hasCompanionResponse: true, responseTimeMs: 21000, firstWordMs: 4000 });
+  ledger.recordTurn('MBF-CCCC-3333', { userEntryLength: 100, hasCompanionResponse: true, responseTimeMs: 9000, firstWordMs: 2000 });
+  const saved = ledger.sessions()[0];
+  assert.deepEqual(saved.firstWordTimesMs, [4000, 2000]);
+  assert.equal(saved.medianFirstWordMs, 3000);
+  assert.equal(saved.slowestFirstWordMs, 4000);
+  assert.equal(saved.medianResponseTimeMs, 15000, 'the finish time is still kept on its own');
+
+  // A sitting recorded before this was measured has finish times and no waits.
+  ledger.startSession({ sessionReference: 'MBF-DDDD-4444' });
+  ledger.recordTurn('MBF-DDDD-4444', { userEntryLength: 100, hasCompanionResponse: true, responseTimeMs: 40000 });
+  const older = ledger.sessions().find((row) => row.sessionReference === 'MBF-DDDD-4444');
+  assert.deepEqual(older.firstWordTimesMs, []);
+  assert.equal(older.medianFirstWordMs, 0);
+  assert.equal(older.slowestResponseMs, 40000);
+  fs.rmSync(directory, { recursive: true, force: true });
+});

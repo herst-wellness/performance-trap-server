@@ -64,7 +64,9 @@ Set all of these values to enable the weekly report:
 - `COMPANION_REPORT_TO`, Chad's receiving address
 - `COMPANION_REPORT_FROM`, a verified Resend sender
 
-The running service checks once per hour and sends no more than one report in seven days. The report includes page visits, begin attempts, tracked starts, pre-start exits, startup problems, sitting outcomes, reliability, and feedback. Topic and process classifications in the dashboard and report are automatically estimated and potentially imperfect. Companion invitations are tracked separately from participant-response evidence. The send date is recorded in the persistent ledger so an application restart does not cause a duplicate report. The protected endpoint `/api/kids-on-the-bus/admin/send-weekly-report` can also send a report deliberately with the separate administrative code.
+The running service checks once per hour and sends no more than one report in seven days. The report includes page visits, begin attempts, tracked starts, pre-start exits, startup problems, sitting outcomes, reliability, and feedback.
+
+Reply speed is reported as two separate numbers. The wait before the first words appear is the silence a visitor actually sits through, because the page writes the reply out as it arrives. The time for a reply to finish is the whole generation, which is longer and is not what anybody waits for. Sittings recorded before 2026-09-14, when the first measurement was added, show the finish time only, and the first-word row reads "Not measured yet" rather than counting them as instant. Topic and process classifications in the dashboard and report are automatically estimated and potentially imperfect. Companion invitations are tracked separately from participant-response evidence. The send date is recorded in the persistent ledger so an application restart does not cause a duplicate report. The protected endpoint `/api/kids-on-the-bus/admin/send-weekly-report` can also send a report deliberately with the separate administrative code.
 
 ## Persistence verification before deployment
 

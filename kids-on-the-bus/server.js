@@ -686,6 +686,7 @@ function createApp(options = {}) {
           userEntryLength: message.length,
           hasCompanionResponse: true,
           responseTimeMs: generated.latency.completeMs,
+          firstWordMs: generated.latency.firstTextMs,
           ...classification
         });
         if (active.shareSitting) sharedStore.appendTurn(active.sessionReference, message, generated.text);

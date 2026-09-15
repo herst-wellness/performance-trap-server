@@ -49,7 +49,8 @@ function buildWeeklyReport(sessions, now = Date.now(), visits = []) {
     changeLine(currentFunnel.visitToStartRate, priorFunnel.visitToStartRate, 'Visit-to-start rate'),
     changeLine(current.totalSittings, prior.totalSittings, 'Sittings'),
     changeLine(current.completionRate, prior.completionRate, 'Completion rate'),
-    changeLine(current.averageResponseTimeMs, prior.averageResponseTimeMs, 'Average response time'),
+    changeLine(current.averageFirstWordMs, prior.averageFirstWordMs, 'Average wait before the first words appear'),
+    changeLine(current.averageResponseTimeMs, prior.averageResponseTimeMs, 'Average time for a reply to finish'),
     changeLine(current.voiceRecordingStarts, prior.voiceRecordingStarts, 'Voice recordings'),
     changeLine(current.voiceTranscriptionSuccessRate, prior.voiceTranscriptionSuccessRate, 'Voice transcription success rate'),
     changeLine(current.errors, prior.errors, 'Errors')
@@ -58,6 +59,11 @@ function buildWeeklyReport(sessions, now = Date.now(), visits = []) {
   const topInvitations = current.processInvitations.slice(0, 3).map(([stage, count]) => `${stage} (${count})`).join(', ') || 'No companion invitation data yet';
   const topEvidence = current.processEvidence.slice(0, 3).map(([stage, count]) => `${stage} (${count})`).join(', ') || 'No participant evidence data yet';
   const commonAbandonment = current.commonAbandonmentPoint;
+  // The page writes the reply out as it arrives, so the wait people actually
+  // sit through is the silence before the first words, not the whole reply.
+  const firstWordWait = current.firstWordMeasuredCount > 0
+    ? `${(current.averageFirstWordMs / 1000).toFixed(1)} seconds`
+    : 'Not measured yet';
   const feedback = current.feedbackAverages.map((value) => value == null ? 'n/a' : value.toFixed(1)).join(', ');
   const dateLabel = `${new Date(currentStart).toLocaleDateString('en-US')} to ${new Date(currentEnd).toLocaleDateString('en-US')}`;
   const subject = `Start Anywhere weekly report: ${dateLabel}`;
@@ -78,7 +84,8 @@ function buildWeeklyReport(sessions, now = Date.now(), visits = []) {
 <tr><td>Companion process invitations, automatically estimated</td><td><strong>${escapeHtml(topInvitations)}</strong></td></tr>
 <tr><td>Participant process evidence, automatically estimated</td><td><strong>${escapeHtml(topEvidence)}</strong></td></tr>
 <tr><td>Common abandonment point, estimated from participant evidence</td><td><strong>${escapeHtml(commonAbandonment)}</strong></td></tr>
-<tr><td>Average response time</td><td><strong>${(current.averageResponseTimeMs / 1000).toFixed(1)} seconds</strong></td></tr>
+<tr><td>Average wait before the first words appear</td><td><strong>${escapeHtml(firstWordWait)}</strong></td></tr>
+<tr><td>Average time for a reply to finish</td><td><strong>${(current.averageResponseTimeMs / 1000).toFixed(1)} seconds</strong></td></tr>
 <tr><td>Voice recordings</td><td><strong>${current.voiceRecordingStarts}</strong></td></tr>
 <tr><td>Successful voice transcripts</td><td><strong>${current.voiceTranscriptionSuccesses}</strong></td></tr>
 <tr><td>Voice transcription success rate</td><td><strong>${current.voiceTranscriptionSuccessRate}%</strong></td></tr>

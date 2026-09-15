@@ -191,6 +191,9 @@ function newSession(record) {
     responseTimesMs: [],
     medianResponseTimeMs: 0,
     slowestResponseMs: 0,
+    firstWordTimesMs: [],
+    medianFirstWordMs: 0,
+    slowestFirstWordMs: 0,
     truncatedResponses: 0,
     emptyResponses: 0,
     serverErrors: 0,
@@ -286,6 +289,13 @@ function finalizeSessionMetrics(session) {
     : 0;
   session.medianResponseTimeMs = Math.round(median(session.responseTimesMs || []));
   session.slowestResponseMs = session.responseTimesMs?.length ? Math.max(...session.responseTimesMs) : 0;
+  // Sittings recorded before this was measured carry no first-word times, and
+  // must stay empty rather than borrow the finish times and read as fast.
+  session.firstWordTimesMs = Array.isArray(session.firstWordTimesMs)
+    ? session.firstWordTimesMs.map(wholeNonNegative).filter((value) => value > 0).slice(-100)
+    : [];
+  session.medianFirstWordMs = Math.round(median(session.firstWordTimesMs));
+  session.slowestFirstWordMs = session.firstWordTimesMs.length ? Math.max(...session.firstWordTimesMs) : 0;
   const rankedTopics = Object.entries(session.topicCounts || {})
     .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))
     .slice(0, 4)
@@ -513,6 +523,9 @@ class UsageLedger {
       session.longestUserEntryLength = Math.max(session.longestUserEntryLength, wholeNonNegative(record.userEntryLength));
       if (record.hasCompanionResponse) session.companionResponses += 1;
       if (finiteNonNegative(record.responseTimeMs) > 0) session.responseTimesMs.push(wholeNonNegative(record.responseTimeMs));
+      // A sitting already open when this measurement shipped has no array yet.
+      if (!Array.isArray(session.firstWordTimesMs)) session.firstWordTimesMs = [];
+      if (finiteNonNegative(record.firstWordMs) > 0) session.firstWordTimesMs.push(wholeNonNegative(record.firstWordMs));
       for (const topic of [record.topics?.primary, ...(record.topics?.secondary || [])].filter(Boolean)) {
         session.topicCounts[topic] = (session.topicCounts[topic] || 0) + 1;
       }

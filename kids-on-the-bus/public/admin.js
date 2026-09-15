@@ -105,6 +105,7 @@
     const durations = rows.filter((row) => row.endedAt).map((row) => Number(row.durationSeconds || 0)).filter((value) => value > 0);
     const exchanges = rows.map((row) => Number(row.companionResponses || 0));
     const responseTimes = rows.flatMap((row) => row.responseTimesMs || []);
+    const firstWordTimes = rows.flatMap((row) => row.firstWordTimesMs || []);
     const feedback = rows.map(feedbackAverage).filter((value) => value != null);
     const cost = rows.reduce((sum, row) => sum + Number(row.estimatedCostUsd || 0), 0);
     const conversions = rows.reduce((sum, row) => sum + Number(row.conversionClicks || 0), 0);
@@ -121,8 +122,11 @@
       ['Abandonment rate', rows.length ? `${Math.round(abandoned / rows.length * 100)}%` : '0%'],
       ['Average duration', durations.length ? `${Math.round(durations.reduce((a, b) => a + b, 0) / durations.length / 60)} min` : '0 min'],
       ['Average exchanges', exchanges.length ? (exchanges.reduce((a, b) => a + b, 0) / exchanges.length).toFixed(1) : '0'],
-      ['Median exchanges', median(exchanges).toFixed(1)], ['Average response', responseTimes.length ? `${(responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length / 1000).toFixed(1)} sec` : '0 sec'],
-      ['Slowest response', responseTimes.length ? `${(Math.max(...responseTimes) / 1000).toFixed(1)} sec` : '0 sec'],
+      ['Median exchanges', median(exchanges).toFixed(1)],
+      ['Average wait for first words', firstWordTimes.length ? `${(firstWordTimes.reduce((a, b) => a + b, 0) / firstWordTimes.length / 1000).toFixed(1)} sec` : 'Not measured'],
+      ['Longest wait for first words', firstWordTimes.length ? `${(Math.max(...firstWordTimes) / 1000).toFixed(1)} sec` : 'Not measured'],
+      ['Average reply finish', responseTimes.length ? `${(responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length / 1000).toFixed(1)} sec` : '0 sec'],
+      ['Slowest reply finish', responseTimes.length ? `${(Math.max(...responseTimes) / 1000).toFixed(1)} sec` : '0 sec'],
       ['Errors', rows.filter(hasErrors).length], ['Retries', rows.reduce((sum, row) => sum + Number(row.chargeableRetries || 0), 0)],
       ['Safety activations', rows.reduce((sum, row) => sum + Number(row.safetyActivations || 0), 0)],
       ['Feedback average', feedback.length ? (feedback.reduce((a, b) => a + b, 0) / feedback.length).toFixed(1) : 'No responses'],
