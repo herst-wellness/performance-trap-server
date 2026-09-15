@@ -6,6 +6,7 @@ const { handleCompanionRoute, initializeCompanion } = require('./companion');
 const { handleOnrampRoute } = require('./onramp');
 const { handleMbfRoute } = require('./mbf');
 const { handleMbfJournalRoute } = require('./mbf-journal');
+const { handleMbfReadingRoute } = require('./mbf-reading');
 const { handleDropboxSetupRoute } = require('./mbf-dropbox-setup');
 const { startTicker: startMbfDelivery } = require('./mbf-schedule');
 const { startTicker: startOnrampJournalDelivery } = require('./onramp-journal-schedule');
@@ -1264,6 +1265,7 @@ const server = http.createServer(async (req, res) => {
   if (await handleDropboxSetupRoute(req, res)) { return; }
   if (await handleOnrampJournalRoute(req, res, { store: onrampStore() })) { return; }
   if (await handleMbfJournalRoute(req, res)) { return; }
+  if (handleMbfReadingRoute(req, res)) { return; }
   if (await handleMbfRoute(req, res)) { return; }
   if (await handleAjRoute(req, res)) { return; }
   if (await handleLorenzoRoute(req, res)) { return; }

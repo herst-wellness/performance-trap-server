@@ -1154,9 +1154,30 @@ function companionPage(mod) {
 
 function indexPage() {
   const { journalsForModule } = require('./mbf-journal-content');
+  const { readingsForModule } = require('./mbf-reading-content');
+  const { audioForModule } = require('./mbf-audio');
   const blocks = Object.keys(MODULES)
     .map((n) => {
       const mod = MODULES[n];
+      const readings = readingsForModule(n);
+      const readingList = readings.length
+        ? '<p class="label">Readings</p><ul>' +
+          readings
+            .map(
+              (r) =>
+                `<li><a href="/practice/mbf/module-${r.module}/reading/${r.slug}">${r.title}</a>${
+                  r.practice ? '<span class="note">The written instructions for this module\u2019s meditation.</span>' : ''
+                }</li>`
+            )
+            .join('') +
+          '</ul>'
+        : '';
+      const audio = audioForModule(n);
+      const audioList = audio.length
+        ? '<p class="label">Meditations</p><ul>' +
+          audio.map((a) => `<li><a href="${a.href}">${a.title}</a><span class="note">${a.note}</span></li>`).join('') +
+          '</ul>'
+        : '';
       const journals = journalsForModule(n);
       const journalList = journals.length
         ? '<p class="label">Journals</p><ul>' +
@@ -1171,6 +1192,8 @@ function indexPage() {
       return `<section class="module">
   <h2>${mod.title}</h2>
   <p class="sub">${mod.sub}</p>
+  ${readingList}
+  ${audioList}
   ${journalList}
   <p class="label">Or talk it through</p>
   <ul><li><a href="${mod.pagePath}">The ${mod.title.replace(/^Module \d+: /, '')} companion</a><span class="note">A conversation instead of a form, covering the same ground.</span></li></ul>
