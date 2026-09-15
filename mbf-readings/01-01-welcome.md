@@ -2,35 +2,49 @@
 
 Welcome to Mind/Body Foundations.
 
-Let me get one thing straight: I'm not a therapist, and I'm not your typical executive coach. I'm not here to process your childhood or help you navigate office politics. I work with high performers, the ones who've built strong, impressive lives but still feel like something is quietly unraveling beneath the surface.
+People arrive here in different states, and they describe it in their own words, but it's usually some version of this.
 
-You may know this feeling. You hold it together for everyone around you. You deliver. You produce. You make it look easy. And privately, something in you is tired in a way that doesn't get fixed by a vacation, a new project, or better habits.
+You're anxious a good deal of the time, and you can't always say what about. There's a pressure that doesn't let up, and something in you stays braced against it all day.
+
+You're stuck. Not short of options. Stuck in the sense that you can see the situation clearly, you know what the sensible move is, and you still can't make it.
+
+You're tired. Not the kind of tired sleep fixes, and you've been tired long enough that you've stopped calling it anything. You can't really stop, and when you do stop you don't rest, you go flat.
+
+There's a running list in your head of people who might be let down, and you manage it all day. Whatever you did, it wasn't quite enough, and the next thing is already waiting.
+
+And from the outside none of it shows. You deliver. You produce. You make it look easy.
+
+Some of it takes longer to say out loud. The guilt about any hour that wasn't productive. The resentment. The loneliness of being the one everybody leans on, which makes no sense from the outside and is real anyway. Most people don't lead with those, and you don't have to either.
 
 I call this the performance trap.
 
-It's the relentless pressure to prove you're enough. It's the unspoken contract you signed long before you had words for it: that worth is earned, that rest is earned, that parts of you have to be left behind to stay valued and wanted and relied on.
+It's the pressure to prove you're enough. It's the unspoken contract you signed long before you had words for it: that worth is earned, that rest is earned, that parts of you have to be left behind to stay valued and wanted and relied on.
 
-It's older than your career. It isn't a productivity problem or a discipline problem. It's a survival strategy you developed when you learned, very young, that being yourself wasn't enough to keep the connection.
+It's older than your career. It isn't a productivity problem and it isn't a discipline problem. It's a survival strategy you built when you learned, very young, that being yourself wasn't enough to keep the connection.
+
+This work isn't psychotherapy. There's overlap, and the two can run alongside each other. If you're seeing a therapist, keep seeing them. I've never once thought that was a problem, and I'd rather you had more support than less. What I'm doing here is teaching you a set of skills you'll be able to use on your own.
 
 ## What It Sounds Like
 
-It doesn't always look like ambition, and it usually doesn't have a name you'd give yourself. It has sentences.
+Underneath all of that there are sentences. They usually don't have a name you'd give yourself, and they run quietly enough that you may never have said one out loud. These are the ones I hear most.
 
-*I don't want to disappoint anyone.*
+*I can't let go of any of it.*
 
-*It's still not good enough.*
+*It's too much.*
 
-*I'm fine.*
+*I'm angrier than I want to be.*
+
+*There's nothing in it anymore.*
 
 *I don't want to be a burden.*
 
 *I can't say no to this.*
 
-*If I let go of it the whole thing falls apart.*
-
 *They're going to find out I don't know what I'm doing.*
 
-Those are the ones I hear most, and most people recognize more than one. None of them is a character flaw. They're survival strategies, each one learned in a moment when you found out connection had conditions.
+*I'm fine.*
+
+Most people recognize more than one. None of them is a character flaw. Each one was learned in a moment when you found out connection had conditions.
 
 ## How the Trap Got Built
 
@@ -48,9 +62,7 @@ And over time the override goes automatic. You stop noticing you're doing it, an
 
 ## The Ache
 
-But the body keeps the receipt.
-
-Every time you override what you actually feel, the gut no, the chest tightness, the request for help you swallow, your body stores it. Not as memory in your mind but as memory in your tissue. The tight jaw, the braced shoulders, the *I'm fine* when nothing is fine.
+Every time you override what you actually feel, the gut no, the chest tightness, the request for help you swallow, it leaves an imprint. Not as a memory in your mind but as a memory in your tissue. The tight jaw, the braced shoulders, the *I'm fine* when nothing is fine.
 
 Year after year it adds up. It shows up as the ache you can't quite name, the heaviness behind the wins, the flatness after a goal, the loneliness inside the success. And there's almost always a second voice with it. The inner critic, the part that keeps the performance running by attacking any sign you're slowing down. So you end up not just quietly hurting but quietly self-attacking, because the part that learned to manage everything has never been told it can rest.
 
@@ -58,21 +70,25 @@ That's what we'll be working with. Not the symptoms, the pattern underneath, and
 
 ## A Story
 
-A surgeon I worked with came in still upset about a small administrative failure on a recent trip, the kind of unforced error that set him off in a way he recognized from his whole life. Tracing it back, he landed on a memory from when he was seven, lying awake at night thinking that if he'd only noticed that morning the ketchup was running low, he could have prevented his father's blowup at his mother that night.
+Someone I worked with came in still upset about a small administrative slip on a recent trip, the kind of unforced error that set him off in a way he recognized from his whole life. Tracing it back, he landed on a memory from when he was seven, lying awake at night thinking that if he'd only noticed that morning the ketchup was running low, he could have prevented his father's blowup at his mother that night.
 
-That vigilance became the engine of his career. It made him excellent in an operating room and the kind of leader who saw problems before they surfaced. He'd built a real life on it. And it had made joy almost impossible to reach, because every moment of pleasure felt like borrowed time before he had to get back to it.
+That vigilance became the engine of his career. It made him excellent under pressure and the kind of leader who saw problems before they surfaced. He'd built a real life on it. And it had made joy almost impossible to reach, because every moment of pleasure felt like borrowed time before he had to get back to it.
 
 The opening came when he could finally tell the difference between his sense of duty, which he didn't want to lose, and the hypervigilance that rode along with it, which was killing him. They'd felt like one thing his entire life. Seeing them as two was the first move toward letting one stay and letting the other rest.
 
 ## Background
 
-I didn't get into this work because I figured life out. I got here because my own blew up early.
+I didn't come to this work because I had life figured out. I came to it because mine came apart early.
 
-My brother took his life when I was eighteen, in my first week of college. I grew up in a house where sensitivity got shut down and performance got rewarded, and I could walk into any room and sense which version of me was most acceptable, most impressive, least threatening. It became my identity. After he died I didn't drop it. I still knew how to deliver. But inside it felt like watching life through glass.
+When I was seventeen, in my first week of college, my brother took his life by jumping off the Golden Gate Bridge. I'd grown up in a house where sensitivity got shut down and performance got rewarded, and I could walk into any room and sense which version of me was most acceptable, most impressive, least threatening. That became my identity. After he took his life I didn't drop it. I still knew how to deliver. Inside it felt like watching my life through glass.
 
-Eventually that stopped working, and I couldn't outrun what was breaking in me. So I did the weird inner work of the early nineties, punching pillows and sitting in circles with women twice my age, because I was desperate. Then I landed in a yoga class, and lying there in shavasana something hit me. My grief wasn't only in my head. It was in my body. Stored, felt, stuck.
+A few months later everything went into freefall, and I entered the Hoffman Institute, a week-long residential program about the conditioning we pick up in childhood. It wasn't soft or sentimental. It was direct and intense, and every morning somebody asked me how I felt, which I had no ready answer for. That's where I first made contact with the younger, frightened part of me that the grief had exposed.
 
-I followed that thread to India, then through years of practice, into Chinese medicine, and eventually into coaching. And the same people kept turning up. High achievers, perfectionists, people who looked good on paper and were privately falling apart. So I built a method for them, and this is it. It comes out of what I lived, and out of years sitting with people trained to succeed at everything except being with themselves.
+Then a friend invited me to Hawaii to study with a yoga teacher. I was standing in paradise and couldn't feel any of it. The first day he took me through ten sun salutations, and I was stiff and breathless the whole way. Then he had me lie down and said something I've never forgotten. You have a pharmacy inside of you, and if you let yourself feel what's happening in your body, all of the healing properties will go to the different places inside your body. For the first three or four minutes nothing happened. Then I felt a vice-like quality in my chest, and I felt it crack open, and tears came pouring down my cheeks. I had been talking about that grief for a year. I had never once felt it. I stayed six months instead of two weeks.
+
+That sent me to India, and I've been working with my own body ever since. My own yoga practice started in 1993. I began working on other people's bodies in 1997 as a Thai massage therapist and a yoga teacher, I trained in Chinese medicine in 2003 and practiced acupuncture for seventeen years, and I started coaching in 2008. Almost thirty years with my hands on people.
+
+And the same people kept turning up. High achievers, perfectionists, people who looked good on paper and were privately falling apart. So I built a method for them, and this is it. It comes out of what I lived, and out of years sitting with people trained to succeed at everything except being with themselves.
 
 ## What's in Store
 
@@ -92,14 +108,16 @@ The first is coming in as a student. You're used to being good at things. You ma
 
 The second is the daily sit. If you've already decided you're bad at meditating, let that go. This isn't about being good at it. Fifteen minutes to start, building toward thirty. What else I'm asking, and what you can ask of me, is in Session Preparation.
 
-I'll tell you now that this won't always feel good, and you won't always want to do it. Some weeks it'll feel like nothing is happening. Some weeks the ache gets louder before it gets quieter. That isn't a sign it's going wrong. It's the shape of it, and it's the part nobody warned me about either.
+I'll tell you now that this won't always feel good, and you won't always want to do it. Some weeks it'll feel like nothing is happening. Some weeks the ache gets louder before it gets quieter. That isn't a sign it's going wrong, and it's the part nobody warned me about either.
 
-If you stay with it you'll start to recognize yourself again, underneath the momentum and underneath the part that's been holding it all together. You don't have to become someone new. You just have to stop abandoning the parts of yourself you left behind to survive.
+I'm not going to stuff any of this down your throat. If something I hand you doesn't resonate, set it aside. And use me in between sessions. I'm an open book, and the questions that come up when you're on your own are usually the good ones.
+
+If you stay with it you'll start to recognize yourself again, underneath the momentum and underneath the part that's been holding it all together. You don't have to become someone new. What we're doing is making it possible, slowly, to stop leaving yourself out.
 
 I'm looking forward to walking this with you, and to seeing what moves when you finally give yourself the room to listen.
 
 ## Actions
 
 1. Complete the About You form so we can focus on what matters most to you.
-2. Read the rest of Module 1 in order: preparation, then the breath, then beginner's mind.
+2. Read the rest of Module 1 in order, starting with Session Preparation.
 3. Start the daily breath practice as soon as you finish that lesson. Fifteen minutes to begin.
