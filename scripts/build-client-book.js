@@ -49,11 +49,19 @@ async function main() {
   fs.writeFileSync(file, draft.markdown, 'utf8');
   fs.writeFileSync(file.replace(/-draft\.md$/, '-clean.md'), stripMarkers(draft.markdown), 'utf8');
 
+  // The narration is the only part Chad wrote, so it is the only part worth
+  // measuring against his voice. Run voice-check.py on this file rather than
+  // on the book: the book is mostly somebody else's speech, which is long and
+  // conjunctive and first-person heavy, and it drags every number off.
+  const narrationFile = file.replace(/-draft\.md$/, '-narration.md');
+  fs.writeFileSync(narrationFile, draft.narration.join('\n\n'), 'utf8');
+
   console.log(draft.clientName + ': ' + draft.entries + ' entries in, ' + draft.narration.length + ' narration blocks out.');
   console.log(Math.round(draft.theirShare * 100) + ' per cent of the book is their words.');
   for (const problem of draft.problems) console.log('  ! ' + problem);
   console.log(file);
   console.log(file.replace(/-draft\.md$/, '-clean.md') + '  (markers removed, read this last)');
+  console.log(narrationFile + '  (just the narration, for voice-check.py)');
 }
 
 main().catch((error) => {
