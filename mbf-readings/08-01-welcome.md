@@ -30,41 +30,27 @@ Because finishing and completing aren't the same. Finishing is crossing a thing 
 
 Four questions organize it, and each one gets a chapter and a journal.
 
-## What Have I Learned About Myself
+## Four Questions, and They All Start Now
 
-Not what techniques. Not what concepts. About yourself.
+I want to be exact about how I mean these, because a module about completing something invites a particular kind of writing that I don't want from you. The retrospective voice. The tidy summary of what you've learned, composed for an audience.
 
-That you're more durable than you'd assumed. That the anxiety was a signal rather than an enemy. That conflict doesn't have to end things. That your worth wasn't actually riding on the performance. That you can ask for help and survive the asking.
+Each of these starts with what's live in you this week. The looking back happens on its own, once something present is on the page, the same way it does in a session.
 
-Those are what the next stretch of your life gets built on, which is why I want them named rather than vaguely felt.
+**What have I learned about myself.** Not what techniques and not what concepts. Start from something that happened in the last few days where you handled yourself differently than you would have, or didn't and noticed. Then say what that tells you about you.
 
-**Your Heroine/Hero's Journey** walks the arc you actually lived, using Campbell's map as a mirror rather than as a template.
+That you're more durable than you'd assumed. That the anxiety was a signal rather than an enemy. That conflict doesn't have to end things. That your worth wasn't riding on the performance. Those are the things the next stretch of your life gets built on, which is why I want them named rather than vaguely felt.
 
-## What Am I No Longer Willing to Carry
+**What am I no longer willing to carry.** Present tense, and I mean it. Not what you shed months ago. What's still in your hands right now that you've decided you're done with.
 
-Every change of this kind requires putting something down. An old identity. An old story. An old fear. An old way of protecting yourself.
+Every change of this kind requires putting something down. An old identity. An old story. An old way of protecting yourself. And by the time they stopped working they'd stopped feeling like choices. They feel like facts about you, and I'd say naming one as a choice again is most of the work of putting it down.
 
-And by the time they stopped working they'd stopped feeling like choices. They feel like facts about you, and I'd say naming one as a choice again is most of the work of putting it down.
-
-**Protecting Your Sapling** starts with honoring the adaptations that got you here, and then turns to what gets built in their place.
-
-## Who Will Help Me Remember
-
-I've never seen anybody hold this alone, myself included.
+**Who will help me remember.** I've never seen anybody hold this alone, myself included.
 
 You'll forget. Your intentions, your insights, the promises you made to yourself, because I do too and everybody does. The people around you are what remember for you, and they'll remind you who you are at the point where you've lost sight of it.
 
-**A New Invitation** asks you to choose three allies and one or two people who can be wise counsel, deliberately, and then to have the conversations that actually enroll them in the version of you that's arriving.
+**What am I going to practice.** Not what should happen and not what looks impressive.
 
-## What Wants to Happen Now
-
-Not what should happen. Not what looks impressive.
-
-What I notice at the end of work like this is a quieter relationship with ambition and with certainty. The need to know where the whole thing is going softens, and what's left is an interest in the next honest step. You don't need the map. You need to know what's being asked of you now.
-
-It might be a harder conversation, or a creative thing you set down, or more rest, or your health. Whatever it is, I'd say the move is the same. Take what happened to you and let it be visible in how you listen and speak and choose.
-
-**Be The Change** answers that question at a larger scale, **What Comes Next** handles the practical version including what's available after this ends, and **Crossing the Threshold** is the ritual that marks it.
+This is the one the whole module lands on, and I'd rather you left with one small thing you're actually going to do than four insights you can describe well.
 
 ## One Thing I'd Ask For
 
@@ -76,13 +62,17 @@ If you feel that pull, that's worth telling me more than almost anything else in
 
 Cross the threshold properly. Finish the journals, take the session, do the closing ritual even if it feels hokey. Especially if it feels hokey.
 
-## Summary
+## The Practice Is What You Leave With
 
-- It'll look like nothing changed, because the change is in what no longer happens, and an absence has no moment.
-- Other people usually see it before you do.
-- Finishing is crossing something off. Completing is letting it become part of you.
-- Four questions: what you learned about yourself, what you won't carry, who helps you remember, what wants to happen.
-- Nothing new to acquire here. Slow it down.
+One more thing about how this ends, because it's the difference between a module that closes well and one that closes warmly and changes nothing.
+
+You've spent eight months on a practice. The sitting, the breath, the staying, the small truthful sentence. And what I've watched happen at the end of programmes, mine included, is that the reflecting expands to fill the space and the practice quietly stops, because reflecting feels like the work at the point where you're supposed to be finishing.
+
+So this module ends on one practice rather than a set of conclusions. One thing you'll still be doing in March. Small enough that you'll actually do it on the bad weeks, which are the only weeks that test it.
+
+The chapters will give you the frame for choosing it and the journals will make you write it down. Don't let it become a list.
+
+## Summary
 
 ## Action
 
