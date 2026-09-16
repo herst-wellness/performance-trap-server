@@ -3,7 +3,8 @@
 const test = require('node:test');
 const assert = require('node:assert');
 
-const { buildBook, collect, renderBook, mirrorPages, answeredPrompts } = require('../mbf-book');
+const { buildBook, collect, renderSource, mirrorPages, answeredPrompts, narrationBlocks, stripMarkers, theirShare } = require('../mbf-book');
+const { check } = require('../mbf-book-draft');
 const { findJournal } = require('../mbf-journal-content');
 
 function storeWith(doc) {
@@ -56,31 +57,33 @@ function sampleDoc() {
 
 test('it holds one client and never another', async () => {
   const book = await buildBook('jane-doe', { store: storeWith(sampleDoc()) });
-  assert.match(book.markdown, /forty-four/);
-  assert.doesNotMatch(book.markdown, /must never appear/);
+  assert.match(book.source, /forty-four/);
+  assert.doesNotMatch(book.source, /must never appear/);
 });
 
 test('it runs in the order things were written, not the order of the curriculum', async () => {
   const book = await buildBook('jane-doe', { store: storeWith(sampleDoc()) });
   assert.ok(
-    book.markdown.indexOf('forty-four') < book.markdown.indexOf('knot in my gut'),
+    book.source.indexOf('forty-four') < book.source.indexOf('knot in my gut'),
     'About You was written first and comes first'
   );
   assert.ok(
-    book.markdown.indexOf('knot in my gut') < book.markdown.indexOf('critic started'),
+    book.source.indexOf('knot in my gut') < book.source.indexOf('critic started'),
     'the sitting came later and comes later'
   );
 });
 
 test('companion sittings are in it, not only journals', async () => {
   const book = await buildBook('jane-doe', { store: storeWith(sampleDoc()) });
-  assert.match(book.markdown, /critic started before I sat down/);
+  assert.match(book.source, /critic started before I sat down/);
 });
 
 // Half a sitting is the companion talking. If that goes in as body text the
 // book is half somebody else's words, which breaks its only rule. So the
 // companion's turns are set as the question and the client's as the answer.
-test('a sitting is set as an interview: their words are the body, the companion is the question', () => {
+// Who said what has to survive into the source, or the drafting pass will
+// quote the companion back to the client as their own words.
+test('a sitting reaches the drafting pass with the two voices still separate', () => {
   const { turnsFrom } = require('../mbf-book');
   const transcript = [
     'Companion: What is here right now?',
@@ -91,16 +94,41 @@ test('a sitting is set as an interview: their words are the body, the companion 
 
   assert.deepEqual(turnsFrom(transcript).map((t) => t.who), ['companion', 'client', 'companion', 'client']);
 
-  const markdown = renderBook({
+  const source = renderSource({
     clientName: 'Jane Doe',
     entries: [{ kind: 'sitting', module: 2, title: 'A sitting', at: '2026-03-01T10:00:00.000Z', transcript }],
     mirrors: [],
   });
-  // Their words stand on their own. The companion's are italic, never body text.
-  assert.match(markdown, /^A clamp in my throat\.$/m);
-  assert.match(markdown, /^\*What is here right now\?\*$/m);
-  assert.doesNotMatch(markdown, /^Where exactly\?$/m);
-  assert.doesNotMatch(markdown, /^(You|Companion):/m);
+  assert.match(source, /^THEY WROTE: A clamp in my throat\.$/m);
+  assert.match(source, /^ASKED: What is here right now\?$/m);
+  assert.doesNotMatch(source, /^THEY WROTE: Where exactly\?$/m);
+});
+
+// The failure that matters most in a narrated book is a draft that talks about
+// somebody instead of quoting them. It is caught before Chad reads it.
+test('a draft that barely quotes them is refused', () => {
+  const mostlyChad =
+    '{{CHAD}}' + 'I watched this happen again and again across the months. '.repeat(40) + '{{/CHAD}}\n\nOne short line of theirs.';
+  const problems = check(mostlyChad, 'end_turn');
+  assert.ok(problems.some((p) => /their words/.test(p)), 'it says the quoting is too thin');
+});
+
+test('a draft with no narration at all is refused, because that was the archive', () => {
+  const problems = check('Just their words, with nobody saying anything about them.', 'end_turn');
+  assert.ok(problems.some((p) => /nothing for Chad to read/.test(p)));
+});
+
+test('a draft that ran out of room is refused rather than handed over half finished', () => {
+  const ok = '{{CHAD}}Here is what I saw.{{/CHAD}}\n\n' + 'their words '.repeat(200);
+  assert.deepEqual(check(ok, 'end_turn'), []);
+  assert.ok(check(ok, 'max_tokens').some((p) => /ran out of room/.test(p)));
+});
+
+test('the markers come off cleanly for the copy anybody reads', () => {
+  const draft = '{{CHAD}}What I saw was this.{{/CHAD}}\n\nAnd then their passage.';
+  assert.equal(narrationBlocks(draft).length, 1);
+  assert.equal(stripMarkers(draft), 'What I saw was this.\n\nAnd then their passage.');
+  assert.ok(theirShare(draft) > 0 && theirShare(draft) < 1);
 });
 
 test('the word count counts their words, not the companion half', async () => {
@@ -141,8 +169,8 @@ test('the working agreements stay out, because a contract is not writing', () =>
   assert.ok(!out.some((p) => p.id === agreePrompt.id));
 });
 
-test('nothing in the document is written by anybody but the client', () => {
-  const markdown = renderBook({
+test('the source is their words and the prompts that produced them', () => {
+  const source = renderSource({
     clientName: 'Jane Doe',
     entries: [
       { kind: 'journal', module: 1, title: 'About You', at: '2026-01-02T10:00:00.000Z',
@@ -150,9 +178,10 @@ test('nothing in the document is written by anybody but the client', () => {
     ],
     mirrors: [],
   });
-  // Everything in it is either the client's words, a heading, a date, or a rule.
-  const narration = /\b(you have come|notice how|this shows|what stands out|over time you|your journey|clearly|remarkable|progress)\b/i;
-  assert.doesNotMatch(markdown, narration);
+  // The source handed to the drafting pass carries their words and the prompts
+  // that produced them, and nothing written by anybody else.
+  assert.match(source, /THEY WROTE: I am forty-four\./);
+  assert.match(source, /PROMPT: Where you are/);
 });
 
 // Every declared pair must actually resolve against the live journals. A
@@ -185,7 +214,7 @@ test('every declared mirror finds both of its prompts in the real journals', () 
   const pages = mirrorPages(doc, 'jane-doe');
   assert.equal(pages.length, MIRRORS.length, 'every mirror renders');
 
-  const markdown = renderBook({ clientName: 'Jane Doe', entries: [], mirrors: pages });
+  const markdown = renderSource({ clientName: 'Jane Doe', entries: [], mirrors: pages });
   assert.match(markdown, /early answer/);
   assert.match(markdown, /late answer/);
   // The two answers sit side by side and nothing is said about the difference.
