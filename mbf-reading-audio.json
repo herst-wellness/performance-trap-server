@@ -3,12 +3,12 @@
   "chapters": {
     "01-01-welcome": {
       "michael": {
-        "seconds": 721.5,
-        "bytes": 8658383
+        "seconds": 638.9,
+        "bytes": 7667819
       },
       "heart": {
-        "seconds": 655.6,
-        "bytes": 7868440
+        "seconds": 579.1,
+        "bytes": 6949974
       }
     },
     "01-03-turning-point": {
