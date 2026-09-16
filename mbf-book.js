@@ -1,30 +1,35 @@
 // The book a client has been writing without knowing it.
 //
-// Eight months of journals and companion sittings, in the order they were
-// written, bound as one document and handed over at the end. Chad's idea,
-// 2026-09-14. It performs the move the whole programme is built on, on the
-// whole programme at once: every word in it was *me* when it was written, and
-// in your hands as a book it becomes *a part of me*.
+// Eight months of their own words, made into a book about them. Chad's idea,
+// 2026-09-14, and corrected by him on 2026-09-15 after he read the first
+// attempt: "I am not just collecting things people have said. I am wanting the
+// book to tell a story, to have an opinion."
 //
-// Three rules, and they are the whole design.
+// The first version obeyed a rule that no narration appear anywhere. That rule
+// produced an archive. It was chronological, it was accurate, every word in it
+// was theirs, and it was worth nothing to them, because a person who has just
+// finished eight months of work cannot see their own arc and a pile of their
+// own entries does not show it to them. The reasoning behind the rule was
+// sound and the result was not, and the result is what matters.
 //
-// **No narration.** Nothing in here is written by an AI or by anybody except
-// the client. No summaries, no chapter introductions, no themes drawn out, no
-// arc explained, no observations about how far they have come. Chronological
-// order, module dividers, their words. The restraint is the point: a
-// commentary would hand them somebody else's reading of their own life, which
-// is the exact move the programme spent eight months undoing.
+// So the book has an author. Chad spent eight months with this person and saw
+// what they could not see about themselves, and the book says what he saw. The
+// opinion is the thing they cannot produce alone and the only reason the object
+// is worth having.
 //
-// **Two mechanical exceptions**, both of which interpret nothing. Dates and
-// headings, so a reader can navigate. And mirror pages, where the same
-// question asked in Module 1 and again at the end is set down side by side
-// with no comment at all. The difference between the two answers is the
-// book's only argument, and the client makes it themselves by reading.
+// What did not change: their words carry every claim. Any assertion about them
+// is followed immediately by the passage from their own writing that shows it,
+// at length, unedited. The narration is connective tissue and judgment. It is
+// never a substitute for the material.
 //
-// **It is a surprise.** Chad's ruling: nothing is announced, there is no
-// consent flow, because a coach reading a client's written work is the
-// relationship rather than a disclosure. So this runs for him, not for them.
-// He reads the assembled book before anybody else sees it.
+// Two stages. The first is deterministic and lives here: gather their material
+// in order, attributed, with the prompts that produced it. The second is a
+// drafting pass against `mbf-book-brief.txt`, which returns the book with every
+// narration block marked so Chad can read and rewrite each one before anybody
+// sees it. He edits it the way he edits the inner compass document in Module 6,
+// which is the same move at a smaller scale.
+//
+// It remains a surprise. Nothing is announced and there is no consent flow.
 const { defaultStore } = require('./mbf-store');
 const { JOURNALS, findJournal } = require('./mbf-journal-content');
 const { clientNameFromCode } = require('./mbf-delivery');
@@ -176,76 +181,66 @@ function longDate(value) {
   return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 }
 
-// Markdown, because it opens anywhere, reads correctly in a screen reader, and
-// goes into a print template without being unpicked first.
-function renderBook({ clientName, entries, mirrors, now = new Date() }) {
+// What the drafting pass is given: their material in order, attributed, with
+// the prompt that produced each answer, so a draft can quote accurately and
+// date anything it claims. This is source, not output. Nobody reads this.
+function renderSource({ clientName, entries, mirrors }) {
   const lines = [];
-  lines.push('# ' + clientName);
-  lines.push('');
-  lines.push('*Mind/Body Foundations*');
-  lines.push('');
+  lines.push('CLIENT: ' + clientName);
   if (entries.length) {
-    lines.push('*' + longDate(entries[0].at) + ' to ' + longDate(entries[entries.length - 1].at) + '*');
-    lines.push('');
+    lines.push('SPAN: ' + longDate(entries[0].at) + ' to ' + longDate(entries[entries.length - 1].at));
   }
-  lines.push('---');
   lines.push('');
 
-  let module = null;
   for (const entry of entries) {
-    if (entry.module !== module) {
-      module = entry.module;
-      lines.push('');
-      lines.push('## Module ' + module);
-      lines.push('');
-    }
-    lines.push('### ' + entry.title);
-    const when = longDate(entry.at);
-    if (when) {
-      lines.push('');
-      lines.push('*' + when + '*');
-    }
-    lines.push('');
+    lines.push('=== MODULE ' + entry.module + ' | ' + longDate(entry.at) + ' | ' + entry.title + ' ===');
     if (entry.kind === 'sitting') {
       for (const turn of turnsFrom(entry.transcript)) {
-        if (turn.who === 'companion') {
-          lines.push('*' + turn.text.replace(/\n+/g, ' ') + '*');
-        } else {
-          lines.push(turn.text);
-        }
-        lines.push('');
+        lines.push((turn.who === 'companion' ? 'ASKED: ' : 'THEY WROTE: ') + turn.text.replace(/\n+/g, ' '));
       }
-      continue;
+    } else {
+      for (const prompt of entry.answered) {
+        lines.push('PROMPT: ' + prompt.label);
+        lines.push('THEY WROTE: ' + prompt.text);
+      }
     }
-    for (const prompt of entry.answered) {
-      lines.push('**' + prompt.label + '**');
-      lines.push('');
-      lines.push(prompt.text);
-      lines.push('');
-    }
+    lines.push('');
   }
 
   if (mirrors.length) {
-    lines.push('');
-    lines.push('---');
-    lines.push('');
-    lines.push('## Then and now');
-    lines.push('');
+    lines.push('=== THE SAME QUESTION, ASKED TWICE ===');
     for (const page of mirrors) {
-      lines.push('### ' + page.label);
-      lines.push('');
-      lines.push('**' + longDate(page.first.at || '') + '**');
-      lines.push('');
-      lines.push(page.first.text);
-      lines.push('');
-      lines.push('**Later**');
-      lines.push('');
-      lines.push(page.last.text);
+      lines.push('QUESTION: ' + page.label);
+      lines.push('EARLY: ' + page.first.text);
+      lines.push('LATE: ' + page.last.text);
       lines.push('');
     }
   }
 
-  return lines.join('\n').replace(/\n{4,}/g, '\n\n\n').trim() + '\n';
+  return lines.join('\n').trim() + '\n';
+}
+
+// Chad reads every word the pass wrote before anybody else does, so the
+// narration is marked rather than blended. Stripping the markers is the last
+// step, after he has been through it.
+const NARRATION = /\{\{CHAD\}\}([\s\S]*?)\{\{\/CHAD\}\}/g;
+
+function narrationBlocks(markdown) {
+  return [...String(markdown).matchAll(NARRATION)].map((m) => m[1].trim());
+}
+
+function stripMarkers(markdown) {
+  return String(markdown).replace(NARRATION, (_, inner) => inner);
+}
+
+// A draft that quotes nothing has written about them instead of from them, and
+// that is the failure this whole thing exists to avoid. The check is crude on
+// purpose: it measures how much of the book is not Chad talking.
+function theirShare(markdown) {
+  const total = stripMarkers(markdown).split(/\s+/).filter(Boolean).length;
+  const his = narrationBlocks(markdown).join(' ').split(/\s+/).filter(Boolean).length;
+  if (!total) return 0;
+  return (total - his) / total;
 }
 
 async function buildBook(code, { store = defaultStore(), now = new Date() } = {}) {
@@ -266,7 +261,7 @@ async function buildBook(code, { store = defaultStore(), now = new Date() } = {}
           .filter(Boolean).length,
       0
     ),
-    markdown: renderBook({ clientName, entries, mirrors: mirrorPages(doc, code), now }),
+    source: renderSource({ clientName, entries, mirrors: mirrorPages(doc, code) }),
   };
 }
 
@@ -277,5 +272,8 @@ module.exports = {
   buildBook,
   collect,
   mirrorPages,
-  renderBook,
+  narrationBlocks,
+  renderSource,
+  stripMarkers,
+  theirShare,
 };
