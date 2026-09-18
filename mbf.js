@@ -1100,7 +1100,7 @@ function companionPage(mod) {
     try {
       var response = await fetch('${mod.apiPath}', {
         method:'POST', headers:headers(), cache:'no-store',
-        body:JSON.stringify({message:message, history:history, adultConfirmed:true, country:country, startedAt:sittingStartedAt, transcript:transcriptText() + '\nYou: ' + message})
+        body:JSON.stringify({message:message, history:history, adultConfirmed:true, country:country, startedAt:sittingStartedAt, transcript:transcriptText() + '\\nYou: ' + message})
       });
       var data = await response.json();
       if (seq !== pendingSeq || locked) return;

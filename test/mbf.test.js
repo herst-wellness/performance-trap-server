@@ -482,3 +482,38 @@ test('the consent copy is written for an ongoing client relationship, not a cour
   assert.ok(!html.includes('Integration and Next-Step Session'));
   assert.ok(!html.includes('four-week'));
 });
+
+// The page's whole interface is one inline script inside a server-side
+// template literal, so any backslash escape written for the browser (a
+// '\n' in a string, say) is consumed when the HTML is built and the
+// browser receives a real line break inside a quoted string. The script
+// then fails to parse, every button on the page goes dead, and nothing
+// in the HTML looks wrong: the title, the API path and the access card
+// are all still there, which is why every existing assertion above kept
+// passing while a paying client could not get past Continue. Parse the
+// scripts the browser actually receives.
+test('every inline script the browser receives parses, on the index and all eight module pages', { timeout: 30000 }, async (t) => {
+  const vm = require('node:vm');
+  const port = await getOpenPort();
+  const child = await startServer(port, { MBF_ACCESS_CODES: 'test-client' });
+  t.after(() => child.kill());
+  const baseUrl = 'http://127.0.0.1:' + port;
+
+  const paths = [INDEX_PATH, ...Object.values(MODULES).map((mod) => mod.pagePath)];
+  for (const pagePath of paths) {
+    const page = await fetch(baseUrl + pagePath);
+    assert.equal(page.status, 200, pagePath);
+    const html = await page.text();
+    const scripts = [...html.matchAll(/<script([^>]*)>([\s\S]*?)<\/script>/g)]
+      // Skip src= references and data blocks such as type="application/json".
+      .filter(([, attrs]) => !/\bsrc=/.test(attrs) && !/\btype=/.test(attrs))
+      .map(([, , body]) => body);
+    assert.ok(scripts.length > 0, pagePath + ' must serve its inline script');
+    scripts.forEach((source, index) => {
+      assert.doesNotThrow(
+        () => new vm.Script(source),
+        pagePath + ' inline script #' + index + ' must be valid JavaScript',
+      );
+    });
+  }
+});
