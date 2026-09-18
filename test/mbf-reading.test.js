@@ -169,3 +169,27 @@ test('the meditations point at the bucket by default, so a module page never sho
   }
   if (before !== undefined) process.env.MBF_AUDIO_BASE = before;
 });
+
+// A heading with nothing under it reaches a reader as a promise the page does
+// not keep, and it reaches a listener worse: the narration speaks every
+// heading as its own sentence, so an empty one is a word said into silence.
+// Module 8's Welcome carried a bare "Summary" for three days this way, left
+// behind when its bullets were rewritten out.
+test('no reading serves a heading with nothing under it', () => {
+  for (const r of READINGS) {
+    const lines = r.body.split('\n');
+    lines.forEach((line, index) => {
+      const heading = /^(#{1,4})\s+(.+)$/.exec(line.trim());
+      if (!heading) return;
+      // A heading that only introduces deeper headings is a section, not an
+      // empty one, so stop at the next heading of the same level or shallower.
+      const rest = lines.slice(index + 1);
+      const next = rest.findIndex((l) => {
+        const other = /^(#{1,4})\s+/.exec(l.trim());
+        return other && other[1].length <= heading[1].length;
+      });
+      const between = (next === -1 ? rest : rest.slice(0, next)).join('').trim();
+      assert.ok(between.length > 0, `${r.file}: "${heading[2]}" has nothing under it`);
+    });
+  }
+});
