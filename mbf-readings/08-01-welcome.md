@@ -72,8 +72,6 @@ So this module ends on one practice rather than a set of conclusions. One thing 
 
 The chapters will give you the frame for choosing it and the journals will make you write it down. Don't let it become a list.
 
-## Summary
-
 ## Action
 
 Read the roadmap for pacing, then open **Your Heroine/Hero's Journey**.
