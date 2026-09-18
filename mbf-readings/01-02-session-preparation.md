@@ -6,7 +6,7 @@ Welcome gives you the orientation. What follows is the working container: how of
 
 We meet every two weeks for 90 minutes, on Zoom. Find a quiet, private place where you can speak freely. A solid Wi-Fi connection matters. I'll start and end on time. If I'm ever a few minutes late, it's because I'm wrapping up with someone else. I won't be more than five.
 
-Stay in rhythm. The work builds over time, and when too much space opens up between sessions, things drift. Every now and then three weeks between meetings is fine. Mostly, hold the every-two-week pace.
+Stay in rhythm. The work builds over time, and when too much space opens up between sessions, things drift. Every two weeks is the pace. Three weeks now and then is fine. Once it gets out to four, the work starts to lose its form.
 
 ## What a session actually looks like
 
@@ -48,9 +48,9 @@ After we meet, there's a Follow-Up journal waiting in that module. Do it within 
 
 ## Cancellations
 
-I ask for 48 hours' notice if you need to cancel or reschedule. The one exception: if you're sick. A cold, the flu, anything where your body's busy fighting an infection, tell me and we'll reschedule. The work falls flat when your body is offline.
+I ask for 48 hours' notice if you need to cancel or reschedule, and I'll be straight with you about this one. Last-minute cancellations don't work for me. Inside 48 hours, a missed session is charged the full fee. I've been doing this long enough not to apologize for that. My time is my service, and I'm asking you to treat it that way.
 
-Last-minute cancellations are charged the full fee. I've been doing this long enough not to apologize for that. My time is my service, and I'm asking you to treat it that way.
+The one exception is being sick. A cold, the flu, anything where your body's busy fighting an infection, tell me and we'll reschedule. The work falls flat when your body is offline.
 
 ## The eight-month window
 
